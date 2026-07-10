@@ -200,10 +200,10 @@ export function WorkspaceMembersPanel({
                     type="button"
                     disabled={isPending}
                     onClick={() => toggleStatus(member.userId, !member.isActive)}
-                    className={`inline-flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-semibold border transition-all cursor-pointer ${
+                    className={`inline-flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-semibold border transition-all cursor-pointer disabled:opacity-50 ${
                       member.isActive
-                        ? 'text-rose-500 hover:text-white bg-rose-500/10 hover:bg-rose-500 border-rose-500/20 hover:border-rose-500'
-                        : 'text-emerald-500 hover:text-white bg-emerald-500/10 hover:bg-emerald-500 border-emerald-500/20 hover:border-emerald-500'
+                        ? 'text-rose-600 dark:text-rose-500 bg-rose-500/10 hover:text-white hover:bg-rose-600 border-rose-500/30 hover:border-rose-600'
+                        : 'text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 hover:text-white hover:bg-emerald-600 border-emerald-500/30 hover:border-emerald-600'
                     }`}
                   >
                     {member.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
@@ -218,7 +218,7 @@ export function WorkspaceMembersPanel({
                     disabled={isPending}
                     onClick={() => removeMember(member.userId)}
                     title="Remove member from workspace"
-                    className="p-2 rounded-xl text-rose-500 hover:text-white bg-rose-500/10 hover:bg-rose-500 border border-rose-500/20 hover:border-rose-500 transition-all cursor-pointer"
+                    className="btn-icon-danger"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -248,7 +248,7 @@ export function WorkspaceMembersPanel({
               ))}
             </select>
             <button type="button" onClick={transfer} disabled={isPending || !newOwnerId}
-              className="rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+              className="btn-primary disabled:opacity-50">
               Transfer ownership
             </button>
           </div>

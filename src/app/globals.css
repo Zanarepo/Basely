@@ -76,7 +76,7 @@ body {
 
 @layer components {
   .auth-input {
-    @apply w-full pl-11 pr-4 py-3 bg-app-input border border-app-border rounded-2xl text-app-fg placeholder:text-app-subtle focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 disabled:opacity-50;
+    @apply w-full pl-11 pr-4 py-3 bg-app-input border border-app-border rounded-2xl text-app-fg placeholder:text-app-subtle shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 disabled:opacity-50;
   }
 
   .auth-label {
@@ -89,5 +89,47 @@ body {
 
   .auth-oauth-btn {
     @apply py-3 px-4 bg-app-input hover:bg-app-hover border border-app-border hover:border-indigo-500/30 text-app-fg font-semibold rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+    background-image: linear-gradient(to right, #7c3aed, #4f46e5);
+    box-shadow: 0 10px 15px -3px rgb(79 70 229 / 0.2);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-image: linear-gradient(to right, #8b5cf6, #6366f1);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-app-fg bg-app-surface-solid hover:bg-app-hover rounded-xl border border-app-border shadow-sm ring-1 ring-transparent hover:ring-indigo-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-icon {
+    @apply p-2 rounded-xl border border-app-border bg-app-surface-solid text-app-fg shadow-sm hover:text-indigo-600 hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-all cursor-pointer disabled:opacity-50;
+  }
+
+  .btn-icon-warning {
+    @apply p-2 rounded-xl border border-app-border bg-app-surface-solid text-app-fg shadow-sm hover:text-amber-600 hover:bg-amber-500/10 hover:border-amber-500/30 transition-all cursor-pointer disabled:opacity-50;
+  }
+
+  .btn-icon-success {
+    @apply p-2 rounded-xl border border-app-border bg-app-surface-solid text-app-fg shadow-sm hover:text-emerald-600 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all cursor-pointer disabled:opacity-50;
+  }
+
+  .btn-icon-danger {
+    @apply p-2 rounded-xl text-rose-600 dark:text-rose-500 bg-rose-500/10 hover:text-white hover:bg-rose-600 border border-rose-500/30 hover:border-rose-600 transition-all cursor-pointer disabled:opacity-50 shadow-sm;
+  }
+
+  .btn-ghost-accent {
+    @apply inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 px-2.5 py-1 rounded-lg border border-indigo-500/20 hover:border-indigo-500/35 cursor-pointer transition-all;
+  }
+
+  .crud-card {
+    @apply flex flex-col gap-3 rounded-2xl border border-app-border bg-app-surface-solid p-5 shadow-sm transition-colors duration-200;
+  }
+
+  .crud-panel {
+    @apply backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6 shadow-sm;
   }
 }

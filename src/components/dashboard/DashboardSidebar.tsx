@@ -9,6 +9,7 @@ import {
   LogOut,
   Loader2,
   UserPlus,
+  Users,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { useWorkspace } from './WorkspaceContext'
@@ -64,6 +65,7 @@ export function DashboardSidebar({
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/dashboard/team', label: 'Team', icon: Users },
   ]
 
   if (!mounted) {
