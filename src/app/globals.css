@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
+
+/* Default: dark mode (matches current UI) */
+:root,
+.dark {
+  --app-bg: #020617;
+  --app-fg: #f8fafc;
+  --app-muted: #94a3b8;
+  --app-subtle: #64748b;
+  --app-surface: rgb(15 23 42 / 0.6);
+  --app-surface-solid: #0f172a;
+  --app-input: rgb(2 6 23 / 0.8);
+  --app-border: rgb(30 41 59 / 0.8);
+  --app-hover: rgb(30 41 59 / 0.5);
+  --app-muted-surface: rgb(30 41 59 / 0.6);
+  --app-grid-line: #0f172a;
+  --app-orb-violet: rgb(126 34 206 / 0.1);
+  --app-orb-indigo: rgb(79 70 229 / 0.1);
+  --app-toggle-bg: #1e293b;
+  --app-toggle-border: #334155;
+  --app-toggle-fg: #cbd5e1;
+  --background: #020617;
+  --foreground: #f8fafc;
+}
+
+.light {
+  --app-bg: #f1f5f9;
+  --app-fg: #0f172a;
+  --app-muted: #475569;
+  --app-subtle: #64748b;
+  --app-surface: rgb(255 255 255 / 0.85);
+  --app-surface-solid: #ffffff;
+  --app-input: #f8fafc;
+  --app-border: rgb(226 232 240 / 0.95);
+  --app-hover: rgb(241 245 249 / 1);
+  --app-muted-surface: rgb(241 245 249 / 0.95);
+  --app-grid-line: #e2e8f0;
+  --app-orb-violet: rgb(139 92 246 / 0.12);
+  --app-orb-indigo: rgb(99 102 241 / 0.1);
+  --app-toggle-bg: #ffffff;
+  --app-toggle-border: #e2e8f0;
+  --app-toggle-fg: #475569;
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-app-bg: var(--app-bg);
+  --color-app-fg: var(--app-fg);
+  --color-app-muted: var(--app-muted);
+  --color-app-subtle: var(--app-subtle);
+  --color-app-surface: var(--app-surface);
+  --color-app-surface-solid: var(--app-surface-solid);
+  --color-app-input: var(--app-input);
+  --color-app-border: var(--app-border);
+  --color-app-hover: var(--app-hover);
+  --color-app-muted-surface: var(--app-muted-surface);
+  --color-app-toggle-bg: var(--app-toggle-bg);
+  --color-app-toggle-border: var(--app-toggle-border);
+  --color-app-toggle-fg: var(--app-toggle-fg);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--app-bg);
+  color: var(--app-fg);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@layer components {
+  .auth-input {
+    @apply w-full pl-11 pr-4 py-3 bg-app-input border border-app-border rounded-2xl text-app-fg placeholder:text-app-subtle focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 disabled:opacity-50;
+  }
+
+  .auth-label {
+    @apply text-xs font-semibold text-app-muted uppercase tracking-wider;
+  }
+
+  .auth-card {
+    @apply backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-8 shadow-lg dark:shadow-black/30 transition-colors duration-200;
+  }
+
+  .auth-oauth-btn {
+    @apply py-3 px-4 bg-app-input hover:bg-app-hover border border-app-border hover:border-indigo-500/30 text-app-fg font-semibold rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50;
+  }
+}
