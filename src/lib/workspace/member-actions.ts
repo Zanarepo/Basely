@@ -1,0 +1,84 @@
+'use server'
+
+import { createClient } from '@/utils/supabase/server'
+
+const WORKSPACE_ROLES = ['Admin', 'PM', 'Team Member', 'Viewer'] as const
+type WorkspaceRole = (typeof WORKSPACE_ROLES)[number]
+export type UpdateWorkspaceRoleResult = { ok: true } | { ok: false; error: string }
+
+async function getAuthenticatedClient() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  return { supabase, user }
+}
+
+export async function updateWorkspaceMemberRole(
+  organizationId: string, memberUserId: string, role: WorkspaceRole
+): Promise<UpdateWorkspaceRoleResult> {
+  if (!WORKSPACE_ROLES.includes(role)) return { ok: false, error: 'Invalid workspace role' }
+  const { supabase, user } = await getAuthenticatedClient()
+  if (!user) return { ok: false, error: 'You must be signed in' }
+
+  const { error } = await supabase.rpc('set_workspace_member_role', {
+    p_organization_id: organizationId, p_member_user_id: memberUserId, p_role: role,
+  })
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}
+
+export async function transferWorkspaceOwnership(
+  organizationId: string, newOwnerUserId: string
+): Promise<UpdateWorkspaceRoleResult> {
+  const { supabase, user } = await getAuthenticatedClient()
+  if (!user) return { ok: false, error: 'You must be signed in' }
+
+  const { error } = await supabase.rpc('transfer_workspace_ownership', {
+    p_organization_id: organizationId, p_new_owner_user_id: newOwnerUserId,
+  })
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}
+
+export async function updateWorkspaceMemberActiveStatus(
+  organizationId: string, memberUserId: string, isActive: boolean
+): Promise<UpdateWorkspaceRoleResult> {
+  const { supabase, user } = await getAuthenticatedClient()
+  if (!user) return { ok: false, error: 'You must be signed in' }
+
+  const { error } = await supabase.rpc('set_member_active_status', {
+    p_organization_id: organizationId,
+    p_member_user_id: memberUserId,
+    p_is_active: isActive,
+  })
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}
+
+export async function removeWorkspaceMember(
+  organizationId: string, memberUserId: string
+): Promise<UpdateWorkspaceRoleResult> {
+  const { supabase, user } = await getAuthenticatedClient()
+  if (!user) return { ok: false, error: 'You must be signed in' }
+
+  const { error } = await supabase.rpc('remove_workspace_member', {
+    p_organization_id: organizationId,
+    p_member_user_id: memberUserId,
+  })
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}
+
+export async function updateWorkspaceMemberAdminPrivilege(
+  organizationId: string, memberUserId: string, canManageAllMembers: boolean
+): Promise<UpdateWorkspaceRoleResult> {
+  const { supabase, user } = await getAuthenticatedClient()
+  if (!user) return { ok: false, error: 'You must be signed in' }
+
+  const { error } = await supabase.rpc('set_admin_privilege', {
+    p_organization_id: organizationId,
+    p_member_user_id: memberUserId,
+    p_can_manage: canManageAllMembers,
+  })
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}

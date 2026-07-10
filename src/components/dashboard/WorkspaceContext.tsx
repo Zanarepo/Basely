@@ -6,6 +6,8 @@ export type Workspace = {
   id: string
   name: string
   role: string
+  isOwner: boolean
+  isActive: boolean
 }
 
 type WorkspaceContextValue = {

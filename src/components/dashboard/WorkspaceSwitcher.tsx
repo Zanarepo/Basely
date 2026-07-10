@@ -46,7 +46,9 @@ export function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps) {
         <p className="text-sm font-medium text-app-fg truncate">
           {workspace.name}
         </p>
-        <p className="text-xs text-app-subtle">{workspace.role}</p>
+        <p className="text-xs text-app-subtle">
+          {workspace.isOwner ? 'Owner' : workspace.role}
+        </p>
       </div>
       {workspace.id === activeWorkspace.id && (
         <Check className="h-4 w-4 text-indigo-500 dark:text-indigo-400 shrink-0" />

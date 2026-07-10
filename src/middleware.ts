@@ -29,19 +29,23 @@ export async function middleware(request: NextRequest) {
 
   // 3. If user is logged in, check organization membership
   if (isDashboardRoute || isOnboardingRoute) {
-    const { data: membership } = await supabase
+    const { data: memberships } = await supabase
       .from('organization_members')
-      .select('organization_id')
+      .select('organization_id, is_active')
       .eq('user_id', user.id)
-      .limit(1)
-      .maybeSingle()
 
-    if (!membership && isDashboardRoute) {
-      url.pathname = '/onboarding'
-      return NextResponse.redirect(url)
+    const hasActiveWorkspace = memberships?.some((m) => m.is_active)
+
+    if (!hasActiveWorkspace && isDashboardRoute) {
+      if (!memberships || memberships.length === 0) {
+        url.pathname = '/onboarding'
+        return NextResponse.redirect(url)
+      }
+      // If user has only inactive/revoked workspaces, let them land on /dashboard
+      // so the dashboard page can render the "Access Revoked" screen.
     }
 
-    if (membership && isOnboardingRoute) {
+    if (hasActiveWorkspace && isOnboardingRoute) {
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }

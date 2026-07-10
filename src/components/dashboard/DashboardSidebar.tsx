@@ -34,7 +34,7 @@ export function DashboardSidebar({
   const [collapsed, setCollapsed] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const canInvite = INVITE_ROLES.has(activeWorkspace.role)
+  const canInvite = activeWorkspace.isOwner || INVITE_ROLES.has(activeWorkspace.role)
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
