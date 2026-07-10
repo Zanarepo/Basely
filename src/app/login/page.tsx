@@ -88,7 +88,7 @@ function LoginForm() {
             <LogIn className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-app-fg">
-            Basely
+            Baseline
           </h1>
           <p className="mt-2 text-sm text-app-muted font-medium">
             Sign in to accept your workspace invitation.
@@ -235,7 +235,7 @@ function LoginForm() {
           </div>
 
           <div className="text-center mt-6 text-sm text-app-muted">
-            {isInviteFlow ? 'New to Basely?' : 'Don&apos;t have an account?'}{' '}
+            {isInviteFlow ? 'New to Baseline?' : 'Don&apos;t have an account?'}{' '}
             <Link
               href={
                 safeNext !== '/dashboard'
@@ -256,7 +256,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen w-full flex items-center justify-center bg-app-bg text-app-fg text-sm font-semibold tracking-wider animate-pulse">
-        Loading Basely...
+        Loading Baseline...
       </div>
     }>
       <LoginForm />

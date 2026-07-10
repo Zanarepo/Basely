@@ -89,7 +89,7 @@ export function DashboardSidebar({
         {!collapsed && (
           <div className="min-w-0">
             <p className="text-sm font-bold text-app-fg tracking-tight truncate">
-             Basely
+             Baseline
             </p>
             <p className="text-[10px] text-app-subtle uppercase tracking-widest">
               Project Controls
