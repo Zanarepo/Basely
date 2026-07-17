@@ -1,5 +1,8 @@
 'use client'
 
+import Link from 'next/link'
+
+
 import {
   Workflow,
   CalendarRange,
@@ -89,7 +92,11 @@ export function ProjectCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-semibold text-app-fg truncate">{project.name}</h3>
+            <h3 className="font-semibold text-app-fg truncate hover:text-indigo-500 transition-colors">
+              <Link href={`/dashboard/projects/${project.id}`}>
+                {project.name}
+              </Link>
+            </h3>
             <span
               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${getMethodologyBadgeColor(
                 project.methodology

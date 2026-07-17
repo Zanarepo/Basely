@@ -74,16 +74,16 @@ Jira Type: User Story
 Story Description: As a Project Manager, I want an onboarding form wizard to instantiate standard parameters (name, dates, currency, execution methods) before building structural work schedules.
 Dependencies: Blocks Story 1.1, Story 3.1
 Sub-tasks:
-[ ] SUB-4.1.1: Construct the Multi-Step Project Wizard layout tracking Name mapping, Waterfall/Agile strategies, Currency types, and Baseline working calendar dates.
-[ ] SUB-4.1.2: Implement frontend validation using Zod to enforce standard rules (e.g., stopping project generation if the target end date occurs before the start date).
-[ ] SUB-4.1.3: Connect the validation output directly to a Supabase insert statement target.
+[x] SUB-4.1.1: Construct the Multi-Step Project Wizard layout tracking Name mapping, Waterfall/Agile strategies, Currency types, and Baseline working calendar dates.
+[x] SUB-4.1.2: Implement frontend validation using Zod to enforce standard rules (e.g., stopping project generation if the target end date occurs before the start date).
+[x] SUB-4.1.3: Connect the validation output directly to a Supabase insert statement target.
 🟢 Story 4.2: Workspace Dashboard & RBAC UI Visibility Control
 Jira Type: User Story
 Story Description: As an organization manager, I want the project landing dashboard to show cards for my active projects while using role visibility rules to hide administrative action components from unauthorized users.
 Dependencies: Blocks Story 1.2, Story 4.1
 Sub-tasks:
-[ ] SUB-4.2.1: Code the main dashboard card layout fetching items dynamically based on the current workspace context.
-[ ] SUB-4.2.2: Wrap administrative actionable components (like the "New Project" initialization button) inside code gates that check the user's role, hiding them from Team Member and Viewer profiles.
+[x] SUB-4.2.1: Code the main dashboard card layout fetching items dynamically based on the current workspace context.
+[x] SUB-4.2.2: Wrap administrative actionable components (like the "New Project" initialization button) inside code gates that check the user's role, hiding them from Team Member and Viewer profiles.
 📊 End-to-End Dependency Graph & Execution Sequence
 Your team should track execution flow sequencing linearly along this path to prevent architectural bottlenecks:
 [Story 1.1: DB Schema Setup]

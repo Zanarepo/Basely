@@ -44,7 +44,7 @@ async function getProjectAuthorization(projectId: string, userId: string) {
   // Check if assigned project member
   const { data: projMember } = await supabase
     .from('project_members')
-    .select('id')
+    .select('id, can_delete')
     .eq('project_id', projectId)
     .eq('user_id', userId)
     .single()
@@ -61,6 +61,7 @@ async function getProjectAuthorization(projectId: string, userId: string) {
     isTeamMember,
     isCreator,
     isAssignedMember,
+    canDelete: projMember?.can_delete === true,
     orgId: project.organization_id,
     isArchived: project.is_archived
   }
@@ -181,11 +182,11 @@ export async function deleteProject(projectId: string): Promise<ActionResponse> 
 
   const authState = await getProjectAuthorization(projectId, user.id)
 
-  // Creator delete override rule: if they created it, they can delete it
-  const canDelete = authState.isAdmin || authState.isCreator
+  // Deletion is intentionally project-scoped: roles alone never grant it.
+  const canDelete = authState.isCreator || authState.canDelete
 
   if (!canDelete) {
-    return { ok: false, error: 'Unauthorized: Only Owners, Admins, or the Project Creator can delete this project.' }
+    return { ok: false, error: 'Unauthorized: The project creator has not granted you permission to delete this project.' }
   }
 
   const { error } = await supabase
@@ -251,7 +252,7 @@ export async function assignProjectMember(projectId: string, memberUserId: strin
   if (!user) return { ok: false, error: 'You must be signed in' }
 
   const authState = await getProjectAuthorization(projectId, user.id)
-  const canManage = authState.isAdmin || authState.isPM || authState.isCreator
+  const canManage = authState.isCreator
 
   if (!canManage) {
     return { ok: false, error: 'Unauthorized: You do not have permission to manage members for this project.' }
@@ -291,19 +292,21 @@ export async function removeProjectMember(projectId: string, memberUserId: strin
   return { ok: true }
 }
 
-export async function updateProjectMembers(projectId: string, userIds: string[]): Promise<ActionResponse> {
+export type ProjectMemberAssignment = { userId: string; canDelete: boolean }
+
+export async function updateProjectMembers(projectId: string, members: ProjectMemberAssignment[]): Promise<ActionResponse> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'You must be signed in' }
 
   const authState = await getProjectAuthorization(projectId, user.id)
-  const canManage = authState.isAdmin || authState.isPM || authState.isCreator
+  const canManage = authState.isCreator
 
   if (!canManage) {
-    return { ok: false, error: 'Unauthorized: You do not have permission to manage members for this project.' }
+    return { ok: false, error: 'Unauthorized: Only the project creator can manage project member permissions.' }
   }
 
-  // Use a transaction style: delete existing assignments and bulk insert new ones
+  // Replace assignments and their project-level delete grants together.
   // Delete all members
   const { error: deleteError } = await supabase
     .from('project_members')
@@ -312,11 +315,11 @@ export async function updateProjectMembers(projectId: string, userIds: string[])
 
   if (deleteError) return { ok: false, error: deleteError.message }
 
-  // Insert selected members
-  if (userIds.length > 0) {
+  // Insert selected members with their explicit delete grant.
+  if (members.length > 0) {
     const { error: insertError } = await supabase
       .from('project_members')
-      .insert(userIds.map((uid) => ({ project_id: projectId, user_id: uid })))
+      .insert(members.map((member) => ({ project_id: projectId, user_id: member.userId, can_delete: member.canDelete })))
 
     if (insertError) return { ok: false, error: insertError.message }
   }

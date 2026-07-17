@@ -72,6 +72,28 @@ This file tracks the status of deliverables for **Sprint 1: Foundation (Auth, Hi
   - **Privileged Admin checkbox** — editable by Owner only on Admin rows; grants the Admin `can_manage_all_members`.
   - All actions require build-time TypeScript enforcement + database-layer RLS/SECURITY DEFINER checks for defence in depth.
 
+### Epic 4: Project Container Provisioning
+- [x] **SUB-4.1.1: Multi-Step Project Wizard UI**
+  - Built UI layout collecting project configurations: Project Name, Client Reference, Methodology choice (Waterfall, Agile, Hybrid), Currency selection, and Baseline Working Calendar dates ([ProjectWizardModal.tsx](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/components/dashboard/ProjectWizardModal.tsx)).
+- [x] **SUB-4.1.2: Form Validation**
+  - Wired validation via Zod schemas to reject invalid entries (such as end dates before start dates) ([projects.ts](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/lib/validations/projects.ts)).
+- [x] **SUB-4.1.3: Supabase Creation Interfacing**
+  - Connected the valid output directly to insertion statements targeting the `public.projects` table via Next.js Server Action ([actions.ts](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/lib/projects/actions.ts)).
+- [x] **SUB-4.2.1: Active Dashboard Projects Grid**
+  - Coded visual dashboard card grids rendering active projects for the current workspace context ([ProjectsDashboard.tsx](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/components/dashboard/ProjectsDashboard.tsx)).
+- [x] **SUB-4.2.2: Role-Based Action Control (RBAC) Gating**
+  - Integrated visual permission gates hiding administrative buttons (e.g. "New Project") from Viewer or Team Member roles ([ProjectsDashboard.tsx](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/components/dashboard/ProjectsDashboard.tsx)).
+
+### Sprint 2: Planning Core — WBS Data Model & Tree UI (Completed)
+- [x] **WBS Schema & Constraints**:
+  - Setup tables, constraints, self-referencing hierarchy keys, RLS security policies, and performance indexes ([20260717000000_wbs_elements.sql](file:///c:/Users/princ/3D%20Objects/ProjectManagement/supabase/migrations/20260717000000_wbs_elements.sql)).
+- [x] **Auto-Numbering & Cycle Triggers**:
+  - Implemented SQL triggers to recalculate WBS codes and block circular parenting dependencies at the database level ([20260717000000_wbs_elements.sql](file:///c:/Users/princ/3D%20Objects/ProjectManagement/supabase/migrations/20260717000000_wbs_elements.sql)).
+- [x] **Interactive Tree CRUD & Dictionary Workspace**:
+  - Developed the recursive tree component, sliding side details panel, validation rules, Next.js server actions, and a 20-step undo/redo stack ([WbsPlanningWorkspace.tsx](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/components/dashboard/wbs/WbsPlanningWorkspace.tsx)).
+- [x] **Native HTML5 Drag & Drop**:
+  - Implemented client-side reordering, cross-branch drops with hover borders, and optimistic state code recalculators ([WbsTree.tsx](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/components/dashboard/wbs/WbsTree.tsx)).
+
 ---
 
 ## ⏳ What's Left (In Progress & Pending)
@@ -80,22 +102,10 @@ This file tracks the status of deliverables for **Sprint 1: Foundation (Auth, Hi
 - [ ] **SUB-1.1.3: Mock Database Seeding**
   - Setup local development seeds with mock organization structures for testing.
 
-### Epic 4: Project Container Provisioning (Not Started - Next Up)
-- [ ] **SUB-4.1.1: Multi-Step Project Wizard UI**
-  - Build UI layout collecting project configurations: Project Name, Client Reference, Methodology choice (Waterfall, Agile, Hybrid), Currency selection, and Baseline Working Calendar dates.
-- [ ] **SUB-4.1.2: Form Validation**
-  - Wire validation via Zod schemas to reject invalid entries (such as end dates before start dates).
-- [ ] **SUB-4.1.3: Supabase Creation Interfacing**
-  - Connect the valid output directly to insertion statements targeting the `public.projects` table.
-- [ ] **SUB-4.2.1: Active Dashboard Projects Grid**
-  - Code visual dashboard card grids rendering active projects for the current workspace context.
-- [ ] **SUB-4.2.2: Role-Based Action Control (RBAC) Gating**
-  - Integrate visual permission gates hiding administrative buttons (e.g. "New Project") from Viewer or Team Member roles.
-
 ---
 
 ## 🔮 Next Execution Steps
 
 1. **Local Database Seeding (`SUB-1.1.3`)**: Generate sample workspaces and mock members to ease local development validation.
-2. **Project Creation Form Wizard (`Story 4.1`)**: Design and build the 4-step wizard interface inside the workspace dashboard.
-3. **Workspace Dashboard & Gating (`Story 4.2`)**: Replace the dashboard placeholder with the real project card grid and wrap creation controls inside role gates.
+2. **Sprint 3 Planning**: Proceed to analyzing next sprints and establishing Sprint 3 objectives.
+

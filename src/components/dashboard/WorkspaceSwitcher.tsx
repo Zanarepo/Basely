@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Building2, ChevronDown, Check } from 'lucide-react'
 import { useWorkspace, type Workspace } from './WorkspaceContext'
@@ -22,6 +23,34 @@ export function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps) {
   const { workspaces, activeWorkspace } = useWorkspace()
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number } | null>(null)
+
+  const updateMenuPosition = useCallback(() => {
+    if (!triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    if (collapsed) {
+      setMenuPos({ top: rect.top, left: rect.right + 12, width: 224 })
+    } else {
+      setMenuPos({ top: rect.bottom + 8, left: rect.left, width: rect.width })
+    }
+  }, [collapsed])
+
+  useEffect(() => {
+    if (!open) {
+      setMenuPos(null)
+      return
+    }
+    updateMenuPosition()
+
+    const dismiss = () => setOpen(false)
+    window.addEventListener('scroll', dismiss, true)
+    window.addEventListener('resize', dismiss)
+    return () => {
+      window.removeEventListener('scroll', dismiss, true)
+      window.removeEventListener('resize', dismiss)
+    }
+  }, [open, updateMenuPosition])
 
   const handleSelect = (workspace: Workspace) => {
     if (workspace.id === activeWorkspace.id) {
@@ -56,10 +85,39 @@ export function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps) {
     </button>
   ))
 
+  /* Portal the dropdown to document.body so it escapes the sidebar's
+     backdrop-blur stacking context that traps fixed/absolute children. */
+  const portalMenu =
+    open && menuPos
+      ? createPortal(
+          <>
+            <div
+              className="fixed inset-0"
+              style={{ zIndex: 9998 }}
+              onClick={() => setOpen(false)}
+            />
+            <div
+              className={dropdownPanel}
+              style={{
+                position: 'fixed',
+                zIndex: 9999,
+                top: menuPos.top,
+                left: menuPos.left,
+                width: menuPos.width,
+              }}
+            >
+              {dropdownList}
+            </div>
+          </>,
+          document.body
+        )
+      : null
+
   if (collapsed) {
     return (
       <div className="relative">
         <button
+          ref={triggerRef}
           type="button"
           title={activeWorkspace.name}
           onClick={() => setOpen((v) => !v)}
@@ -67,14 +125,7 @@ export function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps) {
         >
           <Building2 className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
         </button>
-        {open && (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-            <div className={`absolute left-full top-0 ml-3 z-50 w-56 ${dropdownPanel}`}>
-              {dropdownList}
-            </div>
-          </>
-        )}
+        {portalMenu}
       </div>
     )
   }
@@ -82,6 +133,7 @@ export function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps) {
   return (
     <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         disabled={isPending}
@@ -102,15 +154,7 @@ export function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps) {
           className={`h-4 w-4 text-app-subtle shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
-
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className={`absolute left-0 right-0 top-full mt-2 z-50 ${dropdownPanel}`}>
-            {dropdownList}
-          </div>
-        </>
-      )}
+      {portalMenu}
     </div>
   )
 }

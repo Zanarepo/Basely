@@ -34,6 +34,7 @@ type ProjectType = {
   isArchived: boolean
   createdBy: string | null
   assignedMembers: string[] // List of userIds
+  memberPermissions: { userId: string; canDelete: boolean }[]
   calendarConfig: {
     working_days: number[]
     daily_hours: number
@@ -79,6 +80,7 @@ export function ProjectsDashboard({
   const [openMemberPickerProjectId, setOpenMemberPickerProjectId] = useState<string | null>(null)
   // Local state for checking/unchecking members in picker before applying
   const [selectedPickerUserIds, setSelectedPickerUserIds] = useState<string[]>([])
+  const [deletePermissionUserIds, setDeletePermissionUserIds] = useState<string[]>([])
   // Search query for member picker modal
   const [memberSearchQuery, setMemberSearchQuery] = useState('')
 
@@ -102,21 +104,16 @@ export function ProjectsDashboard({
   const isViewer = effectiveRole === 'Viewer'
   const isAdminOrPM = isAdmin || isPM
 
-  // Who can DELETE a project:
-  // - The creator (always, regardless of role)
-  // - The workspace owner
-  // - An Admin who has been granted can_manage_all_members by the owner
+  // Deletion is never inherited from a workspace role. It is creator-only
+  // unless that creator explicitly grants an assigned member this permission.
   const canDeleteProject = (project: ProjectType) => {
-    return project.createdBy === callerUserId || isOwner || (isAdmin && callerCanManageAll)
+    return project.createdBy === callerUserId || project.memberPermissions.some(
+      (member) => member.userId === callerUserId && member.canDelete
+    )
   }
 
-  // Who can MANAGE a project (archive/restore/assign members):
-  // - The creator
-  // - The workspace owner
-  // - Admins
-  const canManageProject = (project: ProjectType) => {
-    return project.createdBy === callerUserId || isOwner || isAdmin
-  }
+  // Only the creator controls this project's membership and delete grants.
+  const canManageProject = (project: ProjectType) => project.createdBy === callerUserId
 
   // Who can EDIT a project:
   // - NOT Viewers (ever)
@@ -175,6 +172,7 @@ export function ProjectsDashboard({
   const openMemberPicker = (project: ProjectType) => {
     setOpenMemberPickerProjectId(project.id)
     setSelectedPickerUserIds(project.assignedMembers)
+    setDeletePermissionUserIds(project.memberPermissions.filter((member) => member.canDelete).map((member) => member.userId))
     setMemberSearchQuery('')
   }
 
@@ -186,9 +184,18 @@ export function ProjectsDashboard({
     )
   }
 
+  const toggleDeletePermission = (userId: string) => {
+    setDeletePermissionUserIds((current) => current.includes(userId)
+      ? current.filter((id) => id !== userId)
+      : [...current, userId])
+  }
+
   const handleSaveAssignments = (project: ProjectType) => {
     startTransition(async () => {
-      const result = await updateProjectMembers(project.id, selectedPickerUserIds)
+      const result = await updateProjectMembers(project.id, selectedPickerUserIds.map((userId) => ({
+        userId,
+        canDelete: deletePermissionUserIds.includes(userId),
+      })))
       if (result.ok) {
         showToast('success', `Project team assignments updated for "${project.name}"`)
         setOpenMemberPickerProjectId(null)
@@ -408,6 +415,28 @@ export function ProjectsDashboard({
                       })
                     )}
                   </div>
+
+                  {selectedPickerUserIds.length > 0 && (
+                    <div className="border-t border-app-border pt-4 space-y-2">
+                      <p className="auth-label">Project delete permission</p>
+                      <p className="text-xs text-app-muted">Only members explicitly enabled here can delete this project. Their workspace role does not grant this access.</p>
+                      <div className="space-y-2">
+                        {selectedPickerUserIds.map((userId) => {
+                          const member = workspaceMembers.find((item) => item.userId === userId)
+                          if (!member) return null
+                          return (
+                            <label key={userId} className="flex items-center justify-between gap-3 rounded-xl border border-app-border bg-app-muted-surface px-3 py-2.5 cursor-pointer">
+                              <span className="min-w-0 text-sm font-medium text-app-fg truncate">{member.name}</span>
+                              <span className="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-app-muted">
+                                <input type="checkbox" checked={deletePermissionUserIds.includes(userId)} onChange={() => toggleDeletePermission(userId)} disabled={isPending} className="h-4 w-4 accent-indigo-600" />
+                                Can delete
+                              </span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="shrink-0 flex items-center justify-between border-t border-app-border px-6 py-4 mt-2 bg-app-surface-solid/80">

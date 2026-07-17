@@ -46,16 +46,19 @@ export default async function DashboardPage() {
   // 3️⃣ Fetch project membership assignments
   const projectIds = (projectsData ?? []).map((p) => p.id)
   let assignments: Record<string, string[]> = {}
+  let memberPermissions: Record<string, { userId: string; canDelete: boolean }[]> = {}
   
   if (projectIds.length > 0) {
     const { data: pmData } = await supabase
       .from('project_members')
-      .select('project_id, user_id')
+      .select('project_id, user_id, can_delete')
       .in('project_id', projectIds)
 
     pmData?.forEach((row) => {
       if (!assignments[row.project_id]) assignments[row.project_id] = []
       assignments[row.project_id].push(row.user_id)
+      if (!memberPermissions[row.project_id]) memberPermissions[row.project_id] = []
+      memberPermissions[row.project_id].push({ userId: row.user_id, canDelete: row.can_delete === true })
     })
   }
 
@@ -71,6 +74,7 @@ export default async function DashboardPage() {
     isArchived: p.is_archived === true,
     createdBy: p.created_by,
     assignedMembers: assignments[p.id] || [],
+    memberPermissions: memberPermissions[p.id] || [],
     calendarConfig: typeof p.calendar_config === 'string'
       ? JSON.parse(p.calendar_config)
       : p.calendar_config ?? { working_days: [1, 2, 3, 4, 5], daily_hours: 8 },
