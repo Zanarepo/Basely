@@ -94,6 +94,30 @@ This file tracks the status of deliverables for **Sprint 1: Foundation (Auth, Hi
 - [x] **Native HTML5 Drag & Drop**:
   - Implemented client-side reordering, cross-branch drops with hover borders, and optimistic state code recalculators ([WbsTree.tsx](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/components/dashboard/wbs/WbsTree.tsx)).
 
+### Sprint 3: Scheduling & Critical Path Method (CPM) Engine (Completed)
+- [x] **Schedule Data Model & RLS**:
+  - Implemented schema migrations for `activities`, `dependencies`, `project_calendars`, and baseline tables ([20260718000000_schedule_cpm.sql](file:///c:/Users/princ/3D%20Objects/ProjectManagement/supabase/migrations/20260718000000_schedule_cpm.sql)).
+  - Created PL/pgSQL sync triggers keeping WBS work packages and activities in a strict 1:1 sync.
+- [x] **Topological CPM Core**:
+  - Programmed calendar-aware forward/backward pass math, float calculations, and cycle detection DFS logic ([cpm.ts](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/lib/schedule/cpm.ts)).
+- [x] **Recalculation Server Actions**:
+  - Implemented automatic rescheduling server actions, rollback safety hooks, and baseline variance calculations ([actions.ts](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/lib/schedule/actions.ts)).
+- [x] **Reference Testing**:
+  - Deployed comprehensive type-safe unit/regression tests validating CPM mathematics against reference textbook networks ([cpm.test.ts](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/lib/schedule/cpm.test.ts)).
+
+### Sprint 4: Planning Core — Gantt Chart UI (Completed)
+- [x] **Gantt Split-Pane Workspace**:
+  - Built unified project detail tabs routing between WBS Tree and Gantt view, with synchronized vertical scrolling ([GanttWorkspace.tsx](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/components/dashboard/gantt/GanttWorkspace.tsx)).
+- [x] **SVG Dependency Overlay & Drag Interactions**:
+  - Designed interactive timeline canvas rendering summary rollup brackets, diamond milestones, rose critical path items, and dashed float tails.
+  - Implemented drag-to-move rescheduling, drag-to-resize durations, and click-and-drag SVG dependency links with automatic live recalculations ([GanttTimelineCanvas.tsx](file:///c:/Users/princ/3D%20Objects/ProjectManagement/src/components/dashboard/gantt/GanttTimelineCanvas.tsx)).
+- [x] **Zoom & Baseline Controls**:
+  - Programmed zoom controls (Day, Week, Month, Quarter), horizontal panning, and baseline comparison views overlaying ghost bars and drift variance.
+- [x] **Export Snapshot**:
+  - Enabled visual snapshot print layouts for PDF and PNG exports.
+- [x] **Tablet Touch Support**:
+  - Mapped equivalent touch interactions (`onTouchStart`, etc.) for seamless tablet scheduling.
+
 ---
 
 ## ⏳ What's Left (In Progress & Pending)
@@ -107,5 +131,4 @@ This file tracks the status of deliverables for **Sprint 1: Foundation (Auth, Hi
 ## 🔮 Next Execution Steps
 
 1. **Local Database Seeding (`SUB-1.1.3`)**: Generate sample workspaces and mock members to ease local development validation.
-2. **Sprint 3 Planning**: Proceed to analyzing next sprints and establishing Sprint 3 objectives.
-
+2. **Sprint 5 (Cost Core: Budgeting & EVM Data Model)**: Proceed to planning Phase 2 of Cost Core.

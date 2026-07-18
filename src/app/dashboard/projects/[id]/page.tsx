@@ -3,14 +3,18 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { ArrowLeft, Briefcase, Workflow, CalendarRange, Clock, Lock } from 'lucide-react'
 import { WbsPlanningWorkspace } from '../../../../components/dashboard/wbs/WbsPlanningWorkspace'
+import GanttWorkspace from '../../../../components/dashboard/gantt/GanttWorkspace'
 
 // Planning components type definition
 type ProjectPageProps = {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ tab?: string }>
 }
 
-export default async function ProjectDetailPage({ params }: ProjectPageProps) {
+export default async function ProjectDetailPage({ params, searchParams }: ProjectPageProps) {
   const { id } = await params
+  const { tab } = await searchParams
+  const activeTab = tab || 'wbs'
 
   const supabase = await createClient()
   const {
@@ -29,6 +33,11 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
     .maybeSingle()
 
   if (projectError || !project) {
+    if (projectError) {
+      console.error('Database project fetch error:', projectError)
+    } else {
+      console.warn(`Project ID ${id} was not found or blocked by RLS for user ${user.id}`)
+    }
     // If not found or RLS blocks it, return 404
     notFound()
   }
@@ -154,25 +163,52 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
       {/* Tabs list (WBS is primary in this sprint) */}
       <div className="border-b border-app-border mb-6">
         <nav className="flex space-x-6">
-          <span className="border-b-2 border-indigo-500 pb-3 text-sm font-bold text-indigo-500 cursor-pointer">
+          <Link
+            href={`/dashboard/projects/${project.id}?tab=wbs`}
+            className={`pb-3 text-sm font-bold transition-all border-b-2 ${
+              activeTab === 'wbs'
+                ? 'border-indigo-500 text-indigo-500 font-bold'
+                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
+            }`}
+          >
             Work Breakdown Structure (WBS)
-          </span>
-          <span className="pb-3 text-sm font-semibold text-app-muted cursor-not-allowed opacity-50" title="Coming in Sprint 3">
+          </Link>
+          <Link
+            href={`/dashboard/projects/${project.id}?tab=gantt`}
+            className={`pb-3 text-sm font-bold transition-all border-b-2 ${
+              activeTab === 'gantt'
+                ? 'border-indigo-500 text-indigo-500 font-bold'
+                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
+            }`}
+          >
             Gantt & Scheduling
-          </span>
-          <span className="pb-3 text-sm font-semibold text-app-muted cursor-not-allowed opacity-50" title="Coming in Sprint 4">
+          </Link>
+          <span
+            className="pb-3 text-sm font-semibold text-app-muted cursor-not-allowed opacity-50"
+            title="Coming in Sprint 5"
+          >
             Budgeting & EVM
           </span>
         </nav>
       </div>
 
-      {/* WBS Workspace container */}
-      <WbsPlanningWorkspace
-        projectId={project.id}
-        workspaceMembers={workspaceMembers}
-        callerUserId={user.id}
-        hasEditAccess={hasEditAccess && !project.is_archived}
-      />
+      {/* Conditional tab workspaces */}
+      {activeTab === 'wbs' && (
+        <WbsPlanningWorkspace
+          projectId={project.id}
+          workspaceMembers={workspaceMembers}
+          callerUserId={user.id}
+          hasEditAccess={hasEditAccess && !project.is_archived}
+        />
+      )}
+
+      {activeTab === 'gantt' && (
+        <GanttWorkspace
+          projectId={project.id}
+          hasEditAccess={hasEditAccess && !project.is_archived}
+          workspaceMembers={workspaceMembers}
+        />
+      )}
     </div>
   )
 }

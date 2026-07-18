@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { wbsElementSchema } from '@/lib/validations/wbs'
 import type { WbsElement, WbsStatus } from './constants'
+import { recalculateSchedule } from '@/lib/schedule/actions'
 
 export type ActionResponse = { ok: true } | { ok: false; error: string }
 export type CreateWbsResult = { ok: true; id: string } | { ok: false; error: string }
@@ -109,6 +110,11 @@ export async function updateWbsElement(
 
   if (error) return { ok: false, error: error.message }
 
+  // Recalculate schedule if name or work package status changes
+  if (payload.isWorkPackage !== undefined || payload.name !== undefined) {
+    await recalculateSchedule(projectId)
+  }
+
   revalidatePath(`/dashboard/projects/${projectId}`)
   return { ok: true }
 }
@@ -125,6 +131,9 @@ export async function deleteWbsElement(id: string, projectId: string): Promise<A
     .eq('id', id)
 
   if (error) return { ok: false, error: error.message }
+
+  // Recalculate schedule to update timelines after deletion
+  await recalculateSchedule(projectId)
 
   revalidatePath(`/dashboard/projects/${projectId}`)
   revalidatePath('/dashboard')
