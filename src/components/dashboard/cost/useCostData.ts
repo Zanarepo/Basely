@@ -85,11 +85,20 @@ export function useCostData(projectId: string) {
 
       if (aError) throw aError
 
+      // Fetch Actual Costs
+      const { data: actualsData, error: acError } = await supabase
+        .from('actual_costs')
+        .select('*')
+        .in('wbs_element_id', wbs.map(w => w.id))
+
+      if (acError) throw acError
+
       // Merge into WbsCostData
       const merged: WbsCostData[] = wbs.map(element => {
         const ca = costAccounts.find(c => c.wbs_element_id === element.id) || null
         const tps = ca ? timePhases.filter(t => t.cost_account_id === ca.id) : []
         const assigns = (assignmentsData || []).filter(a => a.wbs_element_id === element.id)
+        const actuals = (actualsData || []).filter(ac => ac.wbs_element_id === element.id)
 
         return {
           wbsId: element.id,
@@ -99,7 +108,8 @@ export function useCostData(projectId: string) {
           isWorkPackage: element.is_work_package,
           costAccount: ca,
           timePhaseEntries: tps,
-          resourceAssignments: assigns
+          resourceAssignments: assigns,
+          actualCosts: actuals
         }
       })
 

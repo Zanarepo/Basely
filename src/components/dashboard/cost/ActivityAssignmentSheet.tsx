@@ -73,7 +73,7 @@ export default function ActivityAssignmentSheet({
       />
       
       {/* Side Sheet Panel */}
-      <div className="fixed inset-y-0 right-0 w-[500px] backdrop-blur-xl bg-app-surface border-l border-app-border shadow-2xl flex flex-col z-50 animate-in slide-in-from-right-8 duration-200">
+      <div className="fixed inset-y-0 right-0 w-full sm:w-[500px] backdrop-blur-xl bg-app-surface border-l border-app-border shadow-2xl flex flex-col z-50 animate-in slide-in-from-right-8 duration-200">
       <div className="flex items-center justify-between p-6 border-b border-app-border">
         <div>
           <h2 className="text-lg font-bold text-app-fg">Resource Assignments</h2>

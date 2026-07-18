@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Plus, Edit2, Trash2, Save, X, Percent } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import { Plus, Edit2, Trash2, Save, X, Percent, Search } from 'lucide-react'
 import { ResourceRate, ResourceType, ResourceUnit } from '@/lib/cost/types'
 import { createResourceRate, updateResourceRate, deleteResourceRate, updateGlobalOverhead, updateProjectContingency } from '@/lib/cost/actions'
 import { formatCurrency } from '@/lib/utils'
@@ -29,6 +29,7 @@ export default function ResourceRatesManager({
 }: ResourceRatesManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
   
   // Form State
   const [name, setName] = useState('')
@@ -44,6 +45,18 @@ export default function ResourceRatesManager({
   const [isEditingContingency, setIsEditingContingency] = useState(false)
   const [contingencyVal, setContingencyVal] = useState<string>(contingencyAmount?.toString() || '0')
   const [selectedContingencyType, setSelectedContingencyType] = useState<'flat' | 'percentage'>(contingencyType || 'flat')
+  
+  // Settings tab state
+  const [activeSettingsTab, setActiveSettingsTab] = useState<'overhead' | 'contingency'>('overhead')
+
+  const filteredRates = useMemo(() => {
+    if (!searchTerm.trim()) return resourceRates;
+    const lowerSearch = searchTerm.toLowerCase();
+    return resourceRates.filter(r => 
+      r.name.toLowerCase().includes(lowerSearch) || 
+      r.type.toLowerCase().includes(lowerSearch)
+    );
+  }, [resourceRates, searchTerm]);
 
   const startCreate = () => {
     setName('')
@@ -128,99 +141,120 @@ export default function ResourceRatesManager({
 
   return (
     <div className="space-y-6">
-      <div className="bg-app-surface border border-app-border rounded-xl p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4 group">
-          <div>
-            <h3 className="text-lg font-semibold text-app-fg">Global Project Overhead</h3>
-            <p className="text-sm text-app-muted">Applied on top of direct costs (labor + material) during roll-up.</p>
-          </div>
-          {hasEditAccess && (
-            <div>
-              {isEditingOverhead ? (
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={overheadVal}
-                      onChange={e => setOverheadVal(e.target.value)}
-                      className="w-24 px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 pr-8"
-                    />
-                    <Percent className="w-3 h-3 text-app-muted absolute right-3 top-2.5" />
-                  </div>
-                  <button onClick={handleSaveOverhead} className="p-1.5 text-green-500 hover:bg-green-500/10 rounded-lg">
-                    <Save className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => { setIsEditingOverhead(false); setOverheadVal(globalOverhead.toString()) }} className="p-1.5 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <span className="text-xl font-bold text-app-fg">{globalOverhead}%</span>
-                  <button onClick={() => setIsEditingOverhead(true)} className="p-1.5 text-app-muted hover:text-indigo-400 hover:bg-app-hover rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
+      <div className="bg-app-surface border border-app-border rounded-xl shadow-sm overflow-hidden">
+        {/* Tab Header */}
+        <div className="flex items-center gap-6 border-b border-app-border px-6 pt-4 bg-app-bg/50">
+          <button 
+            onClick={() => setActiveSettingsTab('overhead')}
+            className={`pb-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeSettingsTab === 'overhead' ? 'border-indigo-500 text-indigo-500' : 'border-transparent text-app-muted hover:text-app-fg'}`}
+          >
+            Global Overhead
+          </button>
+          <button 
+            onClick={() => setActiveSettingsTab('contingency')}
+            className={`pb-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeSettingsTab === 'contingency' ? 'border-indigo-500 text-indigo-500' : 'border-transparent text-app-muted hover:text-app-fg'}`}
+          >
+            Project Contingency
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="p-6">
+          {activeSettingsTab === 'overhead' && (
+            <div className="flex items-center justify-between group">
+              <div>
+                <h3 className="text-lg font-semibold text-app-fg">Global Project Overhead</h3>
+                <p className="text-sm text-app-muted">Applied on top of direct costs (labor + material) during roll-up.</p>
+              </div>
+              {hasEditAccess && (
+                <div>
+                  {isEditingOverhead ? (
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={overheadVal}
+                          onChange={e => setOverheadVal(e.target.value)}
+                          className="w-24 px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 pr-8"
+                        />
+                        <Percent className="w-3 h-3 text-app-muted absolute right-3 top-2.5" />
+                      </div>
+                      <button onClick={handleSaveOverhead} className="p-1.5 text-green-500 hover:bg-green-500/10 rounded-lg">
+                        <Save className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => { setIsEditingOverhead(false); setOverheadVal(globalOverhead.toString()) }} className="p-1.5 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl font-bold text-app-fg">{globalOverhead}%</span>
+                      <button onClick={() => setIsEditingOverhead(true)} className="p-1.5 text-app-muted hover:text-indigo-400 hover:bg-app-hover rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           )}
-        </div>
-      </div>
 
-      <div className="bg-app-surface border border-app-border rounded-xl p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4 group">
-          <div>
-            <h3 className="text-lg font-semibold text-app-fg">Project Contingency</h3>
-            <p className="text-sm text-app-muted">A reserve pool added to the final project total for unforeseen risks.</p>
-          </div>
-          {hasEditAccess && (
-            <div>
-              {isEditingContingency ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex bg-app-bg border border-app-border rounded-lg p-0.5">
-                    <button
-                      onClick={() => setSelectedContingencyType('flat')}
-                      className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${selectedContingencyType === 'flat' ? 'bg-app-surface shadow-sm text-app-fg' : 'text-app-muted hover:text-app-fg'}`}
-                    >
-                      Flat Amount
-                    </button>
-                    <button
-                      onClick={() => setSelectedContingencyType('percentage')}
-                      className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${selectedContingencyType === 'percentage' ? 'bg-app-surface shadow-sm text-app-fg' : 'text-app-muted hover:text-app-fg'}`}
-                    >
-                      Percentage
-                    </button>
-                  </div>
-                  <div className="relative flex items-center">
-                    {selectedContingencyType === 'flat' ? (
-                      <span className="absolute left-3 text-app-muted font-medium">{projectCurrency === 'USD' ? '$' : projectCurrency === 'EUR' ? '€' : projectCurrency}</span>
-                    ) : (
-                      <Percent className="w-3 h-3 text-app-muted absolute right-3 top-2.5" />
-                    )}
-                    <input
-                      type="number"
-                      value={contingencyVal}
-                      onChange={e => setContingencyVal(e.target.value)}
-                      className={`w-32 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${selectedContingencyType === 'flat' ? 'pl-8 pr-3' : 'pl-3 pr-8'}`}
-                    />
-                  </div>
-                  <button onClick={handleSaveContingency} className="p-1.5 text-green-500 hover:bg-green-500/10 rounded-lg">
-                    <Save className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => { setIsEditingContingency(false); setContingencyVal(contingencyAmount?.toString() || '0'); setSelectedContingencyType(contingencyType || 'flat'); }} className="p-1.5 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <span className="text-xl font-bold text-app-fg">
-                    {contingencyType === 'percentage' 
-                      ? `${contingencyAmount}%` 
-                      : new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(contingencyAmount || 0)}
-                  </span>
-                  <button onClick={() => setIsEditingContingency(true)} className="p-1.5 text-app-muted hover:text-indigo-400 hover:bg-app-hover rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
+          {activeSettingsTab === 'contingency' && (
+            <div className="flex items-center justify-between group">
+              <div>
+                <h3 className="text-lg font-semibold text-app-fg">Project Contingency</h3>
+                <p className="text-sm text-app-muted">A reserve pool added to the final project total for unforeseen risks.</p>
+              </div>
+              {hasEditAccess && (
+                <div>
+                  {isEditingContingency ? (
+                    <div className="flex items-center gap-3">
+                      <div className="flex bg-app-bg border border-app-border rounded-lg p-0.5">
+                        <button
+                          onClick={() => setSelectedContingencyType('flat')}
+                          className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${selectedContingencyType === 'flat' ? 'bg-app-surface shadow-sm text-app-fg' : 'text-app-muted hover:text-app-fg'}`}
+                        >
+                          Flat Amount
+                        </button>
+                        <button
+                          onClick={() => setSelectedContingencyType('percentage')}
+                          className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${selectedContingencyType === 'percentage' ? 'bg-app-surface shadow-sm text-app-fg' : 'text-app-muted hover:text-app-fg'}`}
+                        >
+                          Percentage
+                        </button>
+                      </div>
+                      <div className="relative flex items-center">
+                        {selectedContingencyType === 'flat' ? (
+                          <span className="absolute left-3 text-app-muted font-medium">{projectCurrency === 'USD' ? '$' : projectCurrency === 'EUR' ? '€' : projectCurrency}</span>
+                        ) : (
+                          <Percent className="w-3 h-3 text-app-muted absolute right-3 top-2.5" />
+                        )}
+                        <input
+                          type="number"
+                          value={contingencyVal}
+                          onChange={e => setContingencyVal(e.target.value)}
+                          className={`w-32 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${selectedContingencyType === 'flat' ? 'pl-8 pr-3' : 'pl-3 pr-8'}`}
+                        />
+                      </div>
+                      <button onClick={handleSaveContingency} className="p-1.5 text-green-500 hover:bg-green-500/10 rounded-lg">
+                        <Save className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => { setIsEditingContingency(false); setContingencyVal(contingencyAmount?.toString() || '0'); setSelectedContingencyType(contingencyType || 'flat'); }} className="p-1.5 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl font-bold text-app-fg">
+                        {contingencyType === 'percentage' 
+                          ? `${contingencyAmount}%` 
+                          : new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(contingencyAmount || 0)}
+                      </span>
+                      <button onClick={() => setIsEditingContingency(true)} className="p-1.5 text-app-muted hover:text-indigo-400 hover:bg-app-hover rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -229,17 +263,30 @@ export default function ResourceRatesManager({
       </div>
 
       <div className="bg-app-surface border border-app-border rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-app-border flex items-center justify-between bg-app-bg/50">
+        <div className="p-4 border-b border-app-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-app-bg/50">
           <h3 className="font-semibold text-app-fg">Resource Rates</h3>
-          {hasEditAccess && !isCreating && (
-            <button
-              onClick={startCreate}
-              className="flex items-center gap-2 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add Resource
-            </button>
-          )}
+          
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
+              <input
+                type="text"
+                placeholder="Search resources..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-app-fg"
+              />
+            </div>
+            {hasEditAccess && !isCreating && (
+              <button
+                onClick={startCreate}
+                className="flex items-center justify-center gap-2 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium transition-colors shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                Add Resource
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -310,7 +357,7 @@ export default function ResourceRatesManager({
                 </tr>
               )}
 
-              {resourceRates.map(r => {
+              {filteredRates.map(r => {
                 const isEditing = editingId === r.id
                 if (isEditing) {
                   return (

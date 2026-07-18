@@ -119,7 +119,7 @@ export function WbsPlanningWorkspace({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
-          <div className="backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6 shadow-xs overflow-x-auto min-h-[350px]">
+          <div className="backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6 shadow-xs overflow-x-auto min-h-[350px] max-w-[100vw] sm:max-w-none">
             {currentView === 'tree' && (
               <WbsTree
                 treeNodes={treeNodes}
@@ -156,6 +156,11 @@ export function WbsPlanningWorkspace({
                 hasEditAccess={hasEditAccess}
                 onSelect={setActiveElementId}
                 onStatusChange={(id, newStatus) => handleSaveDetails(id, { status: newStatus })}
+                onAddCard={(status) => handleCreateElement(null, undefined, 'sibling', { status, isWorkPackage: true })}
+                onDeleteCard={(id) => {
+                  const el = elements.find(e => e.id === id)
+                  if (el) handleDeleteElement(el)
+                }}
               />
             )}
 

@@ -77,7 +77,7 @@ export function WbsTree({
   getElementProgress,
 }: WbsTreeProps) {
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 min-w-[800px] pb-4">
       {treeNodes.map((node) => (
         <WbsNodeRow
           key={node.element.id}

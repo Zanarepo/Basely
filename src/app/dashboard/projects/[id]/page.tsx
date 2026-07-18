@@ -95,7 +95,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
   }
 
   return (
-    <div className="relative z-10 max-w-6xl mx-auto px-4 py-8">
+    <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-8 py-8">
       {/* Back to dashboard button */}
       <div className="mb-6">
         <Link
@@ -107,66 +107,34 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         </Link>
       </div>
 
-      {/* Project Header card */}
-      <header className="backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6 mb-8 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="p-2 bg-indigo-500/10 text-indigo-500 rounded-xl">
-                <Briefcase className="h-6 w-6" />
-              </div>
-              <h1 className="text-2xl font-bold text-app-fg">{project.name}</h1>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/25">
-                <Workflow className="h-3 w-3" />
-                {project.methodology}
-              </span>
-              {project.is_archived && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-500 border border-amber-500/25">
-                  <Lock className="h-3 w-3" />
-                  Archived
-                </span>
-              )}
-            </div>
-            {project.client_name && (
-              <p className="text-sm font-semibold text-app-muted">
-                Client: <span className="text-app-fg">{project.client_name}</span>
-              </p>
-            )}
-            {project.description && (
-              <p className="text-sm text-app-muted leading-relaxed max-w-3xl">
-                {project.description}
-              </p>
-            )}
-          </div>
-
-          {/* Schedule Summary details */}
-          <div className="flex flex-col gap-2 p-4 bg-app-muted-surface rounded-2xl border border-app-border md:min-w-[280px]">
-            <p className="text-xs font-bold text-app-muted uppercase tracking-wider mb-1">
-              Project Schedule
-            </p>
-            <div className="flex items-center gap-2 text-sm text-app-fg">
-              <CalendarRange className="h-4 w-4 text-app-subtle shrink-0" />
-              <span>
-                {formatDate(project.start_date)} – {formatDate(project.end_date)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-app-fg">
-              <Clock className="h-4 w-4 text-app-subtle shrink-0" />
-              <span>
-                {(project.calendar_config as any)?.working_days?.length ?? 5} working days/wk ·{' '}
-                {(project.calendar_config as any)?.daily_hours ?? 8}h/day
-              </span>
-            </div>
-          </div>
+      {/* Project Header */}
+      <div className="mb-8 flex flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-3xl font-bold text-app-fg tracking-tight">{project.name}</h1>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold border bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/25">
+            <Workflow className="h-3.5 w-3.5" />
+            {project.methodology}
+          </span>
+          {project.is_archived && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-500 border border-amber-500/25">
+              <Lock className="h-3.5 w-3.5" />
+              Archived
+            </span>
+          )}
         </div>
-      </header>
+        {project.client_name && (
+          <p className="text-sm font-semibold text-app-muted">
+            Client: <span className="text-app-fg">{project.client_name}</span>
+          </p>
+        )}
+      </div>
 
       {/* Tabs list (WBS is primary in this sprint) */}
-      <div className="border-b border-app-border mb-6">
-        <nav className="flex space-x-6">
+      <div className="border-b border-app-border mb-6 overflow-x-auto no-scrollbar">
+        <nav className="flex space-x-6 min-w-max pb-1">
           <Link
             href={`/dashboard/projects/${project.id}?tab=wbs`}
-            className={`pb-3 text-sm font-bold transition-all border-b-2 ${
+            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
               activeTab === 'wbs'
                 ? 'border-indigo-500 text-indigo-500 font-bold'
                 : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
@@ -176,7 +144,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           </Link>
           <Link
             href={`/dashboard/projects/${project.id}?tab=gantt`}
-            className={`pb-3 text-sm font-bold transition-all border-b-2 ${
+            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
               activeTab === 'gantt'
                 ? 'border-indigo-500 text-indigo-500 font-bold'
                 : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
@@ -186,7 +154,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           </Link>
           <Link
             href={`/dashboard/projects/${project.id}?tab=cost`}
-            className={`pb-3 text-sm font-bold transition-all border-b-2 ${
+            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
               activeTab === 'cost'
                 ? 'border-indigo-500 text-indigo-500 font-bold'
                 : 'border-transparent text-app-muted hover:text-app-fg font-semibold'

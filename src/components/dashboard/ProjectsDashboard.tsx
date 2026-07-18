@@ -123,6 +123,9 @@ export function ProjectsDashboard({
     return isOwner || isAdmin || project.createdBy === callerUserId || isPM || project.assignedMembers.includes(callerUserId)
   }
 
+  // Search query for projects
+  const [projectSearchQuery, setProjectSearchQuery] = useState('')
+
   // Filter projects by active tab and read permissions
   const filteredProjects = projects.filter((p) => {
     const matchesTab = activeTab === 'active' ? !p.isArchived : p.isArchived
@@ -130,7 +133,13 @@ export function ProjectsDashboard({
     // Strict isolation rule: only creators or assigned members can see the project card
     const canSee = p.createdBy === callerUserId || p.assignedMembers.includes(callerUserId)
     
-    return matchesTab && canSee
+    // Name or Description search filter
+    const matchesSearch = 
+      projectSearchQuery === '' || 
+      p.name.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
+      (p.description && p.description.toLowerCase().includes(projectSearchQuery.toLowerCase()))
+
+    return matchesTab && canSee && matchesSearch
   })
 
   // Action handlers
@@ -269,6 +278,20 @@ export function ProjectsDashboard({
               New Project
             </button>
           )}
+        </div>
+      </div>
+
+      {/* Search Filter Row */}
+      <div className="flex w-full sm:w-96">
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
+          <input
+            type="text"
+            placeholder="Search projects by name or description..."
+            value={projectSearchQuery}
+            onChange={(e) => setProjectSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-app-fg"
+          />
         </div>
       </div>
 

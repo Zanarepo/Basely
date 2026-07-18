@@ -140,7 +140,8 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
   const handleCreateElement = async (
     targetParentId: string | null,
     referenceElement?: WbsElement,
-    position: 'child' | 'sibling' = 'sibling'
+    position: 'child' | 'sibling' = 'sibling',
+    initialData?: { status?: string; isWorkPackage?: boolean }
   ) => {
     if (!hasEditAccess) return
 
@@ -174,8 +175,8 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
       ownerId: null,
       deliverables: null,
       acceptanceCriteria: null,
-      status: 'Not Started',
-      isWorkPackage: false,
+      status: (initialData?.status as WbsStatus) || 'Not Started',
+      isWorkPackage: initialData?.isWorkPackage ?? false,
       sortOrder: nextSortOrder,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -193,7 +194,7 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
     }
 
     startTransition(async () => {
-      const result = await createWbsElement(projectId, parentId, 'New Element', nextSortOrder)
+      const result = await createWbsElement(projectId, parentId, 'New Element', nextSortOrder, initialData)
       if (result.ok) {
         // Swap temp ID with real ID and load elements to sync code changes
         setElements((prevList) =>

@@ -17,10 +17,12 @@ type WbsBoardViewProps = {
   workspaceMembers: { userId: string; name: string; email: string }[]
   onSelect: (id: string) => void
   onStatusChange: (id: string, newStatus: string) => void
+  onAddCard?: (status: string) => void
+  onDeleteCard?: (id: string) => void
   hasEditAccess: boolean
 }
 
-export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility, elements, workspaceMembers, onSelect, onStatusChange, hasEditAccess }: WbsBoardViewProps) {
+export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility, elements, workspaceMembers, onSelect, onStatusChange, onAddCard, onDeleteCard, hasEditAccess }: WbsBoardViewProps) {
   
   const [isAddingCol, setIsAddingCol] = useState(false)
   const [newColName, setNewColName] = useState('')
@@ -281,6 +283,19 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
                         {t.code}
                       </span>
                       <div className="flex items-center gap-1.5 ml-auto">
+                        {hasEditAccess && onDeleteCard && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onDeleteCard(t.id)
+                            }}
+                            className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200"
+                            title="Delete Card"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                         <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                           {visibleColIndex + 1}/{visibleColumns.length}
                         </span>
@@ -323,6 +338,17 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
                   </div>
                 )
               })}
+              
+              {hasEditAccess && onAddCard && (
+                <button
+                  type="button"
+                  onClick={() => onAddCard(col.name)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 mt-2 rounded-xl border-2 border-dashed border-app-border text-slate-500 hover:text-indigo-600 hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:text-indigo-400 dark:hover:bg-indigo-500/10 transition-colors text-sm font-semibold"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Card
+                </button>
+              )}
             </div>
           </div>
         )

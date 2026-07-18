@@ -70,6 +70,10 @@ export interface BaselineCostSnapshot {
   baseline_time_phase: any[]; // JSONB
 }
 
+// Re-export from standalone actuals module for WbsCostData compatibility
+export type { ActualCost, ActualCostSource } from '@/lib/actuals/types'
+import type { ActualCost } from '@/lib/actuals/types'
+
 // Helper types for the UI
 export interface WbsCostData {
   wbsId: string;
@@ -80,4 +84,6 @@ export interface WbsCostData {
   costAccount: CostAccount | null;
   timePhaseEntries: TimePhaseEntry[];
   resourceAssignments: ActivityResourceAssignment[];
+  actualCosts: ActualCost[];
 }
+

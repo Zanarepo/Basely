@@ -1,0 +1,16 @@
+Date,WBS,Description,Source,Amount
+2026-07-20,1.1.1,Invoice #102,CSV Import,5000
+2026-07-21,1.1.2,Labor,Manual Entry,1200
+2026-07-22,1.1.2,Site materials - cement,CSV Import,3400
+2026-07-15,1.2.1,Steel procurement - RFQ #204,ERP Sync,18600
+2026-07-23,1.2.1,Steel delivery freight,CSV Import,4500
+2026-07-24,2.1,Excavation contractor payment,Manual Entry,7800
+2026-07-25,2.1,Concrete supply - batch 1,ERP Sync,12500
+2026-07-26,2.2,Scaffolding rental,CSV Import,2300
+2026-07-27,2.2,Structural steel labor,Manual Entry,15750
+2026-07-28,2.3,MEP consultant fee,CSV Import,6200
+2026-07-29,1.1.1,Survey equipment rental,Manual Entry,900
+2026-07-30,1.2.1,Import duty - steel,ERP Sync,3100
+2026-07-31,2.1,Site supervision - weekly,CSV Import,4400
+2026-08-01,2.2,Crane hire - 3 days,Manual Entry,8900
+2026-08-02,1.1.2,Soil test lab fees,CSV Import,2750

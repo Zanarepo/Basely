@@ -36,7 +36,7 @@ export function WbsToolbar({
 }: WbsToolbarProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-app-surface border border-app-border rounded-2xl backdrop-blur-md">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         {/* View Toggle */}
         <div className="flex rounded-xl bg-app-muted-surface border border-app-border p-1">
           <button

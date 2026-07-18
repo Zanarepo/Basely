@@ -131,7 +131,7 @@ export function WorkspaceMembersPanel({
             (isOwner || callerCanManageAllMembers || member.addedBy === callerUserId)
 
           return (
-            <div key={member.userId} className="flex flex-col gap-4 rounded-2xl border border-app-border bg-app-muted-surface p-4 sm:flex-row sm:items-center">
+            <div key={member.userId} className="flex flex-col gap-4 rounded-2xl border border-app-border bg-app-muted-surface p-4 sm:flex-row sm:items-center group">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <p className="font-medium text-app-fg truncate">
@@ -200,7 +200,7 @@ export function WorkspaceMembersPanel({
                     type="button"
                     disabled={isPending}
                     onClick={() => toggleStatus(member.userId, !member.isActive)}
-                    className={`inline-flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-semibold border transition-all cursor-pointer disabled:opacity-50 ${
+                    className={`inline-flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-semibold border transition-all cursor-pointer disabled:opacity-50 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 duration-200 ${
                       member.isActive
                         ? 'text-rose-600 dark:text-rose-500 bg-rose-500/10 hover:text-white hover:bg-rose-600 border-rose-500/30 hover:border-rose-600'
                         : 'text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 hover:text-white hover:bg-emerald-600 border-emerald-500/30 hover:border-emerald-600'
@@ -218,7 +218,7 @@ export function WorkspaceMembersPanel({
                     disabled={isPending}
                     onClick={() => removeMember(member.userId)}
                     title="Remove member from workspace"
-                    className="btn-icon-danger"
+                    className="btn-icon-danger opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

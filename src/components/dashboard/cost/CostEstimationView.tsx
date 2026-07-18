@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Save, AlertCircle, RefreshCw } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Save, AlertCircle, RefreshCw, Search } from 'lucide-react'
 import type { WbsCostData, EstimationMethod, ResourceRate } from '@/lib/cost/types'
 import { saveCostEstimate, reconcileBottomUpEstimate } from '@/lib/cost/actions'
 import ActivityAssignmentSheet from './ActivityAssignmentSheet'
@@ -21,6 +21,7 @@ export default function CostEstimationView({
   projectId, wbsCostData, resourceRates, projectCurrency, globalOverhead, hasEditAccess, onDataChange 
 }: Props) {
   const [selectedWbsId, setSelectedWbsId] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
   
   // Form State
   const [method, setMethod] = useState<EstimationMethod>('bottom_up')
@@ -35,6 +36,16 @@ export default function CostEstimationView({
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   const workPackages = wbsCostData.filter(w => w.isWorkPackage)
+  
+  const filteredWorkPackages = useMemo(() => {
+    if (!searchTerm.trim()) return workPackages;
+    const lowerSearch = searchTerm.toLowerCase();
+    return workPackages.filter(wp => 
+      wp.wbsCode.toLowerCase().includes(lowerSearch) || 
+      wp.wbsName.toLowerCase().includes(lowerSearch)
+    );
+  }, [workPackages, searchTerm]);
+
   const selectedWp = workPackages.find(w => w.wbsId === selectedWbsId)
 
   const handleSelect = (wp: WbsCostData) => {
@@ -107,18 +118,29 @@ export default function CostEstimationView({
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-[600px]">
+    <div className="flex flex-col lg:flex-row gap-6 h-auto lg:h-[600px]">
       {/* Left List: Work Packages */}
-      <div className="w-full lg:w-1/3 bg-app-surface border border-app-border rounded-3xl overflow-hidden flex flex-col shadow-sm">
-        <div className="p-4 border-b border-app-border bg-app-muted-surface">
-          <h3 className="font-bold text-app-fg">Work Packages</h3>
-          <p className="text-xs text-app-muted mt-1">Select a package to estimate cost</p>
+      <div className="w-full lg:w-1/3 h-[40vh] lg:h-full bg-app-surface border border-app-border rounded-3xl overflow-hidden flex flex-col shadow-sm">
+        <div className="shrink-0 p-4 border-b border-app-border bg-app-muted-surface">
+          <h3 className="font-bold text-app-fg mb-3">Work Packages</h3>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
+            <input
+              type="text"
+              placeholder="Search packages..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-app-fg"
+            />
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto p-2">
-          {workPackages.length === 0 ? (
-            <p className="text-center text-app-muted text-sm mt-8">No work packages found. Create them in the WBS tab first.</p>
+          {filteredWorkPackages.length === 0 ? (
+            <p className="text-center text-app-muted text-sm mt-8">
+              {searchTerm ? 'No packages match your search.' : 'No work packages found. Create them in the WBS tab first.'}
+            </p>
           ) : (
-            workPackages.map(wp => (
+            filteredWorkPackages.map(wp => (
               <button
                 key={wp.wbsId}
                 onClick={() => handleSelect(wp)}
@@ -130,13 +152,20 @@ export default function CostEstimationView({
               >
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-sm text-app-fg">{wp.wbsCode} - {wp.wbsName}</span>
-                  {wp.costAccount ? (
-                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(wp.costAccount.budgeted_total)}
-                    </span>
-                  ) : (
-                    <span className="text-xs font-medium text-app-subtle italic">Unestimated</span>
-                  )}
+                  <div className="flex flex-col items-end">
+                    {wp.costAccount ? (
+                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(wp.costAccount.budgeted_total)}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-medium text-app-subtle italic">Unestimated</span>
+                    )}
+                    {wp.actualCosts && wp.actualCosts.length > 0 && (
+                      <span className="text-[10px] font-bold text-slate-500 mt-0.5">
+                        Act: {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(wp.actualCosts.reduce((a, c) => a + c.amount, 0))}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {wp.costAccount && (
                   <div className="mt-1 flex gap-2">

@@ -90,9 +90,9 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
   const selectedBaseline = baselines.find(b => b.id === selectedBaselineId)
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-[600px]">
+    <div className="flex flex-col lg:flex-row gap-6 h-auto lg:h-[600px]">
       {/* Left List: Baselines */}
-      <div className="w-full lg:w-1/3 bg-app-surface border border-app-border rounded-3xl overflow-hidden flex flex-col shadow-sm">
+      <div className="w-full lg:w-1/3 h-[40vh] lg:h-full bg-app-surface border border-app-border rounded-3xl overflow-hidden flex flex-col shadow-sm">
         <div className="p-4 border-b border-app-border bg-app-muted-surface flex justify-between items-center">
           <div>
             <h3 className="font-bold text-app-fg">Budget Baselines</h3>

@@ -50,7 +50,8 @@ export async function createWbsElement(
   projectId: string,
   parentId: string | null,
   name: string,
-  sortOrder: number
+  sortOrder: number,
+  initialData?: { status?: string; isWorkPackage?: boolean }
 ): Promise<CreateWbsResult> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -60,18 +61,28 @@ export async function createWbsElement(
   // Simple validation for name
   if (!name.trim()) return { ok: false, error: 'Name is required' }
 
+  const insertPayload: any = {
+    project_id: projectId,
+    parent_id: parentId,
+    name: name.trim(),
+    sort_order: sortOrder,
+  }
+
+  if (initialData?.status) insertPayload.status = initialData.status
+  if (initialData?.isWorkPackage !== undefined) insertPayload.is_work_package = initialData.isWorkPackage
+
   const { data, error } = await supabase
     .from('wbs_elements')
-    .insert({
-      project_id: projectId,
-      parent_id: parentId,
-      name: name.trim(),
-      sort_order: sortOrder,
-    })
+    .insert(insertPayload)
     .select('id')
     .single()
 
   if (error) return { ok: false, error: error.message }
+
+  // If a work package was directly created, we might need to recalculate schedule
+  if (initialData?.isWorkPackage) {
+    await recalculateSchedule(projectId)
+  }
 
   revalidatePath(`/dashboard/projects/${projectId}`)
   revalidatePath('/dashboard')

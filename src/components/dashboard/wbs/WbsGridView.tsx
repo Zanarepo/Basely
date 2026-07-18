@@ -95,8 +95,15 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect }:
                     )
                   })()}
                 </td>
-                {/* Cost is strictly stubbed for now */}
-                <td className="px-3 py-2.5 border-b border-app-border text-app-subtle whitespace-nowrap">—</td>
+                {/* Render fetched cost data */}
+                <td 
+                  className="px-3 py-2.5 border-b border-app-border text-app-subtle whitespace-nowrap font-mono text-[11px]"
+                  title={r.cost !== null && r.currency ? new Intl.NumberFormat('en-US', { style: 'currency', currency: r.currency }).format(r.cost) : undefined}
+                >
+                  {r.cost !== null && r.currency 
+                    ? new Intl.NumberFormat('en-US', { style: 'currency', currency: r.currency, notation: 'compact', maximumFractionDigits: 2 }).format(r.cost) 
+                    : '—'}
+                </td>
                 <td className="px-3 py-2.5 border-b border-app-border whitespace-nowrap">
                   <span
                     className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${

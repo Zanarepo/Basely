@@ -86,7 +86,7 @@ export function ProjectCard({
 
   return (
     <article
-      className={`crud-card ${project.isArchived ? 'opacity-85' : ''}`}
+      className={`crud-card group ${project.isArchived ? 'opacity-85' : ''}`}
     >
       {/* Header: title, badges, actions */}
       <div className="flex items-start justify-between gap-3">
@@ -119,7 +119,7 @@ export function ProjectCard({
         </div>
 
         {hasAnyAction && (
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
             {hasEditAccess && !project.isArchived && (
               <button
                 type="button"
