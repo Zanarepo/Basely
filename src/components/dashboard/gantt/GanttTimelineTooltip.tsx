@@ -7,6 +7,9 @@ type GanttTimelineTooltipProps = {
     es: string | null
     ef: string | null
     predecessorNames: string[]
+    totalFloat: number | null
+    status: string
+    percentComplete: number
   } | null
 }
 
@@ -28,6 +31,15 @@ export function GanttTimelineTooltip({ hoveredItem }: GanttTimelineTooltipProps)
 
         <span className="text-slate-400">Finish:</span>
         <span className="font-mono text-right">{hoveredItem.ef || '-'}</span>
+
+        <span className="text-slate-400">Float:</span>
+        <span className="font-mono text-right text-indigo-300">{hoveredItem.totalFloat !== null ? `${hoveredItem.totalFloat}d` : '-'}</span>
+
+        <span className="text-slate-400">Status:</span>
+        <span className="font-mono text-right">{hoveredItem.status}</span>
+
+        <span className="text-slate-400">Progress:</span>
+        <span className="font-mono text-right text-emerald-300">{hoveredItem.percentComplete}%</span>
       </div>
 
       {hoveredItem.predecessorNames.length > 0 && (

@@ -112,7 +112,7 @@ export function GanttTimelineDependencies({
 
             const startX = getX(predAct.ef!, timelineStart, dayWidth) + dayWidth
             const startY = predRowIdx * rowHeight + headerHeight + rowHeight / 2
-            
+
             const endX = getX(succAct.es!, timelineStart, dayWidth)
             const endY = succRowIdx * rowHeight + headerHeight + rowHeight / 2
 
@@ -126,7 +126,7 @@ export function GanttTimelineDependencies({
                 style={{ left: `${midX}px`, top: `${verticalCenterY}px`, width: '28px', height: '28px' }}
                 title={`Delete link from ${predAct.name} to ${succAct.name}`}
               >
-                <div 
+                <div
                   className="w-6 h-6 bg-white border border-rose-200 text-rose-500 rounded-md shadow-sm flex items-center justify-center cursor-pointer hover:bg-rose-500 hover:text-white hover:border-rose-600 hover:scale-110 transition-all duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-rose-400"
                   onClick={(e) => {
                     e.stopPropagation()

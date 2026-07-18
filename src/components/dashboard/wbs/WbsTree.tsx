@@ -35,6 +35,7 @@ type WbsTreeProps = {
   draggedNodeId: string | null
   setDraggedNodeId: (id: string | null) => void
   workspaceMembers: { userId: string; name: string; email: string; role?: string }[]
+  getElementProgress: (id: string) => number
 }
 
 function getStatusColor(status: WbsStatus) {
@@ -48,6 +49,14 @@ function getStatusColor(status: WbsStatus) {
     default:
       return 'bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20'
   }
+}
+
+function getProgressColor(progress: number) {
+  if (progress === 0) return 'bg-slate-200 dark:bg-slate-700'
+  if (progress < 33) return 'bg-rose-500'
+  if (progress < 66) return 'bg-amber-500'
+  if (progress < 100) return 'bg-indigo-500'
+  return 'bg-emerald-500'
 }
 
 export function WbsTree({
@@ -65,6 +74,7 @@ export function WbsTree({
   draggedNodeId,
   setDraggedNodeId,
   workspaceMembers,
+  getElementProgress,
 }: WbsTreeProps) {
   return (
     <div className="space-y-1">
@@ -86,6 +96,7 @@ export function WbsTree({
           draggedNodeId={draggedNodeId}
           setDraggedNodeId={setDraggedNodeId}
           workspaceMembers={workspaceMembers}
+          getElementProgress={getElementProgress}
         />
       ))}
     </div>
@@ -108,6 +119,7 @@ type WbsNodeRowProps = {
   draggedNodeId: string | null
   setDraggedNodeId: (id: string | null) => void
   workspaceMembers: { userId: string; name: string; email: string; role?: string }[]
+  getElementProgress: (id: string) => number
 }
 
 function WbsNodeRow({
@@ -126,6 +138,7 @@ function WbsNodeRow({
   draggedNodeId,
   setDraggedNodeId,
   workspaceMembers,
+  getElementProgress,
 }: WbsNodeRowProps) {
   const { element, children } = node
   const isExpanded = expandedNodeIds.has(element.id)
@@ -357,6 +370,21 @@ function WbsNodeRow({
             {element.status}
           </span>
 
+          {/* Progress Bar (Summary elements only) */}
+          {!element.isWorkPackage && (
+            <div className="flex items-center gap-2 w-24">
+              <div className="flex-1 h-2 bg-app-muted-surface rounded-full overflow-hidden border border-app-border">
+                <div 
+                  className={`h-full ${getProgressColor(getElementProgress(element.id))} transition-all duration-500`} 
+                  style={{ width: `${getElementProgress(element.id)}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-semibold text-app-subtle w-7 text-right">
+                {getElementProgress(element.id)}%
+              </span>
+            </div>
+          )}
+
           {/* Row context action buttons (visible on hover) */}
           {hasEditAccess && !isEditing && (
             <div className="opacity-0 group-hover/row:opacity-100 flex items-center gap-1 transition-opacity duration-150">
@@ -427,6 +455,7 @@ function WbsNodeRow({
               draggedNodeId={draggedNodeId}
               setDraggedNodeId={setDraggedNodeId}
               workspaceMembers={workspaceMembers}
+              getElementProgress={getElementProgress}
             />
           ))}
         </div>

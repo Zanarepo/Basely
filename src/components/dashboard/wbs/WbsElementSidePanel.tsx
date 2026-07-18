@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { X, User, FileText, CheckSquare, Settings2, Loader2, Save, Calendar as CalIcon, Link2, AlertCircle, Lock } from 'lucide-react'
 import type { WbsElement, WbsStatus } from '@/lib/wbs/constants'
-import { WBS_STATUSES } from '@/lib/wbs/constants'
 import { createClient } from '@/utils/supabase/client'
 import { updateActivityScheduling } from '@/lib/schedule/actions'
 import { calculateFinishDate, calculateStartDate, countWorkingDays } from '@/lib/schedule/cpm'
@@ -19,6 +18,8 @@ type WbsElementSidePanelProps = {
   onClose: () => void
   onSave: (id: string, updates: Partial<WbsElement>) => Promise<boolean>
   hasEditAccess: boolean
+  customStatuses: string[]
+  onAddCustomStatus: (newStatus: string) => void
 }
 
 type PredecessorInput = {
@@ -33,6 +34,8 @@ export function WbsElementSidePanel({
   onClose,
   onSave,
   hasEditAccess,
+  customStatuses,
+  onAddCustomStatus
 }: WbsElementSidePanelProps) {
   // WBS Element States
   const [name, setName] = useState('')
@@ -366,6 +369,8 @@ export function WbsElementSidePanel({
               hasEditAccess={hasEditAccess}
               saving={saving}
               workspaceMembers={workspaceMembers}
+              customStatuses={customStatuses}
+              onAddCustomStatus={onAddCustomStatus}
             />
 
             {/* --- REACTIVE CALENDAR & SCHEDULING SECTION (WORK PACKAGES ONLY) --- */}

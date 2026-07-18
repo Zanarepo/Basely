@@ -1,0 +1,427 @@
+import { useState } from 'react';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from 'recharts';
+import { LayoutDashboard, GanttChartSquare, Kanban, Table2, FileText, Users, AlertTriangle, ChevronRight, ChevronDown, Search, Bell, Plus, Settings, Folder, FolderOpen, CircleDot, TrendingUp, TrendingDown, DollarSign, Clock, Target, MoreHorizontal, Filter, Sparkles } from 'lucide-react';
+
+const evmData = [
+    { period: 'W1', PV: 12, EV: 11, AC: 13 },
+    { period: 'W2', PV: 26, EV: 24, AC: 27 },
+    { period: 'W3', PV: 41, EV: 37, AC: 42 },
+    { period: 'W4', PV: 55, EV: 49, AC: 54 },
+    { period: 'W5', PV: 68, EV: 60, AC: 66 },
+    { period: 'W6', PV: 80, EV: 71, AC: 79 },
+];
+
+const workloadData = [
+    { name: 'Ada', tasks: 8 },
+    { name: 'Tunde', tasks: 12 },
+    { name: 'Grace', tasks: 5 },
+    { name: 'Musa', tasks: 9 },
+    { name: 'Chidi', tasks: 14 },
+];
+
+const ganttTasks = [
+    { id: '1.1', name: 'Site Survey & Mobilization', start: 0, dur: 10, color: '#6366f1', critical: true, progress: 100 },
+    { id: '1.2', name: 'Foundation Design Approval', start: 8, dur: 14, color: '#8b5cf6', critical: true, progress: 80 },
+    { id: '1.3', name: 'Procurement — Steel', start: 10, dur: 18, color: '#06b6d4', critical: false, progress: 45 },
+    { id: '2.1', name: 'Foundation Works', start: 22, dur: 20, color: '#6366f1', critical: true, progress: 20 },
+    { id: '2.2', name: 'Structural Frame', start: 40, dur: 26, color: '#8b5cf6', critical: true, progress: 0 },
+    { id: '2.3', name: 'MEP Rough-in', start: 45, dur: 22, color: '#f59e0b', critical: false, progress: 0 },
+];
+const maxSpan = 66;
+
+const boardCols = [
+    {
+        name: 'Backlog', color: '#94a3b8', tasks: [
+            { t: 'Update stakeholder register', tag: 'Setup' },
+            { t: 'Draft risk response plan', tag: 'Risk' },
+        ]
+    },
+    {
+        name: 'In Progress', color: '#6366f1', tasks: [
+            { t: 'Foundation Design Approval', tag: 'Critical Path', who: 'TA' },
+            { t: 'Steel Procurement RFQ', tag: 'Budget', who: 'GD' },
+        ]
+    },
+    {
+        name: 'Review', color: '#f59e0b', tasks: [
+            { t: 'WBS Dictionary — Phase 1', tag: 'Docs', who: 'AO' },
+        ]
+    },
+    {
+        name: 'Done', color: '#10b981', tasks: [
+            { t: 'Project Charter signed off', tag: 'Milestone', who: 'AO' },
+            { t: 'Site mobilization', tag: 'Complete', who: 'MU' },
+        ]
+    },
+];
+
+const wbsTree = [
+    { id: '1', name: 'Riverside Complex — Phase 1', level: 0, open: true },
+    { id: '1.1', name: 'Pre-Construction', level: 1, open: true },
+    { id: '1.1.1', name: 'Site Survey & Mobilization', level: 2 },
+    { id: '1.1.2', name: 'Foundation Design Approval', level: 2 },
+    { id: '1.2', name: 'Procurement', level: 1, open: true },
+    { id: '1.2.1', name: 'Steel Procurement', level: 2 },
+    { id: '2', name: 'Construction', level: 0, open: false },
+];
+
+function Sidebar() {
+    return (
+        <div className="w-60 h-full bg-slate-900 text-slate-300 flex flex-col shrink-0">
+            <div className="px-4 h-14 flex items-center gap-2 border-b border-slate-800">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+                    <Sparkles size={15} className="text-white" />
+                </div>
+                <span className="text-white font-semibold text-sm tracking-tight">FullVision</span>
+            </div>
+
+            <div className="px-3 pt-4 pb-2">
+                <button className="w-full flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg py-2 transition-colors">
+                    <Plus size={13} /> New Project
+                </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-2 py-2 text-xs">
+                <div className="px-2 py-1.5 text-slate-500 font-medium uppercase tracking-wider text-[10px]">Workspace</div>
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-slate-800 cursor-pointer text-slate-200">
+                    <ChevronDown size={12} />
+                    <FolderOpen size={13} className="text-amber-400" />
+                    <span>Acme Infrastructure Co.</span>
+                </div>
+                <div className="ml-3 border-l border-slate-800 pl-2 mt-0.5 space-y-0.5">
+                    <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-slate-800 cursor-pointer">
+                        <ChevronDown size={12} />
+                        <Folder size={13} className="text-sky-400" />
+                        <span>Riverside Portfolio</span>
+                    </div>
+                    <div className="ml-4 space-y-0.5">
+                        <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-indigo-500/15 text-indigo-300 cursor-pointer border-l-2 border-indigo-500">
+                            <CircleDot size={11} />
+                            <span className="font-medium">Riverside Phase 1</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-800 cursor-pointer text-slate-400">
+                            <CircleDot size={11} className="text-slate-600" />
+                            <span>Riverside Phase 2</span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-slate-800 cursor-pointer">
+                        <ChevronRight size={12} />
+                        <Folder size={13} className="text-emerald-400" />
+                        <span>Lekki Office Fit-out</span>
+                    </div>
+                </div>
+
+                <div className="px-2 py-1.5 mt-4 text-slate-500 font-medium uppercase tracking-wider text-[10px]">This Project</div>
+                {[
+                    { icon: LayoutDashboard, label: 'Dashboard', key: 'dashboard' },
+                    { icon: GanttChartSquare, label: 'Schedule (Gantt)', key: 'gantt' },
+                    { icon: Kanban, label: 'Board', key: 'board' },
+                    { icon: Table2, label: 'Grid', key: 'grid' },
+                    { icon: FileText, label: 'Documents', key: 'docs' },
+                    { icon: AlertTriangle, label: 'Risk Register', key: 'risk' },
+                    { icon: Users, label: 'Team & RACI', key: 'team' },
+                ].map((item) => (
+                    <div key={item.key} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-800 cursor-pointer text-slate-400 hover:text-slate-200 transition-colors">
+                        <item.icon size={13} />
+                        <span>{item.label}</span>
+                    </div>
+                ))}
+            </div>
+
+            <div className="px-3 py-3 border-t border-slate-800 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-rose-400 to-orange-400 flex items-center justify-center text-[10px] font-semibold text-white">AO</div>
+                <div className="text-xs">
+                    <div className="text-slate-200 font-medium">Ada Okoye</div>
+                    <div className="text-slate-500 text-[10px]">Enterprise Tier</div>
+                </div>
+                <Settings size={13} className="ml-auto text-slate-500 cursor-pointer hover:text-slate-300" />
+            </div>
+        </div>
+    );
+}
+
+function TopBar({ view, setView }) {
+    const tabs = [
+        { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { key: 'gantt', label: 'Gantt / CPM', icon: GanttChartSquare },
+        { key: 'board', label: 'Board', icon: Kanban },
+        { key: 'grid', label: 'Grid', icon: Table2 },
+    ];
+    return (
+        <div className="h-14 border-b border-slate-200 bg-white flex items-center px-5 gap-4 shrink-0">
+            <div>
+                <div className="text-sm font-semibold text-slate-800 leading-none">Riverside Complex — Phase 1</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">Construction · Waterfall · Baseline v3</div>
+            </div>
+            <div className="flex items-center gap-1 ml-4 bg-slate-100 rounded-lg p-1">
+                {tabs.map(t => (
+                    <button key={t.key} onClick={() => setView(t.key)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${view === t.key ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+                        <t.icon size={13} />
+                        {t.label}
+                    </button>
+                ))}
+            </div>
+            <div className="flex-1" />
+            <div className="flex items-center gap-2 bg-slate-100 rounded-lg px-2.5 py-1.5 text-slate-400 w-56">
+                <Search size={13} />
+                <span className="text-xs">Search tasks, docs, people…</span>
+            </div>
+            <Filter size={15} className="text-slate-400 cursor-pointer hover:text-slate-600" />
+            <Bell size={15} className="text-slate-400 cursor-pointer hover:text-slate-600" />
+            <div className="flex -space-x-1.5">
+                {['AO', 'TA', 'GD', 'MU'].map((i, idx) => (
+                    <div key={idx} className="w-6 h-6 rounded-full border-2 border-white bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-[9px] font-semibold text-white">{i}</div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function KPICard({ icon: Icon, label, value, sub, trend, color }) {
+    return (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 flex-1 min-w-[150px]">
+            <div className="flex items-center justify-between mb-2">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center`} style={{ backgroundColor: color + '18' }}>
+                    <Icon size={15} style={{ color }} />
+                </div>
+                {trend && (
+                    <span className={`flex items-center gap-0.5 text-[11px] font-medium ${trend > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {trend > 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                        {Math.abs(trend)}%
+                    </span>
+                )}
+            </div>
+            <div className="text-xl font-semibold text-slate-800">{value}</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">{label}</div>
+            {sub && <div className="text-[10px] text-slate-400 mt-1">{sub}</div>}
+        </div>
+    );
+}
+
+function DashboardView() {
+    return (
+        <div className="p-5 space-y-4 overflow-y-auto h-full">
+            <div className="flex gap-3 flex-wrap">
+                <KPICard icon={Target} label="Schedule Performance (SPI)" value="0.91" sub="Slightly behind baseline" trend={-3} color="#6366f1" />
+                <KPICard icon={DollarSign} label="Cost Performance (CPI)" value="1.04" sub="Under budget" trend={4} color="#10b981" />
+                <KPICard icon={Clock} label="Critical Path Float" value="0 days" sub="2 activities on critical path" color="#ef4444" />
+                <KPICard icon={AlertTriangle} label="Open Risks" value="6" sub="2 high, 4 medium" color="#f59e0b" />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2 bg-white rounded-xl border border-slate-200 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <div>
+                            <div className="text-sm font-semibold text-slate-800">Earned Value — PV / EV / AC</div>
+                            <div className="text-[11px] text-slate-400">Cumulative, ₦M · Baseline v3</div>
+                        </div>
+                        <MoreHorizontal size={15} className="text-slate-400" />
+                    </div>
+                    <ResponsiveContainer width="100%" height={200}>
+                        <AreaChart data={evmData}>
+                            <defs>
+                                <linearGradient id="pv" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#94a3b8" stopOpacity={0.3} /><stop offset="100%" stopColor="#94a3b8" stopOpacity={0} /></linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                            <Area type="monotone" dataKey="PV" stroke="#94a3b8" fill="url(#pv)" strokeWidth={2} name="Planned Value" />
+                            <Line type="monotone" dataKey="EV" stroke="#6366f1" strokeWidth={2.5} dot={false} name="Earned Value" />
+                            <Line type="monotone" dataKey="AC" stroke="#ef4444" strokeWidth={2} strokeDasharray="4 3" dot={false} name="Actual Cost" />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                    <div className="flex gap-4 mt-1 text-[11px] text-slate-500">
+                        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-400" />Planned</span>
+                        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-indigo-500" />Earned</span>
+                        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" />Actual</span>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <div className="text-sm font-semibold text-slate-800 mb-1">Milestone Health</div>
+                    <div className="text-[11px] text-slate-400 mb-3">RAG status</div>
+                    <div className="space-y-2.5">
+                        {[
+                            { name: 'Foundation Approval', status: 'green', date: 'Jul 22' },
+                            { name: 'Structural Frame Complete', status: 'amber', date: 'Aug 30' },
+                            { name: 'MEP Rough-in', status: 'green', date: 'Sep 14' },
+                            { name: 'Substantial Completion', status: 'red', date: 'Oct 05' },
+                        ].map((m, i) => (
+                            <div key={i} className="flex items-center gap-2 text-xs">
+                                <span className={`w-2 h-2 rounded-full shrink-0 ${m.status === 'green' ? 'bg-emerald-500' : m.status === 'amber' ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                                <span className="text-slate-700 flex-1 truncate">{m.name}</span>
+                                <span className="text-slate-400 text-[10px]">{m.date}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2 bg-white rounded-xl border border-slate-200 p-4">
+                    <div className="text-sm font-semibold text-slate-800 mb-3">Team Workload</div>
+                    <ResponsiveContainer width="100%" height={140}>
+                        <BarChart data={workloadData} layout="vertical" margin={{ left: 0 }}>
+                            <XAxis type="number" hide />
+                            <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} width={50} />
+                            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                            <Bar dataKey="tasks" fill="#8b5cf6" radius={[0, 6, 6, 0]} barSize={14} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+                <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-xl p-4 text-white flex flex-col justify-between">
+                    <div>
+                        <div className="text-xs font-medium text-indigo-200 mb-1">Auto-Generated Report</div>
+                        <div className="text-sm font-semibold leading-snug">Weekly status report is ready — synced from live schedule & budget data.</div>
+                    </div>
+                    <button className="mt-3 bg-white/15 hover:bg-white/25 backdrop-blur text-xs font-medium rounded-lg py-2 transition-colors">View & Export PDF</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function GanttView() {
+    return (
+        <div className="flex h-full overflow-hidden">
+            <div className="w-56 border-r border-slate-200 bg-white overflow-y-auto shrink-0">
+                <div className="h-9 border-b border-slate-200 flex items-center px-3 text-[11px] font-medium text-slate-400 uppercase tracking-wide">WBS</div>
+                {wbsTree.map((n) => (
+                    <div key={n.id} className="h-9 flex items-center border-b border-slate-100 text-xs text-slate-700 hover:bg-slate-50" style={{ paddingLeft: 10 + n.level * 16 }}>
+                        {n.level < 2 ? (n.open ? <ChevronDown size={12} className="mr-1 text-slate-400" /> : <ChevronRight size={12} className="mr-1 text-slate-400" />) : <span className="w-3 mr-1" />}
+                        <span className="text-slate-400 mr-1.5 text-[10px]">{n.id}</span>
+                        <span className={n.level === 0 ? 'font-semibold' : ''}>{n.name}</span>
+                    </div>
+                ))}
+            </div>
+            <div className="flex-1 overflow-x-auto bg-white">
+                <div className="h-9 border-b border-slate-200 flex items-center px-3 gap-8 text-[10px] text-slate-400 sticky top-0 bg-white z-10">
+                    {Array.from({ length: 11 }).map((_, i) => <span key={i} className="w-12">Wk {i + 1}</span>)}
+                </div>
+                <div className="relative" style={{ minWidth: 720 }}>
+                    {/* today marker */}
+                    <div className="absolute top-0 bottom-0 border-l-2 border-rose-400 z-10" style={{ left: `${(28 / maxSpan) * 100}%` }}>
+                        <span className="absolute -top-0 -left-6 text-[9px] text-rose-500 font-medium bg-rose-50 px-1 rounded">Today</span>
+                    </div>
+                    {wbsTree.filter(n => n.level > 0).map((wbsNode, rowIdx) => {
+                        const task = ganttTasks[rowIdx % ganttTasks.length];
+                        return (
+                            <div key={wbsNode.id} className="h-9 border-b border-slate-100 relative flex items-center">
+                                <div className="absolute h-5 rounded-md flex items-center overflow-hidden shadow-sm"
+                                    style={{
+                                        left: `${(task.start / maxSpan) * 100}%`,
+                                        width: `${(task.dur / maxSpan) * 100}%`,
+                                        backgroundColor: task.color + '25',
+                                        border: `1.5px solid ${task.critical ? '#ef4444' : task.color}`,
+                                    }}>
+                                    <div className="h-full rounded-sm" style={{ width: `${task.progress}%`, backgroundColor: task.critical ? '#ef4444' : task.color }} />
+                                </div>
+                                <span className="absolute text-[10px] text-slate-600 whitespace-nowrap" style={{ left: `calc(${(task.start / maxSpan) * 100}% + ${(task.dur / maxSpan) * 100}% + 6px)` }}>
+                                    {task.name} {task.critical && <span className="text-rose-500 font-medium">· CP</span>}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function BoardView() {
+    return (
+        <div className="flex gap-4 p-5 overflow-x-auto h-full">
+            {boardCols.map((col) => (
+                <div key={col.name} className="w-64 shrink-0 flex flex-col">
+                    <div className="flex items-center gap-2 mb-2.5 px-1">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: col.color }} />
+                        <span className="text-xs font-semibold text-slate-700">{col.name}</span>
+                        <span className="text-[10px] text-slate-400 bg-slate-100 rounded-full px-1.5">{col.tasks.length}</span>
+                        <Plus size={13} className="ml-auto text-slate-400 cursor-pointer" />
+                    </div>
+                    <div className="space-y-2">
+                        {col.tasks.map((t, i) => (
+                            <div key={i} className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                                <span className={`inline-block text-[9px] font-medium px-1.5 py-0.5 rounded mb-1.5 ${t.tag === 'Critical Path' ? 'bg-rose-100 text-rose-600' : t.tag === 'Milestone' ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'}`}>{t.tag}</span>
+                                <div className="text-xs text-slate-700 font-medium leading-snug">{t.t}</div>
+                                {t.who && (
+                                    <div className="flex items-center justify-between mt-2">
+                                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-white text-[8px] flex items-center justify-center font-semibold">{t.who}</div>
+                                        <div className="w-14 h-1 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-indigo-500" style={{ width: '60%' }} /></div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function GridView() {
+    const rows = [
+        { wbs: '1.1.1', name: 'Site Survey & Mobilization', owner: 'MU', start: '01 Jul', finish: '11 Jul', dur: '10d', float: '0d', cost: '₦4.2M', status: 'Complete' },
+        { wbs: '1.1.2', name: 'Foundation Design Approval', owner: 'TA', start: '09 Jul', finish: '23 Jul', dur: '14d', float: '0d', cost: '₦2.8M', status: 'In Progress' },
+        { wbs: '1.2.1', name: 'Steel Procurement', owner: 'GD', start: '11 Jul', finish: '29 Jul', dur: '18d', float: '4d', cost: '₦18.6M', status: 'In Progress' },
+        { wbs: '2.1', name: 'Foundation Works', owner: 'MU', start: '23 Jul', finish: '12 Aug', dur: '20d', float: '0d', cost: '₦31.4M', status: 'Not Started' },
+        { wbs: '2.2', name: 'Structural Frame', owner: 'TA', start: '10 Aug', finish: '05 Sep', dur: '26d', float: '0d', cost: '₦52.1M', status: 'Not Started' },
+    ];
+    return (
+        <div className="p-5 h-full overflow-auto">
+            <table className="w-full text-xs border-separate border-spacing-0">
+                <thead>
+                    <tr className="text-left text-slate-400 font-medium">
+                        {['WBS', 'Task Name', 'Owner', 'Start', 'Finish', 'Duration', 'Float', 'Cost', 'Status'].map(h => (
+                            <th key={h} className="px-3 py-2 border-b-2 border-slate-200 bg-slate-50 sticky top-0 first:rounded-tl-lg last:rounded-tr-lg">{h}</th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((r, i) => (
+                        <tr key={i} className="hover:bg-slate-50">
+                            <td className="px-3 py-2.5 border-b border-slate-100 text-slate-400 font-mono text-[10px]">{r.wbs}</td>
+                            <td className="px-3 py-2.5 border-b border-slate-100 text-slate-700 font-medium">{r.name}</td>
+                            <td className="px-3 py-2.5 border-b border-slate-100">
+                                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-white text-[8px] flex items-center justify-center font-semibold">{r.owner}</div>
+                            </td>
+                            <td className="px-3 py-2.5 border-b border-slate-100 text-slate-500">{r.start}</td>
+                            <td className="px-3 py-2.5 border-b border-slate-100 text-slate-500">{r.finish}</td>
+                            <td className="px-3 py-2.5 border-b border-slate-100 text-slate-500">{r.dur}</td>
+                            <td className="px-3 py-2.5 border-b border-slate-100">
+                                <span className={r.float === '0d' ? 'text-rose-500 font-medium' : 'text-slate-500'}>{r.float}</span>
+                            </td>
+                            <td className="px-3 py-2.5 border-b border-slate-100 text-slate-700 font-medium">{r.cost}</td>
+                            <td className="px-3 py-2.5 border-b border-slate-100">
+                                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${r.status === 'Complete' ? 'bg-emerald-100 text-emerald-600' : r.status === 'In Progress' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}>{r.status}</span>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+export default function App() {
+    const [view, setView] = useState('dashboard');
+    return (
+        <div className="w-full h-[700px] flex bg-slate-50 font-sans rounded-xl overflow-hidden border border-slate-200">
+            <Sidebar />
+            <div className="flex-1 flex flex-col min-w-0">
+                <TopBar view={view} setView={setView} />
+                <div className="flex-1 min-h-0 bg-slate-50">
+                    {view === 'dashboard' && <DashboardView />}
+                    {view === 'gantt' && <GanttView />}
+                    {view === 'board' && <BoardView />}
+                    {view === 'grid' && <GridView />}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+
+//https://claude.ai/public/artifacts/a75ebab9-5941-459c-a70d-31afe67bae42

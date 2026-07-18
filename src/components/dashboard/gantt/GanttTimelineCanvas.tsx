@@ -106,8 +106,12 @@ export function GanttTimelineCanvas({
       let es = activity?.es || null
       let ef = activity?.ef || null
       let duration = activity?.duration ?? 0
+      let percentComplete = 0
 
-      if (!el.isWorkPackage) {
+      if (el.isWorkPackage) {
+        if (el.status === 'Complete') percentComplete = 100
+        else if (el.status === 'In Progress') percentComplete = activity?.percentComplete || 50
+      } else {
         // Collect dates of all descendant tasks
         const descendants: Activity[] = []
         const collectDescendants = (id: string) => {
@@ -129,6 +133,22 @@ export function GanttTimelineCanvas({
           ef = new Date(Math.max(...finishTimes)).toISOString().split('T')[0]!
           duration = validDescDates.reduce((acc, curr) => acc + curr.duration, 0)
         }
+        
+        // Calculate percent complete for summary based on WPs
+        const descendantWPs: any[] = []
+        const getDescWPs = (id: string) => {
+          elements.forEach((x) => {
+            if (x.parentId === id) {
+              if (x.isWorkPackage) descendantWPs.push(x)
+              else getDescWPs(x.id)
+            }
+          })
+        }
+        getDescWPs(el.id)
+        if (descendantWPs.length > 0) {
+          const completedCount = descendantWPs.filter(wp => wp.status === 'Complete').length
+          percentComplete = Math.round((completedCount / descendantWPs.length) * 100)
+        }
       }
 
       return {
@@ -138,6 +158,7 @@ export function GanttTimelineCanvas({
         ef,
         duration,
         rowIndex,
+        percentComplete,
       }
     })
   }, [visibleElements, actLookup, elements])

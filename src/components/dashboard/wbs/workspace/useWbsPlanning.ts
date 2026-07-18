@@ -232,6 +232,87 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
     })
   }
 
+  // --- Status propagation: When a WP status changes, update parent summary elements ---
+  const propagateStatusToParents = (elementId: string, currentElements: WbsElement[]) => {
+    const element = currentElements.find(e => e.id === elementId)
+    if (!element || !element.parentId) return
+
+    let parentId: string | null = element.parentId
+    const updatedElements = [...currentElements]
+    const parentUpdates: { id: string; status: string }[] = []
+
+    while (parentId) {
+      const parent = updatedElements.find(e => e.id === parentId)
+      if (!parent || parent.isWorkPackage) break
+
+      // Get all descendant WPs under this parent
+      const descendantWPs = getDescendantWorkPackages(parentId, updatedElements)
+
+      if (descendantWPs.length === 0) {
+        parentId = parent.parentId
+        continue
+      }
+
+      const allComplete = descendantWPs.every(wp => wp.status === 'Complete')
+      const allNotStarted = descendantWPs.every(wp => wp.status === 'Not Started')
+
+      let newParentStatus: string
+      if (allComplete) {
+        newParentStatus = 'Complete'
+      } else if (allNotStarted) {
+        newParentStatus = 'Not Started'
+      } else {
+        newParentStatus = 'In Progress'
+      }
+
+      if (parent.status !== newParentStatus) {
+        parent.status = newParentStatus
+        parentUpdates.push({ id: parent.id, status: newParentStatus })
+      }
+
+      parentId = parent.parentId
+    }
+
+    // Apply optimistic updates for parents
+    if (parentUpdates.length > 0) {
+      setElements(prev =>
+        prev.map(el => {
+          const update = parentUpdates.find(u => u.id === el.id)
+          return update ? { ...el, status: update.status } : el
+        })
+      )
+
+      // Persist parent status changes to DB
+      startTransition(async () => {
+        for (const update of parentUpdates) {
+          await updateWbsElement(update.id, projectId, { status: update.status })
+        }
+      })
+    }
+  }
+
+  // Get all work package descendants (recursively) under a given parent
+  const getDescendantWorkPackages = (parentId: string, allElements: WbsElement[]): WbsElement[] => {
+    const result: WbsElement[] = []
+    const children = allElements.filter(e => e.parentId === parentId)
+    for (const child of children) {
+      if (child.isWorkPackage) {
+        result.push(child)
+      } else {
+        result.push(...getDescendantWorkPackages(child.id, allElements))
+      }
+    }
+    return result
+  }
+
+  // Calculate progress percentage for any element based on its descendant WPs
+  const getElementProgress = (elementId: string): number => {
+    const descendantWPs = getDescendantWorkPackages(elementId, elements)
+    if (descendantWPs.length === 0) return 0
+    const completedCount = descendantWPs.filter(wp => wp.status === 'Complete').length
+    return Math.round((completedCount / descendantWPs.length) * 100)
+  }
+
   const handleSaveDetails = async (id: string, updates: Partial<WbsElement>): Promise<boolean> => {
     if (!hasEditAccess) return false
     if (id.startsWith('temp-')) {
@@ -242,13 +323,18 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
     saveSnapshot(elements)
 
     // Optimistic Update details
-    setElements((prev) =>
-      prev.map((el) => (el.id === id ? { ...el, ...updates } : el))
-    )
+    const updatedList = elements.map((el) => (el.id === id ? { ...el, ...updates } : el))
+    setElements(updatedList)
 
     const result = await updateWbsElement(id, projectId, updates)
     if (result.ok) {
       showToast('success', 'WBS Dictionary details updated')
+
+      // If status was changed on a work package, propagate to parents
+      if (updates.status !== undefined) {
+        propagateStatusToParents(id, updatedList)
+      }
+
       return true
     } else {
       showToast('error', `Could not save details: ${result.error}`)
@@ -545,5 +631,6 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
     handleCollapseAll,
     activeElement,
     treeNodes,
+    getElementProgress,
   }
 }

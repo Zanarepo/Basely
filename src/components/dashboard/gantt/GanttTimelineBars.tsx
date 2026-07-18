@@ -101,9 +101,22 @@ export function GanttTimelineBars({
               {isSummary ? (
                 // --- Summary Rollup Bar ---
                 <div className="w-full h-full relative">
-                  <div className="absolute top-1 left-0 right-0 h-4 bg-slate-800 dark:bg-slate-300 rounded-sm" />
+                  <div className="absolute top-1 left-0 right-0 h-4 bg-slate-800 dark:bg-slate-300 rounded-sm overflow-hidden border border-slate-700/50">
+                    {/* Progress overlay */}
+                    {row.percentComplete > 0 && (
+                      <div 
+                        className="h-full bg-emerald-500 transition-all duration-500"
+                        style={{ width: `${row.percentComplete}%` }}
+                      />
+                    )}
+                  </div>
                   <div className="absolute -bottom-1 -left-1 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-slate-800 dark:border-t-slate-300" />
                   <div className="absolute -bottom-1 -right-1 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-slate-800 dark:border-t-slate-300" />
+                  
+                  {/* Summary Progress Text */}
+                  <span className="absolute -top-3.5 right-0 text-[9px] font-bold text-app-subtle">
+                    {row.percentComplete}%
+                  </span>
                 </div>
               ) : isMilestone ? (
                 // --- Milestone Diamond ---
@@ -122,23 +135,41 @@ export function GanttTimelineBars({
               ) : (
                 // --- Standard Task Bar ---
                 <div
-                  className={`w-full h-full rounded-md shadow-sm border overflow-hidden relative z-10 ${
-                    isCritical
+                  className={`w-full h-full rounded-md shadow-sm border overflow-hidden relative z-10 transition-colors ${
+                    row.element.status === 'Complete'
+                      ? 'bg-emerald-500 border-emerald-600'
+                      : row.element.status === 'In Progress'
+                      ? 'bg-blue-500 border-blue-600'
+                      : isCritical
                       ? 'bg-red-500 border-red-600'
                       : 'bg-indigo-500 border-indigo-600'
                   }`}
                 >
                   <div className="w-full h-full bg-gradient-to-b from-white/20 to-transparent" />
                   {/* Progress fill visual */}
-                  {row.activity?.percentComplete > 0 && (
+                  {row.percentComplete > 0 && (
                     <div
-                      className="absolute top-0 left-0 bottom-0 bg-black/20"
-                      style={{ width: `${row.activity.percentComplete}%` }}
+                      className="absolute top-0 left-0 bottom-0 bg-black/25"
+                      style={{ width: `${row.percentComplete}%` }}
                     />
                   )}
                   {row.activity?.constraintType !== 'As Soon As Possible' && (
                     <Lock className="w-3 h-3 absolute top-1.5 left-1 text-white/70" />
                   )}
+                </div>
+              )}
+
+              {/* Float Indicator */}
+              {!isSummary && !isMilestone && row.activity?.totalFloat > 0 && (
+                <div 
+                  className="absolute top-1/2 -translate-y-1/2 h-1.5 bg-indigo-200 dark:bg-indigo-900/50 rounded-r-sm z-0 pointer-events-none border border-l-0 border-indigo-300 dark:border-indigo-800"
+                  style={{ 
+                    left: `100%`, 
+                    width: `${row.activity.totalFloat * dayWidth}px` 
+                  }}
+                  title={`Float: ${row.activity.totalFloat} days`}
+                >
+                  <div className="absolute right-0 -top-1 bottom-0 w-[2px] h-[10px] bg-indigo-400 dark:bg-indigo-600" />
                 </div>
               )}
 

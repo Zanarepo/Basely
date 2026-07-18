@@ -1,5 +1,7 @@
-import { Undo2, Redo2, Maximize2, Minimize2, Plus, Search } from 'lucide-react'
+import { Undo2, Redo2, Maximize2, Minimize2, Plus, Search, ListTree, Kanban, Table2 } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
+
+export type WbsViewType = 'tree' | 'board' | 'grid'
 
 type WbsToolbarProps = {
   hasEditAccess: boolean
@@ -8,6 +10,8 @@ type WbsToolbarProps = {
   redoStack: WbsElement[][]
   searchQuery: string
   setSearchQuery: (q: string) => void
+  currentView: WbsViewType
+  onViewChange: (view: WbsViewType) => void
   handleUndo: () => void
   handleRedo: () => void
   handleExpandAll: () => void
@@ -22,6 +26,8 @@ export function WbsToolbar({
   redoStack,
   searchQuery,
   setSearchQuery,
+  currentView,
+  onViewChange,
   handleUndo,
   handleRedo,
   handleExpandAll,
@@ -31,6 +37,37 @@ export function WbsToolbar({
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-app-surface border border-app-border rounded-2xl backdrop-blur-md">
       <div className="flex items-center gap-3">
+        {/* View Toggle */}
+        <div className="flex rounded-xl bg-app-muted-surface border border-app-border p-1">
+          <button
+            type="button"
+            onClick={() => onViewChange('tree')}
+            title="Tree View"
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${currentView === 'tree' ? 'bg-white text-indigo-600 shadow-sm' : 'text-app-fg hover:bg-app-hover'}`}
+          >
+            <ListTree className="h-4 w-4" />
+            <span className="text-xs font-medium hidden md:inline">Tree</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onViewChange('board')}
+            title="Board View"
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${currentView === 'board' ? 'bg-white text-indigo-600 shadow-sm' : 'text-app-fg hover:bg-app-hover'}`}
+          >
+            <Kanban className="h-4 w-4" />
+            <span className="text-xs font-medium hidden md:inline">Board</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onViewChange('grid')}
+            title="Grid View"
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${currentView === 'grid' ? 'bg-white text-indigo-600 shadow-sm' : 'text-app-fg hover:bg-app-hover'}`}
+          >
+            <Table2 className="h-4 w-4" />
+            <span className="text-xs font-medium hidden md:inline">Grid</span>
+          </button>
+        </div>
+
         {/* Undo/Redo buttons */}
         <div className="flex rounded-xl bg-app-muted-surface border border-app-border p-1">
           <button

@@ -1,13 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import { FileSpreadsheet, Plus, Loader2 } from 'lucide-react'
 import { WbsTree } from './WbsTree'
+import { WbsBoardView } from './WbsBoardView'
+import { WbsGridView } from './WbsGridView'
 import { WbsElementSidePanel } from './WbsElementSidePanel'
 import { ToastContainer } from '@/components/dashboard/Toast'
 
 // Moduralized Components & Hooks
 import { useWbsPlanning } from './workspace/useWbsPlanning'
-import { WbsToolbar } from './workspace/WbsToolbar'
+import { WbsToolbar, WbsViewType } from './workspace/WbsToolbar'
 
 type WbsPlanningWorkspaceProps = {
   projectId: string
@@ -16,13 +19,16 @@ type WbsPlanningWorkspaceProps = {
   hasEditAccess: boolean
 }
 
+import { useWbsBoard } from './workspace/useWbsBoard'
+
 export function WbsPlanningWorkspace({
   projectId,
   workspaceMembers,
   callerUserId,
   hasEditAccess,
 }: WbsPlanningWorkspaceProps) {
-  
+  const [currentView, setCurrentView] = useState<WbsViewType>('tree')
+
   const {
     elements,
     loading,
@@ -52,7 +58,10 @@ export function WbsPlanningWorkspace({
     handleCollapseAll,
     activeElement,
     treeNodes,
+    getElementProgress,
   } = useWbsPlanning(projectId, hasEditAccess)
+
+  const { columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility } = useWbsBoard(projectId, elements)
 
   if (loading && elements.length === 0) {
     return (
@@ -75,6 +84,8 @@ export function WbsPlanningWorkspace({
         redoStack={redoStack}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        currentView={currentView}
+        onViewChange={setCurrentView}
         handleUndo={handleUndo}
         handleRedo={handleRedo}
         handleExpandAll={handleExpandAll}
@@ -108,24 +119,54 @@ export function WbsPlanningWorkspace({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
-          {/* The tree rows wrapper panel */}
           <div className="backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6 shadow-xs overflow-x-auto min-h-[350px]">
-            <WbsTree
-              treeNodes={treeNodes}
-              expandedNodeIds={expandedNodeIds}
-              onToggleExpand={handleToggleExpand}
-              activeElementId={activeElementId}
-              onSelect={setActiveElementId}
-              onAddChild={(element) => handleCreateElement(element.parentId, element, 'child')}
-              onAddSibling={(element) => handleCreateElement(element.parentId, element, 'sibling')}
-              onDelete={handleDeleteElement}
-              onRename={handleRenameElement}
-              onMove={handleMoveNode}
-              hasEditAccess={hasEditAccess}
-              draggedNodeId={draggedNodeId}
-              setDraggedNodeId={setDraggedNodeId}
-              workspaceMembers={workspaceMembers}
-            />
+            {currentView === 'tree' && (
+              <WbsTree
+                treeNodes={treeNodes}
+                expandedNodeIds={expandedNodeIds}
+                onToggleExpand={handleToggleExpand}
+                activeElementId={activeElementId}
+                onSelect={setActiveElementId}
+                onAddChild={(element) => handleCreateElement(element.parentId, element, 'child')}
+                onAddSibling={(element) => handleCreateElement(element.parentId, element, 'sibling')}
+                onDelete={handleDeleteElement}
+                onRename={handleRenameElement}
+                onMove={handleMoveNode}
+                hasEditAccess={hasEditAccess}
+                draggedNodeId={draggedNodeId}
+                setDraggedNodeId={setDraggedNodeId}
+                workspaceMembers={workspaceMembers}
+                getElementProgress={getElementProgress}
+              />
+            )}
+            
+            {currentView === 'board' && (
+              <WbsBoardView 
+                columns={columns}
+                taskOrders={taskOrders}
+                addColumn={addColumn}
+                deleteColumn={deleteColumn}
+                renameColumn={renameColumn}
+                reorderColumn={reorderColumn}
+                moveTask={moveTask}
+                hiddenColumns={hiddenColumns}
+                toggleColumnVisibility={toggleColumnVisibility}
+                elements={elements}
+                workspaceMembers={workspaceMembers}
+                hasEditAccess={hasEditAccess}
+                onSelect={setActiveElementId}
+                onStatusChange={(id, newStatus) => handleSaveDetails(id, { status: newStatus })}
+              />
+            )}
+
+            {currentView === 'grid' && (
+              <WbsGridView 
+                projectId={projectId}
+                elements={elements}
+                workspaceMembers={workspaceMembers}
+                onSelect={setActiveElementId}
+              />
+            )}
           </div>
         </div>
       )}
@@ -137,6 +178,8 @@ export function WbsPlanningWorkspace({
         onClose={() => setActiveElementId(null)}
         onSave={handleSaveDetails}
         hasEditAccess={hasEditAccess}
+        customStatuses={columns.map((c) => c.name)}
+        onAddCustomStatus={addColumn}
       />
     </div>
   )

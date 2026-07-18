@@ -1,6 +1,6 @@
-export const WBS_STATUSES = ['Not Started', 'In Progress', 'Complete', 'On Hold'] as const
+export const DEFAULT_WBS_STATUSES = ['Not Started', 'In Progress', 'Complete', 'On Hold'] as const
 
-export type WbsStatus = (typeof WBS_STATUSES)[number]
+export type WbsStatus = string // Changed from strict literal to support dynamic columns
 
 export type WbsElement = {
   id: string

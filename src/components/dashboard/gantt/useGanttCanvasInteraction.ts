@@ -53,6 +53,9 @@ export function useGanttCanvasInteraction({
     es: string | null
     ef: string | null
     predecessorNames: string[]
+    totalFloat: number | null
+    status: string
+    percentComplete: number
   } | null>(null)
 
   // --- Drag and Resize Pointer Listeners ---
@@ -237,6 +240,9 @@ export function useGanttCanvasInteraction({
       es: row.es,
       ef: row.ef,
       predecessorNames: predNames,
+      totalFloat: row.activity?.totalFloat ?? null,
+      status: row.element.status ?? 'Not Started',
+      percentComplete: row.percentComplete ?? 0,
     })
   }
 

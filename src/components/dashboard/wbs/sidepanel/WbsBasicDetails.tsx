@@ -1,6 +1,6 @@
-import { User, FileText, CheckSquare } from 'lucide-react'
+import { User, FileText, CheckSquare, Plus, Check, X } from 'lucide-react'
+import { useState } from 'react'
 import type { WbsStatus } from '@/lib/wbs/constants'
-import { WBS_STATUSES } from '@/lib/wbs/constants'
 
 type WbsBasicDetailsProps = {
   name: string
@@ -20,6 +20,8 @@ type WbsBasicDetailsProps = {
   hasEditAccess: boolean
   saving: boolean
   workspaceMembers: { userId: string; name: string; email: string }[]
+  customStatuses: string[]
+  onAddCustomStatus: (newStatus: string) => void
 }
 
 export function WbsBasicDetails({
@@ -32,8 +34,23 @@ export function WbsBasicDetails({
   acceptanceCriteria, setAcceptanceCriteria,
   hasEditAccess,
   saving,
-  workspaceMembers
+  workspaceMembers,
+  customStatuses,
+  onAddCustomStatus
 }: WbsBasicDetailsProps) {
+  const [isAddingStatus, setIsAddingStatus] = useState(false)
+  const [newStatusName, setNewStatusName] = useState('')
+
+  const handleSaveNewStatus = () => {
+    const trimmed = newStatusName.trim()
+    if (trimmed) {
+      onAddCustomStatus(trimmed)
+      setStatus(trimmed)
+    }
+    setNewStatusName('')
+    setIsAddingStatus(false)
+  }
+
   return (
     <>
       {/* Name */}
@@ -78,22 +95,62 @@ export function WbsBasicDetails({
       {/* Status & Work Package Toggle */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label htmlFor="wbs-status" className="auth-label">
-            Status
-          </label>
-          <select
-            id="wbs-status"
-            disabled={!hasEditAccess || saving}
-            value={status}
-            onChange={(e) => setStatus(e.target.value as WbsStatus)}
-            className="w-full px-3 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 cursor-pointer text-sm disabled:opacity-50"
-          >
-            {WBS_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+          <label className="auth-label">Status</label>
+          {isAddingStatus ? (
+             <div className="flex flex-col gap-2">
+               <input
+                 autoFocus
+                 type="text"
+                 placeholder="New Status"
+                 className="w-full px-3 py-1.5 text-sm bg-app-input border border-indigo-500 rounded-lg text-app-fg focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                 value={newStatusName}
+                 onChange={(e) => setNewStatusName(e.target.value)}
+                 onKeyDown={(e) => e.key === 'Enter' && handleSaveNewStatus()}
+               />
+               <div className="flex items-center gap-2">
+                 <button
+                   type="button"
+                   className="flex-1 flex justify-center items-center py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold cursor-pointer"
+                   onClick={handleSaveNewStatus}
+                 >
+                   <Check className="w-3 h-3 mr-1" /> Add
+                 </button>
+                 <button
+                   type="button"
+                   className="flex-1 flex justify-center items-center py-1.5 bg-app-muted-surface hover:bg-app-hover text-app-subtle rounded-lg text-xs font-semibold cursor-pointer"
+                   onClick={() => setIsAddingStatus(false)}
+                 >
+                   <X className="w-3 h-3 mr-1" /> Cancel
+                 </button>
+               </div>
+             </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <select
+                id="wbs-status"
+                disabled={!hasEditAccess || saving}
+                value={status}
+                onChange={(e) => setStatus(e.target.value as WbsStatus)}
+                className="w-full px-3 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 cursor-pointer text-sm disabled:opacity-50"
+              >
+                {customStatuses.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              {hasEditAccess && !saving && (
+                <button
+                  type="button"
+                  onClick={() => setIsAddingStatus(true)}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-indigo-500 hover:text-indigo-600 transition-colors w-max cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" />
+                  New Status
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
