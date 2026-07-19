@@ -7,9 +7,13 @@ type WbsGridViewProps = {
   elements: WbsElement[]
   workspaceMembers: { userId: string; name: string; email: string }[]
   onSelect: (id: string) => void
+  selectedIds?: string[]
+  toggleSelection?: (id: string) => void
+  selectAll?: () => void
+  clearSelection?: () => void
 }
 
-export function WbsGridView({ projectId, elements, workspaceMembers, onSelect }: WbsGridViewProps) {
+export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, selectedIds = [], toggleSelection, selectAll, clearSelection }: WbsGridViewProps) {
   const { gridData, loading } = useWbsGridData(projectId, elements)
 
   if (loading) {
@@ -26,6 +30,22 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect }:
       <table className="w-full text-xs border-separate border-spacing-0">
         <thead>
           <tr className="text-left text-app-muted font-medium">
+            <th className="px-3 py-2 border-b-2 border-app-border bg-app-muted-surface sticky top-0 first:rounded-tl-lg last:rounded-tr-lg z-10 whitespace-nowrap w-8">
+              {selectAll && (
+                <input
+                  type="checkbox"
+                  checked={selectedIds.length === gridData.length && gridData.length > 0}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      if (selectAll) selectAll()
+                    } else {
+                      if (clearSelection) clearSelection()
+                    }
+                  }}
+                  className="w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer"
+                />
+              )}
+            </th>
             {['WBS', 'Task Name', 'Tag', 'Owner', 'Start', 'Finish', 'Duration', 'Float', 'Cost', 'Status'].map(h => (
               <th key={h} className="px-3 py-2 border-b-2 border-app-border bg-app-muted-surface sticky top-0 first:rounded-tl-lg last:rounded-tr-lg z-10 whitespace-nowrap">
                 {h}
@@ -45,9 +65,19 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect }:
             return (
               <tr 
                 key={r.id} 
-                className="hover:bg-app-hover cursor-pointer transition-colors"
+                className={`group hover:bg-app-hover cursor-pointer transition-colors ${selectedIds.includes(r.id) ? 'bg-indigo-500/5' : ''}`}
                 onClick={() => onSelect(r.id)}
               >
+                <td className="px-3 py-2.5 border-b border-app-border w-8" onClick={(e) => e.stopPropagation()}>
+                  {toggleSelection && (
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(r.id)}
+                      onChange={() => toggleSelection(r.id)}
+                      className={`w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
+                    />
+                  )}
+                </td>
                 <td className="px-3 py-2.5 border-b border-app-border text-app-subtle font-mono text-[10px] whitespace-nowrap">
                   {r.code}
                 </td>

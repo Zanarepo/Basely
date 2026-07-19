@@ -94,3 +94,19 @@ export async function deleteActualCost(id: string) {
   if (error) throw error
   return { success: true }
 }
+
+export async function bulkDeleteActualCosts(ids: string[]) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('You must be signed in')
+  if (!ids || ids.length === 0) return { success: true }
+
+  const { error } = await supabase
+    .from('actual_costs')
+    .delete()
+    .in('id', ids)
+
+  if (error) throw error
+  return { success: true }
+}

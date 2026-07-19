@@ -201,3 +201,51 @@ export async function updateWbsSortOrders(
   revalidatePath(`/dashboard/projects/${projectId}`)
   return { ok: true }
 }
+
+export async function bulkImportWbsElements(
+  projectId: string,
+  elements: any[]
+): Promise<ActionResponse> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { ok: false, error: 'You must be signed in' }
+
+  if (!elements || elements.length === 0) return { ok: true }
+
+  const { error } = await supabase
+    .from('wbs_elements')
+    .insert(elements)
+
+  if (error) return { ok: false, error: error.message }
+
+  await recalculateSchedule(projectId)
+
+  revalidatePath(`/dashboard/projects/${projectId}`)
+  revalidatePath('/dashboard')
+  return { ok: true }
+}
+
+export async function bulkDeleteWbsElements(
+  ids: string[],
+  projectId: string
+): Promise<ActionResponse> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { ok: false, error: 'You must be signed in' }
+  if (!ids || ids.length === 0) return { ok: true }
+
+  const { error } = await supabase
+    .from('wbs_elements')
+    .delete()
+    .in('id', ids)
+
+  if (error) return { ok: false, error: error.message }
+
+  await recalculateSchedule(projectId)
+
+  revalidatePath(`/dashboard/projects/${projectId}`)
+  revalidatePath('/dashboard')
+  return { ok: true }
+}

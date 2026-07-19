@@ -6,6 +6,7 @@ import {
   updateWbsElement,
   deleteWbsElement,
   updateWbsSortOrders,
+  bulkDeleteWbsElements,
 } from '@/lib/wbs/actions'
 import type { ToastMessage } from '@/components/dashboard/Toast'
 
@@ -25,6 +26,9 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
   const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null)
+  
+  // Multi-delete Selection
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
 
   // Undo/Redo stacks
   const [undoStack, setUndoStack] = useState<WbsElement[][]>([])
@@ -402,6 +406,66 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
     })
   }
 
+  const handleBulkDelete = () => {
+    if (!hasEditAccess || selectedIds.length === 0) return
+
+    if (!window.confirm(`Are you sure you want to delete ${selectedIds.length} WBS elements? All their children will also be deleted recursively. This action cannot be undone.`)) return
+
+    saveSnapshot(elements)
+
+    // Find all recursive descendants to optimistically remove
+    const idsToDelete = new Set(selectedIds)
+    const queue = [...selectedIds]
+    while (queue.length > 0) {
+      const currentId = queue.shift()!
+      const children = elements.filter(e => e.parentId === currentId)
+      children.forEach(c => {
+        if (!idsToDelete.has(c.id)) {
+          idsToDelete.add(c.id)
+          queue.push(c.id)
+        }
+      })
+    }
+
+    const optimisticList = recalculateClientCodes(elements.filter(el => !idsToDelete.has(el.id)))
+    setElements(optimisticList)
+    if (activeElementId && idsToDelete.has(activeElementId)) {
+      setActiveElementId(null)
+    }
+
+    startTransition(async () => {
+      const result = await bulkDeleteWbsElements(Array.from(idsToDelete), projectId)
+      if (result.ok) {
+        showToast('success', `${idsToDelete.size} WBS elements deleted`)
+        setSelectedIds([])
+        loadElements() // Refresh code alignment
+      } else {
+        showToast('error', `Could not delete elements: ${result.error}`)
+        loadElements() // Rollback
+      }
+    })
+  }
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => {
+      let next = [...prev]
+      if (next.includes(id)) {
+        next = next.filter(sid => sid !== id)
+      } else {
+        next.push(id)
+      }
+      return next
+    })
+  }
+
+  const selectAll = () => {
+    setSelectedIds(elements.map(e => e.id))
+  }
+
+  const clearSelection = () => {
+    setSelectedIds([])
+  }
+
   // Drag and Drop structural moving
   const handleMoveNode = (
     draggedId: string,
@@ -626,6 +690,7 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
     handleRenameElement,
     handleSaveDetails,
     handleDeleteElement,
+    handleBulkDelete,
     handleMoveNode,
     handleToggleExpand,
     handleExpandAll,
@@ -633,5 +698,10 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
     activeElement,
     treeNodes,
     getElementProgress,
+    loadElements,
+    selectedIds,
+    toggleSelection,
+    selectAll,
+    clearSelection,
   }
 }

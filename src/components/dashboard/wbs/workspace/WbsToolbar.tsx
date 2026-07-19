@@ -1,4 +1,4 @@
-import { Undo2, Redo2, Maximize2, Minimize2, Plus, Search, ListTree, Kanban, Table2 } from 'lucide-react'
+import { Undo2, Redo2, Maximize2, Minimize2, Plus, Search, ListTree, Kanban, Table2, Upload, Trash2 } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 
 export type WbsViewType = 'tree' | 'board' | 'grid'
@@ -17,6 +17,9 @@ type WbsToolbarProps = {
   handleExpandAll: () => void
   handleCollapseAll: () => void
   handleCreateElement: (parentId: string | null) => void
+  onImport?: () => void
+  selectedIds?: string[]
+  handleBulkDelete?: () => void
 }
 
 export function WbsToolbar({
@@ -33,6 +36,9 @@ export function WbsToolbar({
   handleExpandAll,
   handleCollapseAll,
   handleCreateElement,
+  onImport,
+  selectedIds = [],
+  handleBulkDelete,
 }: WbsToolbarProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-app-surface border border-app-border rounded-2xl backdrop-blur-md">
@@ -112,14 +118,36 @@ export function WbsToolbar({
 
         {/* Add sibling root button */}
         {hasEditAccess && (
-          <button
-            type="button"
-            onClick={() => handleCreateElement(null)}
-            className="btn-ghost-accent py-1.5 px-3 rounded-xl flex items-center gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            Add Root Element
-          </button>
+          <>
+            {selectedIds.length > 0 && handleBulkDelete && (
+              <button
+                type="button"
+                onClick={handleBulkDelete}
+                className="flex items-center justify-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-sm font-medium transition-colors shrink-0"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Selected ({selectedIds.length})
+              </button>
+            )}
+            {onImport && (
+              <button
+                type="button"
+                onClick={onImport}
+                className="btn-ghost-accent py-1.5 px-3 rounded-xl flex items-center gap-1.5"
+              >
+                <Upload className="h-4 w-4" />
+                Import CSV
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => handleCreateElement(null)}
+              className="btn-primary py-1.5 px-3 rounded-xl flex items-center gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              Add Root Element
+            </button>
+          </>
         )}
       </div>
 

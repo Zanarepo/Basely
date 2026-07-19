@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Plus, Upload, Trash2, Pencil, FileText, CheckCircle2, AlertCircle, X, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { Plus, Upload, Trash2, Pencil, FileText, CheckCircle2, AlertCircle, X, Search, ChevronLeft, ChevronRight, Cloud } from 'lucide-react'
 import type { WbsCostData } from '@/lib/cost/types'
-import { recordActualCost, updateActualCost, bulkImportActualCosts, deleteActualCost } from '@/lib/actuals/actions'
+import { recordActualCost, updateActualCost, bulkImportActualCosts, deleteActualCost, bulkDeleteActualCosts } from '@/lib/actuals/actions'
 import { formatCurrency } from '@/lib/utils'
 
 const ITEMS_PER_PAGE = 10
@@ -23,6 +23,7 @@ export default function ActualsView({
   const [isImporting, setIsImporting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
 
   // Search and Pagination
   const [searchTerm, setSearchTerm] = useState('')
@@ -37,7 +38,16 @@ export default function ActualsView({
   // CSV Import State
   const [csvText, setCsvText] = useState('')
   const [importSummary, setImportSummary] = useState<{ success: number; failed: number; errors: string[] } | null>(null)
-  const [importMode, setImportMode] = useState<'upload' | 'paste'>('upload')
+  const [importMode, setImportMode] = useState<'upload' | 'paste' | 'drive'>('upload')
+  const [isConnected, setIsConnected] = useState(false)
+
+  useEffect(() => {
+    const storedToken = sessionStorage.getItem('google_oauth_token')
+    const storedExpiry = sessionStorage.getItem('google_oauth_token_expiry')
+    if (storedToken && storedExpiry && Date.now() < parseInt(storedExpiry, 10)) {
+      setIsConnected(true)
+    }
+  }, [])
 
   // Flatten actuals for display
   const allActuals = useMemo(() => {
@@ -143,8 +153,30 @@ export default function ActualsView({
     try {
       await deleteActualCost(id)
       onDataChange()
+      setSelectedIds(prev => prev.filter(s => s !== id))
     } catch (err: any) {
       alert(err.message || 'Failed to delete')
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) return
+    if (!confirm(`Are you sure you want to delete ${selectedIds.length} actual costs?`)) return
+    
+    try {
+      await bulkDeleteActualCosts(selectedIds)
+      setSelectedIds([])
+      onDataChange()
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete actuals')
+    }
+  }
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(paginatedActuals.map(a => a.id))
+    } else {
+      setSelectedIds([])
     }
   }
 
@@ -219,6 +251,103 @@ export default function ActualsView({
     }
   }
 
+  const handleDriveConnect = () => {
+    setIsSaving(true)
+
+    const loadGoogleAPI = () => {
+      if ((window as any).gapi && (window as any).google) {
+        initPicker()
+        return
+      }
+      const gisScript = document.createElement('script')
+      gisScript.src = 'https://accounts.google.com/gsi/client'
+      gisScript.async = true
+      gisScript.defer = true
+      document.body.appendChild(gisScript)
+
+      const gapiScript = document.createElement('script')
+      gapiScript.src = 'https://apis.google.com/js/api.js'
+      gapiScript.async = true
+      gapiScript.defer = true
+      gapiScript.onload = () => {
+        (window as any).gapi.load('picker', initPicker)
+      }
+      document.body.appendChild(gapiScript)
+    }
+
+    let oauthToken = ''
+    const storedToken = sessionStorage.getItem('google_oauth_token')
+    const storedExpiry = sessionStorage.getItem('google_oauth_token_expiry')
+    
+    if (storedToken && storedExpiry && Date.now() < parseInt(storedExpiry, 10)) {
+      oauthToken = storedToken
+    }
+
+    const initPicker = () => {
+      if (oauthToken) {
+        createPicker(oauthToken)
+        return
+      }
+      try {
+        const client = (window as any).google.accounts.oauth2.initTokenClient({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+          scope: 'https://www.googleapis.com/auth/drive.readonly',
+          callback: (response: any) => {
+            if (response.error !== undefined) throw response
+            oauthToken = response.access_token
+            sessionStorage.setItem('google_oauth_token', oauthToken)
+            sessionStorage.setItem('google_oauth_token_expiry', (Date.now() + 3500 * 1000).toString())
+            setIsConnected(true)
+            createPicker(oauthToken)
+          },
+        })
+        client.requestAccessToken()
+      } catch (err) {
+        alert('Failed to initialize Google authentication.')
+        setIsSaving(false)
+      }
+    }
+
+    const createPicker = (token: string) => {
+      const view = new (window as any).google.picker.View((window as any).google.picker.ViewId.DOCS)
+      view.setMimeTypes('text/csv,application/vnd.google-apps.spreadsheet')
+
+      const picker = new (window as any).google.picker.PickerBuilder()
+        .enableFeature((window as any).google.picker.Feature.NAV_HIDDEN)
+        .setDeveloperKey(process.env.NEXT_PUBLIC_GOOGLE_API_KEY)
+        .setAppId(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.split('-')[0])
+        .setOAuthToken(token)
+        .addView(view)
+        .setCallback(pickerCallback)
+        .build()
+      picker.setVisible(true)
+    }
+
+    const pickerCallback = async (data: any) => {
+      if (data.action === (window as any).google.picker.Action.PICKED) {
+        const fileId = data.docs[0].id
+        const mimeType = data.docs[0].mimeType
+        try {
+          const url = mimeType === 'application/vnd.google-apps.spreadsheet'
+            ? `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/csv`
+            : `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`
+          const res = await fetch(url, { headers: { Authorization: `Bearer ${oauthToken}` } })
+          if (!res.ok) throw new Error('Failed to fetch file from Google Drive.')
+          const text = await res.text()
+          setCsvText(text)
+          alert('File loaded from Google Drive! Click "Run Import" to process it.')
+        } catch (err: any) {
+          alert(err.message || 'Failed to import CSV from Drive.')
+        } finally {
+          setIsSaving(false)
+        }
+      } else if (data.action === (window as any).google.picker.Action.CANCEL) {
+        setIsSaving(false)
+      }
+    }
+    loadGoogleAPI()
+  }
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -239,6 +368,15 @@ export default function ActualsView({
         <div className="flex gap-2">
           {hasEditAccess && (
             <>
+              {selectedIds.length > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-semibold rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Selected ({selectedIds.length})
+                </button>
+              )}
               <button
                 onClick={() => { setIsImporting(true); setImportSummary(null); setCsvText(''); setIsAdding(false); setEditingId(null); }}
                 className="flex items-center gap-2 px-4 py-2 bg-app-surface border border-app-border text-app-fg text-sm font-semibold rounded-lg hover:bg-app-hover transition-colors"
@@ -368,9 +506,19 @@ export default function ActualsView({
                 >
                   Paste Text
                 </button>
+                <button
+                  onClick={() => setImportMode('drive')}
+                  className={`flex-1 py-2 px-4 rounded-xl text-sm font-semibold border transition-all ${
+                    importMode === 'drive'
+                      ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400'
+                      : 'bg-app-muted-surface border-app-border text-app-muted hover:text-app-fg hover:bg-app-hover'
+                  }`}
+                >
+                  Google Drive
+                </button>
               </div>
 
-              {importMode === 'upload' ? (
+              {importMode === 'upload' && (
                 <div className="border-2 border-dashed border-app-border rounded-xl p-8 text-center bg-app-muted-surface/50 mb-6">
                   <Upload className="w-8 h-8 text-app-muted mx-auto mb-3" />
                   <p className="text-sm font-medium text-app-fg mb-1">Select a CSV file to upload</p>
@@ -381,7 +529,9 @@ export default function ActualsView({
                   </label>
                   {csvText && <p className="mt-3 text-xs text-indigo-500 font-medium">File loaded. Ready to import.</p>}
                 </div>
-              ) : (
+              )}
+              
+              {importMode === 'paste' && (
                 <div className="mb-6">
                   <p className="text-sm text-app-subtle mb-2">
                     Ensure the first row has headers: <strong>WBS, Amount, Date, Description</strong>.
@@ -392,6 +542,22 @@ export default function ActualsView({
                     className="w-full h-48 px-3 py-2 bg-app-input border border-app-border rounded-xl text-app-fg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                     placeholder="WBS, Amount, Date, Description&#10;1.1.1, 5000, 2026-07-20, Invoice #102"
                   />
+                </div>
+              )}
+
+              {importMode === 'drive' && (
+                <div className="border border-app-border rounded-xl p-8 text-center bg-app-muted-surface/50 mb-6">
+                  <Cloud className="w-8 h-8 text-indigo-500 mx-auto mb-3" />
+                  <p className="text-sm font-medium text-app-fg mb-1">Select from Google Drive</p>
+                  <p className="text-xs text-app-subtle mb-4">Securely pick a CSV or Sheet straight from your Drive</p>
+                  <button 
+                    onClick={handleDriveConnect}
+                    disabled={isSaving}
+                    className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm disabled:opacity-50"
+                  >
+                    {isSaving ? 'Loading...' : isConnected ? 'Select File' : 'Connect & Select File'}
+                  </button>
+                  {csvText && <p className="mt-3 text-xs text-indigo-500 font-medium">File loaded. Ready to import.</p>}
                 </div>
               )}
               
@@ -426,7 +592,7 @@ export default function ActualsView({
                 disabled={isSaving || !csvText.trim()}
                 className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50"
               >
-                {isSaving ? 'Importing...' : 'Run Import'}
+                {isSaving && importMode !== 'drive' ? 'Importing...' : 'Run Import'}
               </button>
             </div>
           </div>
@@ -454,6 +620,14 @@ export default function ActualsView({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-app-muted-surface border-b border-app-border">
+                <th className="px-6 py-3 text-xs font-semibold text-app-muted uppercase tracking-wider w-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.length === paginatedActuals.length && paginatedActuals.length > 0}
+                    onChange={handleSelectAll}
+                    className="w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer"
+                  />
+                </th>
                 <th className="px-6 py-3 text-xs font-semibold text-app-muted uppercase tracking-wider">Date</th>
                 <th className="px-6 py-3 text-xs font-semibold text-app-muted uppercase tracking-wider">WBS</th>
                 <th className="px-6 py-3 text-xs font-semibold text-app-muted uppercase tracking-wider">Description</th>
@@ -465,14 +639,28 @@ export default function ActualsView({
             <tbody className="divide-y divide-app-border">
               {paginatedActuals.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-app-subtle">
+                  <td colSpan={7} className="px-6 py-8 text-center text-sm text-app-subtle">
                     <FileText className="w-8 h-8 mx-auto mb-2 opacity-20" />
                     {searchTerm ? 'No actuals match your search.' : 'No actual costs recorded yet.'}
                   </td>
                 </tr>
               ) : (
                 paginatedActuals.map(actual => (
-                  <tr key={actual.id} className="hover:bg-app-hover group">
+                  <tr key={actual.id} className={`hover:bg-app-hover group ${selectedIds.includes(actual.id) ? 'bg-indigo-500/5' : ''}`}>
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(actual.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedIds(prev => [...prev, actual.id])
+                          } else {
+                            setSelectedIds(prev => prev.filter(id => id !== actual.id))
+                          }
+                        }}
+                        className={`w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
+                      />
+                    </td>
                     <td className="px-6 py-4 text-sm text-app-fg whitespace-nowrap">
                       {new Date(actual.date).toLocaleDateString()}
                     </td>

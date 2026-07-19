@@ -36,6 +36,10 @@ type WbsTreeProps = {
   setDraggedNodeId: (id: string | null) => void
   workspaceMembers: { userId: string; name: string; email: string; role?: string }[]
   getElementProgress: (id: string) => number
+  selectedIds: string[]
+  toggleSelection: (id: string) => void
+  selectAll: () => void
+  clearSelection: () => void
 }
 
 function getStatusColor(status: WbsStatus) {
@@ -75,9 +79,27 @@ export function WbsTree({
   setDraggedNodeId,
   workspaceMembers,
   getElementProgress,
+  selectedIds,
+  toggleSelection,
+  selectAll,
+  clearSelection,
 }: WbsTreeProps) {
   return (
     <div className="space-y-1 min-w-[800px] pb-4">
+      {treeNodes.length > 0 && (
+        <div className="flex items-center gap-3 p-3 mb-2 bg-app-muted-surface border border-app-border rounded-xl">
+          <input
+            type="checkbox"
+            checked={selectedIds.length > 0 && selectedIds.length >= document.querySelectorAll('[data-wbs-node]').length}
+            onChange={(e) => {
+              if (e.target.checked) selectAll()
+              else clearSelection()
+            }}
+            className="w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer ml-1"
+          />
+          <span className="text-xs font-semibold text-app-muted uppercase tracking-wider">Select All</span>
+        </div>
+      )}
       {treeNodes.map((node) => (
         <WbsNodeRow
           key={node.element.id}
@@ -97,6 +119,8 @@ export function WbsTree({
           setDraggedNodeId={setDraggedNodeId}
           workspaceMembers={workspaceMembers}
           getElementProgress={getElementProgress}
+          selectedIds={selectedIds}
+          toggleSelection={toggleSelection}
         />
       ))}
     </div>
@@ -120,6 +144,8 @@ type WbsNodeRowProps = {
   setDraggedNodeId: (id: string | null) => void
   workspaceMembers: { userId: string; name: string; email: string; role?: string }[]
   getElementProgress: (id: string) => number
+  selectedIds: string[]
+  toggleSelection: (id: string) => void
 }
 
 function WbsNodeRow({
@@ -139,6 +165,8 @@ function WbsNodeRow({
   setDraggedNodeId,
   workspaceMembers,
   getElementProgress,
+  selectedIds,
+  toggleSelection,
 }: WbsNodeRowProps) {
   const { element, children } = node
   const isExpanded = expandedNodeIds.has(element.id)
@@ -251,6 +279,7 @@ function WbsNodeRow({
     <div className="space-y-1">
       {/* Node row */}
       <div
+        data-wbs-node
         ref={rowRef}
         draggable={hasEditAccess && !isEditing}
         onDragStart={handleDragStart}
@@ -260,13 +289,21 @@ function WbsNodeRow({
         onDrop={handleDrop}
         onClick={() => onSelect(element.id)}
         className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer select-none group/row ${
-          isActive
+          isActive || selectedIds.includes(element.id)
             ? 'bg-indigo-500/10 border-indigo-500/30 dark:border-indigo-500/25 shadow-xs'
             : 'bg-app-surface-solid border-app-border hover:bg-app-hover hover:border-app-border'
         } ${draggedNodeId === element.id ? 'opacity-40 border-dashed' : ''} ${dropBorderClass}`}
         style={{ paddingLeft: indentPadding }}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+            <input
+              type="checkbox"
+              checked={selectedIds.includes(element.id)}
+              onChange={() => toggleSelection(element.id)}
+              className={`w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer ml-1 transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover/row:opacity-100 focus:opacity-100'}`}
+            />
+          </div>
           {/* Collapse/Expand Toggle Arrow */}
           <div className="w-5 h-5 shrink-0 flex items-center justify-center">
             {hasChildren ? (
@@ -456,6 +493,8 @@ function WbsNodeRow({
               setDraggedNodeId={setDraggedNodeId}
               workspaceMembers={workspaceMembers}
               getElementProgress={getElementProgress}
+              selectedIds={selectedIds}
+              toggleSelection={toggleSelection}
             />
           ))}
         </div>

@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { Plus, Edit2, Trash2, Save, X, Percent, Search } from 'lucide-react'
+import { Plus, Edit2, Trash2, Save, X, Percent, Search, Upload } from 'lucide-react'
 import { ResourceRate, ResourceType, ResourceUnit } from '@/lib/cost/types'
-import { createResourceRate, updateResourceRate, deleteResourceRate, updateGlobalOverhead, updateProjectContingency } from '@/lib/cost/actions'
+import { createResourceRate, updateResourceRate, deleteResourceRate, updateGlobalOverhead, updateProjectContingency, bulkDeleteResourceRates } from '@/lib/cost/actions'
 import { formatCurrency } from '@/lib/utils'
+import { ResourceRatesImportModal } from './ResourceRatesImportModal'
 
 interface ResourceRatesManagerProps {
   projectId: string
@@ -30,6 +31,8 @@ export default function ResourceRatesManager({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [isImporting, setIsImporting] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   
   // Form State
   const [name, setName] = useState('')
@@ -107,9 +110,32 @@ export default function ResourceRatesManager({
     try {
       await deleteResourceRate(id)
       onDataChange()
+      setSelectedIds(prev => prev.filter(s => s !== id))
     } catch (error) {
       console.error('Failed to delete resource rate:', error)
       alert('Failed to delete resource rate. It might be assigned to activities.')
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) return
+    if (!confirm(`Are you sure you want to delete ${selectedIds.length} resources?`)) return
+    
+    try {
+      await bulkDeleteResourceRates(selectedIds)
+      setSelectedIds([])
+      onDataChange()
+    } catch (error) {
+      console.error('Failed to bulk delete resource rates:', error)
+      alert('Failed to delete resource rates.')
+    }
+  }
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(filteredRates.map(r => r.id))
+    } else {
+      setSelectedIds([])
     }
   }
 
@@ -278,13 +304,31 @@ export default function ResourceRatesManager({
               />
             </div>
             {hasEditAccess && !isCreating && (
-              <button
-                onClick={startCreate}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium transition-colors shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-                Add Resource
-              </button>
+              <div className="flex items-center gap-2">
+                {selectedIds.length > 0 && (
+                  <button
+                    onClick={handleBulkDelete}
+                    className="flex items-center justify-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm font-medium transition-colors shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Selected ({selectedIds.length})
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsImporting(true)}
+                  className="flex items-center justify-center gap-2 px-3 py-1.5 bg-app-muted-surface hover:bg-app-hover border border-app-border text-app-fg rounded-lg text-sm font-medium transition-colors shrink-0"
+                >
+                  <Upload className="w-4 h-4" />
+                  Import CSV
+                </button>
+                <button
+                  onClick={startCreate}
+                  className="flex items-center justify-center gap-2 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium transition-colors shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Resource
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -293,6 +337,14 @@ export default function ResourceRatesManager({
           <table className="w-full text-left text-sm">
             <thead className="bg-app-bg border-b border-app-border text-app-muted">
               <tr>
+                <th className="px-4 py-3 font-medium w-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.length === filteredRates.length && filteredRates.length > 0}
+                    onChange={handleSelectAll}
+                    className="w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer"
+                  />
+                </th>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">Rate</th>
@@ -302,6 +354,7 @@ export default function ResourceRatesManager({
             <tbody className="divide-y divide-app-border">
               {isCreating && (
                 <tr className="bg-indigo-500/5">
+                  <td className="px-4 py-3"></td>
                   <td className="px-4 py-3">
                     <input
                       type="text"
@@ -362,6 +415,7 @@ export default function ResourceRatesManager({
                 if (isEditing) {
                   return (
                     <tr key={r.id} className="bg-indigo-500/5">
+                      <td className="px-4 py-3"></td>
                       <td className="px-4 py-3">
                         <input
                           type="text"
@@ -418,7 +472,21 @@ export default function ResourceRatesManager({
                 }
 
                 return (
-                  <tr key={r.id} className="hover:bg-app-hover transition-colors group">
+                  <tr key={r.id} className={`hover:bg-app-hover transition-colors group ${selectedIds.includes(r.id) ? 'bg-indigo-500/5' : ''}`}>
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(r.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedIds(prev => [...prev, r.id])
+                          } else {
+                            setSelectedIds(prev => prev.filter(id => id !== r.id))
+                          }
+                        }}
+                        className={`w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
+                      />
+                    </td>
                     <td className="px-4 py-3 font-medium text-app-fg">{r.name}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
@@ -450,7 +518,7 @@ export default function ResourceRatesManager({
 
               {resourceRates.length === 0 && !isCreating && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-app-muted">
+                  <td colSpan={5} className="px-4 py-8 text-center text-app-muted">
                     <p>No resource rates defined yet.</p>
                     {hasEditAccess && (
                       <button onClick={startCreate} className="mt-2 text-indigo-500 hover:text-indigo-400 font-medium text-sm">
@@ -464,6 +532,18 @@ export default function ResourceRatesManager({
           </table>
         </div>
       </div>
+
+      {isImporting && (
+        <ResourceRatesImportModal
+          projectId={projectId}
+          projectCurrency={projectCurrency}
+          onClose={() => setIsImporting(false)}
+          onSuccess={() => {
+            setIsImporting(false)
+            onDataChange()
+          }}
+        />
+      )}
     </div>
   )
 }

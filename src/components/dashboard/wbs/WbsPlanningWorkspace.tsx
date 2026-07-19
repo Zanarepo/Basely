@@ -11,6 +11,7 @@ import { ToastContainer } from '@/components/dashboard/Toast'
 // Moduralized Components & Hooks
 import { useWbsPlanning } from './workspace/useWbsPlanning'
 import { WbsToolbar, WbsViewType } from './workspace/WbsToolbar'
+import { WbsImportModal } from './WbsImportModal'
 
 type WbsPlanningWorkspaceProps = {
   projectId: string
@@ -32,6 +33,7 @@ export function WbsPlanningWorkspace({
   callerRole,
 }: WbsPlanningWorkspaceProps) {
   const [currentView, setCurrentView] = useState<WbsViewType>('tree')
+  const [isImporting, setIsImporting] = useState(false)
 
   const {
     elements,
@@ -63,6 +65,12 @@ export function WbsPlanningWorkspace({
     activeElement,
     treeNodes,
     getElementProgress,
+    loadElements,
+    selectedIds,
+    toggleSelection,
+    selectAll,
+    clearSelection,
+    handleBulkDelete,
   } = useWbsPlanning(projectId, hasEditAccess)
 
   const { columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility } = useWbsBoard(projectId, elements)
@@ -95,7 +103,21 @@ export function WbsPlanningWorkspace({
         handleExpandAll={handleExpandAll}
         handleCollapseAll={handleCollapseAll}
         handleCreateElement={handleCreateElement}
+        onImport={() => setIsImporting(true)}
+        selectedIds={selectedIds}
+        handleBulkDelete={handleBulkDelete}
       />
+
+      {isImporting && (
+        <WbsImportModal 
+          projectId={projectId} 
+          onClose={() => setIsImporting(false)} 
+          onSuccess={() => {
+            setIsImporting(false)
+            loadElements()
+          }} 
+        />
+      )}
 
       {/* Main content split panel */}
       {elements.length === 0 ? (
@@ -141,6 +163,10 @@ export function WbsPlanningWorkspace({
                 setDraggedNodeId={setDraggedNodeId}
                 workspaceMembers={workspaceMembers}
                 getElementProgress={getElementProgress}
+                selectedIds={selectedIds}
+                toggleSelection={toggleSelection}
+                selectAll={selectAll}
+                clearSelection={clearSelection}
               />
             )}
             
@@ -176,6 +202,10 @@ export function WbsPlanningWorkspace({
                 elements={elements}
                 workspaceMembers={workspaceMembers}
                 onSelect={setActiveElementId}
+                selectedIds={selectedIds}
+                toggleSelection={toggleSelection}
+                selectAll={selectAll}
+                clearSelection={clearSelection}
               />
             )}
           </div>

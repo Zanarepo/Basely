@@ -319,3 +319,36 @@ export async function deleteBudgetBaseline(baselineId: string) {
   if (error) throw error
   return { success: true }
 }
+
+export async function bulkImportResourceRates(projectId: string, resources: any[]) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('You must be signed in')
+
+  if (!resources || resources.length === 0) return { success: true }
+
+  const { error } = await supabase
+    .from('resource_rates')
+    .insert(resources)
+
+  if (error) throw error
+  return { success: true }
+}
+
+export async function bulkDeleteResourceRates(rateIds: string[]) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('You must be signed in')
+
+  if (!rateIds || rateIds.length === 0) return { success: true }
+
+  const { error } = await supabase
+    .from('resource_rates')
+    .delete()
+    .in('id', rateIds)
+
+  if (error) throw error
+  return { success: true }
+}
