@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { computeCPM } from './cpm'
 import type { Activity, Dependency, CalendarConfig } from './cpm'
@@ -14,7 +14,7 @@ export type ActionResponse<T = any> =
  * updating all calculated early/late dates and float fields.
  */
 export async function recalculateSchedule(projectId: string): Promise<ActionResponse> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // 1. Fetch project details for start date & calendar config
   const { data: project, error: projErr } = await supabase
@@ -190,7 +190,7 @@ export async function createDependency(
   type: 'FS' | 'SS' | 'FF' | 'SF' = 'FS',
   lagDays: number = 0
 ): Promise<ActionResponse> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Insert dependency record
   const { data: dep, error: insertErr } = await supabase
@@ -229,7 +229,7 @@ export async function createDependency(
  * Deletes a dependency and updates dates.
  */
 export async function deleteDependency(projectId: string, dependencyId: string): Promise<ActionResponse> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { error: delErr } = await supabase
     .from('dependencies')
@@ -251,7 +251,7 @@ export async function updateActivityDuration(
   activityId: string,
   duration: number
 ): Promise<ActionResponse> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { error: updErr } = await supabase
     .from('activities')
@@ -274,7 +274,7 @@ export async function updateActivityConstraint(
   constraintType: 'ASAP' | 'Must Start On' | 'Must Finish On' | 'Start No Earlier Than' | 'Finish No Later Than',
   constraintDate: string | null
 ): Promise<ActionResponse> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { error: updErr } = await supabase
     .from('activities')
@@ -296,7 +296,7 @@ export async function updateActivityConstraint(
  * Freezes the current schedule dates as a named baseline.
  */
 export async function saveBaseline(projectId: string, name: string): Promise<ActionResponse> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // 1. Create baseline record
   const { data: bLine, error: baseErr } = await supabase
@@ -343,7 +343,7 @@ export async function saveBaseline(projectId: string, name: string): Promise<Act
  * Fetches the variance between the current schedule and a baseline.
  */
 export async function getScheduleVariance(projectId: string, baselineId: string): Promise<ActionResponse> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: snaps, error: snapErr } = await supabase
     .from('baseline_activity_snapshots')
@@ -369,7 +369,7 @@ export async function getScheduleData(projectId: string): Promise<ActionResponse
   // Trigger automatic recalculation pass (runs WBS auto-heal and CPM engine)
   await recalculateSchedule(projectId)
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: activities, error: actErr } = await supabase
     .from('activities')
@@ -451,7 +451,7 @@ export async function updateActivityScheduling(
     predecessors: { predecessorId: string; type: 'FS' | 'SS' | 'FF' | 'SF'; lagDays: number }[]
   }
 ): Promise<ActionResponse> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // 1. Update activity fields
   const { error: actErr } = await supabase

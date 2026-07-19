@@ -174,6 +174,8 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
             resourceRates={resourceRates} 
             projectCurrency={projectCurrency}
             globalOverhead={globalOverhead}
+            contingencyAmount={contingencyAmount}
+            contingencyType={contingencyType}
             hasEditAccess={hasEditAccess}
             onDataChange={refresh}
           />

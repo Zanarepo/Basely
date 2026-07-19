@@ -1,10 +1,12 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { ArrowLeft, Briefcase, Workflow, CalendarRange, Clock, Lock } from 'lucide-react'
 import { WbsPlanningWorkspace } from '../../../../components/dashboard/wbs/WbsPlanningWorkspace'
 import GanttWorkspace from '../../../../components/dashboard/gantt/GanttWorkspace'
 import CostWorkspace from '../../../../components/dashboard/cost/CostWorkspace'
+import { ProjectTeamRoster } from '../../../../components/dashboard/ProjectTeamRoster'
 
 // Planning components type definition
 type ProjectPageProps = {
@@ -43,8 +45,13 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     notFound()
   }
 
-  // 2. Fetch project workspace members for owner assignment
-  const { data: membersData } = await supabase
+  // 2. Fetch project workspace members for owner assignment (bypass RLS so PMs/Team Members can see everyone)
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SECRET_KEY!
+  )
+
+  const { data: membersData } = await supabaseAdmin
     .from('organization_members')
     .select('user_id, role, is_active, profiles!organization_members_user_id_fkey(full_name, email)')
     .eq('organization_id', project.organization_id)
@@ -69,7 +76,15 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     .eq('user_id', user.id)
     .maybeSingle()
 
-  // 4. Fetch workspace owner to check owner privileges
+  // 4. Fetch assigned project members
+  const { data: projectMembersData } = await supabase
+    .from('project_members')
+    .select('user_id')
+    .eq('project_id', project.id)
+
+  const assignedUserIds = (projectMembersData ?? []).map(pm => pm.user_id)
+
+  // 5. Fetch workspace owner to check owner privileges
   const { data: org } = await supabase
     .from('organizations')
     .select('owner_id')
@@ -83,7 +98,20 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     isOrgOwner ||
     callerRole === 'Admin' ||
     isCreator ||
+    (callerRole === 'PM' && !project.is_archived) ||
+    (callerRole === 'Team Member' && !project.is_archived && assignedUserIds.includes(user.id))
+
+  const canAssignMembers =
+    isOrgOwner ||
+    callerRole === 'Admin' ||
+    isCreator ||
     (callerRole === 'PM' && !project.is_archived)
+
+  const canViewCost =
+    isOrgOwner ||
+    callerRole === 'Admin' ||
+    isCreator ||
+    callerRole === 'PM'
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '—'
@@ -152,16 +180,18 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           >
             Gantt & Scheduling
           </Link>
-          <Link
-            href={`/dashboard/projects/${project.id}?tab=cost`}
-            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-              activeTab === 'cost'
-                ? 'border-indigo-500 text-indigo-500 font-bold'
-                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
-            }`}
-          >
-            Budget & Cost
-          </Link>
+          {canViewCost && (
+            <Link
+              href={`/dashboard/projects/${project.id}?tab=cost`}
+              className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
+                activeTab === 'cost'
+                  ? 'border-indigo-500 text-indigo-500 font-bold'
+                  : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
+              }`}
+            >
+              Budget & Cost
+            </Link>
+          )}
         </nav>
       </div>
 
@@ -172,6 +202,8 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           workspaceMembers={workspaceMembers}
           callerUserId={user.id}
           hasEditAccess={hasEditAccess && !project.is_archived}
+          canAssignMembers={canAssignMembers && !project.is_archived}
+          callerRole={callerRole}
         />
       )}
 
@@ -183,7 +215,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       )}
 
-      {activeTab === 'cost' && (
+      {activeTab === 'cost' && canViewCost && (
         <CostWorkspace
           projectId={project.id}
           hasEditAccess={hasEditAccess && !project.is_archived}

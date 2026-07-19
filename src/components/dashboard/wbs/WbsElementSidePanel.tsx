@@ -20,6 +20,9 @@ type WbsElementSidePanelProps = {
   hasEditAccess: boolean
   customStatuses: string[]
   onAddCustomStatus: (newStatus: string) => void
+  canAssignMembers?: boolean
+  callerRole?: string
+  callerUserId?: string
 }
 
 type PredecessorInput = {
@@ -35,7 +38,10 @@ export function WbsElementSidePanel({
   onSave,
   hasEditAccess,
   customStatuses,
-  onAddCustomStatus
+  onAddCustomStatus,
+  canAssignMembers = false,
+  callerRole,
+  callerUserId,
 }: WbsElementSidePanelProps) {
   // WBS Element States
   const [name, setName] = useState('')
@@ -46,6 +52,10 @@ export function WbsElementSidePanel({
   const [isWorkPackage, setIsWorkPackage] = useState(false)
   const [ownerId, setOwnerId] = useState<string>('')
   const [saving, setSaving] = useState(false)
+
+  const isTeamMember = callerRole === 'Team Member'
+  const isOwnedOrUnassigned = !element || element.ownerId === callerUserId || element.ownerId === null
+  const effectiveEditAccess = hasEditAccess && (!isTeamMember || isOwnedOrUnassigned)
 
   // Scheduling States (Activities & Dependencies)
   const [loadingSchedule, setLoadingSchedule] = useState(false)
@@ -366,11 +376,14 @@ export function WbsElementSidePanel({
               setDeliverables={setDeliverables}
               acceptanceCriteria={acceptanceCriteria}
               setAcceptanceCriteria={setAcceptanceCriteria}
-              hasEditAccess={hasEditAccess}
+              hasEditAccess={effectiveEditAccess}
               saving={saving}
               workspaceMembers={workspaceMembers}
               customStatuses={customStatuses}
               onAddCustomStatus={onAddCustomStatus}
+              canAssignMembers={canAssignMembers}
+              callerRole={callerRole}
+              callerUserId={callerUserId}
             />
 
             {/* --- REACTIVE CALENDAR & SCHEDULING SECTION (WORK PACKAGES ONLY) --- */}
@@ -381,7 +394,7 @@ export function WbsElementSidePanel({
                   autoSchedule={autoSchedule}
                   setAutoSchedule={setAutoSchedule}
                   loadingSchedule={loadingSchedule}
-                  hasEditAccess={hasEditAccess}
+                  hasEditAccess={effectiveEditAccess}
                   saving={saving}
                   startDate={startDate}
                   handleStartDateChange={handleStartDateChange}
@@ -396,7 +409,7 @@ export function WbsElementSidePanel({
                   loadingSchedule={loadingSchedule}
                   projectActivities={projectActivities}
                   predecessors={predecessors}
-                  hasEditAccess={hasEditAccess}
+                  hasEditAccess={effectiveEditAccess}
                   saving={saving}
                   handleTogglePredecessor={handleTogglePredecessor}
                   handleUpdatePredType={handleUpdatePredType}
@@ -416,7 +429,7 @@ export function WbsElementSidePanel({
             >
               Cancel
             </button>
-            {hasEditAccess && (
+            {effectiveEditAccess && (
               <button
                 type="submit"
                 disabled={saving}

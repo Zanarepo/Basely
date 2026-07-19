@@ -1,5 +1,5 @@
 import { useState, useEffect, useTransition, useMemo } from 'react'
-import type { WbsElement } from '@/lib/wbs/constants'
+import type { WbsElement, WbsStatus } from '@/lib/wbs/constants'
 import {
   getWbsElements,
   createWbsElement,

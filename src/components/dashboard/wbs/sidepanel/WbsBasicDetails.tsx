@@ -22,6 +22,9 @@ type WbsBasicDetailsProps = {
   workspaceMembers: { userId: string; name: string; email: string }[]
   customStatuses: string[]
   onAddCustomStatus: (newStatus: string) => void
+  canAssignMembers?: boolean
+  callerRole?: string
+  callerUserId?: string
 }
 
 export function WbsBasicDetails({
@@ -36,7 +39,10 @@ export function WbsBasicDetails({
   saving,
   workspaceMembers,
   customStatuses,
-  onAddCustomStatus
+  onAddCustomStatus,
+  canAssignMembers = false,
+  callerRole,
+  callerUserId
 }: WbsBasicDetailsProps) {
   const [isAddingStatus, setIsAddingStatus] = useState(false)
   const [newStatusName, setNewStatusName] = useState('')
@@ -78,13 +84,15 @@ export function WbsBasicDetails({
         </label>
         <select
           id="wbs-owner"
-          disabled={!hasEditAccess || saving}
+          disabled={saving || (!canAssignMembers && !(callerRole === 'Team Member' && (!ownerId || ownerId === callerUserId)))}
           value={ownerId}
           onChange={(e) => setOwnerId(e.target.value)}
           className="w-full px-3 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 cursor-pointer text-sm disabled:opacity-50"
         >
           <option value="">Unassigned</option>
-          {workspaceMembers.map((m) => (
+          {workspaceMembers
+            .filter((m) => callerRole !== 'Team Member' || m.userId === callerUserId)
+            .map((m) => (
             <option key={m.userId} value={m.userId}>
               {m.name} ({m.email})
             </option>

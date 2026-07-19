@@ -17,6 +17,8 @@ type WbsPlanningWorkspaceProps = {
   workspaceMembers: { userId: string; name: string; email: string }[]
   callerUserId: string
   hasEditAccess: boolean
+  canAssignMembers?: boolean
+  callerRole?: string
 }
 
 import { useWbsBoard } from './workspace/useWbsBoard'
@@ -26,6 +28,8 @@ export function WbsPlanningWorkspace({
   workspaceMembers,
   callerUserId,
   hasEditAccess,
+  canAssignMembers = false,
+  callerRole,
 }: WbsPlanningWorkspaceProps) {
   const [currentView, setCurrentView] = useState<WbsViewType>('tree')
 
@@ -161,6 +165,8 @@ export function WbsPlanningWorkspace({
                   const el = elements.find(e => e.id === id)
                   if (el) handleDeleteElement(el)
                 }}
+                callerRole={callerRole}
+                callerUserId={callerUserId}
               />
             )}
 
@@ -183,8 +189,11 @@ export function WbsPlanningWorkspace({
         onClose={() => setActiveElementId(null)}
         onSave={handleSaveDetails}
         hasEditAccess={hasEditAccess}
+        canAssignMembers={canAssignMembers}
         customStatuses={columns.map((c) => c.name)}
         onAddCustomStatus={addColumn}
+        callerRole={callerRole}
+        callerUserId={callerUserId}
       />
     </div>
   )

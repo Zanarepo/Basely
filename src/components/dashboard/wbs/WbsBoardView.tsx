@@ -20,9 +20,11 @@ type WbsBoardViewProps = {
   onAddCard?: (status: string) => void
   onDeleteCard?: (id: string) => void
   hasEditAccess: boolean
+  callerRole?: string
+  callerUserId?: string
 }
 
-export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility, elements, workspaceMembers, onSelect, onStatusChange, onAddCard, onDeleteCard, hasEditAccess }: WbsBoardViewProps) {
+export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility, elements, workspaceMembers, onSelect, onStatusChange, onAddCard, onDeleteCard, hasEditAccess, callerRole, callerUserId }: WbsBoardViewProps) {
   
   const [isAddingCol, setIsAddingCol] = useState(false)
   const [newColName, setNewColName] = useState('')
@@ -70,6 +72,15 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
       e.preventDefault()
       return
     }
+
+    if (callerRole === 'Team Member') {
+      const task = elements.find(el => el.id === taskId)
+      if (!task || task.ownerId !== callerUserId) {
+        e.preventDefault()
+        return
+      }
+    }
+
     setDraggedTaskId(taskId)
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('taskId', taskId)
