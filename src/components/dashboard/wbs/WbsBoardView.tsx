@@ -1,4 +1,4 @@
-import { Plus, Check, X, Trash2, EyeOff, Eye } from 'lucide-react'
+import { Plus, Check, X, Trash2, EyeOff, Eye, CheckSquare } from 'lucide-react'
 import { useState } from 'react'
 import type { WbsElement } from '@/lib/wbs/constants'
 import type { BoardColumnDef } from './workspace/useWbsBoard'
@@ -22,9 +22,10 @@ type WbsBoardViewProps = {
   hasEditAccess: boolean
   callerRole?: string
   callerUserId?: string
+  onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
 }
 
-export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility, elements, workspaceMembers, onSelect, onStatusChange, onAddCard, onDeleteCard, hasEditAccess, callerRole, callerUserId }: WbsBoardViewProps) {
+export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility, elements, workspaceMembers, onSelect, onStatusChange, onAddCard, onDeleteCard, hasEditAccess, callerRole, callerUserId, onShowToast }: WbsBoardViewProps) {
   
   const [isAddingCol, setIsAddingCol] = useState(false)
   const [newColName, setNewColName] = useState('')
@@ -68,17 +69,13 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
   }
 
   const handleDragStart = (e: React.DragEvent, taskId: string, sourceCol: string) => {
-    if (!hasEditAccess) {
+    const task = elements.find(el => el.id === taskId)
+    const isResponsible = callerRole === 'Team Member' && task?.raciAssignments?.some(a => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId)
+    const canDragTask = hasEditAccess || isResponsible
+
+    if (!canDragTask) {
       e.preventDefault()
       return
-    }
-
-    if (callerRole === 'Team Member') {
-      const task = elements.find(el => el.id === taskId)
-      if (!task || task.ownerId !== callerUserId) {
-        e.preventDefault()
-        return
-      }
     }
 
     setDraggedTaskId(taskId)
@@ -88,13 +85,13 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
   }
 
   const handleDragOverColumn = (e: React.DragEvent) => {
-    if (!hasEditAccess || !draggedTaskId) return
+    if (!draggedTaskId) return
     e.preventDefault() 
     e.dataTransfer.dropEffect = 'move'
   }
 
   const handleDragOverTask = (e: React.DragEvent, targetTaskId: string) => {
-    if (!hasEditAccess || !draggedTaskId) return
+    if (!draggedTaskId) return
     e.preventDefault()
     e.stopPropagation() // Prevent column drag over
     e.dataTransfer.dropEffect = 'move'
@@ -110,12 +107,19 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
   const handleDropOnColumn = (e: React.DragEvent, targetStatus: string) => {
     e.preventDefault()
     setDragOverTaskId(null)
-    if (!hasEditAccess || !draggedTaskId) return
+    if (!draggedTaskId) return
     
     const sourceCol = e.dataTransfer.getData('sourceCol')
     const task = elements.find(t => t.id === draggedTaskId)
     
     if (task) {
+      const hasResponsible = task.raciAssignments?.some(a => a.roleType === 'Responsible')
+      if (!hasResponsible && sourceCol === 'Not Started' && targetStatus !== 'Not Started') {
+        onShowToast?.('info', 'Please assign a Responsible person before starting work.')
+        setDraggedTaskId(null)
+        return
+      }
+
       const targetIndex = taskOrders[targetStatus] ? taskOrders[targetStatus].length : 0
       moveTask(draggedTaskId, sourceCol, targetStatus, targetIndex)
       
@@ -130,12 +134,19 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
     e.preventDefault()
     e.stopPropagation() // Prevent column drop
     setDragOverTaskId(null)
-    if (!hasEditAccess || !draggedTaskId) return
+    if (!draggedTaskId) return
     
     const sourceCol = e.dataTransfer.getData('sourceCol')
     const task = elements.find(t => t.id === draggedTaskId)
     
     if (task) {
+      const hasResponsible = task.raciAssignments?.some(a => a.roleType === 'Responsible')
+      if (!hasResponsible && sourceCol === 'Not Started' && targetStatus !== 'Not Started') {
+        onShowToast?.('info', 'Please assign a Responsible person before starting work.')
+        setDraggedTaskId(null)
+        return
+      }
+
       const targetColOrder = taskOrders[targetStatus] || []
       let targetIndex = targetColOrder.indexOf(targetTaskId)
       if (targetIndex === -1) targetIndex = targetColOrder.length
@@ -266,26 +277,33 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
             </div>
             <div className="flex-1 space-y-3 overflow-y-auto p-3 pt-2">
               {columnTasks.map((t) => {
-                const owner = workspaceMembers.find((m) => m.userId === t.ownerId)
-                const ownerInitials = owner?.name
-                  ? owner.name.substring(0, 2).toUpperCase()
-                  : '??'
-
+                const responsible = t.raciAssignments?.find(a => a.roleType === 'Responsible')
+                const responsibleName = responsible?.stakeholder?.name || null
+                const isMissingRaci = !t.raciAssignments?.some(a => a.roleType === 'Responsible') || !t.raciAssignments?.some(a => a.roleType === 'Accountable')
+                
+                const initials = responsibleName
+                  ? responsibleName.substring(0, 2).toUpperCase()
+                  : null
                 const parentElement = t.parentId ? elements.find(e => e.id === t.parentId) : null
                 const tagText = parentElement ? parentElement.name : 'Work Package'
+
+                const isResponsible = callerRole === 'Team Member' && t.raciAssignments?.some(a => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId)
+                const canDragTask = hasEditAccess || isResponsible
 
                 return (
                   <div
                     key={t.id}
                     onClick={() => onSelect(t.id)}
-                    draggable={hasEditAccess}
+                    draggable={canDragTask}
                     onDragStart={(e) => handleDragStart(e, t.id, col.name)}
                     onDragOver={(e) => handleDragOverTask(e, t.id)}
                     onDragLeave={handleDragLeaveTask}
                     onDrop={(e) => handleDropOnTask(e, t.id, col.name)}
                     onDragEnd={() => { setDraggedTaskId(null); setDragOverTaskId(null); }}
-                    className={`bg-app-surface border rounded-xl p-4 shadow-sm transition-all cursor-pointer group select-none 
-                      ${draggedTaskId === t.id ? 'opacity-40 border-dashed border-app-border' : 'border-app-border hover:shadow-md'}
+                    className={`group/task group relative bg-app-surface border rounded-xl p-3 shadow-xs transition-all duration-200
+                      ${isResponsible ? 'border-indigo-400 ring-1 ring-indigo-400/50 bg-indigo-50/30 dark:bg-indigo-500/5' : 'border-app-border'}
+                      ${canDragTask ? 'cursor-grab active:cursor-grabbing hover:border-indigo-400 hover:shadow-md' : 'cursor-pointer hover:border-slate-300'}
+                      ${draggedTaskId === t.id ? 'opacity-40 border-dashed scale-95' : ''}
                       ${dragOverTaskId === t.id ? 'border-t-2 border-t-indigo-500 transform translate-y-1' : ''}
                     `}
                   >
@@ -293,6 +311,11 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
                       <span className="inline-block text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                         {t.code}
                       </span>
+                      {isResponsible && (
+                        <span className="ml-2 text-[9px] font-bold tracking-wide text-indigo-600 bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-500/20 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-500/30">
+                          YOURS
+                        </span>
+                      )}
                       <div className="flex items-center gap-1.5 ml-auto">
                         {hasEditAccess && onDeleteCard && (
                           <button
@@ -322,19 +345,48 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
                       {t.name}
                     </div>
                     
+                    {t.deliverablesData && t.deliverablesData.length > 0 && (
+                      <div className="flex items-center gap-1.5 mb-1 text-[10px] font-medium text-indigo-500/80">
+                        <CheckSquare className="w-3 h-3" />
+                        {(() => {
+                          const completed = t.deliverablesData.filter(d => d.completed).length
+                          const total = t.deliverablesData.length
+                          const percent = Math.round((completed / total) * 100)
+                          return `Deliverables: ${completed}/${total} (${percent}%)`
+                        })()}
+                      </div>
+                    )}
+
+                    {t.acceptanceCriteriaData && t.acceptanceCriteriaData.length > 0 && (
+                      <div className="flex items-center gap-1.5 mb-3 text-[10px] font-medium text-emerald-500/80">
+                        <CheckSquare className="w-3 h-3" />
+                        {(() => {
+                          const completed = t.acceptanceCriteriaData.filter(d => d.completed).length
+                          const total = t.acceptanceCriteriaData.length
+                          const percent = Math.round((completed / total) * 100)
+                          return `Criteria: ${completed}/${total} (${percent}%)`
+                        })()}
+                      </div>
+                    )}
+                    
                     <div className="flex items-center justify-between mt-auto">
-                      {t.ownerId ? (
-                        <div
-                          className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-white text-[9px] flex items-center justify-center font-semibold shrink-0"
-                          title={owner?.name || 'Unknown'}
-                        >
-                          {ownerInitials}
-                        </div>
-                      ) : (
-                        <div className="w-6 h-6 rounded-full border border-dashed border-app-border flex items-center justify-center text-app-subtle text-[10px]">
-                          +
-                        </div>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        {initials ? (
+                          <div
+                            className="w-6 h-6 rounded-full bg-emerald-500 text-white text-[9px] flex items-center justify-center font-semibold shrink-0"
+                            title={`Responsible: ${responsibleName}`}
+                          >
+                            {initials}
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 rounded-full border border-dashed border-app-border flex items-center justify-center text-app-subtle text-[10px]" title="No Responsible assigned">
+                            +
+                          </div>
+                        )}
+                        {isMissingRaci && (
+                          <span title="Missing Responsible or Accountable assignment" className="text-amber-500 text-xs cursor-help">⚠️</span>
+                        )}
+                      </div>
                       
                       {/* Workflow stage progress bar */}
                       <div className="w-16 h-1.5 bg-app-muted-surface rounded-full overflow-hidden" title={`Workflow Stage: ${visibleColIndex + 1} of ${visibleColumns.length}`}>

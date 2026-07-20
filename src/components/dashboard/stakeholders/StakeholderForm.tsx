@@ -131,11 +131,11 @@ export function StakeholderForm({ projectId, stakeholderId, onClose, workspaceMe
   return (
     <>
       <div 
-        className="absolute inset-0 z-40 bg-transparent" 
+        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs" 
         onClick={onClose}
         aria-label="Close form"
       />
-      <div className="absolute inset-y-0 right-0 w-96 bg-app-surface-solid border-l border-app-border shadow-2xl flex flex-col z-50">
+      <div className="fixed inset-y-0 right-0 w-96 bg-app-surface-solid border-l border-app-border shadow-2xl flex flex-col z-50 animate-fade-in-right">
         <div className="flex items-center justify-between p-4 border-b border-app-border bg-app-surface/50">
         <h3 className="font-bold text-app-fg text-lg">
           {stakeholderId ? 'Edit Stakeholder' : 'Add Stakeholder'}

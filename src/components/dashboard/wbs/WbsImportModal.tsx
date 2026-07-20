@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Upload, X, AlertCircle, CheckCircle2, Cloud } from 'lucide-react'
+import { Upload, X, AlertCircle, CheckCircle2, Cloud, Loader2 } from 'lucide-react'
 import { bulkImportWbsElements } from '@/lib/wbs/actions'
 
 type Props = {
@@ -162,28 +162,29 @@ export function WbsImportModal({ projectId, onClose, onSuccess }: Props) {
       const parsedElements = []
       
       for (let i = 1; i < rows.length; i++) {
-        // Split by comma, but handle quotes if necessary (simple split for now, assuming standard CSV without commas in values)
-        // A better regex for CSV parsing to ignore commas inside quotes:
-        const cols = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''))
+        const rawCols = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+        const cols = rawCols.map(c => c.trim().replace(/^"|"$/g, ''))
         
         if (cols.length <= idxName || !cols[idxName]) continue
+
+        const rawName = rawCols[idxName].replace(/^"|"$/g, '')
+        const indentLevel = rawName.match(/^\s*/)?.[0].length || 0
 
         parsedElements.push({
           rowNum: i + 1,
           name: cols[idxName],
           wbsCode: idxWbs >= 0 ? cols[idxWbs] : '',
-          type: idxType >= 0 ? cols[idxType].toLowerCase() : 'task',
+          type: idxType >= 0 ? cols[idxType].toLowerCase() : '',
+          indent: indentLevel,
           id: crypto.randomUUID()
         })
       }
 
-      let currentParentId: string | null = null
-      let currentParentSortOrder = 0
-      let childSortOrder = 0
+      let hierarchyStack: { id: string, indent: number }[] = []
+      let sortOrderCounter = 1000
       
       // Map to link codes to UUIDs if codes are present
       const codeToIdMap = new Map<string, string>()
-      
       const hasCodes = parsedElements.some(e => e.wbsCode)
 
       for (const el of parsedElements) {
@@ -201,18 +202,32 @@ export function WbsImportModal({ projectId, onClose, onSuccess }: Props) {
           sortOrder = parseInt(parts[parts.length - 1], 10) * 1000 || 1000
           isWorkPackage = el.type === 'task' || el.type === 'work package'
         } else {
-          // Smart parsing based on type and order
-          if (el.type === 'summary') {
-            currentParentId = el.id
-            currentParentSortOrder += 1000
-            sortOrder = currentParentSortOrder
-            childSortOrder = 0
-            isWorkPackage = false
+          // Smart parsing based on indentation or type
+          if (el.indent > 0 || hierarchyStack.length > 0) {
+            // Indentation-based hierarchy
+            while (hierarchyStack.length > 0 && hierarchyStack[hierarchyStack.length - 1].indent >= el.indent) {
+              hierarchyStack.pop()
+            }
+            if (hierarchyStack.length > 0) {
+              parentId = hierarchyStack[hierarchyStack.length - 1].id
+            }
+            hierarchyStack.push({ id: el.id, indent: el.indent })
+            sortOrder = sortOrderCounter
+            sortOrderCounter += 1000
+            isWorkPackage = el.type === 'task' || el.type === 'work package' || el.type === ''
           } else {
-            parentId = currentParentId
-            childSortOrder += 1000
-            sortOrder = childSortOrder
-            isWorkPackage = true
+            // Type-based hierarchy fallback
+            if (el.type === 'summary') {
+              hierarchyStack = [{ id: el.id, indent: 0 }]
+              sortOrder = sortOrderCounter
+              sortOrderCounter += 1000
+              isWorkPackage = false
+            } else {
+              parentId = hierarchyStack.length > 0 ? hierarchyStack[0].id : null
+              sortOrder = sortOrderCounter
+              sortOrderCounter += 1000
+              isWorkPackage = true
+            }
           }
         }
 
@@ -236,11 +251,7 @@ export function WbsImportModal({ projectId, onClose, onSuccess }: Props) {
       }
 
       setImportSummary({ success, failed, errors })
-      if (failed === 0) {
-        setTimeout(() => {
-          onSuccess()
-        }, 3000)
-      }
+      // Removed automatic timeout to let user see success message
     } catch (err: any) {
       alert(err.message || 'Import failed')
     } finally {
@@ -258,7 +269,15 @@ export function WbsImportModal({ projectId, onClose, onSuccess }: Props) {
           </button>
         </div>
         
-        <div className="p-6">
+        <div className="p-6 relative">
+          {/* Loading Overlay */}
+          {isImporting && (
+            <div className="absolute inset-0 z-10 bg-app-surface/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-b-2xl">
+              <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-4" />
+              <p className="text-sm font-semibold text-app-fg">Importing Data...</p>
+              <p className="text-xs text-app-muted mt-1">Please wait while we process your file.</p>
+            </div>
+          )}
           <div className="flex gap-4 mb-6">
             <button
               onClick={() => setImportMode('upload')}
@@ -354,20 +373,30 @@ export function WbsImportModal({ projectId, onClose, onSuccess }: Props) {
           )}
         </div>
 
-        <div className="flex justify-end gap-2 p-6 border-t border-app-border bg-app-muted-surface">
+        <div className="flex justify-end gap-2 p-6 border-t border-app-border bg-app-muted-surface relative z-20">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-app-muted hover:text-app-fg text-sm font-semibold rounded-lg transition-colors"
+            disabled={isImporting}
+            className="px-4 py-2 text-app-muted hover:text-app-fg text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
-          <button
-            onClick={handleImport}
-            disabled={isImporting || !csvText.trim()}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm"
-          >
-            {isImporting && importMode !== 'drive' ? 'Importing...' : 'Run Import'}
-          </button>
+          {importSummary && importSummary.failed === 0 ? (
+            <button
+              onClick={onSuccess}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+            >
+              Done
+            </button>
+          ) : (
+            <button
+              onClick={handleImport}
+              disabled={isImporting || !csvText.trim()}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm"
+            >
+              Run Import
+            </button>
+          )}
         </div>
       </div>
     </div>

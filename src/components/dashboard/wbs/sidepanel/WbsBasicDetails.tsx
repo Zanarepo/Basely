@@ -1,23 +1,24 @@
-import { User, FileText, CheckSquare, Plus, Check, X } from 'lucide-react'
+import { User, FileText, CheckSquare, Plus, Check, X, ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
-import type { WbsStatus } from '@/lib/wbs/constants'
+import type { WbsStatus, ChecklistItem } from '@/lib/wbs/constants'
+import { WbsChecklist } from './WbsChecklist'
 
 type WbsBasicDetailsProps = {
   name: string
   setName: (val: string) => void
-  ownerId: string
-  setOwnerId: (val: string) => void
   status: WbsStatus
   setStatus: (val: WbsStatus) => void
   isWorkPackage: boolean
   setIsWorkPackage: React.Dispatch<React.SetStateAction<boolean>>
   description: string
   setDescription: (val: string) => void
-  deliverables: string
-  setDeliverables: (val: string) => void
-  acceptanceCriteria: string
-  setAcceptanceCriteria: (val: string) => void
+  deliverablesData: ChecklistItem[]
+  setDeliverablesData: React.Dispatch<React.SetStateAction<ChecklistItem[]>>
+  acceptanceCriteriaData: ChecklistItem[]
+  setAcceptanceCriteriaData: React.Dispatch<React.SetStateAction<ChecklistItem[]>>
   hasEditAccess: boolean
+  canCheckDeliverables?: boolean
+  canCheckCriteria?: boolean
   saving: boolean
   workspaceMembers: { userId: string; name: string; email: string }[]
   customStatuses: string[]
@@ -25,37 +26,42 @@ type WbsBasicDetailsProps = {
   canAssignMembers?: boolean
   callerRole?: string
   callerUserId?: string
+  onAutoSaveDeliverables?: (items: ChecklistItem[]) => void
+  onAutoSaveCriteria?: (items: ChecklistItem[]) => void
 }
 
 export function WbsBasicDetails({
   name, setName,
-  ownerId, setOwnerId,
   status, setStatus,
   isWorkPackage, setIsWorkPackage,
   description, setDescription,
-  deliverables, setDeliverables,
-  acceptanceCriteria, setAcceptanceCriteria,
+  deliverablesData, setDeliverablesData,
+  acceptanceCriteriaData, setAcceptanceCriteriaData,
   hasEditAccess,
+  canCheckDeliverables,
+  canCheckCriteria,
   saving,
-  workspaceMembers,
   customStatuses,
   onAddCustomStatus,
-  canAssignMembers = false,
-  callerRole,
-  callerUserId
+  onAutoSaveDeliverables,
+  onAutoSaveCriteria
 }: WbsBasicDetailsProps) {
   const [isAddingStatus, setIsAddingStatus] = useState(false)
   const [newStatusName, setNewStatusName] = useState('')
+  const [isScopeOpen, setIsScopeOpen] = useState(false)
 
   const handleSaveNewStatus = () => {
     const trimmed = newStatusName.trim()
     if (trimmed) {
       onAddCustomStatus(trimmed)
-      setStatus(trimmed)
+      setStatus(trimmed as WbsStatus)
     }
     setNewStatusName('')
     setIsAddingStatus(false)
   }
+
+  // Fallback to hasEditAccess if canCheckDeliverables isn't explicitly passed
+  const isCheckboxEnabled = (!saving) && (canCheckDeliverables ?? hasEditAccess)
 
   return (
     <>
@@ -76,29 +82,7 @@ export function WbsBasicDetails({
         />
       </div>
 
-      {/* Owner */}
-      <div className="space-y-2">
-        <label htmlFor="wbs-owner" className="auth-label flex items-center gap-1.5">
-          <User className="h-3.5 w-3.5 text-app-subtle" />
-          Assigned Owner
-        </label>
-        <select
-          id="wbs-owner"
-          disabled={saving || (!canAssignMembers && !(callerRole === 'Team Member' && (!ownerId || ownerId === callerUserId)))}
-          value={ownerId}
-          onChange={(e) => setOwnerId(e.target.value)}
-          className="w-full px-3 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 cursor-pointer text-sm disabled:opacity-50"
-        >
-          <option value="">Unassigned</option>
-          {workspaceMembers
-            .filter((m) => callerRole !== 'Team Member' || m.userId === callerUserId)
-            .map((m) => (
-            <option key={m.userId} value={m.userId}>
-              {m.name} ({m.email})
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* Owner Removed - Handled by RACI */}
 
       {/* Status & Work Package Toggle */}
       <div className="grid grid-cols-2 gap-4">
@@ -178,52 +162,69 @@ export function WbsBasicDetails({
         </div>
       </div>
 
-      {/* Description */}
-      <div className="space-y-2">
-        <label htmlFor="wbs-description" className="auth-label flex items-center gap-1.5">
-          <FileText className="h-3.5 w-3.5 text-app-subtle" />
-          Description
-        </label>
-        <textarea
-          id="wbs-description"
-          disabled={!hasEditAccess || saving}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Describe scope boundaries, key steps, and what this element covers..."
-          className="w-full px-4 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 min-h-[90px] resize-none text-xs disabled:opacity-50"
-        />
-      </div>
+      {/* Scope & Deliverables Accordion */}
+      <div className="border border-app-border rounded-xl overflow-hidden bg-app-surface mt-6">
+        <button
+          type="button"
+          onClick={() => setIsScopeOpen(!isScopeOpen)}
+          className="w-full flex items-center justify-between px-4 py-3 bg-app-surface hover:bg-app-hover transition-colors"
+        >
+          <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
+            <FileText className="w-4 h-4 text-app-muted" />
+            Scope & Deliverables
+          </div>
+          {isScopeOpen ? (
+            <ChevronDown className="w-4 h-4 text-app-muted" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-app-muted" />
+          )}
+        </button>
+        
+        {isScopeOpen && (
+          <div className="p-4 border-t border-app-border bg-app-surface-solid space-y-6">
+            {/* Description */}
+            <div className="space-y-2">
+              <label htmlFor="wbs-description" className="auth-label flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5 text-app-subtle" />
+                Description
+              </label>
+              <textarea
+                id="wbs-description"
+                disabled={!hasEditAccess || saving}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe scope boundaries, key steps, and what this element covers..."
+                className="w-full px-4 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 min-h-[90px] resize-none text-xs disabled:opacity-50"
+              />
+            </div>
 
-      {/* Deliverables (WBS Dictionary terms) */}
-      <div className="space-y-2">
-        <label htmlFor="wbs-deliverables" className="auth-label flex items-center gap-1.5">
-          <FileText className="h-3.5 w-3.5 text-app-subtle" />
-          Tangible Deliverables
-        </label>
-        <textarea
-          id="wbs-deliverables"
-          disabled={!hasEditAccess || saving}
-          value={deliverables}
-          onChange={(e) => setDeliverables(e.target.value)}
-          placeholder="List formal output files, signoffs, physical objects, or assemblies..."
-          className="w-full px-4 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 min-h-[75px] resize-none text-xs disabled:opacity-50"
-        />
-      </div>
+            {/* Deliverables (Interactive Checklist) */}
+            <WbsChecklist
+              title="Tangible Deliverables"
+              icon={<CheckSquare className="h-3.5 w-3.5 text-app-subtle" />}
+              items={deliverablesData}
+              setItems={setDeliverablesData}
+              hasEditAccess={hasEditAccess}
+              canCheckItems={canCheckDeliverables}
+              saving={saving}
+              placeholder="E.g., Design Mockups"
+              onAutoSave={onAutoSaveDeliverables}
+            />
 
-      {/* Acceptance Criteria */}
-      <div className="space-y-2">
-        <label htmlFor="wbs-criteria" className="auth-label flex items-center gap-1.5">
-          <CheckSquare className="h-3.5 w-3.5 text-app-subtle" />
-          Acceptance Criteria
-        </label>
-        <textarea
-          id="wbs-criteria"
-          disabled={!hasEditAccess || saving}
-          value={acceptanceCriteria}
-          onChange={(e) => setAcceptanceCriteria(e.target.value)}
-          placeholder="Define metrics, tests, quality constraints, or conditions that confirm completion..."
-          className="w-full px-4 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 min-h-[75px] resize-none text-xs disabled:opacity-50"
-        />
+            {/* Acceptance Criteria */}
+            <WbsChecklist
+              title="Acceptance Criteria"
+              icon={<CheckSquare className="h-3.5 w-3.5 text-app-subtle" />}
+              items={acceptanceCriteriaData}
+              setItems={setAcceptanceCriteriaData}
+              hasEditAccess={hasEditAccess}
+              canCheckItems={canCheckCriteria}
+              saving={saving}
+              placeholder="E.g., Passes User Testing"
+              onAutoSave={onAutoSaveCriteria}
+            />
+          </div>
+        )}
       </div>
     </>
   )

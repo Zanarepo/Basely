@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { wbsElementSchema } from '@/lib/validations/wbs'
-import type { WbsElement, WbsStatus } from './constants'
+import type { WbsElement, WbsStatus, RaciRoleType, DeliverableItem, AcceptanceCriteriaItem } from './constants'
 import { recalculateSchedule } from '@/lib/schedule/actions'
 
 export type ActionResponse = { ok: true } | { ok: false; error: string }
@@ -17,7 +17,7 @@ export async function getWbsElements(projectId: string): Promise<
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('wbs_elements')
-    .select('*')
+    .select('*, raci_assignments(*, stakeholder:stakeholders(*, profiles(full_name, email)))')
     .eq('project_id', projectId)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
@@ -35,12 +35,21 @@ export async function getWbsElements(projectId: string): Promise<
     description: d.description,
     ownerId: d.owner_id,
     deliverables: d.deliverables,
+    deliverablesData: d.deliverables_data || [],
     acceptanceCriteria: d.acceptance_criteria,
+    acceptanceCriteriaData: d.acceptance_criteria_data || [],
     status: d.status as WbsStatus,
     isWorkPackage: d.is_work_package,
     sortOrder: d.sort_order,
     createdAt: d.created_at,
     updatedAt: d.updated_at,
+    raciAssignments: d.raci_assignments?.map((r: any) => ({
+      id: r.id,
+      wbsElementId: r.wbs_element_id,
+      stakeholderId: r.stakeholder_id,
+      roleType: r.role_type,
+      stakeholder: r.stakeholder
+    })) || [],
   }))
 
   return { ok: true, data: mapped }
@@ -92,7 +101,16 @@ export async function createWbsElement(
 export async function updateWbsElement(
   id: string,
   projectId: string,
-  payload: Partial<Omit<WbsElement, 'id' | 'projectId' | 'code' | 'createdAt' | 'updatedAt'>>
+  payload: {
+    name?: string
+    description?: string | null
+    deliverables?: string | null
+    deliverablesData?: DeliverableItem[]
+    acceptanceCriteria?: string | null
+    acceptanceCriteriaData?: AcceptanceCriteriaItem[]
+    status?: WbsStatus
+    isWorkPackage?: boolean
+  }
 ): Promise<ActionResponse> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -107,12 +125,15 @@ export async function updateWbsElement(
   }
   if (payload.description !== undefined) updateData.description = payload.description || null
   if (payload.deliverables !== undefined) updateData.deliverables = payload.deliverables || null
+  if (payload.deliverablesData !== undefined) updateData.deliverables_data = payload.deliverablesData || []
   if (payload.acceptanceCriteria !== undefined) {
     updateData.acceptance_criteria = payload.acceptanceCriteria || null
   }
+  if (payload.acceptanceCriteriaData !== undefined) {
+    updateData.acceptance_criteria_data = payload.acceptanceCriteriaData || []
+  }
   if (payload.status !== undefined) updateData.status = payload.status
   if (payload.isWorkPackage !== undefined) updateData.is_work_package = payload.isWorkPackage
-  if (payload.ownerId !== undefined) updateData.owner_id = payload.ownerId || null
 
   const { error } = await supabase
     .from('wbs_elements')
@@ -247,5 +268,82 @@ export async function bulkDeleteWbsElements(
 
   revalidatePath(`/dashboard/projects/${projectId}`)
   revalidatePath('/dashboard')
+  return { ok: true }
+}
+
+export async function assignRaciRole(
+  projectId: string,
+  wbsElementId: string,
+  stakeholderId: string,
+  roleType: RaciRoleType
+): Promise<ActionResponse> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You must be signed in' }
+
+  const { error } = await supabase
+    .from('raci_assignments')
+    .insert({
+      project_id: projectId,
+      wbs_element_id: wbsElementId,
+      stakeholder_id: stakeholderId,
+      role_type: roleType
+    })
+
+  if (error) return { ok: false, error: error.message }
+  revalidatePath(`/dashboard/projects/${projectId}`)
+  return { ok: true }
+}
+
+export async function removeRaciRole(
+  projectId: string,
+  wbsElementId: string,
+  stakeholderId: string,
+  roleType: RaciRoleType
+): Promise<ActionResponse> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You must be signed in' }
+
+  const { error } = await supabase
+    .from('raci_assignments')
+    .delete()
+    .eq('wbs_element_id', wbsElementId)
+    .eq('stakeholder_id', stakeholderId)
+    .eq('role_type', roleType)
+
+  if (error) return { ok: false, error: error.message }
+  revalidatePath(`/dashboard/projects/${projectId}`)
+  return { ok: true }
+}
+
+export async function replaceAccountableRole(
+  projectId: string,
+  wbsElementId: string,
+  newStakeholderId: string
+): Promise<ActionResponse> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You must be signed in' }
+
+  // 1. Delete current accountable
+  await supabase
+    .from('raci_assignments')
+    .delete()
+    .eq('wbs_element_id', wbsElementId)
+    .eq('role_type', 'Accountable')
+
+  // 2. Insert new
+  const { error } = await supabase
+    .from('raci_assignments')
+    .insert({
+      project_id: projectId,
+      wbs_element_id: wbsElementId,
+      stakeholder_id: newStakeholderId,
+      role_type: 'Accountable'
+    })
+
+  if (error) return { ok: false, error: error.message }
+  revalidatePath(`/dashboard/projects/${projectId}`)
   return { ok: true }
 }

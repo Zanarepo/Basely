@@ -140,16 +140,16 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-app-muted" />
       </div>
     )
   }
 
   return (
-    <div className="h-full flex flex-col bg-app-surface">
+    <div className="bg-app-surface-solid rounded-2xl border border-app-border overflow-hidden shadow-sm">
       {/* Filters Toolbar */}
-      <div className="flex flex-wrap gap-4 p-4 border-b border-app-border bg-app-surface-solid items-center justify-between">
+      <div className="flex flex-wrap gap-4 p-4 border-b border-app-border items-center justify-between">
         <div className="flex gap-4 items-center">
           <div className="flex items-center gap-2">
             <span className="text-sm text-app-subtle font-medium">Type:</span>
@@ -207,9 +207,9 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
         )}
       </div>
 
-      <div className="flex-1 overflow-auto">
+      <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
-          <thead className="sticky top-0 bg-app-surface-solid border-b border-app-border shadow-sm z-10">
+          <thead className="bg-app-surface border-b border-app-border text-app-subtle">
             <tr>
               <th className="p-4 w-12 text-center">
                 <input

@@ -5,6 +5,7 @@ import { Plus, Upload } from 'lucide-react'
 import { StakeholderRegister } from './StakeholderRegister'
 import { StakeholderForm } from './StakeholderForm'
 import { StakeholderImportModal } from './StakeholderImportModal'
+import { CrossProjectWorkloadView } from './CrossProjectWorkloadView'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
 
 type WorkspaceMember = {
@@ -28,6 +29,7 @@ export default function StakeholderWorkspace({
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [editingStakeholderId, setEditingStakeholderId] = useState<string | null>(null)
+  const [currentView, setCurrentView] = useState<'register' | 'workload'>('register')
   
   const [toasts, setToasts] = useState<ToastMessage[]>([])
 
@@ -51,17 +53,33 @@ export default function StakeholderWorkspace({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-14rem)] bg-app-surface-solid rounded-2xl border border-app-border overflow-hidden shadow-sm">
-      <div className="flex-none p-4 border-b border-app-border bg-app-surface/50 flex justify-between items-center">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between bg-app-surface-solid p-6 rounded-2xl border border-app-border shadow-sm">
         <div>
-          <h2 className="text-lg font-bold text-app-fg">Stakeholder Register</h2>
-          <p className="text-sm text-app-subtle">
+          <h2 className="text-lg font-bold text-app-fg">Stakeholders</h2>
+          <p className="text-sm text-app-subtle mt-1">
             Manage internal and external stakeholders for this project.
           </p>
         </div>
 
-        {hasEditAccess && (
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-6">
+          <div className="flex bg-app-bg border border-app-border rounded-lg p-1">
+            <button
+              onClick={() => setCurrentView('register')}
+              className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentView === 'register' ? 'bg-indigo-600 text-white' : 'text-app-fg hover:bg-app-hover'}`}
+            >
+              Register
+            </button>
+            <button
+              onClick={() => setCurrentView('workload')}
+              className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentView === 'workload' ? 'bg-indigo-600 text-white' : 'text-app-fg hover:bg-app-hover'}`}
+            >
+              Cross-Project Workload
+            </button>
+          </div>
+
+          {hasEditAccess && currentView === 'register' && (
+            <div className="flex items-center gap-3">
             <button
               onClick={() => setIsImportModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-app-surface hover:bg-app-hover border border-app-border text-app-fg text-sm font-semibold rounded-lg shadow-sm transition-colors"
@@ -77,16 +95,21 @@ export default function StakeholderWorkspace({
               Add Stakeholder
             </button>
           </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <div className="flex-1 overflow-hidden relative">
-        <StakeholderRegister
-          projectId={projectId}
-          hasEditAccess={hasEditAccess}
-          onEdit={handleEdit}
-          onShowToast={showToast}
-        />
+      <div className="min-h-[500px]">
+        {currentView === 'register' ? (
+          <StakeholderRegister
+            projectId={projectId}
+            hasEditAccess={hasEditAccess}
+            onEdit={handleEdit}
+            onShowToast={showToast}
+          />
+        ) : (
+          <CrossProjectWorkloadView projectId={projectId} />
+        )}
       </div>
 
       {isFormOpen && (

@@ -100,8 +100,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     isOrgOwner ||
     callerRole === 'Admin' ||
     isCreator ||
-    (callerRole === 'PM' && !project.is_archived) ||
-    (callerRole === 'Team Member' && !project.is_archived && assignedUserIds.includes(user.id))
+    (callerRole === 'PM' && !project.is_archived)
 
   const canAssignMembers =
     isOrgOwner ||

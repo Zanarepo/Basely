@@ -319,7 +319,6 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
   }
 
   const handleSaveDetails = async (id: string, updates: Partial<WbsElement>): Promise<boolean> => {
-    if (!hasEditAccess) return false
     if (id.startsWith('temp-')) {
       showToast('info', 'Please wait for the new element to finish saving before updating details')
       return false
@@ -683,6 +682,7 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
     undoStack,
     redoStack,
     toasts,
+    showToast,
     dismissToast,
     handleUndo,
     handleRedo,

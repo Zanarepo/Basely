@@ -7,11 +7,13 @@ import { WbsBoardView } from './WbsBoardView'
 import { WbsGridView } from './WbsGridView'
 import { WbsElementSidePanel } from './WbsElementSidePanel'
 import { ToastContainer } from '@/components/dashboard/Toast'
+import { UnassignedWorkView } from './UnassignedWorkView'
 
 // Moduralized Components & Hooks
 import { useWbsPlanning } from './workspace/useWbsPlanning'
 import { WbsToolbar, WbsViewType } from './workspace/WbsToolbar'
 import { WbsImportModal } from './WbsImportModal'
+import { RaciMatrixView } from './RaciMatrixView'
 
 type WbsPlanningWorkspaceProps = {
   projectId: string
@@ -51,6 +53,7 @@ export function WbsPlanningWorkspace({
     undoStack,
     redoStack,
     toasts,
+    showToast,
     dismissToast,
     handleUndo,
     handleRedo,
@@ -193,6 +196,7 @@ export function WbsPlanningWorkspace({
                 }}
                 callerRole={callerRole}
                 callerUserId={callerUserId}
+                onShowToast={showToast}
               />
             )}
 
@@ -208,6 +212,20 @@ export function WbsPlanningWorkspace({
                 clearSelection={clearSelection}
               />
             )}
+
+            {currentView === 'raci' && (
+              <RaciMatrixView 
+                projectId={projectId}
+                elements={elements}
+              />
+            )}
+
+            {currentView === 'unassigned' && (
+              <UnassignedWorkView
+                elements={elements}
+                onSelect={setActiveElementId}
+              />
+            )}
           </div>
         </div>
       )}
@@ -218,10 +236,12 @@ export function WbsPlanningWorkspace({
         workspaceMembers={workspaceMembers}
         onClose={() => setActiveElementId(null)}
         onSave={handleSaveDetails}
+        onAssignmentChanged={loadElements}
         hasEditAccess={hasEditAccess}
         canAssignMembers={canAssignMembers}
         customStatuses={columns.map((c) => c.name)}
         onAddCustomStatus={addColumn}
+        onShowToast={showToast}
         callerRole={callerRole}
         callerUserId={callerUserId}
       />

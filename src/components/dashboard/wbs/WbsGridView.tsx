@@ -25,6 +25,8 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
     )
   }
 
+  const isAllSelected = gridData.length > 0 && gridData.every((item) => selectedIds.includes(item.id))
+
   return (
     <div className="p-5 h-[600px] overflow-auto w-full">
       <table className="w-full text-xs border-separate border-spacing-0">
@@ -34,7 +36,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
               {selectAll && (
                 <input
                   type="checkbox"
-                  checked={selectedIds.length === gridData.length && gridData.length > 0}
+                  checked={isAllSelected}
                   onChange={(e) => {
                     if (e.target.checked) {
                       if (selectAll) selectAll()
@@ -46,7 +48,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                 />
               )}
             </th>
-            {['WBS', 'Task Name', 'Tag', 'Owner', 'Start', 'Finish', 'Duration', 'Float', 'Cost', 'Status'].map(h => (
+            {['WBS', 'Task Name', 'Tag', 'RACI', 'Start', 'Finish', 'Duration', 'Float', 'Cost', 'Status'].map(h => (
               <th key={h} className="px-3 py-2 border-b-2 border-app-border bg-app-muted-surface sticky top-0 first:rounded-tl-lg last:rounded-tr-lg z-10 whitespace-nowrap">
                 {h}
               </th>
@@ -55,8 +57,11 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
         </thead>
         <tbody>
           {gridData.map((r) => {
-            const owner = workspaceMembers.find((m) => m.userId === r.ownerId)
-            const ownerInitials = owner?.name ? owner.name.substring(0, 2).toUpperCase() : null
+            const hasR = r.raciAssignments?.some(a => a.roleType === 'Responsible')
+            const hasA = r.raciAssignments?.some(a => a.roleType === 'Accountable')
+            const responsible = r.raciAssignments?.find(a => a.roleType === 'Responsible')
+            const responsibleName = responsible?.stakeholder?.name || null
+            const isMissingRaci = !hasR || !hasA
 
             // Get the parent element name for the tag
             const parentElement = r.parentId ? elements.find(e => e.id === r.parentId) : null
@@ -92,16 +97,24 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                     {tagText}
                   </span>
                 </td>
-                <td className="px-3 py-2.5 border-b border-app-border">
-                  {ownerInitials ? (
-                    <div 
-                      className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-white text-[8px] flex items-center justify-center font-semibold"
-                      title={owner?.name}
-                    >
-                      {ownerInitials}
+                <td className="px-3 py-2.5 border-b border-app-border whitespace-nowrap">
+                  {responsibleName ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                        {responsibleName.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="truncate max-w-[120px] text-app-subtle" title={responsibleName}>{responsibleName}</span>
+                      {isMissingRaci && (
+                        <span title="Missing Responsible or Accountable assignment" className="text-amber-500 text-xs">⚠️</span>
+                      )}
                     </div>
                   ) : (
-                    <span className="text-app-subtle">—</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-app-muted text-[10px]">--</span>
+                      {isMissingRaci && (
+                        <span title="Missing Responsible or Accountable assignment" className="text-amber-500 text-xs">⚠️</span>
+                      )}
+                    </div>
                   )}
                 </td>
                 {/* Data from the hook */}

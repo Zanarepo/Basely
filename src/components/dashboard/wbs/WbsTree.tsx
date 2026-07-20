@@ -378,23 +378,30 @@ function WbsNodeRow({
 
         {/* Badges & Actions */}
         <div className="flex items-center gap-3 shrink-0 ml-4">
-          {/* Owner initials badge */}
-          {element.ownerId && (() => {
-            const member = workspaceMembers.find((m) => m.userId === element.ownerId)
-            if (!member) return null
-            const initials = member.name
-              .split(' ')
-              .map((n) => n[0])
-              .join('')
-              .substring(0, 2)
-              .toUpperCase()
+          {(() => {
+            const isMissingRaci = element.isWorkPackage && (!element.raciAssignments?.some(a => a.roleType === 'Responsible') || !element.raciAssignments?.some(a => a.roleType === 'Accountable'))
+
+            const responsible = element.raciAssignments?.find(a => a.roleType === 'Responsible')
+            const responsibleName = responsible?.stakeholder?.name || null
+            
+            const initials = responsibleName
+              ? responsibleName.substring(0, 2).toUpperCase()
+              : null
+
             return (
-              <span
-                title={`Assigned to: ${member.name} (${member.role ?? 'Member'})`}
-                className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold border border-indigo-500/25 shrink-0"
-              >
-                {initials}
-              </span>
+              <div className="flex items-center gap-1.5">
+                {isMissingRaci && (
+                  <span title="Missing Responsible or Accountable assignment" className="text-amber-500 text-xs cursor-help">⚠️</span>
+                )}
+                {initials && (
+                  <span
+                    title={`Responsible: ${responsibleName}`}
+                    className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/25 shrink-0"
+                  >
+                    {initials}
+                  </span>
+                )}
+              </div>
             )
           })()}
 

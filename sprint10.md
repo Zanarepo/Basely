@@ -62,63 +62,63 @@ The one-time owner_id → RaciAssignment migration (Section 3.2) must be idempot
 
 Phase 1: RACI Schema & Row Level Security
 Goal: Provision the table that holds RACI assignments, linked to both the WBS/schedule (Phase 2) and stakeholder register (Sprint 9).
-[ ] Task 1.1: Design RACI Assignment Schema
+[x] Task 1.1: Design RACI Assignment Schema
 
 
 Create a SQL migration for public.raci_assignments (id, wbs_element_id FK [or activity_id, per Section 8's scoping decision], stakeholder_id FK, role_type enum [R/A/C/I]).
-[ ] Task 1.2: Enforce Single-Accountable Constraint
+[x] Task 1.2: Enforce Single-Accountable Constraint
 
 
 Add a partial unique constraint (or equivalent) ensuring at most one role_type = 'A' row exists per WBS element/activity.
-[ ] Task 1.3: Configure Row Level Security
+[x] Task 1.3: Configure Row Level Security
 
 
 Enable RLS on raci_assignments, reusing the organization_members-scoped pattern established since Sprint 1.
 Phase 2: Owner Migration
 Goal: Carry forward the Phase 2 placeholder data so this sprint doesn't force PMs to start over.
-[ ] Task 2.1: Build Migration Script
+[x] Task 2.1: Build Migration Script
 
 
 Write a one-time, idempotent migration that creates an Accountable raci_assignments row for every WBS element with a non-null owner_id, mapping to the corresponding stakeholder (requires resolving owner_id's underlying user to a stakeholder_id — see Section 8 for how internal stakeholders link to users).
-[ ] Task 2.2: Validate Migration Coverage
+[x] Task 2.2: Validate Migration Coverage
 
 
 Confirm every previously-owned work package correctly has exactly one Accountable assignment post-migration, with no data loss or duplication.
 Phase 3: RACI Assignment UI
 Goal: Let a PM assign and edit roles quickly, ideally without leaving the WBS or Gantt view they're already working in.
-[ ] Task 3.1: Build Inline Assignment Interface
+[x] Task 3.1: Build Inline Assignment Interface
 
 
 Add a RACI assignment control accessible from the WBS tree (Sprint 2) and/or Gantt activity detail (Sprint 4), so assignment doesn't require a fully separate screen.
-[ ] Task 3.2: Build Stakeholder Picker
+[x] Task 3.2: Build Stakeholder Picker
 
 
 Searchable picker sourced from the Sprint 9 stakeholder register, supporting multi-select for R/C/I and single-select for A.
-[ ] Task 3.3: Handle Accountable Reassignment
+[x] Task 3.3: Handle Accountable Reassignment
 
 
 Implement the UX for changing who's Accountable on an item — per Section 8, either an explicit "reassign" action or automatic replacement, but never a state that allows two.
 Phase 4: Unowned Work Detection
 Goal: Make missing accountability impossible to miss.
-[ ] Task 4.1: Build Detection Query
+[x] Task 4.1: Build Detection Query
 
 
 Query for all WBS elements/activities lacking a Responsible or Accountable assignment.
-[ ] Task 4.2: Surface Flags in Existing Views
+[x] Task 4.2: Surface Flags in Existing Views
 
 
 Add a visible indicator (e.g., a badge or icon) on unowned items directly within the WBS tree and Gantt views.
-[ ] Task 4.3: Build a Dedicated "Unassigned Work" List
+[x] Task 4.3: Build a Dedicated "Unassigned Work" List
 
 
 A standalone view listing every unowned item project-wide, so a PM can address gaps in one pass rather than hunting through the tree.
 Phase 5: Matrix Grid & Cross-Project Workload Views
 Goal: Give PMs the two higher-level views that make the underlying assignment data actually useful for planning and communication.
-[ ] Task 5.1: Build the RACI Grid View
+[x] Task 5.1: Build the RACI Grid View
 
 
 Render the full stakeholder × WBS-element grid, with filtering by WBS branch and/or stakeholder to keep it usable at scale.
-[ ] Task 5.2: Build Cross-Project Workload View
+[x] Task 5.2: Build Cross-Project Workload View
 
 
 For a selected stakeholder, aggregate and display their R/A assignments across every project in the workspace they have access to.

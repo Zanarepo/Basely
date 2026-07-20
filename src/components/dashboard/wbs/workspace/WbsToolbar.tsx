@@ -1,7 +1,7 @@
 import { Undo2, Redo2, Maximize2, Minimize2, Plus, Search, ListTree, Kanban, Table2, Upload, Trash2 } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 
-export type WbsViewType = 'tree' | 'board' | 'grid'
+export type WbsViewType = 'tree' | 'board' | 'grid' | 'raci' | 'unassigned'
 
 type WbsToolbarProps = {
   hasEditAccess: boolean
@@ -71,6 +71,24 @@ export function WbsToolbar({
           >
             <Table2 className="h-4 w-4" />
             <span className="text-xs font-medium hidden md:inline">Grid</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onViewChange('raci')}
+            title="RACI Matrix"
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${currentView === 'raci' ? 'bg-white text-indigo-600 shadow-sm' : 'text-app-fg hover:bg-app-hover'}`}
+          >
+            <ListTree className="h-4 w-4 rotate-90" />
+            <span className="text-xs font-medium hidden md:inline">RACI Matrix</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onViewChange('unassigned')}
+            title="Unassigned Work"
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${currentView === 'unassigned' ? 'bg-white text-amber-600 shadow-sm' : 'text-app-fg hover:bg-amber-500/10'}`}
+          >
+            <Search className="h-4 w-4 text-amber-500" />
+            <span className="text-xs font-medium hidden md:inline">Unassigned</span>
           </button>
         </div>
 

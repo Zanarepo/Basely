@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X, User, FileText, CheckSquare, Settings2, Loader2, Save, Calendar as CalIcon, Link2, AlertCircle, Lock } from 'lucide-react'
-import type { WbsElement, WbsStatus } from '@/lib/wbs/constants'
+import { X, User, FileText, CheckSquare, Settings2, Loader2, Save, Calendar as CalIcon, Link2, AlertCircle, Lock, Users, ChevronDown, ChevronRight } from 'lucide-react'
+import type { WbsElement, WbsStatus, DeliverableItem, AcceptanceCriteriaItem } from '@/lib/wbs/constants'
+import { RaciAssignmentPicker } from './RaciAssignmentPicker'
 import { createClient } from '@/utils/supabase/client'
 import { updateActivityScheduling } from '@/lib/schedule/actions'
 import { calculateFinishDate, calculateStartDate, countWorkingDays } from '@/lib/schedule/cpm'
@@ -17,9 +18,11 @@ type WbsElementSidePanelProps = {
   workspaceMembers: { userId: string; name: string; email: string }[]
   onClose: () => void
   onSave: (id: string, updates: Partial<WbsElement>) => Promise<boolean>
+  onAssignmentChanged?: () => void
   hasEditAccess: boolean
   customStatuses: string[]
   onAddCustomStatus: (newStatus: string) => void
+  onShowToast: (type: 'success' | 'error' | 'info', msg: string) => void
   canAssignMembers?: boolean
   callerRole?: string
   callerUserId?: string
@@ -36,9 +39,11 @@ export function WbsElementSidePanel({
   workspaceMembers,
   onClose,
   onSave,
+  onAssignmentChanged,
   hasEditAccess,
   customStatuses,
   onAddCustomStatus,
+  onShowToast,
   canAssignMembers = false,
   callerRole,
   callerUserId,
@@ -47,15 +52,25 @@ export function WbsElementSidePanel({
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [deliverables, setDeliverables] = useState('')
+  const [deliverablesData, setDeliverablesData] = useState<DeliverableItem[]>([])
   const [acceptanceCriteria, setAcceptanceCriteria] = useState('')
+  const [acceptanceCriteriaData, setAcceptanceCriteriaData] = useState<AcceptanceCriteriaItem[]>([])
   const [status, setStatus] = useState<WbsStatus>('Not Started')
   const [isWorkPackage, setIsWorkPackage] = useState(false)
-  const [ownerId, setOwnerId] = useState<string>('')
   const [saving, setSaving] = useState(false)
 
   const isTeamMember = callerRole === 'Team Member'
-  const isOwnedOrUnassigned = !element || element.ownerId === callerUserId || element.ownerId === null
-  const effectiveEditAccess = hasEditAccess && (!isTeamMember || isOwnedOrUnassigned)
+  const isResponsible = element?.raciAssignments?.some(a => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId)
+  const isAccountable = element?.raciAssignments?.some(a => a.roleType === 'Accountable' && a.stakeholder?.linked_user_id === callerUserId)
+  
+  // For basic details (name, description), we only allow PMs
+  const effectiveEditAccess = hasEditAccess && !isTeamMember
+  
+  // For checklist interaction, we allow PMs OR Responsible team members for deliverables
+  const canCheckDeliverables = hasEditAccess || isResponsible
+  
+  // For criteria interaction, we allow PMs OR Accountable team members
+  const canCheckCriteria = hasEditAccess || isAccountable
 
   // Scheduling States (Activities & Dependencies)
   const [loadingSchedule, setLoadingSchedule] = useState(false)
@@ -76,6 +91,9 @@ export function WbsElementSidePanel({
   const [projectActivities, setProjectActivities] = useState<any[]>([])
   const [predecessors, setPredecessors] = useState<PredecessorInput[]>([])
   const [scheduleError, setScheduleError] = useState<string | null>(null)
+  
+  const [isRaciOpen, setIsRaciOpen] = useState(false)
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false)
 
   // Sync state when active WBS element changes
   useEffect(() => {
@@ -83,10 +101,11 @@ export function WbsElementSidePanel({
       setName(element.name)
       setDescription(element.description ?? '')
       setDeliverables(element.deliverables ?? '')
+      setDeliverablesData(element.deliverablesData ?? [])
       setAcceptanceCriteria(element.acceptanceCriteria ?? '')
+      setAcceptanceCriteriaData(element.acceptanceCriteriaData ?? [])
       setStatus(element.status)
       setIsWorkPackage(element.isWorkPackage)
-      setOwnerId(element.ownerId ?? '')
       setScheduleError(null)
 
       // If it's a work package, fetch scheduling information
@@ -265,10 +284,11 @@ export function WbsElementSidePanel({
         name: name.trim(),
         description: description.trim() || null,
         deliverables: deliverables.trim() || null,
+        deliverablesData: deliverablesData,
         acceptanceCriteria: acceptanceCriteria.trim() || null,
+        acceptanceCriteriaData: acceptanceCriteriaData,
         status,
         isWorkPackage,
-        ownerId: ownerId || null,
       })
 
       if (!wbsSuccess) {
@@ -327,10 +347,11 @@ export function WbsElementSidePanel({
       />
 
       {/* Slide-over panel */}
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-app-surface-solid border-l border-app-border shadow-2xl p-6 overflow-y-auto flex flex-col justify-between animate-fade-in-right">
+      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-app-surface-solid border-l border-app-border shadow-2xl flex flex-col animate-fade-in-right">
+        <form onSubmit={handleFormSubmit} className="flex flex-col h-full overflow-hidden">
         
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-app-border mb-6 shrink-0">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 pb-4 border-b border-app-border shrink-0">
           <div className="flex items-center gap-2">
             <Settings2 className="h-5 w-5 text-indigo-500" />
             <h3 className="text-lg font-bold text-app-fg">
@@ -349,7 +370,7 @@ export function WbsElementSidePanel({
 
         {/* Display scheduling error messages */}
         {scheduleError && (
-          <div className="mb-4 p-4 border border-red-200 bg-red-50 dark:bg-red-500/10 dark:border-red-500/25 rounded-2xl flex items-start gap-3 shrink-0">
+          <div className="mx-6 mt-6 p-4 border border-red-200 bg-red-50 dark:bg-red-500/10 dark:border-red-500/25 rounded-2xl flex items-start gap-3 shrink-0">
             <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
             <div>
               <span className="text-xs font-bold text-red-800 dark:text-red-400">Scheduling Recalculation Blocked</span>
@@ -358,69 +379,129 @@ export function WbsElementSidePanel({
           </div>
         )}
 
-        {/* Form content scrolling area */}
-        <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col justify-between overflow-y-auto pr-1">
-          <div className="space-y-5 pb-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="space-y-5">
             <WbsBasicDetails
               name={name}
               setName={setName}
-              ownerId={ownerId}
-              setOwnerId={setOwnerId}
               status={status}
               setStatus={setStatus}
               isWorkPackage={isWorkPackage}
               setIsWorkPackage={setIsWorkPackage}
               description={description}
               setDescription={setDescription}
-              deliverables={deliverables}
-              setDeliverables={setDeliverables}
-              acceptanceCriteria={acceptanceCriteria}
-              setAcceptanceCriteria={setAcceptanceCriteria}
+              deliverablesData={deliverablesData}
+              setDeliverablesData={setDeliverablesData}
+              acceptanceCriteriaData={acceptanceCriteriaData}
+              setAcceptanceCriteriaData={setAcceptanceCriteriaData}
               hasEditAccess={effectiveEditAccess}
+              canCheckDeliverables={canCheckDeliverables}
+              canCheckCriteria={canCheckCriteria}
               saving={saving}
               workspaceMembers={workspaceMembers}
               customStatuses={customStatuses}
               onAddCustomStatus={onAddCustomStatus}
+              onAutoSaveDeliverables={(items) => {
+                onSave(element.id, { deliverablesData: items })
+              }}
+              onAutoSaveCriteria={(items) => {
+                onSave(element.id, { acceptanceCriteriaData: items })
+              }}
               canAssignMembers={canAssignMembers}
               callerRole={callerRole}
               callerUserId={callerUserId}
             />
 
+            {/* Accountability Layer (RACI) */}
+            <div className="border border-app-border rounded-xl overflow-hidden bg-app-surface">
+              <button
+                type="button"
+                onClick={() => setIsRaciOpen(!isRaciOpen)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-app-surface hover:bg-app-hover transition-colors"
+              >
+                <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
+                  <Users className="w-4 h-4 text-app-muted" />
+                  RACI Assignments
+                </div>
+                {isRaciOpen ? (
+                  <ChevronDown className="w-4 h-4 text-app-muted" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-app-muted" />
+                )}
+              </button>
+              
+              {isRaciOpen && (
+                <div className="p-4 border-t border-app-border bg-app-surface-solid">
+                  <RaciAssignmentPicker
+                    projectId={element.projectId}
+                    wbsElementId={element.id}
+                    assignments={element.raciAssignments || []}
+                    hasEditAccess={hasEditAccess}
+                    onAssignmentChanged={onAssignmentChanged}
+                    onShowToast={onShowToast}
+                    callerRole={callerRole}
+                    callerUserId={callerUserId}
+                  />
+                </div>
+              )}
+            </div>
+
             {/* --- REACTIVE CALENDAR & SCHEDULING SECTION (WORK PACKAGES ONLY) --- */}
             {isWorkPackage && (
-              <div className="border border-indigo-500/25 bg-indigo-500/5 dark:bg-indigo-950/20 rounded-2xl p-4 space-y-4 shadow-xs">
-                <WbsSchedulingFields
-                  isWorkPackage={isWorkPackage}
-                  autoSchedule={autoSchedule}
-                  setAutoSchedule={setAutoSchedule}
-                  loadingSchedule={loadingSchedule}
-                  hasEditAccess={effectiveEditAccess}
-                  saving={saving}
-                  startDate={startDate}
-                  handleStartDateChange={handleStartDateChange}
-                  endDate={endDate}
-                  handleEndDateChange={handleEndDateChange}
-                  duration={duration}
-                  handleDurationChange={handleDurationChange}
-                />
+              <div className="border border-indigo-500/25 rounded-xl overflow-hidden bg-indigo-500/5 dark:bg-indigo-950/20 shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setIsScheduleOpen(!isScheduleOpen)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-transparent hover:bg-indigo-500/10 transition-colors"
+                >
+                  <div className="flex items-center gap-2 text-sm font-semibold text-indigo-700 dark:text-indigo-400">
+                    <CalIcon className="w-4 h-4" />
+                    Scheduling & Dependencies
+                  </div>
+                  {isScheduleOpen ? (
+                    <ChevronDown className="w-4 h-4 text-indigo-500/70" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-indigo-500/70" />
+                  )}
+                </button>
 
-                <WbsDependenciesList
-                  isWorkPackage={isWorkPackage}
-                  loadingSchedule={loadingSchedule}
-                  projectActivities={projectActivities}
-                  predecessors={predecessors}
-                  hasEditAccess={effectiveEditAccess}
-                  saving={saving}
-                  handleTogglePredecessor={handleTogglePredecessor}
-                  handleUpdatePredType={handleUpdatePredType}
-                  handleUpdatePredLag={handleUpdatePredLag}
-                />
+                {isScheduleOpen && (
+                  <div className="p-4 border-t border-indigo-500/25 space-y-4">
+                    <WbsSchedulingFields
+                      isWorkPackage={isWorkPackage}
+                      autoSchedule={autoSchedule}
+                      setAutoSchedule={setAutoSchedule}
+                      loadingSchedule={loadingSchedule}
+                      hasEditAccess={effectiveEditAccess}
+                      saving={saving}
+                      startDate={startDate}
+                      handleStartDateChange={handleStartDateChange}
+                      endDate={endDate}
+                      handleEndDateChange={handleEndDateChange}
+                      duration={duration}
+                      handleDurationChange={handleDurationChange}
+                    />
+
+                    <WbsDependenciesList
+                      isWorkPackage={isWorkPackage}
+                      loadingSchedule={loadingSchedule}
+                      projectActivities={projectActivities}
+                      predecessors={predecessors}
+                      hasEditAccess={effectiveEditAccess}
+                      saving={saving}
+                      handleTogglePredecessor={handleTogglePredecessor}
+                      handleUpdatePredType={handleUpdatePredType}
+                      handleUpdatePredLag={handleUpdatePredLag}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
+        </div>
 
           {/* Footer Actions */}
-          <div className="pt-6 border-t border-app-border mt-8 flex items-center justify-end gap-3 bg-app-surface-solid shrink-0">
+          <div className="p-6 border-t border-app-border flex items-center justify-end gap-3 bg-app-surface-solid shrink-0 mt-auto">
             <button
               type="button"
               disabled={saving}
