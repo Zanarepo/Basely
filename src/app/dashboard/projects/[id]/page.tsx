@@ -8,6 +8,7 @@ import GanttWorkspace from '@/components/dashboard/gantt/GanttWorkspace'
 import CostWorkspace from '@/components/dashboard/cost/CostWorkspace'
 import StakeholderWorkspace from '@/components/dashboard/stakeholders/StakeholderWorkspace'
 import RiskRegisterWorkspace from '@/components/dashboard/risks/RiskRegisterWorkspace'
+import DocumentsWorkspace from '@/components/dashboard/documents/DocumentsWorkspace'
 import { ProjectTeamRoster } from '@/components/dashboard/ProjectTeamRoster'
 import { LivePresenceWrapper } from '@/components/dashboard/presence/LivePresenceWrapper'
 
@@ -227,6 +228,17 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           >
             Risks & Issues
           </Link>
+          <Link
+            href={`/dashboard/projects/${project.id}?tab=documents`}
+            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
+              activeTab === 'documents'
+                ? 'border-indigo-500 text-indigo-500 font-bold'
+                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
+            }`}
+          >
+            Documents
+            <span className="bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider">New</span>
+          </Link>
         </nav>
       </div>
 
@@ -271,6 +283,14 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           projectId={project.id}
           hasEditAccess={hasEditAccess && !project.is_archived}
           workspaceMembers={workspaceMembers}
+        />
+      )}
+
+      {activeTab === 'documents' && (
+        <DocumentsWorkspace
+          projectId={project.id}
+          projectContext={project}
+          hasEditAccess={hasEditAccess && !project.is_archived}
         />
       )}
     </div>
