@@ -45,4 +45,5 @@ export type WbsElement = {
   createdAt: string
   updatedAt: string
   raciAssignments?: RaciAssignment[]
+  duration?: number
 }

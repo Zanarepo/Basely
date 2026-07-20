@@ -274,6 +274,7 @@ function WbsNodeRow({
   }
 
   const isActive = activeElementId === element.id
+  const isMilestone = element.isWorkPackage && element.duration === 0
 
   return (
     <div className="space-y-1">
@@ -290,8 +291,12 @@ function WbsNodeRow({
         onClick={() => onSelect(element.id)}
         className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer select-none group/row ${
           isActive || selectedIds.includes(element.id)
-            ? 'bg-indigo-500/10 border-indigo-500/30 dark:border-indigo-500/25 shadow-xs'
-            : 'bg-app-surface-solid border-app-border hover:bg-app-hover hover:border-app-border'
+            ? isMilestone
+              ? 'bg-amber-500/15 border-amber-500/40 dark:border-amber-500/30 shadow-xs'
+              : 'bg-indigo-500/10 border-indigo-500/30 dark:border-indigo-500/25 shadow-xs'
+            : isMilestone
+              ? 'bg-amber-500/5 dark:bg-amber-950/20 border-amber-500/20 hover:bg-amber-500/10'
+              : 'bg-app-surface-solid border-app-border hover:bg-app-hover hover:border-app-border'
         } ${draggedNodeId === element.id ? 'opacity-40 border-dashed' : ''} ${dropBorderClass}`}
         style={{ paddingLeft: indentPadding }}
       >
@@ -321,13 +326,19 @@ function WbsNodeRow({
                   <ChevronRight className="h-4 w-4" />
                 )}
               </button>
+            ) : isMilestone ? (
+              <span className="w-2 h-2 rotate-45 bg-amber-500 shrink-0" />
             ) : (
               <span className="w-1.5 h-1.5 rounded-full bg-app-subtle/40" />
             )}
           </div>
 
           {/* WBS Code */}
-          <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md bg-app-muted-surface border border-app-border text-app-subtle shrink-0">
+          <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-md border shrink-0 ${
+            isMilestone
+              ? 'bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300'
+              : 'bg-app-muted-surface border-app-border text-app-subtle'
+          }`}>
             {element.code}
           </span>
 
@@ -361,16 +372,20 @@ function WbsNodeRow({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-app-fg truncate">
+                <span className={`text-sm font-semibold truncate ${isMilestone ? 'text-amber-700 dark:text-amber-300 font-bold' : 'text-app-fg'}`}>
                   {element.name}
                 </span>
-                {/* WBS Dictionary indicator */}
-                {element.isWorkPackage && (
+                {/* WBS Dictionary indicator — Milestone or Work Package */}
+                {isMilestone ? (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-2xs">
+                    ◆ Milestone
+                  </span>
+                ) : element.isWorkPackage ? (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/20">
                     <FileCheck className="h-3 w-3" />
                     Work Package
                   </span>
-                )}
+                ) : null}
               </div>
             )}
           </div>
@@ -379,7 +394,7 @@ function WbsNodeRow({
         {/* Badges & Actions */}
         <div className="flex items-center gap-3 shrink-0 ml-4">
           {(() => {
-            const isMissingRaci = element.isWorkPackage && (!element.raciAssignments?.some(a => a.roleType === 'Responsible') || !element.raciAssignments?.some(a => a.roleType === 'Accountable'))
+            const isMissingRaci = !isMilestone && element.isWorkPackage && (!element.raciAssignments?.some(a => a.roleType === 'Responsible') || !element.raciAssignments?.some(a => a.roleType === 'Accountable'))
 
             const responsible = element.raciAssignments?.find(a => a.roleType === 'Responsible')
             const responsibleName = responsible?.stakeholder?.name || null

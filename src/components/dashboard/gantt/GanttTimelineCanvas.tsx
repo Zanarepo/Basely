@@ -192,6 +192,7 @@ export function GanttTimelineCanvas({
     onCreateDependency,
     activities,
     dependencies,
+    elements,
   })
 
   // Render grid timelines
@@ -249,6 +250,7 @@ export function GanttTimelineCanvas({
           baselineSnapshots={baselineSnapshots}
           timelineStart={timelineStart}
           hasEditAccess={hasEditAccess}
+          elements={elements}
           onPointerDown={handlePointerDown}
           onItemHover={handleItemHover}
           onStartDrawLink={handleStartDrawLink}

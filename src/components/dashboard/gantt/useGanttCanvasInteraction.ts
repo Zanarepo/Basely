@@ -12,6 +12,7 @@ type UseGanttCanvasInteractionProps = {
   onCreateDependency: (predId: string, succId: string) => Promise<boolean>
   activities: Activity[]
   dependencies: Dependency[]
+  elements: any[]
 }
 
 export function useGanttCanvasInteraction({
@@ -24,6 +25,7 @@ export function useGanttCanvasInteraction({
   onCreateDependency,
   activities,
   dependencies,
+  elements,
 }: UseGanttCanvasInteractionProps) {
   // Drag states
   const [dragging, setDragging] = useState<{
@@ -56,6 +58,8 @@ export function useGanttCanvasInteraction({
     totalFloat: number | null
     status: string
     percentComplete: number
+    isMilestone: boolean
+    parentName: string | null
   } | null>(null)
 
   // --- Drag and Resize Pointer Listeners ---
@@ -232,6 +236,13 @@ export function useGanttCanvasInteraction({
         })
     }
 
+    const isMilestone = row.activity?.type === 'Milestone'
+    let parentName: string | null = null
+    if (row.element.parentId) {
+      const parent = elements.find((el: any) => el.id === row.element.parentId)
+      if (parent) parentName = parent.name
+    }
+
     setHoveredItem({
       x: rect.left - (containerRect?.left ?? 0) + scrollLeft + rect.width / 2,
       y: rect.top - (containerRect?.top ?? 0) + scrollTop - 10,
@@ -243,6 +254,8 @@ export function useGanttCanvasInteraction({
       totalFloat: row.activity?.totalFloat ?? null,
       status: row.element.status ?? 'Not Started',
       percentComplete: row.percentComplete ?? 0,
+      isMilestone,
+      parentName,
     })
   }
 

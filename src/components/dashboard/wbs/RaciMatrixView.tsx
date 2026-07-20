@@ -43,10 +43,16 @@ export function RaciMatrixView({ projectId, elements, expandedNodeIds = new Set(
 
   const filteredElements = useMemo(() => {
     
+    // Filter out milestones (duration === 0) — they only appear on Gantt and Status Report
+    const nonMilestoneElements = elements.filter((el) => {
+      if (!el.isWorkPackage) return true // summary elements always show
+      return el.duration !== 0
+    })
+
     const visible: WbsElement[] = []
     const parentVisible = new Map<string, boolean>()
 
-    elements.forEach((el) => {
+    nonMilestoneElements.forEach((el) => {
       let isVisible = true
 
       if (el.parentId) {

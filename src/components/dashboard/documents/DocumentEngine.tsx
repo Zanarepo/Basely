@@ -5,6 +5,9 @@ import { FileText, Save, RefreshCw, AlertTriangle } from 'lucide-react'
 import { DocumentTemplate, GeneratedDocument, saveGeneratedDocument, regenerateDocument } from '@/lib/documents/actions'
 import WbsDictionaryResolver from './resolvers/WbsDictionaryResolver'
 import RaciMatrixResolver from './resolvers/RaciMatrixResolver'
+import ScheduleStatusResolver from './resolvers/ScheduleStatusResolver'
+import EvmStatusResolver from './resolvers/EvmStatusResolver'
+import TopRisksResolver from './resolvers/TopRisksResolver'
 
 interface DocumentEngineProps {
   projectId: string
@@ -13,6 +16,7 @@ interface DocumentEngineProps {
   generatedDoc: GeneratedDocument | null
   hasEditAccess: boolean
   onShowToast: (type: 'success' | 'error', msg: string) => void
+  isSnapshot?: boolean
 }
 
 export default function DocumentEngine({
@@ -22,6 +26,7 @@ export default function DocumentEngine({
   generatedDoc,
   hasEditAccess,
   onShowToast,
+  isSnapshot = false,
 }: DocumentEngineProps) {
   const [isPending, startTransition] = useTransition()
   
@@ -33,6 +38,10 @@ export default function DocumentEngine({
   
   // Modal state for regeneration confirmation
   const [showRegenConfirm, setShowRegenConfirm] = useState(false)
+  
+  // Snapshot Generation State
+  const [showSnapshotModal, setShowSnapshotModal] = useState(false)
+  const [periodEnd, setPeriodEnd] = useState(new Date().toISOString().split('T')[0])
 
   // Initialize state
   useEffect(() => {
@@ -88,6 +97,36 @@ export default function DocumentEngine({
     })
   }
 
+  const handleGenerateSnapshot = () => {
+    startTransition(async () => {
+      // Gather frozen data for all resolvers based on the UI state or rely on backend resolvers.
+      // Since resolvers fetch data on client, we should actually let the resolvers freeze their data.
+      // But we can also just freeze what we have. 
+      // A better approach for this simplified launch: Just save the snapshot flag and the period date.
+      // The resolvers will detect `isSnapshot` and fetch data as of `periodEnd`.
+      // Actually, we need to pass the frozen data in. For now we will just rely on the resolvers using periodEnd to freeze data query.
+      // But wait! If we don't save the data to `frozen_data`, they will still query it dynamically.
+      // Let's pass the date to saveGeneratedDocument.
+      
+      const result = await saveGeneratedDocument(
+        projectId, 
+        template.document_type, 
+        freeText, 
+        true, // isSnapshot
+        {}, // frozenData (can be expanded later if we want pure JSON freezing)
+        periodEnd
+      )
+      
+      if (result.ok) {
+        setShowSnapshotModal(false)
+        onShowToast('success', 'Snapshot generated successfully')
+        window.dispatchEvent(new Event('snapshot-saved'))
+      } else {
+        onShowToast('error', result.error || 'Failed to generate snapshot')
+      }
+    })
+  }
+
   // A tiny resolver engine for data sources
   const resolveDataBoundSource = (source?: string) => {
     if (!source) return '—'
@@ -123,15 +162,27 @@ export default function DocumentEngine({
           <div>
             <h2 className="text-lg font-bold text-app-fg capitalize">{template.document_type} Document</h2>
             <p className="text-xs text-app-muted">
-              {generatedDoc 
-                ? `Last generated: ${new Date(generatedDoc.generated_at).toLocaleString()}`
-                : 'Not yet generated (Preview Mode)'}
+              {isSnapshot 
+                ? `Snapshot for period ending ${new Date(generatedDoc?.period_end || '').toLocaleDateString()}` 
+                : generatedDoc 
+                  ? `Last generated: ${new Date(generatedDoc.generated_at).toLocaleString()}`
+                  : 'Not yet generated (Preview Mode)'}
             </p>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          {hasEditAccess && (
+          {template.document_type === 'status_report' && !isSnapshot && hasEditAccess && (
+            <button
+              onClick={() => setShowSnapshotModal(true)}
+              className="btn-primary text-xs px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 border-transparent text-white"
+            >
+              <Save className="w-3.5 h-3.5 mr-1.5" />
+              Generate Snapshot
+            </button>
+          )}
+
+          {hasEditAccess && !isSnapshot && (
             <button
               onClick={handleSave}
               disabled={isPending || !isDirty}
@@ -142,7 +193,7 @@ export default function DocumentEngine({
             </button>
           )}
           
-          {(hasEditAccess || generatedDoc) && (
+          {(hasEditAccess || generatedDoc) && !isSnapshot && (
             <button
               onClick={handleRegenerate}
               disabled={isPending}
@@ -191,6 +242,12 @@ export default function DocumentEngine({
                     <WbsDictionaryResolver projectId={projectId} />
                   ) : section.source === 'raci.matrix' ? (
                     <RaciMatrixResolver projectId={projectId} />
+                  ) : section.source === 'status.schedule' ? (
+                    <ScheduleStatusResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.schedule : undefined} />
+                  ) : section.source === 'status.cost' ? (
+                    <EvmStatusResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.cost : undefined} />
+                  ) : section.source === 'status.risks' ? (
+                    <TopRisksResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.risks : undefined} />
                   ) : section.source === 'wbs.prototype' ? (
                     /* Prototype Tabular Resolver for Sprint 12 Validation */
                     <div className="border border-app-border rounded-lg overflow-hidden my-4">
@@ -226,12 +283,12 @@ export default function DocumentEngine({
               {/* Free-Text Section Rendering */}
               {section.type === 'free_text' && (
                 <div className="py-1">
-                  {hasEditAccess ? (
+                  {hasEditAccess && !isSnapshot ? (
                     <textarea
                       value={freeText[section.key] || ''}
                       onChange={(e) => handleFreeTextChange(section.key, e.target.value)}
                       placeholder={`Enter ${section.title.toLowerCase()}...`}
-                      className="w-full min-h-[120px] p-4 bg-app-surface-solid border border-app-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-y transition-shadow placeholder:text-app-muted/50"
+                      className="w-full min-h-[120px] p-4 bg-app-surface-solid border border-app-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-y transition-shadow placeholder:text-app-muted/50"
                     />
                   ) : (
                     <div className="pl-4 py-2 border-l-2 border-emerald-500/30 text-app-fg text-sm whitespace-pre-wrap min-h-[60px]">
@@ -270,6 +327,51 @@ export default function DocumentEngine({
                 className="btn-primary px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white border-transparent"
               >
                 Yes, Regenerate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Snapshot Modal */}
+      {showSnapshotModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-app-surface border border-app-border rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
+                <Save className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-app-fg">Generate Snapshot</h3>
+            </div>
+            <p className="text-sm text-app-muted mb-4 leading-relaxed">
+              Select the end date for this reporting period. This will freeze the data-bound metrics (Schedule, EVM, Risks) and your current narrative into a historical snapshot.
+            </p>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-xs font-bold text-app-muted uppercase tracking-wider mb-2">Period End Date</label>
+                <input
+                  type="date"
+                  value={periodEnd}
+                  onChange={(e) => setPeriodEnd(e.target.value)}
+                  className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <button 
+                onClick={() => setShowSnapshotModal(false)}
+                className="btn-secondary px-4 py-2"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleGenerateSnapshot}
+                disabled={isPending}
+                className="btn-primary px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white border-transparent"
+              >
+                {isPending ? 'Generating...' : 'Freeze Snapshot'}
               </button>
             </div>
           </div>

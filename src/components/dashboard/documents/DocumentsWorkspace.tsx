@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { FileText, FileSearch, Layers, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { FileText, ChevronLeft, ChevronRight, Layers, FileSearch, History, Calendar, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import ProjectDocument from './ProjectDocument'
+import { getReportSnapshots } from '@/lib/documents/actions'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
 
 interface DocumentsWorkspaceProps {
@@ -16,7 +17,9 @@ export default function DocumentsWorkspace({
   projectContext,
   hasEditAccess,
 }: DocumentsWorkspaceProps) {
-  const [activeTab, setActiveTab] = useState<'charter' | 'wbs_dictionary' | 'raci' | 'status'>('charter')
+  const [activeTab, setActiveTab] = useState<'charter' | 'wbs_dictionary' | 'raci' | 'status_report'>('charter')
+  const [activeSnapshotId, setActiveSnapshotId] = useState<string | null>(null)
+  const [snapshots, setSnapshots] = useState<any[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
 
@@ -28,6 +31,30 @@ export default function DocumentsWorkspace({
   const dismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }
+
+  const loadSnapshots = async () => {
+    if (activeTab === 'status_report') {
+      const snaps = await getReportSnapshots(projectId, 'status_report')
+      setSnapshots(snaps)
+    }
+  }
+
+  useEffect(() => {
+    loadSnapshots()
+    // Whenever tab changes, reset snapshot id unless we specifically set it
+    if (activeTab !== 'status_report') {
+      setActiveSnapshotId(null)
+    }
+  }, [activeTab, projectId])
+
+  // Custom event listener to reload snapshots when a new one is saved
+  useEffect(() => {
+    const handleSnapshotSaved = () => {
+      loadSnapshots()
+    }
+    window.addEventListener('snapshot-saved', handleSnapshotSaved)
+    return () => window.removeEventListener('snapshot-saved', handleSnapshotSaved)
+  }, [projectId, activeTab])
 
   return (
     <div className="flex flex-col md:flex-row gap-6 relative animate-fade-in h-[calc(100vh-16rem)] min-h-[600px]">
@@ -93,26 +120,58 @@ export default function DocumentsWorkspace({
             </button>
 
             <div className="text-xs font-bold text-app-muted uppercase tracking-wider mt-6 mb-2 pl-2">
-              Coming Soon (Sprint 14)
+              Reports
             </div>
 
-            <button disabled className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold text-app-muted/50 cursor-not-allowed">
+            <button 
+              onClick={() => { setActiveTab('status_report'); setActiveSnapshotId(null) }}
+              className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                activeTab === 'status_report' && !activeSnapshotId
+                  ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                  : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+              }`}
+            >
               <FileText className="w-4 h-4" />
-              Status Report
+              New Status Report
             </button>
+
+            {activeTab === 'status_report' && snapshots.length > 0 && (
+              <div className="mt-4 flex flex-col gap-1 pl-4 border-l-2 border-app-border ml-2">
+                <div className="text-[10px] font-bold text-app-muted uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <History className="w-3 h-3" /> Report History
+                </div>
+                {snapshots.map((snap) => (
+                  <button
+                    key={snap.id}
+                    onClick={() => { setActiveTab('status_report'); setActiveSnapshotId(snap.id) }}
+                    className={`text-left text-xs py-2 px-3 rounded-lg transition-colors flex items-center gap-2 ${
+                      activeSnapshotId === snap.id
+                        ? 'bg-indigo-500/10 text-indigo-500 font-bold'
+                        : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5 shrink-0" />
+                    {new Date(snap.period_end || snap.generated_at).toLocaleDateString()}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {/* Main Document Engine Area */}
       <div className="flex-1 min-w-0 h-full overflow-hidden">
-        {['charter', 'wbs_dictionary', 'raci'].includes(activeTab) && (
+        {['charter', 'wbs_dictionary', 'raci', 'status_report'].includes(activeTab) && (
           <ProjectDocument
+            key={activeTab + (activeSnapshotId || 'draft')}
             documentType={activeTab}
             projectId={projectId}
             projectContext={projectContext}
             hasEditAccess={hasEditAccess}
             onShowToast={showToast}
+            isSnapshot={!!activeSnapshotId}
+            snapshotId={activeSnapshotId || undefined}
           />
         )}
       </div>

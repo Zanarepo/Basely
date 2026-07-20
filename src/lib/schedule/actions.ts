@@ -255,7 +255,11 @@ export async function updateActivityDuration(
 
   const { error: updErr } = await supabase
     .from('activities')
-    .update({ duration, updated_at: new Date().toISOString() })
+    .update({ 
+      duration, 
+      type: duration === 0 ? 'Milestone' : 'Task',
+      updated_at: new Date().toISOString() 
+    })
     .eq('id', activityId)
 
   if (updErr) {
@@ -458,6 +462,7 @@ export async function updateActivityScheduling(
     .from('activities')
     .update({
       duration: updates.duration,
+      type: updates.duration === 0 ? 'Milestone' : 'Task',
       constraint_type: updates.constraintType,
       constraint_date: updates.constraintDate,
       updated_at: new Date().toISOString(),

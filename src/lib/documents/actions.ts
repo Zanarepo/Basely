@@ -23,6 +23,8 @@ export type GeneratedDocument = {
   document_type: string
   free_text_content: Record<string, string>
   is_snapshot: boolean
+  frozen_data?: any
+  period_end?: string
   generated_at: string
   created_at: string
   updated_at: string
@@ -43,15 +45,23 @@ export async function getDocumentTemplate(documentType: string): Promise<Documen
   return data
 }
 
-export async function getGeneratedDocument(projectId: string, documentType: string, isSnapshot = false): Promise<GeneratedDocument | null> {
+export async function getGeneratedDocument(projectId: string, documentType: string, isSnapshot = false, snapshotId?: string): Promise<GeneratedDocument | null> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  let query = supabase
     .from('generated_documents')
     .select('*')
     .eq('project_id', projectId)
     .eq('document_type', documentType)
     .eq('is_snapshot', isSnapshot)
-    .maybeSingle()
+
+  if (isSnapshot && snapshotId) {
+    query = query.eq('id', snapshotId)
+  } else if (isSnapshot) {
+    // If asking for a snapshot but no ID provided, maybe order by latest
+    query = query.order('generated_at', { ascending: false }).limit(1)
+  }
+
+  const { data, error } = await query.maybeSingle()
 
   if (error) {
     console.error('Failed to load generated document:', error)
@@ -60,32 +70,80 @@ export async function getGeneratedDocument(projectId: string, documentType: stri
   return data
 }
 
+export async function getReportSnapshots(projectId: string, documentType: string): Promise<GeneratedDocument[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('generated_documents')
+    .select('id, period_end, generated_at')
+    .eq('project_id', projectId)
+    .eq('document_type', documentType)
+    .eq('is_snapshot', true)
+    .order('period_end', { ascending: false })
+
+  if (error) return []
+  return data as GeneratedDocument[]
+}
+
 export async function saveGeneratedDocument(
   projectId: string,
   documentType: string,
   freeTextContent: Record<string, string>,
-  isSnapshot = false
+  isSnapshot = false,
+  frozenData?: any,
+  periodEnd?: string
 ): Promise<{ ok: boolean; error?: string }> {
   const supabase = await createClient()
   const now = new Date().toISOString()
 
-  // Upsert the document
-  const { error } = await supabase
-    .from('generated_documents')
-    .upsert(
-      {
+  if (isSnapshot) {
+    // Snapshots are always inserts now
+    const { error } = await supabase
+      .from('generated_documents')
+      .insert({
         project_id: projectId,
         document_type: documentType,
         free_text_content: freeTextContent,
-        is_snapshot: isSnapshot,
+        is_snapshot: true,
+        frozen_data: frozenData || {},
+        period_end: periodEnd,
         generated_at: now,
         updated_at: now,
-      },
-      { onConflict: 'project_id, document_type, is_snapshot' }
-    )
+      })
 
-  if (error) {
-    return { ok: false, error: error.message }
+    if (error) return { ok: false, error: error.message }
+  } else {
+    // Drafts are upserted using the partial unique index or manually
+    // To be safe with the partial index, we can just do an update or insert
+    const { data: existing } = await supabase
+      .from('generated_documents')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('document_type', documentType)
+      .eq('is_snapshot', false)
+      .maybeSingle()
+
+    if (existing) {
+      const { error } = await supabase
+        .from('generated_documents')
+        .update({
+          free_text_content: freeTextContent,
+          updated_at: now,
+        })
+        .eq('id', existing.id)
+      if (error) return { ok: false, error: error.message }
+    } else {
+      const { error } = await supabase
+        .from('generated_documents')
+        .insert({
+          project_id: projectId,
+          document_type: documentType,
+          free_text_content: freeTextContent,
+          is_snapshot: false,
+          generated_at: now,
+          updated_at: now,
+        })
+      if (error) return { ok: false, error: error.message }
+    }
   }
 
   revalidatePath(`/dashboard/projects/${projectId}`)
@@ -100,15 +158,16 @@ export async function regenerateDocument(
   const supabase = await createClient()
   const now = new Date().toISOString()
 
-  // First check if it exists, if not, we can't just update generated_at easily without upserting.
-  // Actually, upserting with an empty free_text_content if it doesn't exist is fine.
+  if (isSnapshot) {
+    return { ok: false, error: 'Cannot regenerate a snapshot directly this way' }
+  }
   
   const { data: existing } = await supabase
     .from('generated_documents')
     .select('id')
     .eq('project_id', projectId)
     .eq('document_type', documentType)
-    .eq('is_snapshot', isSnapshot)
+    .eq('is_snapshot', false)
     .maybeSingle()
 
   if (existing) {
@@ -125,7 +184,7 @@ export async function regenerateDocument(
         project_id: projectId,
         document_type: documentType,
         free_text_content: {},
-        is_snapshot: isSnapshot,
+        is_snapshot: false,
         generated_at: now,
       })
 

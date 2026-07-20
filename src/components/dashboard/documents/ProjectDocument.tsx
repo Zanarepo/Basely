@@ -10,6 +10,8 @@ interface ProjectDocumentProps {
   projectContext: any
   hasEditAccess: boolean
   onShowToast: (type: 'success' | 'error', msg: string) => void
+  isSnapshot?: boolean
+  snapshotId?: string
 }
 
 export default function ProjectDocument({
@@ -17,7 +19,9 @@ export default function ProjectDocument({
   projectId,
   projectContext,
   hasEditAccess,
-  onShowToast
+  onShowToast,
+  isSnapshot = false,
+  snapshotId
 }: ProjectDocumentProps) {
   const [template, setTemplate] = useState<DocumentTemplate | null>(null)
   const [generatedDoc, setGeneratedDoc] = useState<GeneratedDocument | null>(null)
@@ -29,7 +33,7 @@ export default function ProjectDocument({
       const tpl = await getDocumentTemplate(documentType)
       if (tpl) {
         setTemplate(tpl)
-        const doc = await getGeneratedDocument(projectId, documentType)
+        const doc = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
         setGeneratedDoc(doc)
       } else {
         onShowToast('error', `Could not load ${documentType} template`)
@@ -37,7 +41,7 @@ export default function ProjectDocument({
       setLoading(false)
     }
     load()
-  }, [documentType, projectId, onShowToast])
+  }, [documentType, projectId, onShowToast, isSnapshot, snapshotId])
 
   if (loading) {
     return (
@@ -66,6 +70,7 @@ export default function ProjectDocument({
       generatedDoc={generatedDoc}
       hasEditAccess={hasEditAccess}
       onShowToast={onShowToast}
+      isSnapshot={isSnapshot}
     />
   )
 }

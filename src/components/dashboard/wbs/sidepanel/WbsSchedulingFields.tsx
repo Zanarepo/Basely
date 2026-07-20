@@ -4,6 +4,8 @@ type WbsSchedulingFieldsProps = {
   isWorkPackage: boolean
   autoSchedule: boolean
   setAutoSchedule: (val: boolean) => void
+  isMilestone: boolean
+  setIsMilestone: (val: boolean) => void
   loadingSchedule: boolean
   hasEditAccess: boolean
   saving: boolean
@@ -18,6 +20,7 @@ type WbsSchedulingFieldsProps = {
 export function WbsSchedulingFields({
   isWorkPackage,
   autoSchedule, setAutoSchedule,
+  isMilestone, setIsMilestone,
   loadingSchedule,
   hasEditAccess,
   saving,
@@ -35,20 +38,37 @@ export function WbsSchedulingFields({
           <span className="text-xs font-bold text-indigo-500">📅 Schedule Properties</span>
         </div>
         
-        {/* Auto-schedule Toggle Switch */}
-        <label className="flex items-center gap-2 cursor-pointer">
-          <span className="text-[10px] font-bold text-app-subtle">Auto-Schedule</span>
-          <div className="relative">
-            <input
-              type="checkbox"
-              checked={autoSchedule}
-              disabled={!hasEditAccess || saving}
-              onChange={(e) => setAutoSchedule(e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-8 h-4 bg-app-border rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-indigo-500" />
-          </div>
-        </label>
+        <div className="flex items-center gap-4">
+          {/* Milestone Toggle Switch */}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-[10px] font-bold text-app-subtle">Milestone</span>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={isMilestone}
+                disabled={!hasEditAccess || saving}
+                onChange={(e) => setIsMilestone(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-8 h-4 bg-app-border rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-amber-500" />
+            </div>
+          </label>
+
+          {/* Auto-schedule Toggle Switch */}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-[10px] font-bold text-app-subtle">Auto-Schedule</span>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={autoSchedule}
+                disabled={!hasEditAccess || saving}
+                onChange={(e) => setAutoSchedule(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-8 h-4 bg-app-border rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-indigo-500" />
+            </div>
+          </label>
+        </div>
       </div>
 
       {loadingSchedule ? (
@@ -87,17 +107,17 @@ export function WbsSchedulingFields({
               {/* End Date */}
               <div className="space-y-1.5">
                 <label htmlFor="sched-end" className="text-[11px] font-bold text-app-subtle flex items-center gap-1">
-                  {autoSchedule && <Lock className="w-2.5 h-2.5 text-app-subtle" />}
+                  {(autoSchedule || isMilestone) && <Lock className="w-2.5 h-2.5 text-app-subtle" />}
                   End Date
                 </label>
                 <input
                   id="sched-end"
                   type="date"
-                  disabled={!hasEditAccess || saving || autoSchedule}
+                  disabled={!hasEditAccess || saving || autoSchedule || isMilestone}
                   value={endDate}
                   onChange={(e) => handleEndDateChange(e.target.value)}
                   onClick={(e) => {
-                    if (!autoSchedule) {
+                    if (!autoSchedule && !isMilestone) {
                       try {
                         e.currentTarget.showPicker()
                       } catch (err) {}
@@ -110,17 +130,18 @@ export function WbsSchedulingFields({
 
             {/* Duration */}
             <div className="space-y-1.5">
-              <label htmlFor="sched-duration" className="text-[11px] font-bold text-app-subtle">
+              <label htmlFor="sched-duration" className="text-[11px] font-bold text-app-subtle flex items-center gap-1">
+                {isMilestone && <Lock className="w-2.5 h-2.5 text-app-subtle" />}
                 Duration (Work Days)
               </label>
               <input
                 id="sched-duration"
                 type="number"
-                min="1"
-                disabled={!hasEditAccess || saving}
+                min="0"
+                disabled={!hasEditAccess || saving || isMilestone}
                 value={duration}
-                onChange={(e) => handleDurationChange(parseInt(e.target.value) || 1)}
-                className="w-full px-3 py-1.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-xs"
+                onChange={(e) => handleDurationChange(parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-1.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-xs disabled:opacity-60"
               />
             </div>
 

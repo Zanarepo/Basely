@@ -86,6 +86,7 @@ export function WbsElementSidePanel({
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
   const [duration, setDuration] = useState<number>(1)
+  const [isMilestone, setIsMilestone] = useState<boolean>(false)
   
   // Calendar config loaded from the active project
   const [calendar, setCalendar] = useState<CalendarConfig>({
@@ -169,7 +170,11 @@ export function WbsElementSidePanel({
 
       if (act) {
         setActivityId(act.id)
-        setDuration(act.duration || 1)
+        
+        const actDur = act.duration !== null && act.duration !== undefined ? act.duration : 1
+        setDuration(actDur)
+        setIsMilestone(actDur === 0)
+        
         const isAuto = act.constraint_type === 'ASAP'
         setAutoSchedule(isAuto)
         
@@ -196,6 +201,7 @@ export function WbsElementSidePanel({
         // Fallback default values if database trigger hasn't spawned it yet
         setActivityId(null)
         setDuration(1)
+        setIsMilestone(false)
         setAutoSchedule(true)
         setStartDate('')
         setEndDate('')
@@ -224,7 +230,22 @@ export function WbsElementSidePanel({
 
   // --- Linked Triad Handlers ---
 
+  const handleMilestoneChange = (checked: boolean) => {
+    setIsMilestone(checked)
+    if (checked) {
+      setDuration(0)
+      if (startDate) setEndDate(startDate)
+    } else {
+      setDuration(1)
+      if (startDate) {
+        const nextEnd = calculateFinishDate(startDate, 1, calendar)
+        setEndDate(nextEnd)
+      }
+    }
+  }
+
   const handleDurationChange = (durVal: number) => {
+    if (isMilestone) return
     const nextDur = Math.max(1, durVal)
     setDuration(nextDur)
 
@@ -237,10 +258,14 @@ export function WbsElementSidePanel({
   const handleStartDateChange = (startVal: string) => {
     setStartDate(startVal)
 
-    // In manual mode, adjust End Date to keep Duration fixed
-    if (!autoSchedule && startVal && duration > 0) {
-      const nextEnd = calculateFinishDate(startVal, duration, calendar)
-      setEndDate(nextEnd)
+    // In manual mode, adjust End Date to keep Duration fixed or set it equal for milestones
+    if (!autoSchedule && startVal) {
+      if (isMilestone) {
+        setEndDate(startVal)
+      } else if (duration > 0) {
+        const nextEnd = calculateFinishDate(startVal, duration, calendar)
+        setEndDate(nextEnd)
+      }
     }
   }
 
@@ -476,6 +501,8 @@ export function WbsElementSidePanel({
                       isWorkPackage={isWorkPackage}
                       autoSchedule={autoSchedule}
                       setAutoSchedule={setAutoSchedule}
+                      isMilestone={isMilestone}
+                      setIsMilestone={handleMilestoneChange}
                       loadingSchedule={loadingSchedule}
                       hasEditAccess={canEditSchedule}
                       saving={saving}

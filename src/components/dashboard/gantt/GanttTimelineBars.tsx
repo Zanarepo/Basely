@@ -10,6 +10,7 @@ type GanttTimelineBarsProps = {
   baselineSnapshots: any[]
   timelineStart: string
   hasEditAccess: boolean
+  elements: any[]
   onPointerDown: (e: React.PointerEvent, row: any, type: 'move' | 'resize-left' | 'resize-right') => void
   onItemHover: (e: React.MouseEvent, row: any) => void
   onStartDrawLink: (e: React.PointerEvent, row: any, rowHeight: number, headerHeight: number, edge: 'start' | 'end') => void
@@ -25,6 +26,7 @@ export function GanttTimelineBars({
   baselineSnapshots,
   timelineStart,
   hasEditAccess,
+  elements,
   onPointerDown,
   onItemHover,
   onStartDrawLink,
@@ -217,7 +219,17 @@ export function GanttTimelineBars({
               className="absolute text-[11px] font-semibold text-app-fg mt-1 pointer-events-none opacity-0 group-hover/row:opacity-100 transition-opacity duration-500"
               style={{ left: `${startX + width + 12}px`, top: '16px' }}
             >
-              {row.element.name}
+              {isMilestone ? (
+                <>
+                  <span className="text-amber-500">Milestone</span>
+                  {(() => {
+                    const parent = row.element.parentId ? elements.find((el: any) => el.id === row.element.parentId) : null
+                    return parent ? <span className="text-app-subtle ml-1">({parent.name})</span> : null
+                  })()}
+                </>
+              ) : (
+                row.element.name
+              )}
             </span>
           </div>
         )

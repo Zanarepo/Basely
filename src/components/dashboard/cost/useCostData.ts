@@ -105,8 +105,22 @@ export function useCostData(projectId: string) {
       const totalAllocated = (risksData || []).reduce((sum, risk) => sum + (Number(risk.allocated_contingency_amount) || 0), 0)
       setAllocatedContingency(totalAllocated)
 
-      // Merge into WbsCostData
-      const merged: WbsCostData[] = wbs.map(element => {
+      // Fetch activities to detect milestones
+      const { data: activitiesData } = await supabase
+        .from('activities')
+        .select('wbs_element_id, duration')
+        .eq('project_id', projectId)
+
+      const milestoneWbsIds = new Set(
+        (activitiesData || [])
+          .filter((a: any) => Number(a.duration) === 0)
+          .map((a: any) => a.wbs_element_id)
+      )
+
+      // Merge into WbsCostData (excluding milestones)
+      const merged: WbsCostData[] = wbs
+        .filter(element => !milestoneWbsIds.has(element.id))
+        .map(element => {
         const ca = costAccounts.find(c => c.wbs_element_id === element.id) || null
         const tps = ca ? timePhases.filter(t => t.cost_account_id === ca.id) : []
         const assigns = (assignmentsData || []).filter(a => a.wbs_element_id === element.id)

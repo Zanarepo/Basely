@@ -177,7 +177,7 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
         const visibleColIndex = visibleColumns.findIndex(c => c.name === col.name);
 
         // Get tasks for this column and sort them by taskOrders
-        const rawColumnTasks = elements.filter((e) => e.status === col.name && e.isWorkPackage)
+        const rawColumnTasks = elements.filter((e) => e.status === col.name && e.isWorkPackage && e.duration !== 0)
         const orderArray = taskOrders[col.name] || []
         
         const columnTasks = [...rawColumnTasks].sort((a, b) => {

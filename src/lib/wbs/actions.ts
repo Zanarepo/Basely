@@ -17,7 +17,7 @@ export async function getWbsElements(projectId: string): Promise<
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('wbs_elements')
-    .select('*, raci_assignments(*, stakeholder:stakeholders(*, profiles(full_name, email)))')
+    .select('*, activities(duration), raci_assignments(*, stakeholder:stakeholders(*, profiles(full_name, email)))')
     .eq('project_id', projectId)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
@@ -43,6 +43,7 @@ export async function getWbsElements(projectId: string): Promise<
     sortOrder: d.sort_order,
     createdAt: d.created_at,
     updatedAt: d.updated_at,
+    duration: d.activities ? Number(d.activities.duration) : undefined,
     raciAssignments: d.raci_assignments?.map((r: any) => ({
       id: r.id,
       wbsElementId: r.wbs_element_id,
@@ -141,6 +142,28 @@ export async function updateWbsElement(
     .eq('id', id)
 
   if (error) return { ok: false, error: error.message }
+
+  // Sync completion status to activities table if status was provided
+  if (payload.status !== undefined) {
+    let percentComplete = 0
+    if (payload.status === 'Complete') percentComplete = 100
+    else if (payload.status === 'In Progress') percentComplete = 50 // Safe default for in-progress
+    
+    // We update actual_finish as well for better tracking if complete
+    const updateAct: any = { percent_complete: percentComplete }
+    if (percentComplete === 100) {
+      updateAct.actual_finish = new Date().toISOString().split('T')[0]
+    } else {
+      updateAct.actual_finish = null
+    }
+
+    // Try to update corresponding activity (if it exists)
+    // Note: Since activities table schema doesn't have actual_finish we just update percent_complete
+    await supabase
+      .from('activities')
+      .update({ percent_complete: percentComplete })
+      .eq('wbs_element_id', id)
+  }
 
   // Recalculate schedule if name or work package status changes
   if (payload.isWorkPackage !== undefined || payload.name !== undefined) {

@@ -32,7 +32,13 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
   const elementLevels = new Map<string, number>()
   const parentVisible = new Map<string, boolean>()
 
-  gridData.forEach((el) => {
+  // Filter out milestones (duration 0) — they only appear on Gantt and Status Report
+  const nonMilestoneGridData = gridData.filter((el) => {
+    if (!el.isWorkPackage) return true // summary elements always show
+    return el.duration !== '0d'
+  })
+
+  nonMilestoneGridData.forEach((el) => {
     let isVisible = true
     let lvl = 0
 
