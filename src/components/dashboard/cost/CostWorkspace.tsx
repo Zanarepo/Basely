@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Loader2, DollarSign, Activity, FileDigit } from 'lucide-react'
 import { useCostData } from './useCostData'
+import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 import CostEstimationView from './CostEstimationView'
 import ResourceRatesManager from './ResourceRatesManager'
 import TimePhasingView from './TimePhasingView'
@@ -18,7 +19,7 @@ type CostViewType = 'estimation' | 'resources' | 'timephasing' | 'baselines' | '
 
 export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspaceProps) {
   const [currentView, setCurrentView] = useState<CostViewType>('estimation')
-  const { loading, error, wbsCostData, baselines, resourceRates, contingencyAmount, contingencyType, projectCurrency, globalOverhead, refresh } = useCostData(projectId)
+  const { loading, error, wbsCostData, baselines, resourceRates, contingencyAmount, contingencyType, allocatedContingency, projectCurrency, globalOverhead, refresh } = useCostData(projectId)
 
   if (loading) {
     return (
@@ -65,32 +66,50 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
           <div className="flex flex-col">
             <span className="text-xs font-semibold text-app-muted uppercase tracking-wider mb-1">Total WP Budget</span>
             <span className="text-2xl font-bold text-app-fg">
-              {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(totalBudget)}
+              <CurrencyDisplay amount={totalBudget} currency={projectCurrency} compactThreshold={1000} />
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-semibold text-app-muted uppercase tracking-wider mb-1">Overhead ({globalOverhead}%)</span>
             <span className="text-2xl font-bold text-indigo-400 dark:text-indigo-300">
-              {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(overheadAmount)}
+              <CurrencyDisplay amount={overheadAmount} currency={projectCurrency} compactThreshold={1000} />
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-semibold text-app-muted uppercase tracking-wider mb-1">Contingency {contingencyType === 'percentage' && `(${contingencyAmount}%)`}</span>
-            <span className="text-2xl font-bold text-amber-600 dark:text-amber-500">
-              {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(calculatedContingency)}
+            <span className="text-xs font-semibold text-app-muted uppercase tracking-wider mb-1 flex items-center gap-2">
+              Contingency {contingencyType === 'percentage' && `(${contingencyAmount}%)`}
             </span>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-amber-600 dark:text-amber-500">
+                <CurrencyDisplay amount={calculatedContingency} currency={projectCurrency} compactThreshold={1000} />
+              </span>
+            </div>
+            {calculatedContingency > 0 && (
+              <div className="mt-2 flex flex-col gap-1 text-xs">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-app-muted">Allocated to Risks:</span>
+                  <span className="font-semibold text-red-500"><CurrencyDisplay amount={allocatedContingency} currency={projectCurrency} compactThreshold={1000} /></span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-app-muted">Uncommitted Reserve:</span>
+                  <span className={`font-semibold ${calculatedContingency - allocatedContingency < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                    <CurrencyDisplay amount={calculatedContingency - allocatedContingency} currency={projectCurrency} compactThreshold={1000} />
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="w-full h-px md:w-px md:h-12 bg-app-border mx-0 md:mx-2 block"></div>
+          <div className="w-full h-px md:w-px md:h-16 bg-app-border mx-0 md:mx-2 block"></div>
           <div className="flex flex-col w-full md:w-auto">
             <span className="text-sm font-bold text-indigo-500 uppercase tracking-wider mb-1">Project Budget</span>
             <span className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-              {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(totalWithContingency)}
+              <CurrencyDisplay amount={totalWithContingency} currency={projectCurrency} compactThreshold={1000} />
             </span>
           </div>
           <div className="flex flex-col w-full md:w-auto ml-auto">
             <span className="text-sm font-bold text-emerald-500 uppercase tracking-wider mb-1">Actual to Date</span>
             <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-              {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(totalActual)}
+              <CurrencyDisplay amount={totalActual} currency={projectCurrency} compactThreshold={1000} />
             </span>
           </div>
         </div>

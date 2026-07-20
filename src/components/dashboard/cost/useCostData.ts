@@ -11,6 +11,7 @@ export function useCostData(projectId: string) {
   const [resourceRates, setResourceRates] = useState<any[]>([])
   const [contingencyAmount, setContingencyAmount] = useState<number>(0)
   const [contingencyType, setContingencyType] = useState<'flat' | 'percentage'>('flat')
+  const [allocatedContingency, setAllocatedContingency] = useState<number>(0)
   const [projectCurrency, setProjectCurrency] = useState<string>('USD')
   const [globalOverhead, setGlobalOverhead] = useState<number>(0)
 
@@ -93,6 +94,17 @@ export function useCostData(projectId: string) {
 
       if (acError) throw acError
 
+      // Fetch Risks for Contingency allocation
+      const { data: risksData, error: riskError } = await supabase
+        .from('risks')
+        .select('allocated_contingency_amount')
+        .eq('project_id', projectId)
+
+      if (riskError) throw riskError
+      
+      const totalAllocated = (risksData || []).reduce((sum, risk) => sum + (Number(risk.allocated_contingency_amount) || 0), 0)
+      setAllocatedContingency(totalAllocated)
+
       // Merge into WbsCostData
       const merged: WbsCostData[] = wbs.map(element => {
         const ca = costAccounts.find(c => c.wbs_element_id === element.id) || null
@@ -134,6 +146,7 @@ export function useCostData(projectId: string) {
     resourceRates,
     contingencyAmount,
     contingencyType,
+    allocatedContingency,
     projectCurrency,
     globalOverhead,
     refresh: fetchAll

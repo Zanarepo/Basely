@@ -3,12 +3,13 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { ArrowLeft, Briefcase, Workflow, CalendarRange, Clock, Lock } from 'lucide-react'
-import { WbsPlanningWorkspace } from '../../../../components/dashboard/wbs/WbsPlanningWorkspace'
-import GanttWorkspace from '../../../../components/dashboard/gantt/GanttWorkspace'
-import CostWorkspace from '../../../../components/dashboard/cost/CostWorkspace'
-import StakeholderWorkspace from '../../../../components/dashboard/stakeholders/StakeholderWorkspace'
-import { ProjectTeamRoster } from '../../../../components/dashboard/ProjectTeamRoster'
-import { LivePresenceWrapper } from '../../../../components/dashboard/presence/LivePresenceWrapper'
+import { WbsPlanningWorkspace } from '@/components/dashboard/wbs/WbsPlanningWorkspace'
+import GanttWorkspace from '@/components/dashboard/gantt/GanttWorkspace'
+import CostWorkspace from '@/components/dashboard/cost/CostWorkspace'
+import StakeholderWorkspace from '@/components/dashboard/stakeholders/StakeholderWorkspace'
+import RiskRegisterWorkspace from '@/components/dashboard/risks/RiskRegisterWorkspace'
+import { ProjectTeamRoster } from '@/components/dashboard/ProjectTeamRoster'
+import { LivePresenceWrapper } from '@/components/dashboard/presence/LivePresenceWrapper'
 
 // Planning components type definition
 type ProjectPageProps = {
@@ -33,7 +34,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
   // 1. Fetch project with RLS enforcement
   const { data: project, error: projectError } = await supabase
     .from('projects')
-    .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, organization_id, created_by')
+    .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, organization_id, created_by, allow_team_schedule_edits')
     .eq('id', id)
     .maybeSingle()
 
@@ -216,6 +217,16 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           >
             Stakeholders
           </Link>
+          <Link
+            href={`/dashboard/projects/${project.id}?tab=risks`}
+            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
+              activeTab === 'risks'
+                ? 'border-indigo-500 text-indigo-500 font-bold'
+                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
+            }`}
+          >
+            Risks & Issues
+          </Link>
         </nav>
       </div>
 
@@ -228,6 +239,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           hasEditAccess={hasEditAccess && !project.is_archived}
           canAssignMembers={canAssignMembers && !project.is_archived}
           callerRole={callerRole}
+          allowTeamScheduleEdits={project.allow_team_schedule_edits}
         />
       )}
 
@@ -250,6 +262,14 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         <StakeholderWorkspace
           projectId={project.id}
           hasEditAccess={canAssignMembers}
+          workspaceMembers={workspaceMembers}
+        />
+      )}
+
+      {activeTab === 'risks' && (
+        <RiskRegisterWorkspace
+          projectId={project.id}
+          hasEditAccess={hasEditAccess && !project.is_archived}
           workspaceMembers={workspaceMembers}
         />
       )}

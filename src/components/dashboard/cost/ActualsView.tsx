@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { Plus, Upload, Trash2, Pencil, FileText, CheckCircle2, AlertCircle, X, Search, ChevronLeft, ChevronRight, Cloud } from 'lucide-react'
 import type { WbsCostData } from '@/lib/cost/types'
 import { recordActualCost, updateActualCost, bulkImportActualCosts, deleteActualCost, bulkDeleteActualCosts } from '@/lib/actuals/actions'
-import { formatCurrency } from '@/lib/utils'
+import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
 const ITEMS_PER_PAGE = 10
 
@@ -400,7 +400,7 @@ export default function ActualsView({
         <div className="bg-app-surface border border-app-border rounded-2xl p-6 flex flex-col justify-center">
           <p className="text-sm font-medium text-app-muted uppercase tracking-wider mb-2">Total Actual Cost</p>
           <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-            {formatCurrency(totalActual, projectCurrency)}
+            <CurrencyDisplay amount={totalActual} currency={projectCurrency} compactThreshold={1000} />
           </div>
         </div>
       </div>
@@ -677,7 +677,7 @@ export default function ActualsView({
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold text-app-fg text-right">
-                      {formatCurrency(actual.amount, actual.currency)}
+                      <CurrencyDisplay amount={actual.amount} currency={projectCurrency} compactThreshold={1000} />
                     </td>
                     <td className="px-6 py-4 text-right">
                       {hasEditAccess && (

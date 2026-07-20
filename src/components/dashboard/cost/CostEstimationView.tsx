@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Save, AlertCircle, RefreshCw, Search } from 'lucide-react'
+import { Save, AlertCircle, RefreshCw, Search, DollarSign } from 'lucide-react'
 import type { WbsCostData, EstimationMethod, ResourceRate } from '@/lib/cost/types'
 import { saveCostEstimate, reconcileBottomUpEstimate } from '@/lib/cost/actions'
 import ActivityAssignmentSheet from './ActivityAssignmentSheet'
-import { formatCurrency } from '@/lib/utils'
+import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
 type Props = {
   projectId: string
@@ -154,15 +154,15 @@ export default function CostEstimationView({
                   <span className="font-semibold text-sm text-app-fg">{wp.wbsCode} - {wp.wbsName}</span>
                   <div className="flex flex-col items-end">
                     {wp.costAccount ? (
-                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(wp.costAccount.budgeted_total)}
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        <CurrencyDisplay amount={wp.costAccount.budgeted_total} currency={projectCurrency} compactThreshold={1000} />
                       </span>
                     ) : (
                       <span className="text-xs font-medium text-app-subtle italic">Unestimated</span>
                     )}
                     {wp.actualCosts && wp.actualCosts.length > 0 && (
-                      <span className="text-[10px] font-bold text-slate-500 mt-0.5">
-                        Act: {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(wp.actualCosts.reduce((a, c) => a + c.amount, 0))}
+                      <span className="text-app-muted">
+                        Act: <CurrencyDisplay amount={wp.actualCosts.reduce((a, c) => a + c.amount, 0)} currency={projectCurrency} compactThreshold={1000} />
                       </span>
                     )}
                   </div>
@@ -245,7 +245,7 @@ export default function CostEstimationView({
                       <div className="flex-1">
                         <h4 className="text-sm font-bold text-red-800 dark:text-red-400">Variance Detected</h4>
                         <p className="text-xs text-red-700 dark:text-red-500/80 mt-1 mb-3">
-                          The manual placeholder estimate ({formatCurrency(selectedWp.costAccount.budgeted_total, projectCurrency)}) differs from the newly calculated resource total ({formatCurrency(selectedWp.costAccount.resource_calculated_total, projectCurrency)}).
+                          The manual placeholder estimate (<CurrencyDisplay amount={selectedWp.costAccount.budgeted_total} currency={projectCurrency} compactThreshold={1000} />) differs from the newly calculated resource total (<CurrencyDisplay amount={selectedWp.costAccount.resource_calculated_total} currency={projectCurrency} compactThreshold={1000} />).
                         </p>
                         {hasEditAccess && (
                           <button
@@ -253,7 +253,7 @@ export default function CostEstimationView({
                             disabled={isSaving}
                             className="text-xs font-semibold px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                           >
-                            Confirm & Reconcile to {formatCurrency(selectedWp.costAccount.resource_calculated_total, projectCurrency)}
+                            Confirm & Reconcile to <CurrencyDisplay amount={selectedWp.costAccount.resource_calculated_total} currency={projectCurrency} compactThreshold={1000} />
                           </button>
                         )}
                       </div>
@@ -322,7 +322,7 @@ export default function CostEstimationView({
                   <div className="pt-4 border-t border-app-border">
                     <label className="block text-xs font-semibold text-app-muted uppercase tracking-wider mb-2">Calculated Total</label>
                     <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                      {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format((parseFloat(rate) || 0) * (parseFloat(quantity) || 0))}
+                      <CurrencyDisplay amount={(parseFloat(rate) || 0) * (parseFloat(quantity) || 0)} currency={projectCurrency} compactThreshold={1000} />
                     </div>
                   </div>
                 </div>
@@ -392,4 +392,3 @@ export default function CostEstimationView({
     </div>
   )
 }
-import { DollarSign } from 'lucide-react'

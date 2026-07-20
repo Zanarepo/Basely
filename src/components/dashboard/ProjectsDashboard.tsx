@@ -39,6 +39,7 @@ type ProjectType = {
     working_days: number[]
     daily_hours: number
   }
+  allow_team_schedule_edits: boolean
 }
 
 type WorkspaceMember = {
@@ -117,10 +118,10 @@ export function ProjectsDashboard({
 
   // Who can EDIT a project:
   // - NOT Viewers (ever)
-  // - Creator, Owner, Admins, PMs, or assigned members
+  // - Creator, Owner, Admins, or PMs
   const canEditProject = (project: ProjectType) => {
     if (isViewer) return false
-    return isOwner || isAdmin || project.createdBy === callerUserId || isPM || project.assignedMembers.includes(callerUserId)
+    return isOwner || isAdmin || project.createdBy === callerUserId || isPM
   }
 
   // Search query for projects

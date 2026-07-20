@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { FileSpreadsheet, Plus, Loader2 } from 'lucide-react'
 import { WbsTree } from './WbsTree'
 import { WbsBoardView } from './WbsBoardView'
@@ -22,6 +22,7 @@ type WbsPlanningWorkspaceProps = {
   hasEditAccess: boolean
   canAssignMembers?: boolean
   callerRole?: string
+  allowTeamScheduleEdits?: boolean
 }
 
 import { useWbsBoard } from './workspace/useWbsBoard'
@@ -33,6 +34,7 @@ export function WbsPlanningWorkspace({
   hasEditAccess,
   canAssignMembers = false,
   callerRole,
+  allowTeamScheduleEdits = false,
 }: WbsPlanningWorkspaceProps) {
   const [currentView, setCurrentView] = useState<WbsViewType>('tree')
   const [isImporting, setIsImporting] = useState(false)
@@ -77,6 +79,18 @@ export function WbsPlanningWorkspace({
   } = useWbsPlanning(projectId, hasEditAccess)
 
   const { columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility } = useWbsBoard(projectId, elements)
+
+  const sortedElements = useMemo(() => {
+    const list: typeof elements = []
+    const traverse = (nodes: typeof treeNodes) => {
+      for (const node of nodes) {
+        list.push(node.element)
+        traverse(node.children)
+      }
+    }
+    traverse(treeNodes)
+    return list
+  }, [treeNodes])
 
   if (loading && elements.length === 0) {
     return (
@@ -148,29 +162,31 @@ export function WbsPlanningWorkspace({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
-          <div className="backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6 shadow-xs overflow-x-auto min-h-[350px] max-w-[100vw] sm:max-w-none">
+          <div className="backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6 shadow-xs min-h-[350px] max-w-[100vw] sm:max-w-none min-w-0">
             {currentView === 'tree' && (
-              <WbsTree
-                treeNodes={treeNodes}
-                expandedNodeIds={expandedNodeIds}
-                onToggleExpand={handleToggleExpand}
-                activeElementId={activeElementId}
-                onSelect={setActiveElementId}
-                onAddChild={(element) => handleCreateElement(element.parentId, element, 'child')}
-                onAddSibling={(element) => handleCreateElement(element.parentId, element, 'sibling')}
-                onDelete={handleDeleteElement}
-                onRename={handleRenameElement}
-                onMove={handleMoveNode}
-                hasEditAccess={hasEditAccess}
-                draggedNodeId={draggedNodeId}
-                setDraggedNodeId={setDraggedNodeId}
-                workspaceMembers={workspaceMembers}
-                getElementProgress={getElementProgress}
-                selectedIds={selectedIds}
-                toggleSelection={toggleSelection}
-                selectAll={selectAll}
-                clearSelection={clearSelection}
-              />
+              <div className="overflow-x-auto">
+                <WbsTree
+                  treeNodes={treeNodes}
+                  expandedNodeIds={expandedNodeIds}
+                  onToggleExpand={handleToggleExpand}
+                  activeElementId={activeElementId}
+                  onSelect={setActiveElementId}
+                  onAddChild={(element) => handleCreateElement(element.parentId, element, 'child')}
+                  onAddSibling={(element) => handleCreateElement(element.parentId, element, 'sibling')}
+                  onDelete={handleDeleteElement}
+                  onRename={handleRenameElement}
+                  onMove={handleMoveNode}
+                  hasEditAccess={hasEditAccess}
+                  draggedNodeId={draggedNodeId}
+                  setDraggedNodeId={setDraggedNodeId}
+                  workspaceMembers={workspaceMembers}
+                  getElementProgress={getElementProgress}
+                  selectedIds={selectedIds}
+                  toggleSelection={toggleSelection}
+                  selectAll={selectAll}
+                  clearSelection={clearSelection}
+                />
+              </div>
             )}
             
             {currentView === 'board' && (
@@ -203,20 +219,24 @@ export function WbsPlanningWorkspace({
             {currentView === 'grid' && (
               <WbsGridView 
                 projectId={projectId}
-                elements={elements}
+                elements={sortedElements}
                 workspaceMembers={workspaceMembers}
                 onSelect={setActiveElementId}
                 selectedIds={selectedIds}
                 toggleSelection={toggleSelection}
                 selectAll={selectAll}
                 clearSelection={clearSelection}
+                expandedNodeIds={expandedNodeIds}
+                onToggleExpand={handleToggleExpand}
               />
             )}
 
             {currentView === 'raci' && (
               <RaciMatrixView 
                 projectId={projectId}
-                elements={elements}
+                elements={sortedElements}
+                expandedNodeIds={expandedNodeIds}
+                onToggleExpand={handleToggleExpand}
               />
             )}
 
@@ -244,6 +264,7 @@ export function WbsPlanningWorkspace({
         onShowToast={showToast}
         callerRole={callerRole}
         callerUserId={callerUserId}
+        allowTeamScheduleEdits={allowTeamScheduleEdits}
       />
     </div>
   )

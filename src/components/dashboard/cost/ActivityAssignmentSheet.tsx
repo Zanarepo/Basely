@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { X, Plus, Trash2, Save } from 'lucide-react'
 import { ResourceRate, ActivityResourceAssignment } from '@/lib/cost/types'
 import { assignResourceToActivity, deleteResourceAssignment } from '@/lib/cost/actions'
-import { formatCurrency } from '@/lib/utils'
+import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
 interface ActivityAssignmentSheetProps {
   wbsElementId: string
@@ -89,15 +89,15 @@ export default function ActivityAssignmentSheet({
         <div className="bg-app-bg border border-app-border rounded-xl p-5 space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-app-muted">Direct Cost</span>
-            <span className="font-medium text-app-fg">{formatCurrency(directCost, projectCurrency)}</span>
+            <span className="font-medium text-app-fg"><CurrencyDisplay amount={directCost} currency={projectCurrency} compactThreshold={1000} /></span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-app-muted">Overhead ({globalOverhead}%)</span>
-            <span className="font-medium text-app-fg">{formatCurrency(overheadAmount, projectCurrency)}</span>
+            <span className="font-medium text-app-fg"><CurrencyDisplay amount={overheadAmount} currency={projectCurrency} compactThreshold={1000} /></span>
           </div>
           <div className="pt-3 border-t border-app-border flex justify-between">
             <span className="font-semibold text-app-fg">Total Calculated Cost</span>
-            <span className="font-bold text-indigo-400">{formatCurrency(totalCost, projectCurrency)}</span>
+            <span className="font-bold text-indigo-400"><CurrencyDisplay amount={totalCost} currency={projectCurrency} compactThreshold={1000} /></span>
           </div>
         </div>
 
@@ -120,11 +120,11 @@ export default function ActivityAssignmentSheet({
               <div>
                 <p className="text-sm font-medium text-app-fg">{a.resource?.name}</p>
                 <p className="text-xs text-app-muted">
-                  {formatCurrency(a.resource?.rate || 0, projectCurrency)}/{a.resource?.unit} × {a.quantity} {a.resource?.unit}
+                  <CurrencyDisplay amount={a.resource?.rate || 0} currency={projectCurrency} compactThreshold={1000} />/{a.resource?.unit} × {a.quantity} {a.resource?.unit}
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-medium text-app-fg">{formatCurrency(a.calculated_cost, projectCurrency)}</span>
+                <span className="font-medium text-app-fg"><CurrencyDisplay amount={a.calculated_cost} currency={projectCurrency} compactThreshold={1000} /></span>
                 <button 
                   onClick={() => handleDelete(a.id)}
                   className="p-1.5 text-app-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
@@ -154,7 +154,7 @@ export default function ActivityAssignmentSheet({
                   <option value="">Select a resource...</option>
                   {resourceRates.map(r => (
                     <option key={r.id} value={r.id}>
-                      {r.name} ({formatCurrency(r.rate, projectCurrency)}/{r.unit})
+                      {r.name} (<CurrencyDisplay amount={r.rate} currency={projectCurrency} compactThreshold={1000} />/{r.unit})
                     </option>
                   ))}
                 </select>

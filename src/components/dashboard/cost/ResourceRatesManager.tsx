@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react'
 import { Plus, Edit2, Trash2, Save, X, Percent, Search, Upload } from 'lucide-react'
 import { ResourceRate, ResourceType, ResourceUnit } from '@/lib/cost/types'
 import { createResourceRate, updateResourceRate, deleteResourceRate, updateGlobalOverhead, updateProjectContingency, bulkDeleteResourceRates } from '@/lib/cost/actions'
-import { formatCurrency } from '@/lib/utils'
+import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 import { ResourceRatesImportModal } from './ResourceRatesImportModal'
 
 interface ResourceRatesManagerProps {
@@ -274,7 +274,7 @@ export default function ResourceRatesManager({
                       <span className="text-xl font-bold text-app-fg">
                         {contingencyType === 'percentage' 
                           ? `${contingencyAmount}%` 
-                          : new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(contingencyAmount || 0)}
+                          : <CurrencyDisplay amount={contingencyAmount || 0} currency={projectCurrency} compactThreshold={1000} />}
                       </span>
                       <button onClick={() => setIsEditingContingency(true)} className="p-1.5 text-app-muted hover:text-indigo-400 hover:bg-app-hover rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                         <Edit2 className="w-4 h-4" />
@@ -498,7 +498,7 @@ export default function ResourceRatesManager({
                       </span>
                     </td>
                     <td className="px-4 py-3 text-app-muted">
-                      {formatCurrency(r.rate, r.currency)} <span className="text-xs">/ {r.unit}</span>
+                      <CurrencyDisplay amount={r.rate} currency={projectCurrency} compactThreshold={1000} /> <span className="text-xs">/ {r.unit}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       {hasEditAccess && (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { Search, Loader2, AlertCircle } from 'lucide-react'
+import { Search, Loader2, AlertCircle, ChevronRight, ChevronDown, PanelLeftClose, PanelLeft } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 
 type Stakeholder = {
@@ -15,13 +15,15 @@ type Stakeholder = {
 type RaciMatrixViewProps = {
   projectId: string
   elements: WbsElement[]
+  expandedNodeIds?: Set<string>
+  onToggleExpand?: (id: string, e: React.MouseEvent) => void
 }
 
-export function RaciMatrixView({ projectId, elements }: RaciMatrixViewProps) {
+export function RaciMatrixView({ projectId, elements, expandedNodeIds = new Set(), onToggleExpand }: RaciMatrixViewProps) {
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchWbs, setSearchWbs] = useState('')
   const [searchStakeholder, setSearchStakeholder] = useState('')
+  const [showWbsColumn, setShowWbsColumn] = useState(true)
 
   const supabase = createClient()
 
@@ -40,13 +42,40 @@ export function RaciMatrixView({ projectId, elements }: RaciMatrixViewProps) {
   }, [projectId])
 
   const filteredElements = useMemo(() => {
-    if (!searchWbs) return elements
-    const query = searchWbs.toLowerCase()
-    return elements.filter(e => 
-      e.name.toLowerCase().includes(query) || 
-      e.code.toLowerCase().includes(query)
-    )
-  }, [elements, searchWbs])
+    
+    const visible: WbsElement[] = []
+    const parentVisible = new Map<string, boolean>()
+
+    elements.forEach((el) => {
+      let isVisible = true
+
+      if (el.parentId) {
+        const pVisible = parentVisible.get(el.parentId) ?? true
+        const pExpanded = expandedNodeIds.has(el.parentId)
+        isVisible = pVisible && pExpanded
+      }
+
+      parentVisible.set(el.id, isVisible)
+
+      if (isVisible) {
+        visible.push(el)
+      }
+    })
+
+    return visible
+  }, [elements, expandedNodeIds])
+
+  const elementLevels = useMemo(() => {
+    const levels = new Map<string, number>()
+    elements.forEach((el) => {
+      let lvl = 0
+      if (el.parentId) {
+        lvl = (levels.get(el.parentId) || 0) + 1
+      }
+      levels.set(el.id, lvl)
+    })
+    return levels
+  }, [elements])
 
   const filteredStakeholders = useMemo(() => {
     if (!searchStakeholder) return stakeholders
@@ -68,19 +97,20 @@ export function RaciMatrixView({ projectId, elements }: RaciMatrixViewProps) {
   }
 
   return (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col h-[600px] space-y-4">
       {/* Filters */}
       <div className="flex items-center gap-4 px-1">
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-app-muted" />
-          <input
-            type="text"
-            placeholder="Search WBS elements..."
-            value={searchWbs}
-            onChange={(e) => setSearchWbs(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-          />
-        </div>
+        <button
+          onClick={() => setShowWbsColumn(!showWbsColumn)}
+          className={`p-2 rounded-xl transition-all flex items-center justify-center ${
+            showWbsColumn
+              ? 'bg-indigo-500/10 text-indigo-600'
+              : 'hover:bg-app-surface border border-transparent hover:border-app-border text-app-subtle hover:text-app-fg'
+          }`}
+          title={showWbsColumn ? "Hide WBS details column" : "Show WBS details column"}
+        >
+          <PanelLeftClose className="w-5 h-5" />
+        </button>
         <div className="relative w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-app-muted" />
           <input
@@ -93,13 +123,15 @@ export function RaciMatrixView({ projectId, elements }: RaciMatrixViewProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto rounded-2xl border border-app-border bg-app-surface">
+      <div className="flex-1 overflow-auto rounded-2xl border border-app-border bg-app-surface min-h-0">
         <table className="w-full text-sm border-separate border-spacing-0">
           <thead>
             <tr>
-              <th className="sticky top-0 left-0 z-20 bg-app-muted-surface border-b-2 border-r-2 border-app-border px-4 py-3 text-left font-semibold text-app-fg min-w-[250px]">
-                WBS Element
-              </th>
+              {showWbsColumn && (
+                <th className="sticky top-0 left-0 z-20 bg-app-muted-surface border-b-2 border-r-2 border-app-border px-4 py-3 text-left font-semibold text-app-fg min-w-[250px]">
+                  WBS Element
+                </th>
+              )}
               {filteredStakeholders.map(s => (
                 <th key={s.id} className="sticky top-0 z-10 bg-app-muted-surface border-b-2 border-app-border border-r border-app-border/50 px-3 py-3 text-center min-w-[100px] whitespace-nowrap">
                   <div className="flex flex-col items-center">
@@ -121,21 +153,40 @@ export function RaciMatrixView({ projectId, elements }: RaciMatrixViewProps) {
 
               return (
                 <tr key={el.id} className="group hover:bg-app-hover transition-colors">
-                  <td className="sticky left-0 z-10 bg-app-surface group-hover:bg-app-hover border-b border-r-2 border-app-border px-4 py-2.5 whitespace-nowrap transition-colors">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-app-subtle px-1.5 py-0.5 rounded bg-app-bg border border-app-border">
-                        {el.code}
-                      </span>
-                      <span className="font-medium text-app-fg truncate max-w-[200px]" title={el.name}>
-                        {el.name}
-                      </span>
-                      {isMissingRaci && (
-                        <div title="Missing Responsible or Accountable assignment" className="ml-auto shrink-0 flex items-center">
-                          <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
-                        </div>
-                      )}
-                    </div>
-                  </td>
+                  {showWbsColumn && (
+                    <td className="sticky left-0 z-10 bg-app-surface group-hover:bg-app-hover border-b border-r-2 border-app-border px-4 py-2.5 whitespace-nowrap transition-colors">
+                      <div className="flex items-center gap-2" style={{ paddingLeft: `${(elementLevels.get(el.id) || 0) * 16}px` }}>
+                        {!el.isWorkPackage ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onToggleExpand?.(el.id, e)
+                            }}
+                            className="p-0.5 hover:bg-app-hover rounded text-app-subtle cursor-pointer"
+                          >
+                            {expandedNodeIds.has(el.id) ? (
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            ) : (
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        ) : (
+                          <div className="w-4 h-4 shrink-0" />
+                        )}
+                        <span className="text-xs font-mono font-bold text-app-subtle px-1.5 py-0.5 rounded bg-app-bg border border-app-border">
+                          {el.code}
+                        </span>
+                        <span className="font-medium text-app-fg truncate max-w-[200px]" title={el.name}>
+                          {el.name}
+                        </span>
+                        {isMissingRaci && (
+                          <div title="Missing Responsible or Accountable assignment" className="ml-auto shrink-0 flex items-center">
+                            <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  )}
                   {filteredStakeholders.map(s => {
                     const assignment = el.raciAssignments?.filter(a => a.stakeholderId === s.id) || []
                     const roles = assignment.map(a => a.roleType[0]) // R, A, C, I

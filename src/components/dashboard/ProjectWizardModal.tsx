@@ -38,6 +38,7 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
   const [endDate, setEndDate] = useState('')
   const [workingDays, setWorkingDays] = useState<number[]>([1, 2, 3, 4, 5])
   const [dailyHours, setDailyHours] = useState(8)
+  const [allowTeamScheduleEdits, setAllowTeamScheduleEdits] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   if (!open) return null
@@ -46,7 +47,7 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
     if (isPending) return
     setName(''); setClientName(''); setDescription(''); setMethodology('Waterfall')
     setCurrency('USD'); setStartDate(''); setEndDate(''); setWorkingDays([1, 2, 3, 4, 5])
-    setDailyHours(8); setErrorMsg(null); onClose()
+    setDailyHours(8); setAllowTeamScheduleEdits(false); setErrorMsg(null); onClose()
   }
 
   const handleDayToggle = (day: number) => {
@@ -69,6 +70,7 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
         name, clientName: clientName.trim() || null, description: description.trim() || null,
         methodology, currency, startDate: startDate || null, endDate: endDate || null,
         calendarConfig: { working_days: workingDays, daily_hours: dailyHours },
+        allowTeamScheduleEdits,
       })
       if (!result.ok) return setErrorMsg(result.error)
       router.refresh()
@@ -107,6 +109,26 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
               </div>
               <div className="space-y-2"><span className="auth-label block">Working Days</span><div className="flex flex-wrap gap-2">{DAYS_OF_WEEK.map((day) => { const active = workingDays.includes(day.value); return <button key={day.value} type="button" onClick={() => handleDayToggle(day.value)} disabled={isPending} className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${active ? 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-500/35' : 'bg-app-muted-surface text-app-muted border-app-border hover:bg-app-hover'}`}>{day.name}</button> })}</div></div>
               <div className="space-y-2"><label htmlFor="project-hours" className="auth-label">Daily Work Hours</label><input id="project-hours" type="number" min="1" max="24" value={dailyHours} onChange={(event) => setDailyHours(parseInt(event.target.value, 10) || 8)} disabled={isPending} className="auth-input pl-4" /></div>
+
+              <div className="pt-4 mt-6 border-t border-app-border space-y-4">
+                <h3 className="text-sm font-semibold text-app-fg mb-4">Advanced Settings</h3>
+                <div className="flex items-center justify-between p-4 bg-app-surface border border-app-border rounded-xl">
+                  <div>
+                    <div className="text-sm font-medium text-app-fg">Allow Team Schedule Edits</div>
+                    <div className="text-xs text-app-muted mt-1">If enabled, team members assigned as "Responsible" can adjust task durations and dates.</div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={allowTeamScheduleEdits}
+                      onChange={(e) => setAllowTeamScheduleEdits(e.target.checked)}
+                      disabled={isPending}
+                    />
+                    <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                  </label>
+                </div>
+              </div>
             </div>
             <div className="shrink-0 flex items-center justify-end gap-3 border-t border-app-border px-6 py-4 mt-2 bg-app-surface-solid/80"><button type="button" onClick={handleClose} disabled={isPending} className="btn-secondary">Cancel</button><button type="submit" disabled={isPending} className="btn-primary">{isPending ? <><Loader2 className="h-4 w-4 animate-spin" />Creating...</> : 'Create Project'}</button></div>
           </form>

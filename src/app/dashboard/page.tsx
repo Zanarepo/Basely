@@ -39,7 +39,7 @@ export default async function DashboardPage() {
   // 2️⃣ Fetch all workspace projects
   const { data: projectsData } = await supabase
     .from('projects')
-    .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, created_by')
+    .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, created_by, allow_team_schedule_edits')
     .eq('organization_id', active.organization_id)
     .order('created_at', { ascending: false })
 
@@ -78,6 +78,7 @@ export default async function DashboardPage() {
     calendarConfig: typeof p.calendar_config === 'string'
       ? JSON.parse(p.calendar_config)
       : p.calendar_config ?? { working_days: [1, 2, 3, 4, 5], daily_hours: 8 },
+    allow_team_schedule_edits: p.allow_team_schedule_edits ?? false,
   }))
 
   // 4️⃣ Fetch all workspace members for assignment selector

@@ -115,6 +115,7 @@ export async function createProject(
       start_date: data.startDate || null,
       end_date: data.endDate || null,
       calendar_config: data.calendarConfig,
+      allow_team_schedule_edits: data.allowTeamScheduleEdits,
       created_by: user.id
     })
     .select('id')
@@ -165,7 +166,8 @@ export async function updateProject(
       currency: data.currency,
       start_date: data.startDate || null,
       end_date: data.endDate || null,
-      calendar_config: data.calendarConfig
+      calendar_config: data.calendarConfig,
+      allow_team_schedule_edits: data.allowTeamScheduleEdits
     })
     .eq('id', projectId)
 

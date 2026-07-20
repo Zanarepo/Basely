@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Activity, RefreshCw } from 'lucide-react'
 import type { WbsCostData } from '@/lib/cost/types'
 import { generateLinearTimePhasing } from '@/lib/cost/actions'
+import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
 type Props = {
   projectId: string
@@ -93,9 +94,9 @@ export default function TimePhasingView({ projectId, wbsCostData, projectCurrenc
                   <span className="text-xs text-app-muted">
                     {wp.timePhaseEntries.length} periods
                   </span>
-                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(wp.costAccount!.budgeted_total)}
-                  </span>
+                  <div className="text-right whitespace-nowrap text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <CurrencyDisplay amount={wp.costAccount!.budgeted_total} currency={projectCurrency} compactThreshold={1000} />
+                  </div>
                 </div>
               </button>
             ))
@@ -144,7 +145,9 @@ export default function TimePhasingView({ projectId, wbsCostData, projectCurrenc
                     <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
                       {/* Tooltip */}
                       <div className="absolute -top-8 bg-app-fg text-app-surface text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
-                        {d.period_start_date}: {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(d.cumulative)}
+                        <div key={d.period_start_date} className="text-xs text-app-muted">
+                          {d.period_start_date}: <CurrencyDisplay amount={d.cumulative} currency={projectCurrency} compactThreshold={1000} />
+                        </div>
                       </div>
                       
                       {/* Bar (Cumulative) */}
@@ -181,11 +184,15 @@ export default function TimePhasingView({ projectId, wbsCostData, projectCurrenc
                         <tr key={i} className="border-b border-app-border last:border-none hover:bg-app-hover">
                           <td className="p-3 text-app-fg">{d.period_start_date}</td>
                           <td className="p-3 text-app-fg">{d.period_end_date}</td>
-                          <td className="p-3 text-app-fg text-right font-medium">
-                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(d.planned_amount)}
+                          <td className="p-3 text-right">
+                            <div className="text-sm font-medium text-app-fg">
+                              <CurrencyDisplay amount={d.planned_amount} currency={projectCurrency} compactThreshold={1000} />
+                            </div>
                           </td>
-                          <td className="p-3 text-indigo-600 dark:text-indigo-400 text-right font-bold">
-                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: projectCurrency }).format(d.cumulative)}
+                          <td className="p-3 text-right">
+                            <div className="text-xs text-app-muted">
+                              <CurrencyDisplay amount={d.cumulative} currency={projectCurrency} compactThreshold={1000} />
+                            </div>
                           </td>
                         </tr>
                       ))}

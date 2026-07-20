@@ -1,6 +1,7 @@
-import { Loader2 } from 'lucide-react'
+import { Loader2, ChevronRight, ChevronDown } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 import { useWbsGridData } from './workspace/useWbsGridData'
+import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
 type WbsGridViewProps = {
   projectId: string
@@ -11,9 +12,11 @@ type WbsGridViewProps = {
   toggleSelection?: (id: string) => void
   selectAll?: () => void
   clearSelection?: () => void
+  expandedNodeIds?: Set<string>
+  onToggleExpand?: (id: string, e: React.MouseEvent) => void
 }
 
-export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, selectedIds = [], toggleSelection, selectAll, clearSelection }: WbsGridViewProps) {
+export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, selectedIds = [], toggleSelection, selectAll, clearSelection, expandedNodeIds = new Set(), onToggleExpand }: WbsGridViewProps) {
   const { gridData, loading } = useWbsGridData(projectId, elements)
 
   if (loading) {
@@ -25,7 +28,30 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
     )
   }
 
-  const isAllSelected = gridData.length > 0 && gridData.every((item) => selectedIds.includes(item.id))
+  const visibleGridData: typeof gridData = []
+  const elementLevels = new Map<string, number>()
+  const parentVisible = new Map<string, boolean>()
+
+  gridData.forEach((el) => {
+    let isVisible = true
+    let lvl = 0
+
+    if (el.parentId) {
+      const pVisible = parentVisible.get(el.parentId) ?? true
+      const pExpanded = expandedNodeIds.has(el.parentId)
+      isVisible = pVisible && pExpanded
+      lvl = (elementLevels.get(el.parentId) || 0) + 1
+    }
+
+    elementLevels.set(el.id, lvl)
+    parentVisible.set(el.id, isVisible)
+
+    if (isVisible) {
+      visibleGridData.push(el)
+    }
+  })
+
+  const isAllSelected = visibleGridData.length > 0 && visibleGridData.every((item) => selectedIds.includes(item.id))
 
   return (
     <div className="p-5 h-[600px] overflow-auto w-full">
@@ -56,7 +82,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
           </tr>
         </thead>
         <tbody>
-          {gridData.map((r) => {
+          {visibleGridData.map((r) => {
             const hasR = r.raciAssignments?.some(a => a.roleType === 'Responsible')
             const hasA = r.raciAssignments?.some(a => a.roleType === 'Accountable')
             const responsible = r.raciAssignments?.find(a => a.roleType === 'Responsible')
@@ -87,7 +113,28 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                   {r.code}
                 </td>
                 <td className="px-3 py-2.5 border-b border-app-border text-app-fg font-medium">
-                  <span className="truncate">{r.name}</span>
+                  <div className="flex items-center gap-2" style={{ paddingLeft: `${(elementLevels.get(r.id) || 0) * 16}px` }}>
+                    {!r.isWorkPackage ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onToggleExpand?.(r.id, e)
+                        }}
+                        className="p-0.5 hover:bg-app-hover rounded text-app-subtle cursor-pointer"
+                      >
+                        {expandedNodeIds.has(r.id) ? (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    ) : (
+                      <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/50" />
+                      </div>
+                    )}
+                    <span className="truncate">{r.name}</span>
+                  </div>
                 </td>
                 <td className="px-3 py-2.5 border-b border-app-border">
                   <span 
@@ -139,13 +186,8 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                   })()}
                 </td>
                 {/* Render fetched cost data */}
-                <td 
-                  className="px-3 py-2.5 border-b border-app-border text-app-subtle whitespace-nowrap font-mono text-[11px]"
-                  title={r.cost !== null && r.currency ? new Intl.NumberFormat('en-US', { style: 'currency', currency: r.currency }).format(r.cost) : undefined}
-                >
-                  {r.cost !== null && r.currency 
-                    ? new Intl.NumberFormat('en-US', { style: 'currency', currency: r.currency, notation: 'compact', maximumFractionDigits: 2 }).format(r.cost) 
-                    : '—'}
+                <td className="px-3 py-2.5 border-b border-app-border text-app-subtle whitespace-nowrap font-mono text-[11px]">
+                  <CurrencyDisplay amount={r.cost} currency={r.currency} compactThreshold={1000} />
                 </td>
                 <td className="px-3 py-2.5 border-b border-app-border whitespace-nowrap">
                   <span

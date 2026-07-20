@@ -13,7 +13,8 @@ export const projectSchema = z.object({
   calendarConfig: z.object({
     working_days: z.array(z.number().min(0).max(6)),
     daily_hours: z.number().min(1).max(24)
-  })
+  }),
+  allowTeamScheduleEdits: z.boolean().optional().default(false)
 }).refine((data) => {
   if (data.startDate && data.endDate) {
     return new Date(data.endDate) >= new Date(data.startDate)

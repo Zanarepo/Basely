@@ -26,6 +26,7 @@ type WbsElementSidePanelProps = {
   canAssignMembers?: boolean
   callerRole?: string
   callerUserId?: string
+  allowTeamScheduleEdits?: boolean
 }
 
 type PredecessorInput = {
@@ -47,6 +48,7 @@ export function WbsElementSidePanel({
   canAssignMembers = false,
   callerRole,
   callerUserId,
+  allowTeamScheduleEdits = false,
 }: WbsElementSidePanelProps) {
   // WBS Element States
   const [name, setName] = useState('')
@@ -66,6 +68,9 @@ export function WbsElementSidePanel({
   // For basic details (name, description), we only allow PMs
   const effectiveEditAccess = hasEditAccess && !isTeamMember
   
+  // For scheduling, PMs or Responsible members if project config allows
+  const canEditSchedule = !!(effectiveEditAccess || (allowTeamScheduleEdits && isResponsible))
+
   // For checklist interaction, we allow PMs OR Responsible team members for deliverables
   const canCheckDeliverables = hasEditAccess || isResponsible
   
@@ -472,7 +477,7 @@ export function WbsElementSidePanel({
                       autoSchedule={autoSchedule}
                       setAutoSchedule={setAutoSchedule}
                       loadingSchedule={loadingSchedule}
-                      hasEditAccess={effectiveEditAccess}
+                      hasEditAccess={canEditSchedule}
                       saving={saving}
                       startDate={startDate}
                       handleStartDateChange={handleStartDateChange}
@@ -487,7 +492,7 @@ export function WbsElementSidePanel({
                       loadingSchedule={loadingSchedule}
                       projectActivities={projectActivities}
                       predecessors={predecessors}
-                      hasEditAccess={effectiveEditAccess}
+                      hasEditAccess={canEditSchedule}
                       saving={saving}
                       handleTogglePredecessor={handleTogglePredecessor}
                       handleUpdatePredType={handleUpdatePredType}

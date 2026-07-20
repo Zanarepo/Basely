@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { FileDigit, Plus, Camera, History, ArrowLeft, Loader2, Edit2, Trash2, Check, X } from 'lucide-react'
 import type { BudgetBaseline, BaselineCostSnapshot } from '@/lib/cost/types'
 import { createBudgetBaseline, getBaselineSnapshots, updateBudgetBaseline, deleteBudgetBaseline } from '@/lib/cost/actions'
-import { formatCurrency } from '@/lib/utils'
+import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
 type Props = {
   projectId: string
@@ -273,7 +273,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
                         <h4 className="font-bold text-sm text-app-fg">{snap.snapshotted_wbs_name}</h4>
                       </div>
                       <div className="col-span-4 text-right font-semibold text-app-fg">
-                        {formatCurrency(snap.baseline_total, projectCurrency)}
+                        <CurrencyDisplay amount={snap.baseline_total} currency={projectCurrency} compactThreshold={1000} />
                       </div>
                     </div>
                   ))}
@@ -281,7 +281,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
                   <div className="mt-6 pt-4 border-t border-app-border flex justify-between items-center">
                     <span className="font-bold text-app-fg">Total Baseline Budget</span>
                     <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
-                      {formatCurrency(snapshots.reduce((acc, curr) => acc + curr.baseline_total, 0), projectCurrency)}
+                      <CurrencyDisplay amount={snapshots.reduce((acc, curr) => acc + curr.baseline_total, 0)} currency={projectCurrency} compactThreshold={1000} />
                     </span>
                   </div>
                 </div>

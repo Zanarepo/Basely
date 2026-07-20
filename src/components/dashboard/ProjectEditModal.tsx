@@ -26,6 +26,7 @@ type ProjectType = {
     working_days: number[]
     daily_hours: number
   }
+  allow_team_schedule_edits: boolean
 }
 
 type ProjectEditModalProps = {
@@ -69,6 +70,7 @@ export function ProjectEditModal({
   const [endDate, setEndDate] = useState('')
   const [workingDays, setWorkingDays] = useState<number[]>([1, 2, 3, 4, 5])
   const [dailyHours, setDailyHours] = useState(8)
+  const [allowTeamScheduleEdits, setAllowTeamScheduleEdits] = useState(false)
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
@@ -83,6 +85,7 @@ export function ProjectEditModal({
       setEndDate(project.endDate || '')
       setWorkingDays(project.calendarConfig?.working_days || [1, 2, 3, 4, 5])
       setDailyHours(project.calendarConfig?.daily_hours || 8)
+      setAllowTeamScheduleEdits(project.allow_team_schedule_edits || false)
     }
     setErrorMsg(null)
   }, [project, open])
@@ -129,6 +132,7 @@ export function ProjectEditModal({
           working_days: workingDays,
           daily_hours: dailyHours,
         },
+        allowTeamScheduleEdits,
       })
 
       if (!result.ok) {
@@ -138,6 +142,35 @@ export function ProjectEditModal({
 
       router.refresh()
       onClose()
+    })
+  }
+
+  const handleToggleAutoSave = (newVal: boolean) => {
+    setAllowTeamScheduleEdits(newVal)
+    startTransition(async () => {
+      const result = await updateProject(project.id, {
+        name,
+        clientName: clientName.trim() || null,
+        description: description.trim() || null,
+        methodology,
+        currency,
+        startDate: startDate || null,
+        endDate: endDate || null,
+        calendarConfig: {
+          working_days: workingDays,
+          daily_hours: dailyHours,
+        },
+        allowTeamScheduleEdits: newVal,
+      })
+
+      if (!result.ok) {
+        setErrorMsg(result.error)
+        // revert on failure
+        setAllowTeamScheduleEdits(!newVal)
+        return
+      }
+
+      router.refresh()
     })
   }
 
@@ -327,7 +360,27 @@ export function ProjectEditModal({
             />
           </div>
 
+          <div className="pt-4 mt-6 border-t border-app-border space-y-4">
+            <h3 className="text-sm font-semibold text-app-fg mb-4">Advanced Settings</h3>
+            <div className="flex items-center justify-between p-4 bg-app-surface border border-app-border rounded-xl">
+              <div>
+                <div className="text-sm font-medium text-app-fg">Allow Team Schedule Edits</div>
+                <div className="text-xs text-app-muted mt-1">If enabled, team members assigned as "Responsible" can adjust task durations and dates.</div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={allowTeamScheduleEdits}
+                  onChange={(e) => handleToggleAutoSave(e.target.checked)}
+                  disabled={isPending}
+                />
+                <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+              </label>
             </div>
+          </div>
+
+        </div>
 
             <div className="shrink-0 flex items-center justify-end gap-3 border-t border-app-border px-6 py-4 mt-2 bg-app-surface-solid/80">
               <button

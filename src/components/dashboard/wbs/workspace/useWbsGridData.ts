@@ -26,8 +26,7 @@ export function useWbsGridData(projectId: string, elements: WbsElement[]) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const workPackages = elements.filter((e) => e.isWorkPackage)
-    if (workPackages.length === 0) {
+    if (elements.length === 0) {
       setGridData([])
       setLoading(false)
       return
@@ -37,25 +36,32 @@ export function useWbsGridData(projectId: string, elements: WbsElement[]) {
       setLoading(true)
       const supabase = createClient()
 
-      const [activitiesRes, costAccountsRes] = await Promise.all([
+      const [activitiesRes, costAccountsRes, projectRes] = await Promise.all([
         supabase
           .from('activities')
           .select('wbs_element_id, es, ef, duration, total_float')
           .eq('project_id', projectId),
         supabase
           .from('cost_accounts')
-          .select('wbs_element_id, budgeted_total, currency')
-          .in('wbs_element_id', workPackages.map(wp => wp.id))
+          .select('wbs_element_id, budgeted_total')
+          .in('wbs_element_id', elements.map(e => e.id)),
+        supabase
+          .from('projects')
+          .select('currency')
+          .eq('id', projectId)
+          .single()
       ])
 
       const { data: activities, error: activitiesError } = activitiesRes
       const { data: costAccounts, error: costAccountsError } = costAccountsRes
+      const { data: projectData } = projectRes
+      const projectCurrency = projectData?.currency || 'USD'
 
       if (activitiesError || costAccountsError) {
         console.error('Failed to fetch schedule/cost data for grid:', activitiesError?.message || costAccountsError?.message)
         // Fallback: show work packages with empty schedule fields
-        setGridData(workPackages.map(wp => ({
-          ...wp,
+        setGridData(elements.map(e => ({
+          ...e,
           start: '—',
           finish: '—',
           duration: '—',
@@ -82,31 +88,30 @@ export function useWbsGridData(projectId: string, elements: WbsElement[]) {
         })
       }
 
-      const merged: WbsGridElementData[] = workPackages.map((wp) => {
-        const act = activityMap.get(wp.id)
-        const costData = costMap.get(wp.id)
+      const merged: WbsGridElementData[] = elements.map((e) => {
+        const act = activityMap.get(e.id)
+        const costData = costMap.get(e.id)
 
         if (act) {
           return {
-            ...wp,
+            ...e,
             start: act.es || '—',
             finish: act.ef || '—',
             duration: `${act.duration}d`,
             float: act.total_float !== null ? `${act.total_float}d` : '—',
             cost: costData ? costData.budgeted_total : null,
-            currency: costData ? costData.currency : null,
+            currency: projectCurrency,
           }
         }
 
-        // No activity record yet
         return {
-          ...wp,
+          ...e,
           start: '—',
           finish: '—',
           duration: '—',
           float: '—',
           cost: costData ? costData.budgeted_total : null,
-          currency: costData ? costData.currency : null,
+          currency: projectCurrency,
         }
       })
 
