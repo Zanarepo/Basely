@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
-import { FileText, Save, RefreshCw, AlertTriangle, FileBox, ExternalLink } from 'lucide-react'
+import { FileText, Save, RefreshCw, AlertTriangle } from 'lucide-react'
 import { DocumentTemplate, GeneratedDocument, saveGeneratedDocument, regenerateDocument } from '@/lib/documents/actions'
+import WbsDictionaryResolver from './resolvers/WbsDictionaryResolver'
+import RaciMatrixResolver from './resolvers/RaciMatrixResolver'
 
 interface DocumentEngineProps {
   projectId: string
@@ -185,7 +187,11 @@ export default function DocumentEngine({
               {/* Data-Bound Section Rendering */}
               {section.type === 'data_bound' && (
                 <div className="py-2 pl-4 border-l-2 border-indigo-500/30 text-app-fg text-sm">
-                  {section.source === 'wbs.prototype' ? (
+                  {section.source === 'wbs.dictionary' ? (
+                    <WbsDictionaryResolver projectId={projectId} />
+                  ) : section.source === 'raci.matrix' ? (
+                    <RaciMatrixResolver projectId={projectId} />
+                  ) : section.source === 'wbs.prototype' ? (
                     /* Prototype Tabular Resolver for Sprint 12 Validation */
                     <div className="border border-app-border rounded-lg overflow-hidden my-4">
                       <table className="min-w-full divide-y divide-app-border">
