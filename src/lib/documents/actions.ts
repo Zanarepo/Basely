@@ -38,6 +38,28 @@ export async function getDocumentTemplate(documentType: string): Promise<Documen
     .eq('document_type', documentType)
     .single()
 
+  if (documentType === 'charter') {
+    return {
+      id: data?.id || 'charter-template',
+      document_type: 'charter',
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'executive_summary', title: 'Executive Summary', type: 'free_text' },
+        { key: 'business_case', title: 'Business Case & Justification', type: 'free_text' },
+        { key: 'objectives', title: 'Project Objectives', type: 'free_text' },
+        { key: 'scope_statement', title: 'Scope Statement', type: 'free_text' },
+        { key: 'wbs_dictionary', title: 'Key Deliverables & Work Packages', type: 'free_text' },
+        { key: 'success_criteria', title: 'Success Criteria', type: 'free_text' },
+        { key: 'assumptions', title: 'Assumptions', type: 'free_text' },
+        { key: 'constraints', title: 'Constraints', type: 'free_text' },
+        { key: 'risks', title: 'High-Level Risks', type: 'free_text' },
+        { key: 'milestones', title: 'Milestones & Key Dates', type: 'free_text' },
+        { key: 'organization', title: 'Project Organization & RACI', type: 'free_text' },
+        { key: 'approval', title: 'Sign-Off & Approval', type: 'free_text' }
+      ]
+    }
+  }
+
   if (error) {
     console.error('Failed to load document template:', error)
     return null

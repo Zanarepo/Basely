@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Save } from 'lucide-react'
 import type { Issue, Risk } from './useRiskData'
 import { createIssue, updateIssue } from '@/lib/risks/actions'
+import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
+import { createClient } from '@/utils/supabase/client'
 
 interface IssueFormProps {
   projectId: string
@@ -14,6 +16,7 @@ interface IssueFormProps {
   onClose: () => void
   onSuccess: () => void
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
+  scrollToComments?: boolean
 }
 
 export default function IssueForm({
@@ -25,14 +28,34 @@ export default function IssueForm({
   onClose,
   onSuccess,
   onShowToast,
+  scrollToComments = false
 }: IssueFormProps) {
   const [title, setTitle] = useState(existingIssue?.title || '')
   const [description, setDescription] = useState(existingIssue?.description || '')
   const [status, setStatus] = useState<string>(existingIssue?.status || 'Open')
   const [ownerId, setOwnerId] = useState<string>(existingIssue?.owner_stakeholder_id || '')
   const [linkedRiskId, setLinkedRiskId] = useState<string>(existingIssue?.linked_risk_id || '')
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [currentUserId, setCurrentUserId] = useState<string>('')
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const supabase = createClient()
+      const { data } = await supabase.auth.getUser()
+      if (data?.user) setCurrentUserId(data.user.id)
+    }
+    fetchUserId()
+  }, [])
+
+  useEffect(() => {
+    if (scrollToComments && existingIssue) {
+      setTimeout(() => {
+        document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+  }, [scrollToComments, existingIssue])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -164,8 +187,20 @@ export default function IssueForm({
               </select>
               <p className="text-xs text-app-muted mt-1.5">Link this issue to a previously identified risk.</p>
             </div>
-
           </form>
+
+          {existingIssue && (
+            <div id="comments-section" className="mt-8 border-t border-app-border pt-6">
+              <CommentThread 
+                projectId={projectId}
+                entityType="issue"
+                entityId={existingIssue.id}
+                stakeholders={stakeholders}
+                workspaceMembers={workspaceMembers}
+                currentUserId={currentUserId}
+              />
+            </div>
+          )}
         </div>
 
         {/* Footer */}

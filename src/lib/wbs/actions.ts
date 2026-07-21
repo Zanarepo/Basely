@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { wbsElementSchema } from '@/lib/validations/wbs'
 import type { WbsElement, WbsStatus, RaciRoleType, DeliverableItem, AcceptanceCriteriaItem } from './constants'
-import { recalculateSchedule } from '@/lib/schedule/actions'
+import { recalculateSchedule } from '@/lib/schedule/actions/recalculate'
 
 export type ActionResponse = { ok: true } | { ok: false; error: string }
 export type CreateWbsResult = { ok: true; id: string } | { ok: false; error: string }
@@ -294,6 +294,8 @@ export async function bulkDeleteWbsElements(
   return { ok: true }
 }
 
+import { dispatchNotification } from '@/lib/notifications/actions'
+
 export async function assignRaciRole(
   projectId: string,
   wbsElementId: string,
@@ -314,6 +316,38 @@ export async function assignRaciRole(
     })
 
   if (error) return { ok: false, error: error.message }
+
+  // Dispatch Notification for assignment
+  const { data: stakeholderData } = await supabase
+    .from('stakeholders')
+    .select('linked_user_id, name')
+    .eq('id', stakeholderId)
+    .single()
+
+  const { data: wbsData } = await supabase
+    .from('wbs_elements')
+    .select('name')
+    .eq('id', wbsElementId)
+    .single()
+
+  if (stakeholderData?.linked_user_id && stakeholderData.linked_user_id !== user.id) {
+    const wbsName = wbsData?.name || 'a task'
+    await dispatchNotification({
+      userId: stakeholderData.linked_user_id,
+      triggerType: 'assignment',
+      referenceEntityType: 'wbs',
+      referenceEntityId: wbsElementId,
+      projectId,
+      contentSummary: `You were assigned as ${roleType} for "${wbsName}"`,
+      emailContext: {
+        subject: `New Project Assignment: ${wbsName}`,
+        title: `Task Assignment`,
+        message: `You have been assigned the role of <strong>${roleType}</strong> for the task <strong>${wbsName}</strong>.`,
+        actionUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/projects/${projectId}?tab=wbs&elementId=${wbsElementId}`
+      }
+    })
+  }
+
   revalidatePath(`/dashboard/projects/${projectId}`)
   return { ok: true }
 }

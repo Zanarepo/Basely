@@ -1,13 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
 import { getWbsElements } from '@/lib/wbs/actions'
-import {
-  getScheduleData,
-  recalculateSchedule,
-  updateActivityDuration,
-  createDependency,
-  deleteDependency,
-  saveBaseline,
-} from '@/lib/schedule/actions'
+import { getScheduleData } from '@/lib/schedule/actions/queries'
+import { recalculateSchedule } from '@/lib/schedule/actions/recalculate'
+import { updateActivityDuration } from '@/lib/schedule/actions/activities'
+import { createDependency, deleteDependency } from '@/lib/schedule/actions/dependencies'
+import { saveBaseline } from '@/lib/schedule/actions/baselines'
 import type { WbsElement } from '@/lib/wbs/constants'
 import type { Activity, Dependency } from '@/lib/schedule/cpm'
 

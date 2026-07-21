@@ -23,7 +23,7 @@ export default function TopRisksResolver({ projectId, periodEnd, frozenData }: T
 
     async function loadData() {
       const supabase = createClient()
-      
+
       const periodEndDate = periodEnd.toISOString().split('T')[0]
 
       // Fetch risks for the project. For historical accuracy, we theoretically need a risk snapshot.
@@ -49,7 +49,7 @@ export default function TopRisksResolver({ projectId, periodEnd, frozenData }: T
       setData(risks)
       setLoading(false)
     }
-    
+
     loadData()
   }, [projectId, periodEnd, frozenData])
 
@@ -107,11 +107,11 @@ export default function TopRisksResolver({ projectId, periodEnd, frozenData }: T
                 </div>
               </div>
             </div>
-            
+
             <p className="text-sm text-app-muted leading-relaxed line-clamp-2">
               {risk.description}
             </p>
-            
+
             {(risk.mitigation_plan || risk.contingency_plan) && (
               <div className="mt-2 pt-3 border-t border-app-border grid grid-cols-1 md:grid-cols-2 gap-4">
                 {risk.mitigation_plan && (

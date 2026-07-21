@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import type { WbsElement } from '@/lib/wbs/constants'
 import { createClient } from '@/utils/supabase/client'
 
-export type WbsGridElementData = WbsElement & {
+export type WbsGridElementData = Omit<WbsElement, 'duration'> & {
   start: string
   finish: string
   duration: string

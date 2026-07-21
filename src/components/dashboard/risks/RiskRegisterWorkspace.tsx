@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AlertCircle, AlertTriangle } from 'lucide-react'
 import { useRiskData } from './useRiskData'
 import RiskList from './RiskList'
 import IssueList from './IssueList'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
+import { useSearchParams } from 'next/navigation'
 
 interface RiskRegisterWorkspaceProps {
   projectId: string
@@ -21,6 +22,22 @@ export default function RiskRegisterWorkspace({
   const [activeTab, setActiveTab] = useState<'risks' | 'issues'>('risks')
   const { risks, issues, stakeholders, loading, error, refresh } = useRiskData(projectId)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
+  const searchParams = useSearchParams()
+  const [initialRiskId, setInitialRiskId] = useState<string | null>(null)
+  const [initialIssueId, setInitialIssueId] = useState<string | null>(null)
+
+  // Auto-open a specific risk or issue when navigating from entity references
+  useEffect(() => {
+    const riskId = searchParams.get('riskId')
+    const issueId = searchParams.get('issueId')
+    if (riskId) {
+      setActiveTab('risks')
+      setInitialRiskId(riskId)
+    } else if (issueId) {
+      setActiveTab('issues')
+      setInitialIssueId(issueId)
+    }
+  }, [searchParams])
 
   const showToast = (type: 'success' | 'error' | 'info', message: string) => {
     const id = Math.random().toString(36).substring(2, 9)
@@ -85,6 +102,7 @@ export default function RiskRegisterWorkspace({
             workspaceMembers={workspaceMembers}
             onRefresh={refresh}
             onShowToast={showToast}
+            initialOpenId={initialRiskId}
           />
         ) : (
           <IssueList
@@ -96,6 +114,7 @@ export default function RiskRegisterWorkspace({
             workspaceMembers={workspaceMembers}
             onRefresh={refresh}
             onShowToast={showToast}
+            initialOpenId={initialIssueId}
           />
         )}
       </div>

@@ -7,6 +7,7 @@ import { createRisk, updateRisk } from '@/lib/risks/actions'
 import { createClient } from '@/utils/supabase/client'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils'
+import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
 
 interface RiskFormProps {
   projectId: string
@@ -16,6 +17,7 @@ interface RiskFormProps {
   onClose: () => void
   onSuccess: () => void
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
+  scrollToComments?: boolean
 }
 
 export default function RiskForm({
@@ -26,6 +28,7 @@ export default function RiskForm({
   onClose,
   onSuccess,
   onShowToast,
+  scrollToComments = false
 }: RiskFormProps) {
   const [title, setTitle] = useState(existingRisk?.title || '')
   const [description, setDescription] = useState(existingRisk?.description || '')
@@ -45,6 +48,17 @@ export default function RiskForm({
   const [otherRisksAllocated, setOtherRisksAllocated] = useState<number>(0)
   
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [currentUserId, setCurrentUserId] = useState<string>('')
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const supabase = createClient()
+      const { data } = await supabase.auth.getUser()
+      if (data?.user) setCurrentUserId(data.user.id)
+    }
+    fetchUserId()
+  }, [])
 
   const riskScore = probability * impact
 
@@ -82,6 +96,14 @@ export default function RiskForm({
     
     fetchData()
   }, [projectId, existingRisk])
+
+  useEffect(() => {
+    if (scrollToComments && existingRisk) {
+      setTimeout(() => {
+        document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+  }, [scrollToComments, existingRisk])
 
   const currentAllocation = Number(allocatedAmount) || 0
   const totalAllocated = otherRisksAllocated + currentAllocation
@@ -370,6 +392,19 @@ export default function RiskForm({
             </div>
 
           </form>
+
+          {existingRisk && (
+            <div id="comments-section" className="mt-8 border-t border-app-border pt-6">
+              <CommentThread 
+                projectId={projectId}
+                entityType="risk"
+                entityId={existingRisk.id}
+                stakeholders={stakeholders}
+                workspaceMembers={workspaceMembers}
+                currentUserId={currentUserId}
+              />
+            </div>
+          )}
         </div>
 
         {/* Footer */}

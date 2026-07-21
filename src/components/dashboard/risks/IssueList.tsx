@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Plus, Search, AlertCircle, Edit2, Trash2 } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { Plus, Search, AlertCircle, Edit2, Trash2, MessageSquare } from 'lucide-react'
 import type { Risk, Issue } from './useRiskData'
 import IssueForm from './IssueForm'
 import { deleteIssue } from '@/lib/risks/actions'
@@ -15,6 +15,7 @@ interface IssueListProps {
   workspaceMembers: { userId: string; name: string; email: string; role: string }[]
   onRefresh: () => void
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
+  initialOpenId?: string | null
 }
 
 export default function IssueList({
@@ -26,12 +27,25 @@ export default function IssueList({
   workspaceMembers,
   onRefresh,
   onShowToast,
+  initialOpenId,
 }: IssueListProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingIssue, setEditingIssue] = useState<Issue | null>(null)
+  const [scrollToComments, setScrollToComments] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  // Auto-open a specific issue when navigating from entity references
+  useEffect(() => {
+    if (initialOpenId && issues.length > 0) {
+      const issue = issues.find(i => i.id === initialOpenId)
+      if (issue) {
+        setEditingIssue(issue)
+        setIsFormOpen(true)
+      }
+    }
+  }, [initialOpenId, issues.length])
 
   const filteredIssues = useMemo(() => {
     return issues.filter((i) => {
@@ -98,6 +112,7 @@ export default function IssueList({
           <button
             onClick={() => {
               setEditingIssue(null)
+              setScrollToComments(false)
               setIsFormOpen(true)
             }}
             className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition-colors shadow-sm"
@@ -125,7 +140,7 @@ export default function IssueList({
             {filteredIssues.map((issue) => {
               const owner = stakeholders.find((s) => s.id === issue.owner_stakeholder_id)
               const risk = risks.find((r) => r.id === issue.linked_risk_id)
-              
+
               return (
                 <div
                   key={issue.id}
@@ -157,28 +172,46 @@ export default function IssueList({
                   </div>
 
                   {/* Actions */}
-                  {hasEditAccess && (
-                    <div className="flex items-center gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => {
-                          setEditingIssue(issue)
-                          setIsFormOpen(true)
-                        }}
-                        className="p-2 text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-colors"
-                        title="Edit Issue"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(issue.id, issue.title)}
-                        disabled={deletingId === issue.id}
-                        className="p-2 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                        title="Delete Issue"
-                      >
-                        <Trash2 className={`h-4 w-4 ${deletingId === issue.id ? 'animate-pulse' : ''}`} />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingIssue(issue)
+                        setScrollToComments(true)
+                        setIsFormOpen(true)
+                      }}
+                      className="p-2 text-app-muted hover:text-indigo-400 hover:bg-app-surface border border-transparent hover:border-app-border rounded-lg transition-all"
+                      title="View Comments"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </button>
+                    {hasEditAccess && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditingIssue(issue)
+                            setScrollToComments(false)
+                            setIsFormOpen(true)
+                          }}
+                          className="p-2 text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-colors"
+                          title="Edit Issue"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(issue.id, issue.title)}
+                          disabled={deletingId === issue.id}
+                          className="p-2 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                          title="Delete Issue"
+                        >
+                          <Trash2 className={`h-4 w-4 ${deletingId === issue.id ? 'animate-pulse' : ''}`} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               )
             })}
@@ -194,9 +227,16 @@ export default function IssueList({
           stakeholders={stakeholders}
           risks={risks}
           existingIssue={editingIssue}
-          onClose={() => setIsFormOpen(false)}
+          scrollToComments={scrollToComments}
+          onClose={() => {
+            setIsFormOpen(false)
+            setEditingIssue(null)
+            setScrollToComments(false)
+          }}
           onSuccess={() => {
             setIsFormOpen(false)
+            setEditingIssue(null)
+            setScrollToComments(false)
             onShowToast?.('success', editingIssue ? 'Issue updated successfully' : 'Issue logged successfully')
             onRefresh()
           }}

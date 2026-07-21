@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { FileSpreadsheet, Plus, Loader2 } from 'lucide-react'
 import { WbsTree } from './WbsTree'
 import { WbsBoardView } from './WbsBoardView'
@@ -36,7 +37,9 @@ export function WbsPlanningWorkspace({
   callerRole,
   allowTeamScheduleEdits = false,
 }: WbsPlanningWorkspaceProps) {
-  const [currentView, setCurrentView] = useState<WbsViewType>('tree')
+  const searchParams = useSearchParams()
+  const initialView = (searchParams.get('wbsView') as WbsViewType) || 'tree'
+  const [currentView, setCurrentView] = useState<WbsViewType>(initialView)
   const [isImporting, setIsImporting] = useState(false)
 
   const {
@@ -77,6 +80,37 @@ export function WbsPlanningWorkspace({
     clearSelection,
     handleBulkDelete,
   } = useWbsPlanning(projectId, hasEditAccess)
+
+  // Auto-open a specific WBS element when navigating from entity references
+  useEffect(() => {
+    const elementId = searchParams.get('elementId')
+    if (elementId && elements.length > 0) {
+      setActiveElementId(elementId)
+      // Expand parent nodes so the element is visible in the tree
+      const el = elements.find(e => e.id === elementId)
+      if (el?.parentId) {
+        setExpandedNodeIds(prev => {
+          const next = new Set(prev)
+          // Walk up the parent chain
+          let currentId = el.parentId
+          while (currentId) {
+            next.add(currentId)
+            const parent = elements.find(e => e.id === currentId)
+            currentId = parent?.parentId ?? null
+          }
+          return next
+        })
+      }
+    }
+  }, [searchParams, elements, setActiveElementId, setExpandedNodeIds])
+
+  // Sync currentView if URL changes
+  useEffect(() => {
+    const view = searchParams.get('wbsView') as WbsViewType
+    if (view && ['tree', 'board', 'grid', 'raci', 'unassigned'].includes(view)) {
+      setCurrentView(view)
+    }
+  }, [searchParams])
 
   const { columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility } = useWbsBoard(projectId, elements)
 

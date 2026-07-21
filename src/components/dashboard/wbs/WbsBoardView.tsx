@@ -1,7 +1,10 @@
-import { Plus, Check, X, Trash2, EyeOff, Eye, CheckSquare } from 'lucide-react'
-import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 import type { BoardColumnDef } from './workspace/useWbsBoard'
+import { useBoardDragAndDrop } from './board/hooks/useBoardDragAndDrop'
+import { WbsBoardCard } from './board/WbsBoardCard'
+import { WbsBoardColumnHeader } from './board/WbsBoardColumnHeader'
+import { WbsBoardControls } from './board/WbsBoardControls'
 
 type WbsBoardViewProps = {
   columns: BoardColumnDef[]
@@ -25,156 +28,61 @@ type WbsBoardViewProps = {
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
 }
 
-export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility, elements, workspaceMembers, onSelect, onStatusChange, onAddCard, onDeleteCard, hasEditAccess, callerRole, callerUserId, onShowToast }: WbsBoardViewProps) {
-  
-  const [isAddingCol, setIsAddingCol] = useState(false)
-  const [newColName, setNewColName] = useState('')
-  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
-  const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null)
-  
-  // Column Drag state
-  const [draggedColIndex, setDraggedColIndex] = useState<number | null>(null)
-  const [dragOverColIndex, setDragOverColIndex] = useState<number | null>(null)
+export function WbsBoardView({
+  columns,
+  taskOrders,
+  addColumn,
+  deleteColumn,
+  renameColumn,
+  reorderColumn,
+  moveTask,
+  hiddenColumns,
+  toggleColumnVisibility,
+  elements,
+  onSelect,
+  onStatusChange,
+  onAddCard,
+  onDeleteCard,
+  hasEditAccess,
+  callerRole,
+  callerUserId,
+  onShowToast
+}: WbsBoardViewProps) {
 
-  const [editingColName, setEditingColName] = useState<string | null>(null)
-  const [editingColValue, setEditingColValue] = useState('')
-
-  // Column Drag Handlers
-  const handleColumnDragStart = (e: React.DragEvent, index: number) => {
-    if (!hasEditAccess) return
-    setDraggedColIndex(index)
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('colIndex', index.toString())
-  }
-
-  const handleColumnDragOver = (e: React.DragEvent, index: number) => {
-    if (!hasEditAccess || draggedColIndex === null) return
-    e.preventDefault()
-    if (draggedColIndex !== index) {
-      setDragOverColIndex(index)
+  const {
+    dragStates: { draggedTaskId, dragOverTaskId, draggedColIndex, dragOverColIndex },
+    setDragStates: { setDraggedTaskId, setDragOverTaskId, setDraggedColIndex, setDragOverColIndex },
+    handlers: {
+      handleColumnDragStart,
+      handleColumnDragOver,
+      handleColumnDrop,
+      handleDragStart,
+      handleDragOverColumn,
+      handleDragOverTask,
+      handleDragLeaveTask,
+      handleDropOnColumn,
+      handleDropOnTask,
     }
-  }
+  } = useBoardDragAndDrop({
+    elements,
+    taskOrders,
+    hasEditAccess,
+    callerRole,
+    callerUserId,
+    reorderColumn,
+    moveTask,
+    onStatusChange,
+    onShowToast
+  })
 
-  const handleColumnDrop = (e: React.DragEvent, targetIndex: number) => {
-    e.preventDefault()
-    setDragOverColIndex(null)
-    setDraggedColIndex(null)
-    const sourceStr = e.dataTransfer.getData('colIndex')
-    if (sourceStr) {
-      const sourceIndex = parseInt(sourceStr, 10)
-      if (!isNaN(sourceIndex) && sourceIndex !== targetIndex) {
-        reorderColumn(sourceIndex, targetIndex)
-      }
-    }
-  }
-
-  const handleDragStart = (e: React.DragEvent, taskId: string, sourceCol: string) => {
-    const task = elements.find(el => el.id === taskId)
-    const isResponsible = callerRole === 'Team Member' && task?.raciAssignments?.some(a => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId)
-    const canDragTask = hasEditAccess || isResponsible
-
-    if (!canDragTask) {
-      e.preventDefault()
-      return
-    }
-
-    setDraggedTaskId(taskId)
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('taskId', taskId)
-    e.dataTransfer.setData('sourceCol', sourceCol)
-  }
-
-  const handleDragOverColumn = (e: React.DragEvent) => {
-    if (!draggedTaskId) return
-    e.preventDefault() 
-    e.dataTransfer.dropEffect = 'move'
-  }
-
-  const handleDragOverTask = (e: React.DragEvent, targetTaskId: string) => {
-    if (!draggedTaskId) return
-    e.preventDefault()
-    e.stopPropagation() // Prevent column drag over
-    e.dataTransfer.dropEffect = 'move'
-    if (draggedTaskId !== targetTaskId) {
-      setDragOverTaskId(targetTaskId)
-    }
-  }
-
-  const handleDragLeaveTask = (e: React.DragEvent) => {
-    setDragOverTaskId(null)
-  }
-
-  const handleDropOnColumn = (e: React.DragEvent, targetStatus: string) => {
-    e.preventDefault()
-    setDragOverTaskId(null)
-    if (!draggedTaskId) return
-    
-    const sourceCol = e.dataTransfer.getData('sourceCol')
-    const task = elements.find(t => t.id === draggedTaskId)
-    
-    if (task) {
-      const hasResponsible = task.raciAssignments?.some(a => a.roleType === 'Responsible')
-      if (!hasResponsible && sourceCol === 'Not Started' && targetStatus !== 'Not Started') {
-        onShowToast?.('info', 'Please assign a Responsible person before starting work.')
-        setDraggedTaskId(null)
-        return
-      }
-
-      const targetIndex = taskOrders[targetStatus] ? taskOrders[targetStatus].length : 0
-      moveTask(draggedTaskId, sourceCol, targetStatus, targetIndex)
-      
-      if (task.status !== targetStatus) {
-        onStatusChange(draggedTaskId, targetStatus)
-      }
-    }
-    setDraggedTaskId(null)
-  }
-
-  const handleDropOnTask = (e: React.DragEvent, targetTaskId: string, targetStatus: string) => {
-    e.preventDefault()
-    e.stopPropagation() // Prevent column drop
-    setDragOverTaskId(null)
-    if (!draggedTaskId) return
-    
-    const sourceCol = e.dataTransfer.getData('sourceCol')
-    const task = elements.find(t => t.id === draggedTaskId)
-    
-    if (task) {
-      const hasResponsible = task.raciAssignments?.some(a => a.roleType === 'Responsible')
-      if (!hasResponsible && sourceCol === 'Not Started' && targetStatus !== 'Not Started') {
-        onShowToast?.('info', 'Please assign a Responsible person before starting work.')
-        setDraggedTaskId(null)
-        return
-      }
-
-      const targetColOrder = taskOrders[targetStatus] || []
-      let targetIndex = targetColOrder.indexOf(targetTaskId)
-      if (targetIndex === -1) targetIndex = targetColOrder.length
-
-      moveTask(draggedTaskId, sourceCol, targetStatus, targetIndex)
-      
-      if (task.status !== targetStatus) {
-        onStatusChange(draggedTaskId, targetStatus)
-      }
-    }
-    setDraggedTaskId(null)
-  }
-
-  const handleSaveNewColumn = () => {
-    if (addColumn(newColName)) {
-      setNewColName('')
-      setIsAddingCol(false)
-    }
-  }
-
-  const visibleColumns = columns.filter(c => !hiddenColumns.has(c.name))
+  const visibleColumns = columns.filter((c) => !hiddenColumns.has(c.name))
 
   return (
     <div className="flex gap-4 p-5 overflow-x-auto h-[600px] w-full items-start">
       {columns.map((col, colIndex) => {
-        if (hiddenColumns.has(col.name)) return null;
+        if (hiddenColumns.has(col.name)) return null
         
-        const visibleColIndex = visibleColumns.findIndex(c => c.name === col.name);
+        const visibleColIndex = visibleColumns.findIndex((c) => c.name === col.name)
 
         // Get tasks for this column and sort them by taskOrders
         const rawColumnTasks = elements.filter((e) => e.status === col.name && e.isWorkPackage && e.duration !== 0)
@@ -188,8 +96,6 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
           if (indexB === -1) return -1
           return indexA - indexB
         })
-
-
 
         return (
           <div 
@@ -207,200 +113,43 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
               else handleDropOnColumn(e, col.name)
             }}
           >
-            <div 
-              className={`flex items-center gap-2 mb-2.5 p-3 pb-0 group/colheader ${hasEditAccess ? 'cursor-grab active:cursor-grabbing' : ''}`}
-              draggable={hasEditAccess}
-              onDragStart={(e) => handleColumnDragStart(e, colIndex)}
+            <WbsBoardColumnHeader
+              colName={col.name}
+              color={col.color}
+              taskCount={columnTasks.length}
+              hasEditAccess={hasEditAccess}
+              draggedColIndex={draggedColIndex}
+              colIndex={colIndex}
+              renameColumn={renameColumn}
+              toggleColumnVisibility={toggleColumnVisibility}
+              deleteColumn={deleteColumn}
+              onDragStart={handleColumnDragStart}
               onDragEnd={() => { setDraggedColIndex(null); setDragOverColIndex(null); }}
-            >
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: col.color }} />
-              {editingColName === col.name ? (
-                <input
-                  autoFocus
-                  type="text"
-                  value={editingColValue}
-                  onChange={(e) => setEditingColValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      renameColumn(col.name, editingColValue)
-                      setEditingColName(null)
-                    } else if (e.key === 'Escape') {
-                      setEditingColName(null)
-                    }
-                  }}
-                  onBlur={() => {
-                    renameColumn(col.name, editingColValue)
-                    setEditingColName(null)
-                  }}
-                  className="text-xs font-semibold text-app-fg bg-app-input border border-indigo-500 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-24"
-                />
-              ) : (
-                <span
-                  className="text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-default"
-                  onDoubleClick={() => {
-                    if (hasEditAccess) {
-                      setEditingColName(col.name)
-                      setEditingColValue(col.name)
-                    }
-                  }}
-                  title="Double-click to rename"
-                >
-                  {col.name}
-                </span>
-              )}
-              <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-full px-1.5">
-                {columnTasks.length}
-              </span>
-              
-              <div className="ml-auto flex items-center opacity-0 group-hover/colheader:opacity-100 transition-opacity">
-                <button
-                  onClick={() => toggleColumnVisibility(col.name)}
-                  className="p-1 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded transition-all"
-                  title="Hide Column"
-                >
-                  <EyeOff className="w-3.5 h-3.5" />
-                </button>
-                {hasEditAccess && (
-                  <button 
-                    onClick={() => {
-                      if (window.confirm(`Are you sure you want to delete the column "${col.name}"? Tasks inside it will not be deleted, but they will be hidden from the board until their status is changed.`)) {
-                        deleteColumn(col.name)
-                      }
-                    }}
-                    className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded transition-all ml-0.5"
-                    title="Delete Column"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            </div>
+            />
+
             <div className="flex-1 space-y-3 overflow-y-auto p-3 pt-2">
-              {columnTasks.map((t) => {
-                const responsible = t.raciAssignments?.find(a => a.roleType === 'Responsible')
-                const responsibleName = responsible?.stakeholder?.name || null
-                const isMissingRaci = !t.raciAssignments?.some(a => a.roleType === 'Responsible') || !t.raciAssignments?.some(a => a.roleType === 'Accountable')
-                
-                const initials = responsibleName
-                  ? responsibleName.substring(0, 2).toUpperCase()
-                  : null
-                const parentElement = t.parentId ? elements.find(e => e.id === t.parentId) : null
-                const tagText = parentElement ? parentElement.name : 'Work Package'
-
-                const isResponsible = callerRole === 'Team Member' && t.raciAssignments?.some(a => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId)
-                const canDragTask = hasEditAccess || isResponsible
-
-                return (
-                  <div
-                    key={t.id}
-                    onClick={() => onSelect(t.id)}
-                    draggable={canDragTask}
-                    onDragStart={(e) => handleDragStart(e, t.id, col.name)}
-                    onDragOver={(e) => handleDragOverTask(e, t.id)}
-                    onDragLeave={handleDragLeaveTask}
-                    onDrop={(e) => handleDropOnTask(e, t.id, col.name)}
-                    onDragEnd={() => { setDraggedTaskId(null); setDragOverTaskId(null); }}
-                    className={`group/task group relative bg-app-surface border rounded-xl p-3 shadow-xs transition-all duration-200
-                      ${isResponsible ? 'border-indigo-400 ring-1 ring-indigo-400/50 bg-indigo-50/30 dark:bg-indigo-500/5' : 'border-app-border'}
-                      ${canDragTask ? 'cursor-grab active:cursor-grabbing hover:border-indigo-400 hover:shadow-md' : 'cursor-pointer hover:border-slate-300'}
-                      ${draggedTaskId === t.id ? 'opacity-40 border-dashed scale-95' : ''}
-                      ${dragOverTaskId === t.id ? 'border-t-2 border-t-indigo-500 transform translate-y-1' : ''}
-                    `}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="inline-block text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                        {t.code}
-                      </span>
-                      {isResponsible && (
-                        <span className="ml-2 text-[9px] font-bold tracking-wide text-indigo-600 bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-500/20 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-500/30">
-                          YOURS
-                        </span>
-                      )}
-                      <div className="flex items-center gap-1.5 ml-auto">
-                        {hasEditAccess && onDeleteCard && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onDeleteCard(t.id)
-                            }}
-                            className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200"
-                            title="Delete Card"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                          {visibleColIndex + 1}/{visibleColumns.length}
-                        </span>
-                        <span 
-                          className="text-[9px] font-semibold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded truncate max-w-[120px]"
-                          title={tagText}
-                        >
-                          {tagText}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-sm text-app-fg font-medium leading-snug mb-3">
-                      {t.name}
-                    </div>
-                    
-                    {t.deliverablesData && t.deliverablesData.length > 0 && (
-                      <div className="flex items-center gap-1.5 mb-1 text-[10px] font-medium text-indigo-500/80">
-                        <CheckSquare className="w-3 h-3" />
-                        {(() => {
-                          const completed = t.deliverablesData.filter(d => d.completed).length
-                          const total = t.deliverablesData.length
-                          const percent = Math.round((completed / total) * 100)
-                          return `Deliverables: ${completed}/${total} (${percent}%)`
-                        })()}
-                      </div>
-                    )}
-
-                    {t.acceptanceCriteriaData && t.acceptanceCriteriaData.length > 0 && (
-                      <div className="flex items-center gap-1.5 mb-3 text-[10px] font-medium text-emerald-500/80">
-                        <CheckSquare className="w-3 h-3" />
-                        {(() => {
-                          const completed = t.acceptanceCriteriaData.filter(d => d.completed).length
-                          const total = t.acceptanceCriteriaData.length
-                          const percent = Math.round((completed / total) * 100)
-                          return `Criteria: ${completed}/${total} (${percent}%)`
-                        })()}
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center justify-between mt-auto">
-                      <div className="flex items-center gap-1.5">
-                        {initials ? (
-                          <div
-                            className="w-6 h-6 rounded-full bg-emerald-500 text-white text-[9px] flex items-center justify-center font-semibold shrink-0"
-                            title={`Responsible: ${responsibleName}`}
-                          >
-                            {initials}
-                          </div>
-                        ) : (
-                          <div className="w-6 h-6 rounded-full border border-dashed border-app-border flex items-center justify-center text-app-subtle text-[10px]" title="No Responsible assigned">
-                            +
-                          </div>
-                        )}
-                        {isMissingRaci && (
-                          <span title="Missing Responsible or Accountable assignment" className="text-amber-500 text-xs cursor-help">⚠️</span>
-                        )}
-                      </div>
-                      
-                      {/* Workflow stage progress bar */}
-                      <div className="w-16 h-1.5 bg-app-muted-surface rounded-full overflow-hidden" title={`Workflow Stage: ${visibleColIndex + 1} of ${visibleColumns.length}`}>
-                        <div
-                          className="h-full bg-indigo-500 rounded-full transition-all duration-300"
-                          style={{
-                            width: `${Math.round(((visibleColIndex + 1) / visibleColumns.length) * 100)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+              {columnTasks.map((t) => (
+                <WbsBoardCard
+                  key={t.id}
+                  task={t}
+                  colName={col.name}
+                  elements={elements}
+                  visibleColIndex={visibleColIndex}
+                  visibleColumnsLength={visibleColumns.length}
+                  hasEditAccess={hasEditAccess}
+                  callerRole={callerRole}
+                  callerUserId={callerUserId}
+                  draggedTaskId={draggedTaskId}
+                  dragOverTaskId={dragOverTaskId}
+                  onSelect={onSelect}
+                  onDeleteCard={onDeleteCard}
+                  onDragStart={handleDragStart}
+                  onDragOverTask={handleDragOverTask}
+                  onDragLeaveTask={handleDragLeaveTask}
+                  onDropOnTask={handleDropOnTask}
+                  onDragEnd={() => { setDraggedTaskId(null); setDragOverTaskId(null); }}
+                />
+              ))}
               
               {hasEditAccess && onAddCard && (
                 <button
@@ -417,77 +166,13 @@ export function WbsBoardView({ columns, taskOrders, addColumn, deleteColumn, ren
         )
       })}
 
-      {/* Add Column Button / Form */}
-      <div className="w-72 shrink-0 flex flex-col gap-4">
-        {hiddenColumns.size > 0 && (
-          <div className="w-full bg-app-surface-solid border border-app-border rounded-2xl p-4">
-            <h3 className="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wider">Hidden Columns</h3>
-            <div className="flex flex-col gap-2">
-              {Array.from(hiddenColumns).map(name => {
-                const colDef = columns.find(c => c.name === name)
-                if (!colDef) return null
-                return (
-                  <div key={name} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colDef.color }} />
-                      <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">{name}</span>
-                    </div>
-                    <button
-                      onClick={() => toggleColumnVisibility(name)}
-                      className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded transition-all"
-                      title="Unhide Column"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {hasEditAccess && (
-          <div className="w-full">
-            {isAddingCol ? (
-            <div className="w-full bg-app-surface-solid border border-app-border rounded-2xl p-3">
-              <input
-                autoFocus
-                type="text"
-                placeholder="Column Name"
-                className="w-full mb-2 px-3 py-1.5 text-sm bg-app-input border border-indigo-500 rounded-lg text-app-fg focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                value={newColName}
-                onChange={(e) => setNewColName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSaveNewColumn()}
-              />
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="flex-1 flex justify-center items-center py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold cursor-pointer"
-                  onClick={handleSaveNewColumn}
-                >
-                  <Check className="w-3 h-3 mr-1" /> Save
-                </button>
-                <button
-                  type="button"
-                  className="flex-1 flex justify-center items-center py-1.5 bg-app-muted-surface hover:bg-app-hover text-app-subtle rounded-lg text-xs font-semibold cursor-pointer"
-                  onClick={() => setIsAddingCol(false)}
-                >
-                  <X className="w-3 h-3 mr-1" /> Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => setIsAddingCol(true)}
-              className="w-full py-3 flex items-center justify-center gap-2 text-sm font-semibold text-app-subtle bg-app-surface border border-dashed border-app-border rounded-2xl hover:bg-app-hover hover:border-indigo-500/50 hover:text-indigo-500 transition-colors cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              Add Column
-            </button>
-            )}
-          </div>
-        )}
-      </div>
+      <WbsBoardControls
+        hiddenColumns={hiddenColumns}
+        columns={columns}
+        hasEditAccess={hasEditAccess}
+        toggleColumnVisibility={toggleColumnVisibility}
+        addColumn={addColumn}
+      />
     </div>
   )
 }

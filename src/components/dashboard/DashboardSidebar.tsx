@@ -15,6 +15,7 @@ import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { useWorkspace } from './WorkspaceContext'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createClient } from '@/utils/supabase/client'
+import { NotificationBell } from './notifications/NotificationBell'
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed'
 
@@ -76,7 +77,7 @@ export function DashboardSidebar({
 
   return (
     <aside
-      className={`shrink-0 flex flex-col h-screen sticky top-0 border-r border-app-border bg-app-surface-solid/95 backdrop-blur-xl transition-[width] duration-300 ease-in-out ${
+      className={`shrink-0 flex flex-col h-screen sticky top-0 z-50 border-r border-app-border bg-app-surface-solid/95 backdrop-blur-xl transition-[width] duration-300 ease-in-out ${
         collapsed ? 'w-18' : 'w-64'
       }`}
     >
@@ -129,6 +130,10 @@ export function DashboardSidebar({
             </Link>
           )
         })}
+
+        <div className="pt-2 mt-2 border-t border-app-border/50">
+          <NotificationBell collapsed={collapsed} />
+        </div>
       </nav>
 
       <div
@@ -181,7 +186,7 @@ export function DashboardSidebar({
         type="button"
         onClick={toggleCollapsed}
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-app-toggle-bg border border-app-toggle-border text-app-toggle-fg hover:text-app-fg hover:border-indigo-500/50 shadow-lg transition-all cursor-pointer"
+        className="absolute -right-3 top-1/2 -translate-y-1/2 z-[10000] flex h-6 w-6 items-center justify-center rounded-full bg-app-toggle-bg border border-app-toggle-border text-app-toggle-fg hover:text-app-fg hover:border-indigo-500/50 shadow-lg transition-all cursor-pointer"
       >
         <ArrowRight
           className={`h-3.5 w-3.5 transition-transform duration-300 ${

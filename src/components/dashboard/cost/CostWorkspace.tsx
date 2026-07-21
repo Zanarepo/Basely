@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Loader2, DollarSign, Activity, FileDigit } from 'lucide-react'
 import { useCostData } from './useCostData'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
@@ -9,6 +9,7 @@ import ResourceRatesManager from './ResourceRatesManager'
 import TimePhasingView from './TimePhasingView'
 import BaselineManager from './BaselineManager'
 import ActualsView from './ActualsView'
+import { useSearchParams } from 'next/navigation'
 
 type CostWorkspaceProps = {
   projectId: string
@@ -18,8 +19,17 @@ type CostWorkspaceProps = {
 type CostViewType = 'estimation' | 'resources' | 'timephasing' | 'baselines' | 'actuals'
 
 export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspaceProps) {
-  const [currentView, setCurrentView] = useState<CostViewType>('estimation')
+  const searchParams = useSearchParams()
+  const initialView = (searchParams.get('costView') as CostViewType) || 'estimation'
+  const [currentView, setCurrentView] = useState<CostViewType>(initialView)
   const { loading, error, wbsCostData, baselines, resourceRates, contingencyAmount, contingencyType, allocatedContingency, projectCurrency, globalOverhead, refresh } = useCostData(projectId)
+
+  useEffect(() => {
+    const view = searchParams.get('costView') as CostViewType
+    if (view && ['estimation', 'resources', 'timephasing', 'baselines', 'actuals'].includes(view)) {
+      setCurrentView(view)
+    }
+  }, [searchParams])
 
   if (loading) {
     return (

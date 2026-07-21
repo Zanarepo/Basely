@@ -72,6 +72,26 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     }
   })
 
+  // 3. Fetch workspace owner to check owner privileges and ensure they are mentionable
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('owner_id, profiles!organizations_owner_id_fkey(full_name, email)')
+    .eq('id', project.organization_id)
+    .maybeSingle()
+
+  if (org && org.owner_id) {
+    const isOwnerInMembers = workspaceMembers.some(m => m.userId === org.owner_id)
+    if (!isOwnerInMembers) {
+      const ownerProfile = Array.isArray(org.profiles) ? org.profiles[0] : org.profiles
+      workspaceMembers.push({
+        userId: org.owner_id,
+        name: ownerProfile?.full_name?.trim() || ownerProfile?.email || 'Admin',
+        email: ownerProfile?.email || 'unknown',
+        role: 'Admin'
+      })
+    }
+  }
+
   // 3. Fetch caller role in the organization
   const { data: callerMembership } = await supabase
     .from('organization_members')
@@ -87,13 +107,6 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     .eq('project_id', project.id)
 
   const assignedUserIds = (projectMembersData ?? []).map(pm => pm.user_id)
-
-  // 5. Fetch workspace owner to check owner privileges
-  const { data: org } = await supabase
-    .from('organizations')
-    .select('owner_id')
-    .eq('id', project.organization_id)
-    .maybeSingle()
 
   const isOrgOwner = org?.owner_id === user.id
   const callerRole = callerMembership?.role ?? 'Viewer'

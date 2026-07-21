@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Plus, Search, Filter, ShieldAlert, ArrowUpDown, MoreVertical, Edit2, Trash2, AlertCircle } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { Plus, Search, Filter, ShieldAlert, ArrowUpDown, MoreVertical, Edit2, Trash2, AlertCircle, MessageSquare } from 'lucide-react'
 import type { Risk, Issue } from './useRiskData'
 import RiskForm from './RiskForm'
 import { deleteRisk } from '@/lib/risks/actions'
@@ -15,6 +15,7 @@ interface RiskListProps {
   workspaceMembers: { userId: string; name: string; email: string; role: string }[]
   onRefresh: () => void
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
+  initialOpenId?: string | null
 }
 
 export default function RiskList({
@@ -26,14 +27,27 @@ export default function RiskList({
   workspaceMembers,
   onRefresh,
   onShowToast,
+  initialOpenId,
 }: RiskListProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [strategyFilter, setStrategyFilter] = useState<string>('all')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingRisk, setEditingRisk] = useState<Risk | null>(null)
+  const [scrollToComments, setScrollToComments] = useState(false)
   
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  // Auto-open a specific risk when navigating from entity references
+  useEffect(() => {
+    if (initialOpenId && risks.length > 0) {
+      const risk = risks.find(r => r.id === initialOpenId)
+      if (risk) {
+        setEditingRisk(risk)
+        setIsFormOpen(true)
+      }
+    }
+  }, [initialOpenId, risks.length])
 
   const filteredRisks = useMemo(() => {
     return risks.filter((r) => {
@@ -109,6 +123,7 @@ export default function RiskList({
           <button
             onClick={() => {
               setEditingRisk(null)
+              setScrollToComments(false)
               setIsFormOpen(true)
             }}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white text-sm font-semibold rounded-lg hover:bg-indigo-600 transition-colors shadow-sm"
@@ -180,28 +195,46 @@ export default function RiskList({
                   </div>
 
                   {/* Actions */}
-                  {hasEditAccess && (
-                    <div className="flex items-center gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => {
-                          setEditingRisk(risk)
-                          setIsFormOpen(true)
-                        }}
-                        className="p-2 text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-colors"
-                        title="Edit Risk"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(risk.id, risk.title)}
-                        disabled={deletingId === risk.id}
-                        className="p-2 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                        title="Delete Risk"
-                      >
-                        <Trash2 className={`h-4 w-4 ${deletingId === risk.id ? 'animate-pulse' : ''}`} />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingRisk(risk)
+                        setScrollToComments(true)
+                        setIsFormOpen(true)
+                      }}
+                      className="p-2 text-app-muted hover:text-indigo-400 hover:bg-app-surface border border-transparent hover:border-app-border rounded-lg transition-all"
+                      title="View Comments"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </button>
+                    {hasEditAccess && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditingRisk(risk)
+                            setScrollToComments(false)
+                            setIsFormOpen(true)
+                          }}
+                          className="p-2 text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-colors"
+                          title="Edit Risk"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(risk.id, risk.title)}
+                          disabled={deletingId === risk.id}
+                          className="p-2 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                          title="Delete Risk"
+                        >
+                          <Trash2 className={`h-4 w-4 ${deletingId === risk.id ? 'animate-pulse' : ''}`} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               )
             })}
@@ -216,9 +249,16 @@ export default function RiskList({
           workspaceMembers={workspaceMembers}
           stakeholders={stakeholders}
           existingRisk={editingRisk}
-          onClose={() => setIsFormOpen(false)}
+          scrollToComments={scrollToComments}
+          onClose={() => {
+            setIsFormOpen(false)
+            setEditingRisk(null)
+            setScrollToComments(false)
+          }}
           onSuccess={() => {
             setIsFormOpen(false)
+            setEditingRisk(null)
+            setScrollToComments(false)
             onShowToast?.('success', editingRisk ? 'Risk updated successfully' : 'Risk created successfully')
             onRefresh()
           }}

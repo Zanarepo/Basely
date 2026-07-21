@@ -54,59 +54,59 @@ Export file storage approach (persisted files vs. regenerate-on-demand from stor
 
 Phase 1: Export Schema & Infrastructure
 Goal: Provision the shared table and pipeline every export format will use.
-[ ] Task 1.1: Design Export Schema
+[x] Task 1.1: Design Export Schema
 
 
 Create a SQL migration for public.document_exports (id, generated_document_id FK, format enum [pdf/docx/xlsx], exported_at, file_reference).
-[ ] Task 1.2: Configure Row Level Security
+[x] Task 1.2: Configure Row Level Security
 
 
 Enable RLS on document_exports, reusing the organization_members-scoped pattern established since Sprint 1.
-[ ] Task 1.3: Establish Shared Export Pipeline Pattern
+[x] Task 1.3: Establish Shared Export Pipeline Pattern
 
 
 Confirm and wire the reusable approach for taking a generated_documents row's resolved content and producing a formatted output file, used consistently by all three export format tasks below.
 Phase 2: PDF Export
 Goal: Build PDF export for all four document types using the shared pipeline.
-[ ] Task 2.1: Implement PDF Rendering
+[x] Task 2.1: Implement PDF Rendering
 
 
 Render each document type's resolved content (data-bound + free-text) to a correctly formatted PDF.
-[ ] Task 2.2: Validate Fidelity Across All Four Document Types
+[x] Task 2.2: Validate Fidelity Across All Four Document Types
 
 
 Confirm PDF output visually matches the in-app view for Charter, WBS Dictionary, RACI Matrix, and Status Report.
 Phase 3: Word (.docx) Export
 Goal: Build Word export for all four document types.
-[ ] Task 3.1: Implement DOCX Rendering
+[x] Task 3.1: Implement DOCX Rendering
 
 
 Render each document type's resolved content to a correctly formatted Word document, reusing the platform's existing document-generation library/pattern.
-[ ] Task 3.2: Validate Fidelity Across All Four Document Types
+[x] Task 3.2: Validate Fidelity Across All Four Document Types
 
 
 Confirm DOCX output structure and formatting matches the in-app view.
 Phase 4: Excel (.xlsx) Export
 Goal: Build Excel export specifically for the two tabular document types.
-[ ] Task 4.1: Implement XLSX Rendering for WBS Dictionary
+[x] Task 4.1: Implement XLSX Rendering for WBS Dictionary
 
 
 Render the hierarchical WBS data into a structured spreadsheet, preserving code-based ordering and indentation cues.
-[ ] Task 4.2: Implement XLSX Rendering for RACI Matrix
+[x] Task 4.2: Implement XLSX Rendering for RACI Matrix
 
 
 Render the assignment grid into a spreadsheet with work packages and stakeholders as rows/columns.
 Phase 5: Version History & Retrieval
 Goal: Give PMs a unified way to browse and retrieve everything they've exported or generated.
-[ ] Task 5.1: Build Export Logging
+[x] Task 5.1: Build Export Logging
 
 
 Log every export action to document_exports with the format and a reference to the exact content exported.
-[ ] Task 5.2: Build Unified History View
+[x] Task 5.2: Build Unified History View
 
 
 A single view combining export history (this sprint) and Status Report generation history (Sprint 14) for a project.
-[ ] Task 5.3: Implement Exact-Content Retrieval
+[x] Task 5.3: Implement Exact-Content Retrieval
 
 
 Ensure re-downloading a prior export returns the file as it was at export time, not a freshly regenerated (and potentially now-different) version — resolve per Section 8's storage decision.

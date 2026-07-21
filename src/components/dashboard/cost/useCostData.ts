@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import type { CostAccount, TimePhaseEntry, BudgetBaseline, BaselineCostSnapshot, WbsCostData } from '@/lib/cost/types'
+import type { BudgetBaseline, WbsCostData } from '@/lib/cost/types'
 
 export function useCostData(projectId: string) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   const [wbsCostData, setWbsCostData] = useState<WbsCostData[]>([])
   const [baselines, setBaselines] = useState<BudgetBaseline[]>([])
   const [resourceRates, setResourceRates] = useState<any[]>([])
@@ -27,7 +27,7 @@ export function useCostData(projectId: string) {
         .select('contingency_amount, contingency_type, currency, global_overhead_percentage')
         .eq('id', projectId)
         .single()
-        
+
       if (pError) throw pError
       setContingencyAmount(project.contingency_amount || 0)
       setContingencyType(project.contingency_type || 'flat')
@@ -40,7 +40,7 @@ export function useCostData(projectId: string) {
         .select('*')
         .eq('project_id', projectId)
         .order('sort_order', { ascending: true })
-        
+
       if (wError) throw wError
 
       // Fetch all cost accounts for this project
@@ -48,7 +48,7 @@ export function useCostData(projectId: string) {
         .from('cost_accounts')
         .select('*')
         .in('wbs_element_id', wbs.map(w => w.id))
-        
+
       if (cError) throw cError
 
       // Fetch all time phase entries
@@ -56,7 +56,7 @@ export function useCostData(projectId: string) {
         .from('time_phase_entries')
         .select('*')
         .in('cost_account_id', costAccounts.map(c => c.id))
-        
+
       if (tError) throw tError
 
       // Fetch baselines
@@ -65,7 +65,7 @@ export function useCostData(projectId: string) {
         .select('*')
         .eq('project_id', projectId)
         .order('saved_at', { ascending: false })
-        
+
       if (bError) throw bError
       setBaselines(bData || [])
 
@@ -101,7 +101,7 @@ export function useCostData(projectId: string) {
         .eq('project_id', projectId)
 
       if (riskError) throw riskError
-      
+
       const totalAllocated = (risksData || []).reduce((sum, risk) => sum + (Number(risk.allocated_contingency_amount) || 0), 0)
       setAllocatedContingency(totalAllocated)
 
@@ -121,23 +121,23 @@ export function useCostData(projectId: string) {
       const merged: WbsCostData[] = wbs
         .filter(element => !milestoneWbsIds.has(element.id))
         .map(element => {
-        const ca = costAccounts.find(c => c.wbs_element_id === element.id) || null
-        const tps = ca ? timePhases.filter(t => t.cost_account_id === ca.id) : []
-        const assigns = (assignmentsData || []).filter(a => a.wbs_element_id === element.id)
-        const actuals = (actualsData || []).filter(ac => ac.wbs_element_id === element.id)
+          const ca = costAccounts.find(c => c.wbs_element_id === element.id) || null
+          const tps = ca ? timePhases.filter(t => t.cost_account_id === ca.id) : []
+          const assigns = (assignmentsData || []).filter(a => a.wbs_element_id === element.id)
+          const actuals = (actualsData || []).filter(ac => ac.wbs_element_id === element.id)
 
-        return {
-          wbsId: element.id,
-          wbsName: element.name,
-          wbsCode: element.code,
-          parentId: element.parent_id,
-          isWorkPackage: element.is_work_package,
-          costAccount: ca,
-          timePhaseEntries: tps,
-          resourceAssignments: assigns,
-          actualCosts: actuals
-        }
-      })
+          return {
+            wbsId: element.id,
+            wbsName: element.name,
+            wbsCode: element.code,
+            parentId: element.parent_id,
+            isWorkPackage: element.is_work_package,
+            costAccount: ca,
+            timePhaseEntries: tps,
+            resourceAssignments: assigns,
+            actualCosts: actuals
+          }
+        })
 
       setWbsCostData(merged)
     } catch (err: any) {

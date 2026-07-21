@@ -5,6 +5,7 @@ import { FileText, ChevronLeft, ChevronRight, Layers, FileSearch, History, Calen
 import ProjectDocument from './ProjectDocument'
 import { getReportSnapshots } from '@/lib/documents/actions'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
+import { useSearchParams } from 'next/navigation'
 
 interface DocumentsWorkspaceProps {
   projectId: string
@@ -17,7 +18,10 @@ export default function DocumentsWorkspace({
   projectContext,
   hasEditAccess,
 }: DocumentsWorkspaceProps) {
-  const [activeTab, setActiveTab] = useState<'charter' | 'wbs_dictionary' | 'raci' | 'status_report'>('charter')
+  const searchParams = useSearchParams()
+  const initialDoc = searchParams.get('doc') as 'charter' | 'wbs_dictionary' | 'raci' | 'status_report' | null
+  
+  const [activeTab, setActiveTab] = useState<'charter' | 'wbs_dictionary' | 'raci' | 'status_report'>(initialDoc || 'charter')
   const [activeSnapshotId, setActiveSnapshotId] = useState<string | null>(null)
   const [snapshots, setSnapshots] = useState<any[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
