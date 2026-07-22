@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { DashboardSidebar } from './DashboardSidebar'
 import { InviteTeamModal } from './InviteTeamModal'
+import { CreateWorkspaceModal } from './CreateWorkspaceModal'
 import { WorkspaceProvider, type Workspace } from './WorkspaceContext'
 
 type DashboardShellProps = {
@@ -19,6 +20,7 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const [inviteOpen, setInviteOpen] = useState(false)
+  const [createWsOpen, setCreateWsOpen] = useState(false)
 
   return (
     <WorkspaceProvider workspaces={workspaces} activeWorkspace={activeWorkspace}>
@@ -37,11 +39,13 @@ export function DashboardShell({
         <DashboardSidebar
           userEmail={userEmail}
           onInviteTeam={() => setInviteOpen(true)}
+          onCreateWorkspace={() => setCreateWsOpen(true)}
         />
 
         <main className="relative flex-1 min-w-0 overflow-auto">{children}</main>
       </div>
       <InviteTeamModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+      <CreateWorkspaceModal open={createWsOpen} onClose={() => setCreateWsOpen(false)} />
     </WorkspaceProvider>
   )
 }

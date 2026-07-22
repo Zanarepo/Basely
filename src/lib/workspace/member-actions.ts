@@ -82,3 +82,19 @@ export async function updateWorkspaceMemberAdminPrivilege(
   if (error) return { ok: false, error: error.message }
   return { ok: true }
 }
+
+export async function updateProfileName(
+  newName: string
+): Promise<UpdateWorkspaceRoleResult> {
+  const { supabase, user } = await getAuthenticatedClient()
+  if (!user) return { ok: false, error: 'You must be signed in' }
+  if (!newName.trim()) return { ok: false, error: 'Profile name cannot be empty' }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ full_name: newName.trim() })
+    .eq('id', user.id)
+
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}

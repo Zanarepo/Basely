@@ -1,5 +1,6 @@
-import { Search, Trash2, Upload, Plus, Save, X, Edit2 } from 'lucide-react'
+import { Search, Trash2, Upload, Plus, Edit2 } from 'lucide-react'
 import { ResourceRate, ResourceType, ResourceUnit } from '@/lib/cost/types'
+import { ResourceRateFormModal } from './ResourceRateFormModal'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
 interface ResourceRatesTableProps {
@@ -124,125 +125,9 @@ export function ResourceRatesTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-app-border">
-            {isCreating && (
-              <tr className="bg-indigo-500/5">
-                <td className="px-4 py-3"></td>
-                <td className="px-4 py-3">
-                  <input
-                    type="text"
-                    placeholder="e.g. Senior Engineer"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 text-app-fg"
-                  />
-                </td>
-                <td className="px-4 py-3">
-                  <select
-                    value={type}
-                    onChange={e => setType(e.target.value as ResourceType)}
-                    className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 text-app-fg"
-                  >
-                    <option value="labor">Labor</option>
-                    <option value="material">Material</option>
-                    <option value="fixed">Fixed Cost</option>
-                  </select>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-app-muted">{projectCurrency}</span>
-                    <input
-                      type="number"
-                      value={rate}
-                      onChange={e => setRate(parseFloat(e.target.value))}
-                      className="w-24 bg-app-bg border border-app-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 text-app-fg"
-                    />
-                    <span className="text-app-muted">/</span>
-                    <select
-                      value={unit}
-                      onChange={e => setUnit(e.target.value as ResourceUnit)}
-                      className="bg-app-bg border border-app-border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-indigo-500 text-app-fg"
-                    >
-                      <option value="hr">hr</option>
-                      <option value="day">day</option>
-                      <option value="unit">unit</option>
-                      <option value="flat">flat</option>
-                    </select>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <button onClick={handleSave} className="p-1.5 text-green-500 hover:bg-green-500/10 rounded-lg">
-                      <Save className="w-4 h-4" />
-                    </button>
-                    <button onClick={cancelEdit} className="p-1.5 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )}
+
 
             {filteredRates.map(r => {
-              const isEditing = editingId === r.id
-              if (isEditing) {
-                return (
-                  <tr key={r.id} className="bg-indigo-500/5">
-                    <td className="px-4 py-3"></td>
-                    <td className="px-4 py-3">
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 text-app-fg"
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={type}
-                        onChange={e => setType(e.target.value as ResourceType)}
-                        className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 text-app-fg"
-                      >
-                        <option value="labor">Labor</option>
-                        <option value="material">Material</option>
-                        <option value="fixed">Fixed Cost</option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-app-muted">{projectCurrency}</span>
-                        <input
-                          type="number"
-                          value={rate}
-                          onChange={e => setRate(parseFloat(e.target.value))}
-                          className="w-24 bg-app-bg border border-app-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 text-app-fg"
-                        />
-                        <span className="text-app-muted">/</span>
-                        <select
-                          value={unit}
-                          onChange={e => setUnit(e.target.value as ResourceUnit)}
-                          className="bg-app-bg border border-app-border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-indigo-500 text-app-fg"
-                        >
-                          <option value="hr">hr</option>
-                          <option value="day">day</option>
-                          <option value="unit">unit</option>
-                          <option value="flat">flat</option>
-                        </select>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button onClick={handleSave} className="p-1.5 text-green-500 hover:bg-green-500/10 rounded-lg">
-                          <Save className="w-4 h-4" />
-                        </button>
-                        <button onClick={cancelEdit} className="p-1.5 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              }
-
               return (
                 <tr key={r.id} className={`hover:bg-app-hover transition-colors group ${selectedIds.includes(r.id) ? 'bg-indigo-500/5' : ''}`}>
                   <td className="px-4 py-3">
@@ -303,6 +188,24 @@ export function ResourceRatesTable({
           </tbody>
         </table>
       </div>
+
+      {/* Resource Rate Form Modal */}
+      {(isCreating || editingId) && (
+        <ResourceRateFormModal
+          isEditing={!!editingId}
+          projectCurrency={projectCurrency}
+          name={name}
+          setName={setName}
+          type={type}
+          setType={setType}
+          rate={rate}
+          setRate={setRate}
+          unit={unit}
+          setUnit={setUnit}
+          onSave={handleSave}
+          onCancel={cancelEdit}
+        />
+      )}
     </div>
   )
 }

@@ -2,14 +2,16 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, ShieldCheck, Users, Trash2, UserX, UserCheck } from 'lucide-react'
+import { Loader2, ShieldCheck, Users, Trash2, UserX, UserCheck, Pencil, Check, X, AlertTriangle } from 'lucide-react'
 import {
   transferWorkspaceOwnership,
   updateWorkspaceMemberRole,
   updateWorkspaceMemberActiveStatus,
   removeWorkspaceMember,
   updateWorkspaceMemberAdminPrivilege,
+  updateProfileName,
 } from '@/lib/workspace/member-actions'
+import { deleteWorkspace } from '@/lib/workspace/actions'
 
 const OWNER_ROLES = ['Admin', 'PM', 'Team Member', 'Viewer'] as const
 const ADMIN_ROLES = ['PM', 'Team Member', 'Viewer'] as const
@@ -43,9 +45,26 @@ export function WorkspaceMembersPanel({
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<string | null>(null)
   const [newOwnerId, setNewOwnerId] = useState('')
+  const [editingOwnerId, setEditingOwnerId] = useState<string | null>(null)
+  const [ownerNameInput, setOwnerNameInput] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
 
   // The workspace owner's user ID is the user_id of the member where isOwner is true
   const ownerId = members.find((m) => m.isOwner)?.userId ?? ''
+
+  const handleDeleteWorkspace = () => {
+    if (deleteConfirmText !== 'DELETE') return
+    setMessage(null)
+    startTransition(async () => {
+      const result = await deleteWorkspace(organizationId)
+      if (result.ok) {
+        router.push('/dashboard')
+      } else {
+        setMessage(result.error ?? 'Failed to delete workspace.')
+      }
+    })
+  }
 
   const changeRole = (memberUserId: string, role: WorkspaceRole) => {
     setMessage(null)
@@ -99,6 +118,21 @@ export function WorkspaceMembersPanel({
     })
   }
 
+  const saveOwnerName = () => {
+    if (!ownerNameInput.trim()) return
+    setMessage(null)
+    startTransition(async () => {
+      const result = await updateProfileName(ownerNameInput)
+      if (result.ok) {
+        setMessage('Profile name updated.')
+        setEditingOwnerId(null)
+        router.refresh()
+      } else {
+        setMessage(result.error)
+      }
+    })
+  }
+
   return (
     <section className="mt-6 backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6">
       <div className="flex items-start gap-3 mb-5">
@@ -130,13 +164,52 @@ export function WorkspaceMembersPanel({
             !member.isOwner && // cannot remove owner
             (isOwner || callerCanManageAllMembers || member.addedBy === callerUserId)
 
+          const isEditingThisProfile = editingOwnerId === member.userId
+
           return (
             <div key={member.userId} className="flex flex-col gap-4 rounded-2xl border border-app-border bg-app-muted-surface p-4 sm:flex-row sm:items-center group">
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="font-medium text-app-fg truncate">
-                    {member.name}{member.isOwner ? ' · Owner' : ''}
-                  </p>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  {isEditingThisProfile ? (
+                    <div className="flex items-center gap-2 my-0.5">
+                      <input
+                        type="text"
+                        value={ownerNameInput}
+                        onChange={(e) => setOwnerNameInput(e.target.value)}
+                        placeholder="Full Name"
+                        disabled={isPending}
+                        className="bg-app-bg border border-indigo-500 rounded-lg px-2.5 py-1 text-sm font-medium text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveOwnerName()
+                          if (e.key === 'Escape') setEditingOwnerId(null)
+                        }}
+                      />
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={saveOwnerName}
+                        className="p-1.5 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors cursor-pointer"
+                        title="Save name"
+                      >
+                        <Check className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => setEditingOwnerId(null)}
+                        className="p-1.5 text-app-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                        title="Cancel"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="font-medium text-app-fg truncate">
+                      {member.name}{member.isOwner ? ' · Owner' : ''}
+                    </p>
+                  )}
+
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
                     member.isActive 
                       ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
@@ -158,7 +231,7 @@ export function WorkspaceMembersPanel({
                       onChange={(e) => togglePrivilege(member.userId, e.target.checked)}
                       className="rounded border-app-border bg-app-surface text-indigo-600 focus:ring-indigo-500 focus:ring-offset-app-bg"
                     />
-                    <span>Privileged Admin (Can manage Owner's invites)</span>
+                    <span>Privileged Admin (Can manage Owner&apos;s invites)</span>
                   </label>
                 )}
                 {/* Visual read-only privilege badge for non-owner Admins */}
@@ -172,7 +245,22 @@ export function WorkspaceMembersPanel({
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 {/* Role select */}
                 {member.isOwner ? (
-                  <span className="text-sm font-semibold text-indigo-500 dark:text-indigo-300 px-3">Owner</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-indigo-500 dark:text-indigo-300 px-3">Owner</span>
+                    {(isOwner || member.userId === callerUserId) && !isEditingThisProfile && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingOwnerId(member.userId)
+                          setOwnerNameInput(member.name)
+                        }}
+                        className="p-1.5 text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200 cursor-pointer"
+                        title="Edit profile name"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 ) : isLocked ? (
                   <span
                     title="Only the workspace Owner can manage Admin roles"
@@ -251,6 +339,61 @@ export function WorkspaceMembersPanel({
               className="btn-primary disabled:opacity-50">
               Transfer ownership
             </button>
+          </div>
+        </div>
+      )}
+
+      {isOwner && (
+        <div className="mt-8 border-t border-rose-500/20 pt-6">
+          <h4 className="font-bold text-rose-500 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5" /> Danger Zone
+          </h4>
+          <p className="mt-2 text-sm text-app-muted">
+            Deleting this workspace will permanently erase all associated projects, WBS elements, cost accounts, actuals, and team memberships. This action is irreversible.
+          </p>
+          <div className="mt-4 p-4 rounded-2xl bg-rose-500/5 border border-rose-500/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-app-fg">Delete this workspace</p>
+              <p className="text-xs text-app-subtle">Once deleted, it cannot be recovered.</p>
+            </div>
+            
+            {showDeleteConfirm ? (
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  type="text"
+                  placeholder="Type DELETE to confirm"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  className="px-3 py-2 bg-app-bg border border-rose-500/30 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl text-sm text-app-fg placeholder-rose-500/30"
+                />
+                <button
+                  type="button"
+                  onClick={handleDeleteWorkspace}
+                  disabled={isPending || deleteConfirmText !== 'DELETE'}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:bg-rose-800/50 disabled:text-rose-500/50 text-white text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                >
+                  Confirm Delete
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteConfirm(false)
+                    setDeleteConfirmText('')
+                  }}
+                  className="p-2 text-app-muted hover:text-app-fg hover:bg-app-hover rounded-xl transition-colors cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 text-sm font-semibold rounded-xl transition-all cursor-pointer shrink-0"
+              >
+                Delete Workspace
+              </button>
+            )}
           </div>
         </div>
       )}

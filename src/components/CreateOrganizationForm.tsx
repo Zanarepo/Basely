@@ -6,7 +6,13 @@ import { createClient } from '@/utils/supabase/client'
 import { createOrganizationSchema } from '@/lib/validations/organization'
 import { Building2, Users, ShieldAlert, ArrowRight, Loader2 } from 'lucide-react'
 
-export function CreateOrganizationForm() {
+const MAX_OWNED_WORKSPACES = 2
+
+interface CreateOrganizationFormProps {
+  onSuccess?: (organizationId: string) => void
+}
+
+export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProps) {
   const router = useRouter()
   const [name, setName] = useState('')
   const [teamSize, setTeamSize] = useState('')
@@ -26,6 +32,21 @@ export function CreateOrganizationForm() {
     setLoading(true)
     try {
       const supabase = createClient()
+
+      // Check workspace ownership limit
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { count } = await supabase
+          .from('organizations')
+          .select('id', { count: 'exact', head: true })
+          .eq('owner_id', user.id)
+
+        if ((count ?? 0) >= MAX_OWNED_WORKSPACES) {
+          setErrorMsg(`You can own a maximum of ${MAX_OWNED_WORKSPACES} workspaces.`)
+          return
+        }
+      }
+
       const { data, error } = await supabase.rpc('create_organization_with_admin', {
         p_name: parsed.data.name,
         p_team_size: parsed.data.teamSize ?? null,
@@ -37,8 +58,12 @@ export function CreateOrganizationForm() {
       }
 
       if (data) {
-        router.refresh()
-        router.push('/dashboard')
+        if (onSuccess) {
+          onSuccess(data)
+        } else {
+          router.refresh()
+          router.push('/dashboard')
+        }
       }
     } catch {
       setErrorMsg('Could not create organization. Please try again.')
@@ -46,6 +71,7 @@ export function CreateOrganizationForm() {
       setLoading(false)
     }
   }
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">

@@ -10,6 +10,7 @@ import {
   Loader2,
   UserPlus,
   Users,
+  User,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { useWorkspace } from './WorkspaceContext'
@@ -22,6 +23,7 @@ const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed'
 type DashboardSidebarProps = {
   userEmail: string
   onInviteTeam: () => void
+  onCreateWorkspace: () => void
 }
 
 const INVITE_ROLES = new Set(['Admin', 'PM'])
@@ -29,6 +31,7 @@ const INVITE_ROLES = new Set(['Admin', 'PM'])
 export function DashboardSidebar({
   userEmail,
   onInviteTeam,
+  onCreateWorkspace,
 }: DashboardSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
@@ -67,6 +70,7 @@ export function DashboardSidebar({
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/dashboard/team', label: 'Team', icon: Users },
+    { href: '/dashboard/profile', label: 'Profile', icon: User },
   ]
 
   if (!mounted) {
@@ -100,7 +104,7 @@ export function DashboardSidebar({
       </div>
 
       <div className={`p-3 ${collapsed ? 'px-2' : ''}`}>
-        <WorkspaceSwitcher collapsed={collapsed} />
+        <WorkspaceSwitcher collapsed={collapsed} onCreateWorkspace={onCreateWorkspace} />
       </div>
 
       <nav className={`flex-1 px-3 space-y-1 ${collapsed ? 'px-2' : ''}`}>

@@ -3,12 +3,13 @@
 import { useState, useTransition, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
-import { Building2, ChevronDown, Check } from 'lucide-react'
+import { Building2, ChevronDown, Check, Plus } from 'lucide-react'
 import { useWorkspace, type Workspace } from './WorkspaceContext'
 import { setActiveWorkspace } from '@/lib/workspace/actions'
 
 type WorkspaceSwitcherProps = {
   collapsed: boolean
+  onCreateWorkspace?: () => void
 }
 
 const dropdownPanel =
@@ -18,7 +19,7 @@ const dropdownItem =
 const switcherButton =
   'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-app-muted-surface border border-app-border hover:border-indigo-500/40 hover:bg-app-hover transition-all cursor-pointer disabled:opacity-60'
 
-export function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps) {
+export function WorkspaceSwitcher({ collapsed, onCreateWorkspace }: WorkspaceSwitcherProps) {
   const router = useRouter()
   const { workspaces, activeWorkspace } = useWorkspace()
   const [open, setOpen] = useState(false)
@@ -38,7 +39,9 @@ export function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps) {
 
   useEffect(() => {
     if (!open) {
-      setMenuPos(null)
+      setTimeout(() => {
+        setMenuPos(null)
+      }, 0)
       return
     }
     updateMenuPosition()
@@ -107,6 +110,24 @@ export function WorkspaceSwitcher({ collapsed }: WorkspaceSwitcherProps) {
               }}
             >
               {dropdownList}
+              {onCreateWorkspace && (
+                <>
+                  <div className="border-t border-app-border my-1" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false)
+                      onCreateWorkspace()
+                    }}
+                    className={dropdownItem}
+                  >
+                    <div className="p-1 rounded-lg bg-indigo-500/15">
+                      <Plus className="h-3.5 w-3.5 text-indigo-500" />
+                    </div>
+                    <span className="text-sm font-medium text-indigo-500 dark:text-indigo-400">New Workspace</span>
+                  </button>
+                </>
+              )}
             </div>
           </>,
           document.body
