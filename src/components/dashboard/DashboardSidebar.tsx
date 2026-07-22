@@ -77,14 +77,12 @@ export function DashboardSidebar({
 
   return (
     <aside
-      className={`shrink-0 flex flex-col h-screen sticky top-0 z-50 border-r border-app-border bg-app-surface-solid/95 backdrop-blur-xl transition-[width] duration-300 ease-in-out ${
-        collapsed ? 'w-18' : 'w-64'
-      }`}
+      className={`shrink-0 flex flex-col h-screen sticky top-0 z-50 border-r border-app-border bg-app-surface-solid/95 backdrop-blur-xl transition-[width] duration-300 ease-in-out ${collapsed ? 'w-18' : 'w-64'
+        }`}
     >
       <div
-        className={`flex items-center border-b border-app-border ${
-          collapsed ? 'justify-center px-2 py-5' : 'gap-3 px-4 py-5'
-        }`}
+        className={`flex items-center border-b border-app-border ${collapsed ? 'justify-center px-2 py-5' : 'gap-3 px-4 py-5'
+          }`}
       >
         <div className="shrink-0 p-2 rounded-xl bg-linear-to-tr from-violet-600 to-indigo-600 shadow-lg shadow-indigo-600/20">
           <LayoutDashboard className="h-5 w-5 text-white" />
@@ -92,7 +90,7 @@ export function DashboardSidebar({
         {!collapsed && (
           <div className="min-w-0">
             <p className="text-sm font-bold text-app-fg tracking-tight truncate">
-             Baseline
+              Baseline
             </p>
             <p className="text-[10px] text-app-subtle uppercase tracking-widest">
               Project Controls
@@ -113,13 +111,11 @@ export function DashboardSidebar({
               key={href}
               href={href}
               title={collapsed ? label : undefined}
-              className={`flex items-center gap-3 rounded-xl transition-all duration-200 ${
-                collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
-              } ${
-                active
+              className={`flex items-center gap-3 rounded-xl transition-all duration-200 ${collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                } ${active
                   ? 'bg-indigo-500/15 text-indigo-500 dark:text-indigo-300 border border-indigo-500/25'
                   : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
-              }`}
+                }`}
             >
               <Icon
                 className={`h-5 w-5 shrink-0 ${active ? 'text-indigo-500 dark:text-indigo-400' : ''}`}
@@ -137,18 +133,16 @@ export function DashboardSidebar({
       </nav>
 
       <div
-        className={`mt-auto border-t border-app-border p-3 space-y-2 ${
-          collapsed ? 'px-2' : ''
-        }`}
+        className={`mt-auto border-t border-app-border p-3 space-y-2 ${collapsed ? 'px-2' : ''
+          }`}
       >
         {canInvite && (
           <button
             type="button"
             onClick={onInviteTeam}
             title="Invite team"
-            className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-indigo-500 dark:hover:text-indigo-300 hover:bg-indigo-500/10 border border-transparent hover:border-indigo-500/20 transition-all cursor-pointer ${
-              collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
-            }`}
+            className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-indigo-500 dark:hover:text-indigo-300 hover:bg-indigo-500/10 border border-transparent hover:border-indigo-500/20 transition-all cursor-pointer ${collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+              }`}
           >
             <UserPlus className="h-5 w-5 shrink-0" />
             {!collapsed && (
@@ -169,9 +163,8 @@ export function DashboardSidebar({
           onClick={handleSignOut}
           disabled={signingOut}
           title="Sign out"
-          className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-rose-500 dark:hover:text-rose-300 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer disabled:opacity-50 ${
-            collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
-          }`}
+          className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-rose-500 dark:hover:text-rose-300 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer disabled:opacity-50 ${collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+            }`}
         >
           {signingOut ? (
             <Loader2 className="h-5 w-5 animate-spin shrink-0" />
@@ -189,9 +182,8 @@ export function DashboardSidebar({
         className="absolute -right-3 top-1/2 -translate-y-1/2 z-[10000] flex h-6 w-6 items-center justify-center rounded-full bg-app-toggle-bg border border-app-toggle-border text-app-toggle-fg hover:text-app-fg hover:border-indigo-500/50 shadow-lg transition-all cursor-pointer"
       >
         <ArrowRight
-          className={`h-3.5 w-3.5 transition-transform duration-300 ${
-            collapsed ? '' : 'rotate-180'
-          }`}
+          className={`h-3.5 w-3.5 transition-transform duration-300 ${collapsed ? '' : 'rotate-180'
+            }`}
         />
       </button>
     </aside>

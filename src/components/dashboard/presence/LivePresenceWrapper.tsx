@@ -22,13 +22,11 @@ export function LivePresenceWrapper({ projectId, activeTab, callerUserId, caller
   return (
     <>
       <LiveCursorsOverlay activeUsers={activeUsers} showCursors={showCursors} />
-      <div className="absolute top-0 right-0 z-50">
-        <ActivityPanel 
-          activeUsers={activeUsers} 
-          showCursors={showCursors} 
-          toggleCursors={toggleCursors} 
-        />
-      </div>
+      <ActivityPanel 
+        activeUsers={activeUsers} 
+        showCursors={showCursors} 
+        toggleCursors={toggleCursors} 
+      />
     </>
   )
 }

@@ -10,6 +10,8 @@ import StakeholderWorkspace from '@/components/dashboard/stakeholders/Stakeholde
 import RiskRegisterWorkspace from '@/components/dashboard/risks/RiskRegisterWorkspace'
 import DocumentsWorkspace from '@/components/dashboard/documents/DocumentsWorkspace'
 import { ProjectTeamRoster } from '@/components/dashboard/ProjectTeamRoster'
+import { ProjectWizardModal } from '@/components/dashboard/ProjectWizardModal'
+import { ProjectIntegrationsMenu } from '@/components/dashboard/projects/ProjectIntegrationsMenu'
 import { LivePresenceWrapper } from '@/components/dashboard/presence/LivePresenceWrapper'
 
 // Planning components type definition
@@ -177,12 +179,17 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         const callerMember = workspaceMembers.find(m => m.userId === user.id)
         const callerUserName = callerMember?.name || callerMember?.email || 'Unknown User'
         return (
-          <LivePresenceWrapper
-            projectId={project.id}
-            activeTab={activeTab}
-            callerUserId={user.id}
-            callerUserName={callerUserName}
-          />
+          <div className="absolute top-0 right-0 z-50 flex items-center gap-3">
+            {isOrgOwner || callerRole === 'Admin' ? (
+              <ProjectIntegrationsMenu projectId={project.id} />
+            ) : null}
+            <LivePresenceWrapper
+              projectId={project.id}
+              activeTab={activeTab}
+              callerUserId={user.id}
+              callerUserName={callerUserName}
+            />
+          </div>
         )
       })()}
 

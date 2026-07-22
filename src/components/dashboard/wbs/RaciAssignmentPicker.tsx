@@ -41,6 +41,11 @@ export function RaciAssignmentPicker({
   const [openRole, setOpenRole] = useState<RaciRoleType | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
+  const [localAssignments, setLocalAssignments] = useState<RaciAssignment[]>(assignments)
+  
+  useEffect(() => {
+    setLocalAssignments(assignments)
+  }, [assignments])
   
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -91,8 +96,8 @@ export function RaciAssignmentPicker({
   const canEditRole = (role: RaciRoleType) => {
     if (hasEditAccess) return true
     if (callerRole === 'Team Member' && role === 'Responsible') {
-      const isMissingR = !assignments.some(a => a.roleType === 'Responsible')
-      const isMyTask = assignments.some(a => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId)
+      const isMissingR = !localAssignments.some(a => a.roleType === 'Responsible')
+      const isMyTask = localAssignments.some(a => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId)
       return isMissingR || isMyTask
     }
     return false
@@ -102,38 +107,55 @@ export function RaciAssignmentPicker({
     if (!canEditRole(roleType) || isUpdating) return
     setIsUpdating(true)
     
+    // Optimistic UI Update
+    const existing = localAssignments.find(a => a.stakeholderId === stakeholderId && a.roleType === roleType)
+    const stakeholder = stakeholders.find(s => s.id === stakeholderId)
+    
+    let newAssignments = [...localAssignments]
+    if (existing) {
+      newAssignments = newAssignments.filter(a => !(a.stakeholderId === stakeholderId && a.roleType === roleType))
+    } else {
+      if (roleType === 'Accountable') {
+        const currentA = localAssignments.find(a => a.roleType === 'Accountable')
+        if (currentA && currentA.stakeholderId !== stakeholderId) {
+          if (!window.confirm('This will replace the currently Accountable stakeholder. Proceed?')) {
+            setIsUpdating(false)
+            return
+          }
+        }
+        newAssignments = newAssignments.filter(a => a.roleType !== 'Accountable')
+      }
+      newAssignments.push({
+        id: `temp-${Date.now()}`,
+        wbsElementId,
+        stakeholderId,
+        roleType,
+        stakeholder: stakeholder as any
+      })
+    }
+    setLocalAssignments(newAssignments)
+    
     try {
       let res: ActionResponse
       
-      const existing = assignments.find(a => a.stakeholderId === stakeholderId && a.roleType === roleType)
-      
       if (existing) {
-        // Remove
         res = await removeRaciRole(projectId, wbsElementId, stakeholderId, roleType)
       } else {
-        // Add or Replace
         if (roleType === 'Accountable') {
-          // Check if replacing
-          const currentA = assignments.find(a => a.roleType === 'Accountable')
-          if (currentA && currentA.stakeholderId !== stakeholderId) {
-            if (!window.confirm('This will replace the currently Accountable stakeholder. Proceed?')) {
-              setIsUpdating(false)
-              return
-            }
-          }
           res = await replaceAccountableRole(projectId, wbsElementId, stakeholderId)
-          // Intentionally keeping it open as per user request to not close panels
         } else {
           res = await assignRaciRole(projectId, wbsElementId, stakeholderId, roleType)
         }
       }
 
       if (!res.ok) {
+        setLocalAssignments(assignments) // Revert on failure
         onShowToast('error', res.error || 'Failed to update RACI assignment')
       } else {
         onAssignmentChanged?.()
       }
     } catch (err) {
+      setLocalAssignments(assignments) // Revert on failure
       onShowToast('error', 'An unexpected error occurred')
     } finally {
       setIsUpdating(false)
@@ -141,7 +163,7 @@ export function RaciAssignmentPicker({
   }
 
   const renderRoleSection = (role: RaciRoleType, title: string, description: string, colorClass: string) => {
-    const roleAssignments = assignments.filter(a => a.roleType === role)
+    const roleAssignments = localAssignments.filter(a => a.roleType === role)
     const isOpen = openRole === role
 
     return (
@@ -156,6 +178,7 @@ export function RaciAssignmentPicker({
           </div>
           {canEditRole(role) && (
             <button
+              type="button"
               onClick={() => {
                 setOpenRole(isOpen ? null : role)
                 setSearchQuery('')
@@ -182,6 +205,7 @@ export function RaciAssignmentPicker({
                   <span>{name}</span>
                   {hasEditAccess && (
                     <button 
+                      type="button"
                       onClick={() => handleToggleAssignment(a.stakeholderId, role)}
                       disabled={isUpdating}
                       className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 transition-opacity ml-1"
@@ -217,7 +241,10 @@ export function RaciAssignmentPicker({
             </div>
             <div className="max-h-48 overflow-y-auto space-y-1">
               {loading ? (
-                <div className="flex justify-center p-4"><Loader2 className="w-4 h-4 animate-spin text-indigo-500" /></div>
+                <div className="flex flex-col items-center justify-center p-4 gap-2 text-app-muted">
+                  <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                  <span className="text-xs">Loading team members...</span>
+                </div>
               ) : availableStakeholders.length === 0 ? (
                 <div className="text-sm text-app-muted text-center py-2">No stakeholders found.</div>
               ) : (
@@ -228,6 +255,7 @@ export function RaciAssignmentPicker({
                   return (
                     <button
                       key={s.id}
+                      type="button"
                       onClick={() => handleToggleAssignment(s.id, role)}
                       disabled={isUpdating}
                       className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg hover:bg-app-hover transition-colors text-left"

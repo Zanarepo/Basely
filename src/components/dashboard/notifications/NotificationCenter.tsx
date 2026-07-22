@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
-import { Bell, Check, AtSign, User, AlertTriangle, DollarSign, Calendar, FileText, Activity } from 'lucide-react'
+import { Bell, Check, AtSign, User, AlertTriangle, DollarSign, Calendar, FileText, Activity, Settings } from 'lucide-react'
 import { useNotifications } from './useNotifications'
+import { NotificationPreferences } from './NotificationPreferences'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { createPortal } from 'react-dom'
@@ -16,6 +17,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
   const { notifications, unreadCount, markAsRead, markAllAsRead, loading } = useNotifications()
   const ref = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -75,9 +77,11 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
       {/* Side Sheet Panel */}
       <div className="fixed inset-y-0 right-0 w-full sm:w-[400px] bg-app-surface border-l border-app-border shadow-2xl flex flex-col z-40 animate-in slide-in-from-right-8 duration-200">
         <div className="flex items-center justify-between p-6 border-b border-app-border bg-app-surface-solid">
-          <h3 className="font-semibold text-lg text-app-fg">Notifications</h3>
+          <h3 className="font-semibold text-lg text-app-fg">
+            {showSettings ? 'Notification Settings' : 'Notifications'}
+          </h3>
           <div className="flex items-center gap-4">
-            {unreadCount > 0 && (
+            {!showSettings && unreadCount > 0 && (
               <button 
                 onClick={markAllAsRead}
                 className="text-xs text-app-subtle hover:text-app-fg flex items-center gap-1 transition-colors"
@@ -86,11 +90,22 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                 Mark all read
               </button>
             )}
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className={`p-1.5 rounded-md hover:bg-app-hover transition-colors ${showSettings ? 'text-indigo-500' : 'text-app-subtle hover:text-app-fg'}`}
+              title="Settings"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {loading && notifications.length === 0 ? (
+          {showSettings ? (
+            <div className="p-6">
+              <NotificationPreferences />
+            </div>
+          ) : loading && notifications.length === 0 ? (
             <div className="p-8 text-center text-app-subtle text-sm">Loading...</div>
           ) : notifications.length === 0 ? (
             <div className="p-12 text-center flex flex-col items-center justify-center h-full">
@@ -120,31 +135,19 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                         <p className={`text-sm ${isUnread ? 'text-app-fg font-medium' : 'text-app-subtle'}`}>
                           {notif.content_summary}
                         </p>
-                        <p className="text-xs text-app-subtle mt-2">
+                        <p className="text-[10px] text-app-subtle mt-1 flex items-center gap-1.5 font-medium">
                           {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
+                          {isUnread && (
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                          )}
                         </p>
                       </div>
-                      {isUnread && (
-                        <div className="shrink-0">
-                          <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 mt-1.5 shadow-sm shadow-indigo-500/50" />
-                        </div>
-                      )}
                     </div>
                   </Link>
                 )
               })}
             </div>
           )}
-        </div>
-        
-        <div className="p-4 border-t border-app-border bg-app-surface-solid text-center">
-          <Link 
-            href="/dashboard/settings?tab=notifications" 
-            onClick={onClose}
-            className="text-sm text-indigo-500 hover:text-indigo-400 font-medium flex items-center justify-center gap-2"
-          >
-            Notification Settings
-          </Link>
         </div>
       </div>
     </>,

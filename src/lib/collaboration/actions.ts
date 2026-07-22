@@ -117,7 +117,7 @@ export async function postComment(
       // 3. Dispatch Notifications asynchronously for user mentions
       let urlHash = `tab=wbs&elementId=${entityId}`
       let entityName = 'an item'
-      
+
       if (entityType === 'wbs') {
         const { data } = await supabaseAdmin.from('wbs_elements').select('name').eq('id', entityId).single()
         if (data) entityName = data.name
@@ -142,7 +142,7 @@ export async function postComment(
         const { data } = await supabaseAdmin.from('wbs_elements').select('name').eq('id', entityId).single()
         if (data) entityName = data.name
       }
-      
+
       const { data: authorProfile } = await supabaseAdmin.from('profiles').select('full_name').eq('id', userData.user.id).single()
       const authorName = authorProfile?.full_name || 'Someone'
 
@@ -159,7 +159,7 @@ export async function postComment(
           notifiedUserIds.add(targetUserId)
           // Remove the @mentions from the body snippet so it doesn't redundantly show the recipient's name
           const snippet = body.replace(/@[a-zA-Z0-9_\- ]+/g, '').trim() || 'left a comment'
-          
+
           await dispatchNotification({
             userId: targetUserId,
             triggerType: 'mention',
@@ -181,7 +181,7 @@ export async function postComment(
       if (entityType === 'risk' || entityType === 'issue') {
         const table = entityType === 'risk' ? 'risks' : 'issues'
         const { data: entityData } = await supabaseAdmin.from(table).select('owner_stakeholder_id').eq('id', entityId).single()
-        
+
         if (entityData?.owner_stakeholder_id) {
           const { data: stData } = await supabaseAdmin.from('stakeholders').select('linked_user_id').eq('id', entityData.owner_stakeholder_id).single()
           const ownerUserId = stData?.linked_user_id
