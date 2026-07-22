@@ -44,13 +44,14 @@ export function useNotifications() {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`
+          table: 'notifications'
         },
         (payload) => {
           const newNotif = payload.new as AppNotification
-          setNotifications(prev => [newNotif, ...prev])
-          setUnreadCount(prev => prev + 1)
+          if (newNotif.user_id === userId) {
+            setNotifications(prev => [newNotif, ...prev])
+            setUnreadCount(prev => prev + 1)
+          }
         }
       ).subscribe()
     }

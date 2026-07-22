@@ -30,6 +30,7 @@ export default function GanttWorkspace({
     activities,
     dependencies,
     baselines,
+    pendingBaselines,
     baselineSnapshots,
     hudMessage,
     expandedNodeIds,
@@ -106,6 +107,7 @@ export default function GanttWorkspace({
         zoom={zoom}
         setZoom={setZoom}
         baselines={baselines}
+        pendingBaselines={pendingBaselines}
         showBaseline={showBaseline}
         setShowBaseline={setShowBaseline}
         selectedBaselineId={selectedBaselineId}

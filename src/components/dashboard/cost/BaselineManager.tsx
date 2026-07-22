@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { FileDigit, Plus, Camera, History, ArrowLeft, Loader2, Edit2, Trash2, Check, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { FileDigit, Plus, Camera, History, ArrowLeft, Loader2, Edit2, Trash2, Check, X, Clock } from 'lucide-react'
 import type { BudgetBaseline, BaselineCostSnapshot } from '@/lib/cost/types'
 import { createBudgetBaseline, getBaselineSnapshots, updateBudgetBaseline, deleteBudgetBaseline } from '@/lib/cost/actions'
+import { getPendingApprovalsForProject, deleteRequest } from '@/lib/approvals/actions'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
 type Props = {
@@ -28,16 +29,32 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
   const [editingBaselineName, setEditingBaselineName] = useState('')
   const [isEditingSaving, setIsEditingSaving] = useState(false)
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
+  const [isDismissingId, setIsDismissingId] = useState<string | null>(null)
+  const [pendingRequests, setPendingRequests] = useState<any[]>([])
+
+  const fetchPending = async () => {
+    const data = await getPendingApprovalsForProject(projectId, 'budget_baseline', ['pending', 'rejected'])
+    setPendingRequests(data)
+  }
+
+  useEffect(() => {
+    fetchPending()
+  }, [projectId, baselines])
 
   const handleCreate = async () => {
     if (!newBaselineName.trim()) return
     setIsSaving(true)
     setError(null)
     try {
-      await createBudgetBaseline(projectId, newBaselineName.trim())
+      const result = await createBudgetBaseline(projectId, newBaselineName.trim())
       setIsCreating(false)
       setNewBaselineName('')
-      onDataChange()
+        if (result.pendingApproval) {
+          alert("Approval request submitted and is pending admin review.")
+          fetchPending()
+        } else {
+          onDataChange()
+        }
     } catch (err: any) {
       setError(err.message || 'Failed to create baseline snapshot')
     } finally {
@@ -112,7 +129,60 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
           )}
         </div>
         <div className="flex-1 overflow-y-auto p-2">
-          {baselines.length === 0 ? (
+          {pendingRequests.map(req => {
+            const isRejected = req.status === 'rejected';
+            return (
+              <div key={req.id} className={`group/row w-full text-left p-4 mb-2 rounded-xl border relative overflow-hidden transition-colors ${
+                isRejected ? 'border-rose-500/30 bg-rose-500/5 hover:border-rose-500/50' : 'border-amber-500/30 bg-amber-500/5'
+              }`}>
+                <div className="absolute top-0 right-0 p-1 flex items-center gap-1">
+                  {isRejected ? (
+                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-rose-500">
+                      <X className="w-3 h-3" /> Rejected
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-amber-500">
+                      <Clock className="w-3 h-3" /> Pending Approval
+                    </span>
+                  )}
+                  {isRejected && (
+                    <div className="opacity-0 group-hover/row:opacity-100 transition-opacity duration-150 flex items-center ml-1">
+                      <button 
+                        onClick={async () => {
+                          setIsDismissingId(req.id);
+                          await deleteRequest(req.id);
+                          await fetchPending();
+                          setIsDismissingId(null);
+                        }}
+                        disabled={isDismissingId === req.id}
+                        className="p-1 text-app-muted hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors disabled:opacity-50"
+                        title="Dismiss"
+                      >
+                        {isDismissingId === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-between items-start mb-2 pt-2">
+                  <div className="flex items-center justify-between w-full h-7">
+                    <span className="font-bold text-sm text-app-fg flex items-center gap-2">
+                      {req.payload?.baseline?.name || 'Unnamed Baseline'}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-xs text-app-muted mt-2">
+                  Requested on {new Date(req.created_at).toLocaleDateString()}
+                </div>
+                {isRejected && req.decision_comment && (
+                  <div className="mt-2 text-xs text-rose-500 bg-rose-500/10 px-2 py-1.5 rounded border border-rose-500/20">
+                    <strong>Reason:</strong> {req.decision_comment}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+
+          {baselines.length === 0 && pendingRequests.length === 0 ? (
             <p className="text-center text-app-muted text-sm mt-8">No baselines created yet.</p>
           ) : (
             baselines.map(baseline => (

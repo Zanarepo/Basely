@@ -5,6 +5,7 @@ import { recalculateSchedule } from '@/lib/schedule/actions/recalculate'
 import { updateActivityDuration } from '@/lib/schedule/actions/activities'
 import { createDependency, deleteDependency } from '@/lib/schedule/actions/dependencies'
 import { saveBaseline } from '@/lib/schedule/actions/baselines'
+import { getPendingApprovalsForProject } from '@/lib/approvals/actions'
 import type { WbsElement } from '@/lib/wbs/constants'
 import type { Activity, Dependency } from '@/lib/schedule/cpm'
 
@@ -18,6 +19,7 @@ export function useGanttData(projectId: string) {
   const [dependencies, setDependencies] = useState<Dependency[]>([])
   const [baselines, setBaselines] = useState<any[]>([])
   const [baselineSnapshots, setBaselineSnapshots] = useState<any[]>([])
+  const [pendingBaselines, setPendingBaselines] = useState<any[]>([])
 
   // HUD Status Toasts
   const [hudMessage, setHudMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null)
@@ -33,13 +35,16 @@ export function useGanttData(projectId: string) {
     }
 
     try {
-      const [wbsRes, schedRes] = await Promise.all([
+      const [wbsRes, schedRes, pendingRes] = await Promise.all([
         getWbsElements(projectId),
         getScheduleData(projectId),
+        getPendingApprovalsForProject(projectId, 'schedule_baseline')
       ])
 
       if (!wbsRes.ok) throw new Error(wbsRes.error)
       if (!schedRes.ok) throw new Error(schedRes.error)
+      
+      setPendingBaselines(pendingRes)
 
       // Sort elements by parent-child order and sortOrder
       const sorted = sortWbsElements(wbsRes.data || [])
@@ -304,8 +309,13 @@ export function useGanttData(projectId: string) {
       const res = await saveBaseline(projectId, name.trim())
       if (!res.ok) throw new Error(res.error)
       await fetchData()
-      setHudMessage({ text: 'Baseline saved successfully!', type: 'success' })
-      setTimeout(() => setHudMessage(null), 3000)
+      // @ts-ignore
+      if (res.pendingApproval) {
+        setHudMessage({ text: 'Approval request submitted and is pending admin review.', type: 'info' })
+      } else {
+        setHudMessage({ text: 'Baseline saved successfully!', type: 'success' })
+      }
+      setTimeout(() => setHudMessage(null), 5000)
     } catch (err: any) {
       setHudMessage({ text: err.message, type: 'error' })
     } finally {
@@ -320,6 +330,7 @@ export function useGanttData(projectId: string) {
     activities,
     dependencies,
     baselines,
+    pendingBaselines,
     baselineSnapshots,
     hudMessage,
     expandedNodeIds,

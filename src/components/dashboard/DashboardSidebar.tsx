@@ -11,6 +11,7 @@ import {
   UserPlus,
   Users,
   User,
+  CheckSquare,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { useWorkspace } from './WorkspaceContext'
@@ -69,6 +70,7 @@ export function DashboardSidebar({
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/dashboard/approvals', label: 'Approvals', icon: CheckSquare },
     { href: '/dashboard/team', label: 'Team', icon: Users },
     { href: '/dashboard/profile', label: 'Profile', icon: User },
   ]

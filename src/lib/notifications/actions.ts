@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 
-export type NotificationTriggerType = 'mention' | 'assignment' | 'risk_change' | 'cost_change' | 'schedule_change' | 'document_change' | 'status_report'
+export type NotificationTriggerType = 'mention' | 'assignment' | 'risk_change' | 'cost_change' | 'schedule_change' | 'document_change' | 'status_report' | 'approval_request' | 'approval_update'
 
 export interface NotificationPayload {
   userId: string

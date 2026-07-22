@@ -5,6 +5,7 @@ type GanttToolbarProps = {
   zoom: 'day' | 'week' | 'month' | 'quarter'
   setZoom: React.Dispatch<React.SetStateAction<'day' | 'week' | 'month' | 'quarter'>>
   baselines: any[]
+  pendingBaselines: any[]
   showBaseline: boolean
   setShowBaseline: React.Dispatch<React.SetStateAction<boolean>>
   selectedBaselineId: string
@@ -22,6 +23,7 @@ export function GanttToolbar({
   zoom,
   setZoom,
   baselines,
+  pendingBaselines,
   showBaseline,
   setShowBaseline,
   selectedBaselineId,
@@ -78,7 +80,7 @@ export function GanttToolbar({
         </div>
 
         {/* Baseline Toggle Panel */}
-        {baselines.length > 0 && (
+        {(baselines.length > 0 || pendingBaselines.length > 0) && (
           <div className="flex items-center bg-app-muted-surface border border-app-border rounded-2xl px-3 py-1.5 transition-colors hover:bg-app-surface">
             <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-app-fg">
               <input
@@ -98,6 +100,11 @@ export function GanttToolbar({
               {baselines.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}
+                </option>
+              ))}
+              {pendingBaselines.map((pb) => (
+                <option key={pb.id} value="" disabled className="text-amber-500">
+                  (Pending) {pb.payload?.baseline?.name || 'Unnamed Baseline'}
                 </option>
               ))}
             </select>

@@ -49,11 +49,16 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
       case 'schedule_change': return <Calendar className="h-4 w-4 text-indigo-500" />
       case 'document_change': return <FileText className="h-4 w-4 text-sky-500" />
       case 'status_report': return <Activity className="h-4 w-4 text-emerald-500" />
+      case 'approval_request': return <Check className="h-4 w-4 text-amber-500" />
+      case 'approval_update': return <Check className="h-4 w-4 text-green-500" />
       default: return <Bell className="h-4 w-4 text-app-subtle" />
     }
   }
 
   const getLink = (notif: any) => {
+    if (notif.reference_entity_type === 'approval_request' && notif.trigger_type === 'approval_request') {
+      return '/dashboard/approvals'
+    }
     if (!notif.project_id) return '/dashboard'
     let base = `/dashboard/projects/${notif.project_id}`
     switch (notif.reference_entity_type) {
@@ -62,6 +67,11 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
       case 'issue': return `${base}?tab=risks&issueId=${notif.reference_entity_id}`
       case 'document': return `${base}?tab=documents`
       case 'activity': return `${base}?tab=wbs&elementId=${notif.reference_entity_id}`
+      case 'approval_request':
+        if (notif.content_summary?.toLowerCase().includes('schedule')) {
+          return `${base}?tab=gantt`
+        }
+        return `${base}?tab=cost`
       default: return base
     }
   }
