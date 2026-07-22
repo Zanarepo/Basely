@@ -88,8 +88,10 @@ An organization should be able to configure notifications at both the macro and 
 Level A: Organization / Project Level (The "Firehose")
 How it works: An Admin configures a Webhook URL in the Organization or Project Settings.
 Use Case: "Send all high-severity Risks and new Project Issues to the #project-management channel in MS Teams or Slack."
+
 Data Model Impact: Add webhook_url and webhook_provider (Enum: Slack, Teams, etc.) to the projects or organizations table.
 Pros: Great for team visibility and audit trails.
+
 Level B: User Level (The "Direct Message")
 How it works: Individual team members link their personal accounts via OAuth or provide their specific User ID/Direct Webhook in their personal settings.
 Use Case: "Send me a direct message when someone @mentions me in a comment, but don't spam the whole team channel."

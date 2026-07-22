@@ -57,11 +57,34 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     process.env.SUPABASE_SECRET_KEY!
   )
 
-  const { data: membersData } = await supabaseAdmin
-    .from('organization_members')
-    .select('user_id, role, is_active, profiles!organization_members_user_id_fkey(full_name, email)')
-    .eq('organization_id', project.organization_id)
-    .eq('is_active', true)
+  // 2. Fetch all dependent data in parallel to prevent await waterfalls
+  const [
+    { data: membersData },
+    { data: org },
+    { data: callerMembership },
+    { data: projectMembersData }
+  ] = await Promise.all([
+    supabaseAdmin
+      .from('organization_members')
+      .select('user_id, role, is_active, profiles!organization_members_user_id_fkey(full_name, email)')
+      .eq('organization_id', project.organization_id)
+      .eq('is_active', true),
+    supabase
+      .from('organizations')
+      .select('owner_id, profiles!organizations_owner_id_fkey(full_name, email)')
+      .eq('id', project.organization_id)
+      .maybeSingle(),
+    supabase
+      .from('organization_members')
+      .select('role')
+      .eq('organization_id', project.organization_id)
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('project_members')
+      .select('user_id')
+      .eq('project_id', project.id)
+  ])
 
   const workspaceMembers = (membersData ?? []).map((m) => {
     const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles
@@ -74,13 +97,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     }
   })
 
-  // 3. Fetch workspace owner to check owner privileges and ensure they are mentionable
-  const { data: org } = await supabase
-    .from('organizations')
-    .select('owner_id, profiles!organizations_owner_id_fkey(full_name, email)')
-    .eq('id', project.organization_id)
-    .maybeSingle()
-
+  // 3. Ensure the workspace owner is in the members list
   if (org && org.owner_id) {
     const isOwnerInMembers = workspaceMembers.some(m => m.userId === org.owner_id)
     if (!isOwnerInMembers) {
@@ -94,20 +111,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     }
   }
 
-  // 3. Fetch caller role in the organization
-  const { data: callerMembership } = await supabase
-    .from('organization_members')
-    .select('role')
-    .eq('organization_id', project.organization_id)
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  // 4. Fetch assigned project members
-  const { data: projectMembersData } = await supabase
-    .from('project_members')
-    .select('user_id')
-    .eq('project_id', project.id)
-
+  // 4. Map assigned project members
   const assignedUserIds = (projectMembersData ?? []).map(pm => pm.user_id)
 
   const isOrgOwner = org?.owner_id === user.id
