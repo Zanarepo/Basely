@@ -89,7 +89,7 @@ export function useProjectDashboardData(projectId: string) {
       // 2. Fetch all schedule activities & baselines
       const [actRes, baseRes] = await Promise.all([
         supabase.from('activities').select('*').eq('project_id', projectId),
-        supabase.from('baselines').select('id').eq('project_id', projectId).order('created_at', { ascending: false }).limit(1)
+        supabase.from('baselines').select('id').eq('project_id', projectId).order('saved_at', { ascending: false }).limit(1)
       ])
 
       if (actRes.error) throw actRes.error

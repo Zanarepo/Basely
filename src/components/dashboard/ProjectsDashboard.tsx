@@ -7,7 +7,6 @@ import {
   Users,
   CheckCircle,
   X,
-  UserPlus,
   Search,
 } from 'lucide-react'
 import { ProjectWizardModal } from './ProjectWizardModal'
@@ -15,6 +14,7 @@ import { ProjectEditModal } from './ProjectEditModal'
 import { ProjectCard } from './ProjectCard'
 import { ToastContainer, type ToastMessage } from './Toast'
 import { useWorkspace } from './WorkspaceContext'
+import PortfolioWorkspace from './projects/PortfolioWorkspace'
 import {
   archiveProject,
   restoreProject,
@@ -60,6 +60,8 @@ type ProjectsDashboardProps = {
   callerCanManageAll: boolean
 }
 
+let toastCounter = 0
+
 export function ProjectsDashboard({
   organizationId,
   projects,
@@ -67,7 +69,6 @@ export function ProjectsDashboard({
   callerUserId,
   isOwner,
   callerRole,
-  callerCanManageAll,
 }: ProjectsDashboardProps) {
   const { activeWorkspace } = useWorkspace()
   const [wizardOpen, setWizardOpen] = useState(false)
@@ -76,6 +77,7 @@ export function ProjectsDashboard({
   
   // Show active vs archived projects tab
   const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active')
+  const [viewMode, setViewMode] = useState<'list' | 'portfolio'>('list')
   
   // Member assignment dropdown state: project ID that currently has its member picker open
   const [openMemberPickerProjectId, setOpenMemberPickerProjectId] = useState<string | null>(null)
@@ -90,7 +92,8 @@ export function ProjectsDashboard({
   const [isPending, startTransition] = useTransition()
 
   const showToast = (type: 'success' | 'error' | 'info', message: string) => {
-    const id = Math.random().toString(36).substr(2, 9)
+    toastCounter++
+    const id = String(toastCounter)
     setToasts((prev) => [...prev, { id, type, message }])
   }
 
@@ -242,7 +245,7 @@ export function ProjectsDashboard({
 
         <div className="flex items-center gap-2">
           {/* Active / Archived Tab Toggles (Only visible to Admins/Owners since they manage retrieval) */}
-          {isAdmin && (
+          {isAdmin && viewMode === 'list' && (
             <div className="flex rounded-xl bg-app-muted-surface border border-app-border p-1 text-xs font-semibold mr-2 shrink-0">
               <button
                 type="button"
@@ -282,19 +285,47 @@ export function ProjectsDashboard({
         </div>
       </div>
 
-      {/* Search Filter Row */}
-      <div className="flex w-full sm:w-96">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
-          <input
-            type="text"
-            placeholder="Search projects by name or description..."
-            value={projectSearchQuery}
-            onChange={(e) => setProjectSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-app-fg"
-          />
-        </div>
+      {/* View Mode Tabs */}
+      <div className="border-b border-app-border flex space-x-6">
+        <button
+          onClick={() => setViewMode('list')}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+            viewMode === 'list'
+              ? 'border-indigo-500 text-indigo-500 font-bold'
+              : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
+          }`}
+        >
+          Projects List
+        </button>
+        <button
+          onClick={() => setViewMode('portfolio')}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+            viewMode === 'portfolio'
+              ? 'border-indigo-500 text-indigo-500 font-bold'
+              : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
+          }`}
+        >
+          Portfolio Health
+        </button>
       </div>
+
+      {viewMode === 'portfolio' ? (
+        <PortfolioWorkspace projects={projects} />
+      ) : (
+        <>
+          {/* Search Filter Row */}
+          <div className="flex w-full sm:w-96">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
+              <input
+                type="text"
+                placeholder="Search projects by name or description..."
+                value={projectSearchQuery}
+                onChange={(e) => setProjectSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-app-fg"
+              />
+            </div>
+          </div>
 
       {filteredProjects.length === 0 ? (
         /* Empty State Card */
@@ -354,6 +385,8 @@ export function ProjectsDashboard({
           </div>
         </section>
       )}
+    </>
+  )}
 
       {/* Assign Members Modal — centered overlay */}
       {openMemberPickerProjectId && (() => {
