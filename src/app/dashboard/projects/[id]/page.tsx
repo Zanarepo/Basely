@@ -13,6 +13,7 @@ import { ProjectTeamRoster } from '@/components/dashboard/ProjectTeamRoster'
 import { ProjectWizardModal } from '@/components/dashboard/ProjectWizardModal'
 import { ProjectIntegrationsMenu } from '@/components/dashboard/projects/ProjectIntegrationsMenu'
 import { LivePresenceWrapper } from '@/components/dashboard/presence/LivePresenceWrapper'
+import ProjectDashboardWorkspace from '@/components/dashboard/projects/ProjectDashboardWorkspace'
 
 // Planning components type definition
 type ProjectPageProps = {
@@ -23,7 +24,7 @@ type ProjectPageProps = {
 export default async function ProjectDetailPage({ params, searchParams }: ProjectPageProps) {
   const { id } = await params
   const { tab } = await searchParams
-  const activeTab = tab || 'wbs'
+  const activeTab = tab || 'dashboard'
 
   const supabase = await createClient()
   const {
@@ -197,9 +198,19 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         )
       })()}
 
-      {/* Tabs list (WBS is primary in this sprint) */}
+      {/* Tabs list */}
       <div className="border-b border-app-border mb-6 overflow-x-auto no-scrollbar">
         <nav className="flex space-x-6 min-w-max pb-1">
+          <Link
+            href={`/dashboard/projects/${project.id}?tab=dashboard`}
+            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
+              activeTab === 'dashboard'
+                ? 'border-indigo-500 text-indigo-500 font-bold'
+                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
+            }`}
+          >
+            Dashboard
+          </Link>
           <Link
             href={`/dashboard/projects/${project.id}?tab=wbs`}
             className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
@@ -267,6 +278,10 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       </div>
 
       {/* Conditional tab workspaces */}
+      {activeTab === 'dashboard' && (
+        <ProjectDashboardWorkspace projectId={project.id} />
+      )}
+
       {activeTab === 'wbs' && (
         <WbsPlanningWorkspace
           projectId={project.id}

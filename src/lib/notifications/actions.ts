@@ -2,7 +2,6 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
-import { revalidatePath } from 'next/cache'
 
 export type NotificationTriggerType = 'mention' | 'assignment' | 'risk_change' | 'cost_change' | 'schedule_change' | 'document_change' | 'status_report'
 
@@ -99,72 +98,139 @@ export async function dispatchNotification(payload: NotificationPayload) {
     console.log(`[Slack Dispatch Stub] Would send personal slack notification to user ${payload.userId} for ${payload.triggerType}`)
   }
 
-  // 5. Project-Level Slack Webhook Delivery
-  // If this notification is tied to a project, broadcast it to the project's configured Slack channel
+  // 5. Project-Level Webhook Deliveries (Slack & Microsoft Teams)
   if (payload.projectId) {
     const { data: projectData } = await supabase
       .from('projects')
-      .select('name, slack_webhook_url')
+      .select('name, slack_webhook_url, teams_webhook_url, google_chat_webhook_url')
       .eq('id', payload.projectId)
       .single()
 
-    if (projectData && projectData.slack_webhook_url) {
-      try {
-        const blocks: any[] = [
-          {
-            type: "header",
-            text: {
-              type: "plain_text",
-              text: `🚀 Update: ${projectData.name}`,
-              emoji: true
-            }
-          },
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: payload.contentSummary
-            }
-          },
-          {
-            type: "context",
-            elements: [
-              {
+    if (projectData) {
+      // Slack Webhook Delivery
+      if (projectData.slack_webhook_url) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const blocks: any[] = [
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: `🚀 Update: ${projectData.name}`,
+                emoji: true
+              }
+            },
+            {
+              type: "section",
+              text: {
                 type: "mrkdwn",
-                text: `👤 *For:* ${userData?.full_name || 'A team member'}`
+                text: payload.contentSummary
               }
-            ]
+            },
+            {
+              type: "context",
+              elements: [
+                {
+                  type: "mrkdwn",
+                  text: `👤 *For:* ${userData?.full_name || 'A team member'}`
+                }
+              ]
+            }
+          ]
+
+          if (payload.emailContext?.actionUrl) {
+            blocks.push({
+              type: "actions",
+              elements: [
+                {
+                  type: "button",
+                  text: {
+                    type: "plain_text",
+                    text: "View Details",
+                    emoji: true
+                  },
+                  url: payload.emailContext.actionUrl,
+                  action_id: "view_action"
+                }
+              ]
+            })
           }
-        ]
 
-        if (payload.emailContext?.actionUrl) {
-          blocks.push({
-            type: "actions",
-            elements: [
-              {
-                type: "button",
-                text: {
-                  type: "plain_text",
-                  text: "View Details",
-                  emoji: true
-                },
-                url: payload.emailContext.actionUrl,
-                action_id: "view_action"
-              }
-            ]
+          await fetch(projectData.slack_webhook_url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: `Activity in ${projectData.name}: ${payload.contentSummary}`,
+              blocks: blocks
+            })
           })
+        } catch (err) {
+          console.error('Failed to dispatch project Slack webhook', err)
         }
+      }
 
-        await fetch(projectData.slack_webhook_url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: `Activity in ${projectData.name}: ${payload.contentSummary}`,
-            blocks: blocks
+      // Microsoft Teams Webhook Delivery
+      if (projectData.teams_webhook_url) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const sections: any[] = [
+            {
+              activityTitle: `🚀 Update: ${projectData.name}`,
+              activitySubtitle: payload.contentSummary,
+              markdown: true,
+              facts: [
+                {
+                  name: "For User",
+                  value: userData?.full_name || 'A team member'
+                }
+              ]
+            }
+          ]
+
+          const potentialAction = payload.emailContext?.actionUrl ? [
+            {
+              "@type": "OpenUri",
+              "name": "View Details",
+              "targets": [
+                {
+                  "os": "default",
+                  "uri": payload.emailContext.actionUrl
+                }
+              ]
+            }
+          ] : []
+
+          await fetch(projectData.teams_webhook_url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              "@type": "MessageCard",
+              "@context": "http://schema.org/extensions",
+              "themeColor": "6264A7",
+              "summary": `Activity in ${projectData.name}`,
+              "sections": sections,
+              "potentialAction": potentialAction
+            })
           })
-        })
-      } catch (err) {
-        console.error('Failed to dispatch project Slack webhook', err)
+        } catch (err) {
+          console.error('Failed to dispatch project Teams webhook', err)
+        }
+      }
+
+      // Google Chat Webhook Delivery
+      if (projectData.google_chat_webhook_url) {
+        try {
+          const detailUrl = payload.emailContext?.actionUrl ? `\n\n*View Details:* ${payload.emailContext.actionUrl}` : ''
+          await fetch(projectData.google_chat_webhook_url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: `🚀 *Update in ${projectData.name}*\n${payload.contentSummary}\n👤 *For:* ${userData?.full_name || 'A team member'}${detailUrl}`
+            })
+          })
+        } catch (err) {
+          console.error('Failed to dispatch project Google Chat webhook', err)
+        }
       }
     }
   }

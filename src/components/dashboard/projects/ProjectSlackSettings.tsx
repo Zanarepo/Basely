@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2, CheckCircle2, MessageSquare, Send } from 'lucide-react'
+import { Loader2, CheckCircle2, Send } from 'lucide-react'
 import { createClient } from '../../../utils/supabase/client'
 import { testSlackWebhook } from '../../../lib/integrations/slack-actions'
 
@@ -98,7 +98,7 @@ export default function ProjectSlackSettings({
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors cursor-pointer"
               >
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -111,7 +111,7 @@ export default function ProjectSlackSettings({
               <button
                 onClick={handleTest}
                 disabled={isTesting || !webhookUrl}
-                className="flex items-center gap-2 px-4 py-2 bg-white text-app-fg border border-app-border rounded-lg hover:bg-gray-50 dark:hover:bg-app-hover disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-white text-app-fg border border-app-border rounded-lg hover:bg-gray-50 dark:hover:bg-app-hover disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors cursor-pointer"
               >
                 {isTesting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
