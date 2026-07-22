@@ -35,14 +35,32 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (!error) {
+    if (!error && data?.user?.email) {
+      // Check if SSO is enforced for this user's organization
+      const { data: ssoStatus } = await (supabase.rpc as any)('check_sso_status', { p_email: data.user.email })
+
+      const status = ssoStatus as { enforced?: boolean; is_break_glass?: boolean; idp_url?: string } | null
+
+      // If SSO is enforced, check if the OAuth provider matches the configured IdP (e.g. Google)
+      const isGoogleSso = status?.idp_url?.includes('google')
+
+      if (status?.enforced && !status?.is_break_glass && !isGoogleSso) {
+        // Sign out immediately and block login if SSO is enforced and user is not break-glass admin and provider doesn't match
+        await supabase.auth.signOut()
+        return NextResponse.redirect(
+          `${origin}/login?error=${encodeURIComponent(
+            'SSO is enforced for your organization. You cannot sign in via unapproved social login.'
+          )}`
+        )
+      }
+
       return supabaseResponse
     }
 
     return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(error.message)}`
+      `${origin}/login?error=${encodeURIComponent(error?.message ?? 'Could not authenticate user')}`
     )
   }
 

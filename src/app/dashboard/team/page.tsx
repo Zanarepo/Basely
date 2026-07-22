@@ -6,6 +6,7 @@ import {
   WorkspaceMembersPanel,
   type WorkspaceMember,
 } from '@/components/dashboard/WorkspaceMembersPanel'
+import { SsoSettingsPanel } from '@/components/dashboard/team/SsoSettingsPanel'
 
 export default async function TeamPage() {
   const supabase = await createClient()
@@ -75,13 +76,23 @@ export default async function TeamPage() {
       </div>
 
       {active && (
-        <WorkspaceMembersPanel
-          organizationId={active.organization_id}
-          members={memberList}
-          isOwner={isOwner}
-          callerUserId={user!.id}
-          callerCanManageAllMembers={(active as any)?.can_manage_all_members === true}
-        />
+        <div className="space-y-8">
+          <WorkspaceMembersPanel
+            organizationId={active.organization_id}
+            members={memberList}
+            isOwner={isOwner}
+            callerUserId={user!.id}
+            callerCanManageAllMembers={(active as any)?.can_manage_all_members === true}
+          />
+
+          {isAdmin && (
+            <SsoSettingsPanel
+              organizationId={active.organization_id}
+              members={memberList}
+              isAdmin={isAdmin}
+            />
+          )}
+        </div>
       )}
     </div>
   )

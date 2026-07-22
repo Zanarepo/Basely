@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/client'
 import { LogIn, Mail, Lock, ShieldAlert, ArrowRight, Loader2 } from 'lucide-react'
 import { ActiveSessionBanner } from '@/components/ActiveSessionBanner'
 import { AuthPageShell } from '@/components/AuthPageShell'
+import { useSsoLogin } from './hooks/useSsoLogin'
 
 function LoginForm() {
   const router = useRouter()
@@ -23,6 +24,8 @@ function LoginForm() {
   const [successMsg, setSuccessMsg] = useState<string | null>(() =>
     searchParams.get('message')
   )
+
+  const { isCheckingSso, checkAndRedirectSso, initiateSsoFlow } = useSsoLogin()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,6 +44,21 @@ function LoginForm() {
 
     setLoading(true)
     try {
+      // 1. Check if SSO is enforced for this email
+      const { isSsoEnforced, orgId, isBreakGlass, idpUrl } = await checkAndRedirectSso(email)
+
+      if (isSsoEnforced && orgId && !isBreakGlass) {
+        // Enforced and not the break-glass admin -> redirect to IdP
+        const { error: ssoError } = await initiateSsoFlow(orgId, email, idpUrl)
+        if (ssoError) {
+          setErrorMsg(ssoError)
+          setLoading(false)
+        }
+        // Keep loading true if redirecting successfully
+        return
+      }
+
+      // 2. Otherwise, proceed with native Supabase password login
       const supabase = createClient()
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -176,16 +194,15 @@ function LoginForm() {
               </div>
             </div>
 
-            {/* Login Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || isCheckingSso}
               className="relative w-full py-3.5 px-4 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
             >
-              {loading ? (
+              {loading || isCheckingSso ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>Signing in...</span>
+                  <span>{isCheckingSso ? 'Checking security policies...' : 'Signing in...'}</span>
                 </>
               ) : (
                 <>

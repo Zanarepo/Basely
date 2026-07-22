@@ -12,6 +12,7 @@ import {
   updateProfileName,
 } from '@/lib/workspace/member-actions'
 import { deleteWorkspace } from '@/lib/workspace/actions'
+import { CollapsibleSection } from './team/CollapsibleSection'
 
 const OWNER_ROLES = ['Admin', 'PM', 'Team Member', 'Viewer'] as const
 const ADMIN_ROLES = ['PM', 'Team Member', 'Viewer'] as const
@@ -49,6 +50,7 @@ export function WorkspaceMembersPanel({
   const [ownerNameInput, setOwnerNameInput] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [isOpen, setIsOpen] = useState(true)
 
   // The workspace owner's user ID is the user_id of the member where isOwner is true
   const ownerId = members.find((m) => m.isOwner)?.userId ?? ''
@@ -134,18 +136,15 @@ export function WorkspaceMembersPanel({
   }
 
   return (
-    <section className="mt-6 backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6">
-      <div className="flex items-start gap-3 mb-5">
-        <div className="p-2 rounded-xl bg-indigo-500/15">
-          <Users className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
-        </div>
-        <div>
-          <h2 className="font-semibold text-app-fg">Team access</h2>
-          <p className="text-sm text-app-muted">
-            The Owner controls Admin access. Admins manage non-Admin members only.
-          </p>
-        </div>
-      </div>
+    <div className="mt-6">
+      <CollapsibleSection
+        title="Team access"
+        subtitle="The Owner controls Admin access. Admins manage non-Admin members only."
+        icon={<Users className="w-5 h-5" />}
+        isOpen={isOpen}
+        onToggle={() => setIsOpen(!isOpen)}
+      >
+        <div className="p-5 sm:p-6">
 
       <div className="space-y-3">
         {members.map((member) => {
@@ -402,6 +401,8 @@ export function WorkspaceMembersPanel({
         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
         <span>{message ?? 'Only the Owner can promote, demote, or transfer Admin access.'}</span>
       </div>
-    </section>
+        </div>
+      </CollapsibleSection>
+    </div>
   )
 }
