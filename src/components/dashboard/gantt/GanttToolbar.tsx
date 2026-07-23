@@ -1,4 +1,4 @@
-import { Calendar, ZoomIn, ZoomOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Calendar, ZoomIn, ZoomOut, PanelLeftClose, PanelLeftOpen, Edit3, Trash2 } from 'lucide-react'
 import { GanttToolbarMoreMenu } from './GanttToolbarMoreMenu'
 
 type GanttToolbarProps = {
@@ -12,6 +12,8 @@ type GanttToolbarProps = {
   setSelectedBaselineId: (id: string) => void
   hasEditAccess: boolean
   onSaveBaseline: () => void
+  onDeleteBaseline: (id: string) => void
+  onRenameBaseline: (id: string, currentName: string) => void
   onOpenNetworkMap: () => void
   onOpenScheduleSheet: () => void
   onExportChart: () => void
@@ -30,6 +32,8 @@ export function GanttToolbar({
   setSelectedBaselineId,
   hasEditAccess,
   onSaveBaseline,
+  onDeleteBaseline,
+  onRenameBaseline,
   onOpenNetworkMap,
   onOpenScheduleSheet,
   onExportChart,
@@ -108,6 +112,27 @@ export function GanttToolbar({
                 </option>
               ))}
             </select>
+            {showBaseline && selectedBaselineId && hasEditAccess && (
+              <div className="flex items-center gap-1 ml-2 pl-2 border-l border-app-border">
+                <button
+                  onClick={() => {
+                    const b = baselines.find(b => b.id === selectedBaselineId)
+                    if (b) onRenameBaseline(b.id, b.name)
+                  }}
+                  className="p-1 text-app-muted hover:text-indigo-500 hover:bg-app-surface transition-colors rounded"
+                  title="Rename Baseline"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => onDeleteBaseline(selectedBaselineId)}
+                  className="p-1 text-app-muted hover:text-rose-500 hover:bg-app-surface transition-colors rounded"
+                  title="Delete Baseline"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         )}
 

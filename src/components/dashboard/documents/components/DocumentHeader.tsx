@@ -1,4 +1,4 @@
-import { FileText, Save, RefreshCw, Download, History, FileSpreadsheet, File, ChevronDown } from 'lucide-react'
+import { FileText, Save, RefreshCw, Download, History, FileSpreadsheet, File, ChevronDown, LayoutTemplate } from 'lucide-react'
 import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
 
 interface DocumentHeaderProps {
@@ -18,6 +18,7 @@ interface DocumentHeaderProps {
   handleExportPdf: () => void
   handleExportDocx: () => void
   handleExportXlsx: () => void
+  onShowTemplateSelector?: () => void
 }
 
 export default function DocumentHeader({
@@ -36,7 +37,8 @@ export default function DocumentHeader({
   handleRegenerate,
   handleExportPdf,
   handleExportDocx,
-  handleExportXlsx
+  handleExportXlsx,
+  onShowTemplateSelector
 }: DocumentHeaderProps) {
   const isTabularDoc = template.document_type === 'wbs_dictionary' || template.document_type === 'raci_matrix'
 
@@ -59,6 +61,18 @@ export default function DocumentHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Change Template Button */}
+        {onShowTemplateSelector && (
+          <button
+            onClick={onShowTemplateSelector}
+            className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
+            title="Change the template used for this document"
+          >
+            <LayoutTemplate className="w-3.5 h-3.5" />
+            Change Template
+          </button>
+        )}
+
         {/* History Button */}
         <button
           onClick={() => setShowHistoryModal(true)}

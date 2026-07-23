@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { FileText, ChevronLeft, ChevronRight, Layers, FileSearch, History, Calendar, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import ProjectDocument from './ProjectDocument'
 import { getReportSnapshots } from '@/lib/documents/actions'
@@ -27,10 +27,10 @@ export default function DocumentsWorkspace({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
 
-  const showToast = (type: 'success' | 'error' | 'info', message: string) => {
+  const showToast = useCallback((type: 'success' | 'error' | 'info', message: string) => {
     const id = Math.random().toString(36).substring(2, 9)
     setToasts((prev) => [...prev, { id, type, message }])
-  }
+  }, [])
 
   const dismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))

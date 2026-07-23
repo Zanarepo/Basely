@@ -12,6 +12,7 @@ import {
   Users,
   User,
   CheckSquare,
+  Settings,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { useWorkspace } from './WorkspaceContext'
@@ -74,6 +75,10 @@ export function DashboardSidebar({
     { href: '/dashboard/team', label: 'Team', icon: Users },
     { href: '/dashboard/profile', label: 'Profile', icon: User },
   ]
+
+  if (activeWorkspace.role === 'Admin') {
+    navItems.push({ href: '/dashboard/settings/templates', label: 'Templates', icon: Settings })
+  }
 
   if (!mounted) {
     return (

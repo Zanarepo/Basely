@@ -46,6 +46,8 @@ export default function GanttWorkspace({
     handleDeleteDependency,
     handleToggleExpand,
     handleCreateBaseline,
+    handleDeleteBaseline,
+    handleRenameBaseline,
   } = useGanttData(projectId)
 
   // Navigation & Control States
@@ -114,6 +116,8 @@ export default function GanttWorkspace({
         setSelectedBaselineId={setSelectedBaselineId}
         hasEditAccess={hasEditAccess}
         onSaveBaseline={handleCreateBaseline}
+        onDeleteBaseline={handleDeleteBaseline}
+        onRenameBaseline={handleRenameBaseline}
         onOpenNetworkMap={() => setIsCpmModalOpen(true)}
         onOpenScheduleSheet={() => setIsScheduleSheetOpen(true)}
         onExportChart={handleExportSnap}

@@ -74,3 +74,24 @@ export async function logProjectActivity(
     return { ok: false, error: 'Unexpected error' }
   }
 }
+
+/**
+ * Deletes multiple project activity logs. 
+ * RLS will ensure that only authorized users (Admin, PM) can actually delete them.
+ */
+export async function deleteProjectActivityLogs(logIds: string[]) {
+  if (!logIds || logIds.length === 0) return { ok: false, error: 'No logs selected' }
+
+  const supabase = await createClient()
+  
+  const { error } = await supabase
+    .from('project_activity_logs')
+    .delete()
+    .in('id', logIds)
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  return { ok: true }
+}

@@ -1,5 +1,6 @@
 import { RefreshCw, FileText } from 'lucide-react'
 import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
+import StructuredEditableField from './StructuredEditableField'
 import WbsDictionaryResolver from '../resolvers/WbsDictionaryResolver'
 import RaciMatrixResolver from '../resolvers/RaciMatrixResolver'
 import ScheduleStatusResolver from '../resolvers/ScheduleStatusResolver'
@@ -102,21 +103,14 @@ export default function DocumentSection({
 
       {/* Free-Text & Hybrid Charter Section Rendering */}
       {(section.type === 'free_text' || template.document_type === 'charter') && (
-        <div>
-          {hasEditAccess && !isSnapshot ? (
-            <textarea
-              key={`textarea-${section.key}-${(freeText[section.key] || '').length}`}
-              value={freeText[section.key] || ''}
-              onChange={(e) => handleFreeTextChange(section.key, e.target.value)}
-              placeholder={`Enter ${section.title.toLowerCase()}...`}
-              rows={4}
-              className="w-full p-3 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all resize-y"
-            />
-          ) : (
-            <div className="p-3 bg-app-muted-surface/40 border border-app-border rounded-lg text-sm text-app-fg whitespace-pre-wrap">
-              {freeText[section.key] ? freeText[section.key] : <span className="italic text-app-muted">No content entered.</span>}
-            </div>
-          )}
+        <div className="mt-2">
+          <StructuredEditableField
+            value={freeText[section.key] || ''}
+            onChange={(val) => handleFreeTextChange(section.key, val)}
+            title={section.title}
+            hasEditAccess={hasEditAccess && !isSnapshot}
+            isDataBound={section.type === 'data_bound'}
+          />
         </div>
       )}
     </div>

@@ -4,7 +4,7 @@ import { getScheduleData } from '@/lib/schedule/actions/queries'
 import { recalculateSchedule } from '@/lib/schedule/actions/recalculate'
 import { updateActivityDuration, updateActivityConstraint } from '@/lib/schedule/actions/activities'
 import { createDependency, deleteDependency } from '@/lib/schedule/actions/dependencies'
-import { saveBaseline } from '@/lib/schedule/actions/baselines'
+import { saveBaseline, deleteBaseline, renameBaseline } from '@/lib/schedule/actions/baselines'
 import { getPendingApprovalsForProject } from '@/lib/approvals/actions'
 import type { WbsElement } from '@/lib/wbs/constants'
 import type { Activity, Dependency } from '@/lib/schedule/cpm'
@@ -311,6 +311,44 @@ export function useGanttData(projectId: string) {
     }
   }
 
+  const handleDeleteBaseline = async (baselineId: string) => {
+    if (!confirm('Are you sure you want to delete this baseline?')) return
+
+    setLoading(true)
+    try {
+      const res = await deleteBaseline(projectId, baselineId)
+      if (!res.ok) throw new Error(res.error)
+      
+      setHudMessage({ text: 'Baseline deleted', type: 'success' })
+      if (selectedBaselineId === baselineId) {
+        setSelectedBaselineId('')
+      }
+      await fetchData()
+      setTimeout(() => setHudMessage(null), 3000)
+    } catch (err: any) {
+      setHudMessage({ text: err.message, type: 'error' })
+      setLoading(false)
+    }
+  }
+
+  const handleRenameBaseline = async (baselineId: string, currentName: string) => {
+    const newName = prompt('Enter a new name for this baseline:', currentName)
+    if (!newName || !newName.trim() || newName.trim() === currentName) return
+
+    setLoading(true)
+    try {
+      const res = await renameBaseline(projectId, baselineId, newName.trim())
+      if (!res.ok) throw new Error(res.error)
+      
+      setHudMessage({ text: 'Baseline renamed', type: 'success' })
+      await fetchData()
+      setTimeout(() => setHudMessage(null), 3000)
+    } catch (err: any) {
+      setHudMessage({ text: err.message, type: 'error' })
+      setLoading(false)
+    }
+  }
+
   return {
     loading,
     error,
@@ -334,5 +372,7 @@ export function useGanttData(projectId: string) {
     handleDeleteDependency,
     handleToggleExpand,
     handleCreateBaseline,
+    handleDeleteBaseline,
+    handleRenameBaseline,
   }
 }

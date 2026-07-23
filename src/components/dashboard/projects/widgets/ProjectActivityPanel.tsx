@@ -9,7 +9,7 @@ import {
   ChevronLeft, ChevronRight, Loader2
 } from 'lucide-react'
 import { useProjectActivity, ProjectActivityLog } from '../hooks/useProjectActivity'
-import { ActivityEntityType, ActivityActionType } from '@/lib/projects/activity-actions'
+import { ActivityEntityType, ActivityActionType, deleteProjectActivityLogs } from '@/lib/projects/activity-actions'
 
 export default function ProjectActivityPanel({ 
   projectId, 
@@ -32,6 +32,35 @@ export default function ProjectActivityPanel({
     entityFilter,
     actionFilter
   })
+
+  const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set())
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const toggleSelection = (id: string) => {
+    const next = new Set(selectedLogIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setSelectedLogIds(next)
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedLogIds.size === 0) return
+    if (!confirm(`Are you sure you want to delete ${selectedLogIds.size} log(s)?`)) return
+    
+    setIsDeleting(true)
+    try {
+      const { ok, error } = await deleteProjectActivityLogs(Array.from(selectedLogIds))
+      if (!ok) throw new Error(error || 'Failed to delete logs')
+      setSelectedLogIds(new Set())
+      // Refetch page 1 on delete
+      setPage(1)
+      window.location.reload() // Or just rely on real-time / refetch if exposed by hook
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   if (!isOpen) return null
 
@@ -109,12 +138,24 @@ export default function ProjectActivityPanel({
               <p className="text-xs text-app-muted mt-0.5">Live stream of all project events</p>
             </div>
           </div>
-          <button 
-            onClick={onClose} 
-            className="p-2 text-app-muted hover:text-app-fg hover:bg-app-hover rounded-lg transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {selectedLogIds.size > 0 && (
+              <button
+                onClick={handleDeleteSelected}
+                disabled={isDeleting}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                Delete ({selectedLogIds.size})
+              </button>
+            )}
+            <button 
+              onClick={onClose} 
+              className="p-2 text-app-muted hover:text-app-fg hover:bg-app-hover rounded-lg transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Toolbar: Filters & Search */}
@@ -204,12 +245,24 @@ export default function ProjectActivityPanel({
                 const actorName = log.profiles?.full_name || log.profiles?.email?.split('@')[0] || 'Unknown User'
                 const timeAgo = formatDistanceToNow(new Date(log.created_at), { addSuffix: true })
                 
+                const isSelected = selectedLogIds.has(log.id)
+
                 return (
                   <div key={log.id} className="relative z-10 flex gap-4 items-start group">
-                    <div className="w-8 h-8 rounded-full bg-white dark:bg-app-surface border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0 shadow-sm">
-                      {getEntityIcon(log.entity_type)}
+                    <div className="w-8 h-8 rounded-full bg-white dark:bg-app-surface border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0 shadow-sm relative">
+                      <div className={`absolute inset-0 rounded-full flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/20 transition-opacity cursor-pointer ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} onClick={() => toggleSelection(log.id)}>
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-app-surface'}`}>
+                          {isSelected && <CheckCircle className="w-3 h-3" />}
+                        </div>
+                      </div>
+                      <div className={`transition-opacity ${isSelected || 'group-hover:opacity-0'}`}>
+                        {getEntityIcon(log.entity_type)}
+                      </div>
                     </div>
-                    <div className="flex-1 bg-white dark:bg-gray-800/20 group-hover:bg-gray-50 dark:group-hover:bg-gray-800/40 border border-gray-100 dark:border-gray-800/50 group-hover:border-gray-200 dark:group-hover:border-gray-700/50 rounded-2xl p-3 shadow-sm transition-colors">
+                    <div 
+                      className={`flex-1 bg-white dark:bg-gray-800/20 hover:bg-gray-50 dark:hover:bg-gray-800/40 border rounded-2xl p-3 shadow-sm transition-colors cursor-pointer ${isSelected ? 'border-indigo-500 dark:border-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-gray-100 dark:border-gray-800/50'}`}
+                      onClick={() => toggleSelection(log.id)}
+                    >
                       <div className="flex items-center justify-between gap-4 mb-1">
                         <p className="text-sm text-app-fg">
                           <span className="font-semibold">{actorName}</span>

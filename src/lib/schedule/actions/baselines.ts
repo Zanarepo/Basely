@@ -138,3 +138,55 @@ export async function getScheduleVariance(projectId: string, baselineId: string)
 
   return { ok: true, data: snaps }
 }
+
+/**
+ * Deletes a baseline by ID.
+ */
+export async function deleteBaseline(projectId: string, baselineId: string): Promise<ActionResponse> {
+  const adminClient = createAdminClient()
+  
+  // Verify access
+  const { error: accessErr } = await adminClient
+    .from('baselines')
+    .select('id')
+    .eq('id', baselineId)
+    .eq('project_id', projectId)
+    .single()
+
+  if (accessErr) return { ok: false, error: 'Baseline not found' }
+
+  const { error } = await adminClient
+    .from('baselines')
+    .delete()
+    .eq('id', baselineId)
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  await logProjectActivity(projectId, 'schedule_baseline', baselineId, 'deleted')
+
+  return { ok: true }
+}
+
+/**
+ * Renames an existing baseline.
+ */
+export async function renameBaseline(projectId: string, baselineId: string, newName: string): Promise<ActionResponse> {
+  if (!newName.trim()) return { ok: false, error: 'Name is required' }
+  const adminClient = createAdminClient()
+  
+  const { error } = await adminClient
+    .from('baselines')
+    .update({ name: newName.trim() })
+    .eq('id', baselineId)
+    .eq('project_id', projectId)
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  await logProjectActivity(projectId, 'schedule_baseline', baselineId, 'updated', { name: newName.trim() })
+
+  return { ok: true }
+}

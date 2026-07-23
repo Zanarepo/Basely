@@ -19,6 +19,7 @@ interface DocumentEngineProps {
   hasEditAccess: boolean
   onShowToast: (type: 'success' | 'error', msg: string) => void
   isSnapshot?: boolean
+  onShowTemplateSelector?: () => void
 }
 
 export default function DocumentEngine({
@@ -29,6 +30,7 @@ export default function DocumentEngine({
   hasEditAccess,
   onShowToast,
   isSnapshot = false,
+  onShowTemplateSelector,
 }: DocumentEngineProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -82,7 +84,8 @@ export default function DocumentEngine({
 
   const handleSave = () => {
     startTransition(async () => {
-      const result = await saveGeneratedDocument(projectId, template.document_type, freeText)
+      const customTemplateId = template.is_custom ? template.id : undefined
+      const result = await saveGeneratedDocument(projectId, template.document_type, freeText, false, undefined, undefined, customTemplateId)
       if (result.ok) {
         setIsDirty(false)
         onShowToast('success', 'Document saved successfully')
@@ -103,8 +106,9 @@ export default function DocumentEngine({
   const executeRegenerate = () => {
     setShowRegenConfirm(false)
     startTransition(async () => {
+      const customTemplateId = template.is_custom ? template.id : undefined
       if (isDirty) {
-        await saveGeneratedDocument(projectId, template.document_type, freeText)
+        await saveGeneratedDocument(projectId, template.document_type, freeText, false, undefined, undefined, customTemplateId)
       }
 
       const result = await regenerateDocument(projectId, template.document_type)
@@ -119,13 +123,15 @@ export default function DocumentEngine({
 
   const handleGenerateSnapshot = () => {
     startTransition(async () => {
+      const customTemplateId = template.is_custom ? template.id : undefined
       const result = await saveGeneratedDocument(
         projectId,
         template.document_type,
         freeText,
         true, // isSnapshot
         {}, // frozenData
-        periodEnd
+        periodEnd,
+        customTemplateId
       )
 
       if (result.ok) {
@@ -183,6 +189,7 @@ export default function DocumentEngine({
         handleExportPdf={handleExportPdf}
         handleExportDocx={handleExportDocx}
         handleExportXlsx={handleExportXlsx}
+        onShowTemplateSelector={onShowTemplateSelector}
       />
 
       {/* Document Content Rendering */}

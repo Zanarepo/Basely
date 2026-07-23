@@ -92,3 +92,4 @@ Deleting a custom template in use: if a custom template is deleted after documen
 End of Sprint 24 PRD. This sprint completes the Administration & Governance phase (SSO → Approval Workflows → Audit Logs → Custom Templates) and, with it, the entire enterprise-readiness feature set originally scoped in the master PRD. The final remaining build-sequence item is Integrations: calendar sync, file storage, ERP export, and a public API.
 Instruction: Make sure you create separate file for hooks and logics, modularize it and make it both mobile, ipad and desktop responsive 
 
+Instruction: Make sure you create separate file for hooks and logics, modularize it and make it both mobile, ipad and desktop responsive 

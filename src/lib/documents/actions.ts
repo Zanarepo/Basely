@@ -16,12 +16,14 @@ export type DocumentTemplate = {
   document_type: string
   section_definitions: DocumentSectionDef[]
   created_at: string
+  is_custom?: boolean
 }
 
 export type GeneratedDocument = {
   id: string
   project_id: string
   document_type: string
+  custom_template_id?: string
   free_text_content: Record<string, string>
   is_snapshot: boolean
   frozen_data?: any
@@ -31,8 +33,21 @@ export type GeneratedDocument = {
   updated_at: string
 }
 
-export async function getDocumentTemplate(documentType: string): Promise<DocumentTemplate | null> {
+export async function getDocumentTemplate(documentType: string, templateId?: string): Promise<DocumentTemplate | null> {
   const supabase = await createClient()
+
+  if (templateId) {
+    const { data: customTemplate, error: customError } = await supabase
+      .from('custom_document_templates')
+      .select('id, document_type, section_definitions, created_at')
+      .eq('id', templateId)
+      .single()
+
+    if (!customError && customTemplate) {
+      return { ...customTemplate, is_custom: true } as DocumentTemplate
+    }
+  }
+
   const { data, error } = await supabase
     .from('document_templates')
     .select('*')
@@ -43,6 +58,7 @@ export async function getDocumentTemplate(documentType: string): Promise<Documen
     return {
       id: data?.id || 'charter-template',
       document_type: 'charter',
+      is_custom: false,
       created_at: data?.created_at || new Date().toISOString(),
       section_definitions: [
         { key: 'executive_summary', title: 'Executive Summary', type: 'free_text' },
@@ -65,7 +81,7 @@ export async function getDocumentTemplate(documentType: string): Promise<Documen
     console.error('Failed to load document template:', error)
     return null
   }
-  return data
+  return { ...data, is_custom: false }
 }
 
 export async function getGeneratedDocument(projectId: string, documentType: string, isSnapshot = false, snapshotId?: string): Promise<GeneratedDocument | null> {
@@ -113,7 +129,8 @@ export async function saveGeneratedDocument(
   freeTextContent: Record<string, string>,
   isSnapshot = false,
   frozenData?: any,
-  periodEnd?: string
+  periodEnd?: string,
+  templateId?: string | null
 ): Promise<{ ok: boolean; error?: string }> {
   const supabase = await createClient()
   const now = new Date().toISOString()
@@ -125,6 +142,7 @@ export async function saveGeneratedDocument(
       .insert({
         project_id: projectId,
         document_type: documentType,
+        custom_template_id: templateId || null,
         free_text_content: freeTextContent,
         is_snapshot: true,
         frozen_data: frozenData || {},
@@ -152,6 +170,7 @@ export async function saveGeneratedDocument(
       const { error } = await supabase
         .from('generated_documents')
         .update({
+          custom_template_id: templateId || null,
           free_text_content: freeTextContent,
           updated_at: now,
         })
@@ -166,6 +185,7 @@ export async function saveGeneratedDocument(
         .insert({
           project_id: projectId,
           document_type: documentType,
+          custom_template_id: templateId || null,
           free_text_content: freeTextContent,
           is_snapshot: false,
           generated_at: now,
@@ -178,6 +198,29 @@ export async function saveGeneratedDocument(
     }
   }
 
+  revalidatePath(`/dashboard/projects/${projectId}`)
+  return { ok: true }
+}
+
+export async function updateDocumentTemplateId(
+  projectId: string,
+  documentType: string,
+  templateId: string | null
+): Promise<{ ok: boolean; error?: string }> {
+  const supabase = await createClient()
+  
+  const { error } = await supabase
+    .from('generated_documents')
+    .update({
+      custom_template_id: templateId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('project_id', projectId)
+    .eq('document_type', documentType)
+    .eq('is_snapshot', false)
+
+  if (error) return { ok: false, error: error.message }
+  
   revalidatePath(`/dashboard/projects/${projectId}`)
   return { ok: true }
 }
