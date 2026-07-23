@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { projectSchema } from '@/lib/validations/projects'
+import { logProjectActivity } from './activity-actions'
 
 export type ActionResponse = { ok: true } | { ok: false; error: string }
 export type CreateProjectResult = { ok: true; id: string } | { ok: false; error: string }
@@ -123,6 +124,8 @@ export async function createProject(
 
   if (error) return { ok: false, error: error.message }
 
+  await logProjectActivity(project.id, 'project', project.id, 'created', { name: data.name })
+
   revalidatePath('/dashboard')
   return { ok: true, id: project.id }
 }
@@ -173,6 +176,8 @@ export async function updateProject(
 
   if (error) return { ok: false, error: error.message }
 
+  await logProjectActivity(projectId, 'project', projectId, 'updated', { name: data.name })
+
   revalidatePath('/dashboard')
   return { ok: true }
 }
@@ -221,6 +226,8 @@ export async function archiveProject(projectId: string): Promise<ActionResponse>
 
   if (error) return { ok: false, error: error.message }
 
+  await logProjectActivity(projectId, 'project', projectId, 'updated', { is_archived: true })
+
   revalidatePath('/dashboard')
   return { ok: true }
 }
@@ -243,6 +250,8 @@ export async function restoreProject(projectId: string): Promise<ActionResponse>
     .eq('id', projectId)
 
   if (error) return { ok: false, error: error.message }
+
+  await logProjectActivity(projectId, 'project', projectId, 'updated', { is_archived: false })
 
   revalidatePath('/dashboard')
   return { ok: true }

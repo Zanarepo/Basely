@@ -5,6 +5,8 @@ import { createAdminClient } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { dispatchNotification } from '@/lib/notifications/actions'
 import { approveScheduleBaseline, getScheduleBaselineComparison } from './schedule-actions'
+import { logGovernanceEvent } from '@/lib/governance/actions'
+import { logProjectActivity } from '@/lib/projects/activity-actions'
 
 // Note: In a real implementation, you would dynamically dispatch based on the action_type.
 // For now, we will statically import the cost and schedule baselines functions.
@@ -102,6 +104,25 @@ export async function approveRequest(requestId: string, comment?: string) {
       }
     })
 
+    // Log governance event
+    if (request.approval_policies?.organization_id) {
+      await logGovernanceEvent(
+        request.approval_policies.organization_id,
+        'approval_decision',
+        {
+          action: 'approved',
+          request_id: requestId,
+          action_type: actionType,
+          payload: payload,
+          comment: comment || null
+        }
+      )
+    }
+
+    if (payload.baseline?.project_id) {
+      await logProjectActivity(payload.baseline.project_id, 'approval_request', requestId, 'approved', { action_type: actionType, comment: comment || '' })
+    }
+
     revalidatePath('/dashboard')
     return { ok: true }
   } catch (e: any) {
@@ -129,10 +150,10 @@ export async function rejectRequest(requestId: string, comment?: string) {
     return { ok: false, error: error.message }
   }
 
-  // Fetch request details to notify the requester
+  // Fetch request details to notify the requester and log event
   const { data: request } = await supabase
     .from('approval_requests')
-    .select('requested_by_user_id, payload, approval_policies(action_type)')
+    .select('requested_by_user_id, payload, approval_policies(action_type, organization_id)')
     .eq('id', requestId)
     .single()
 
@@ -151,6 +172,28 @@ export async function rejectRequest(requestId: string, comment?: string) {
         actionUrl: `/dashboard/projects/${request.payload?.baseline?.project_id}?tab=${(request.approval_policies as any)?.action_type === 'schedule_baseline' ? 'gantt' : 'cost'}`
       }
     })
+
+    // Log governance event
+    if ((request.approval_policies as any)?.organization_id) {
+      await logGovernanceEvent(
+        (request.approval_policies as any).organization_id,
+        'approval_decision',
+        {
+          action: 'rejected',
+          request_id: requestId,
+          action_type: (request.approval_policies as any)?.action_type,
+          payload: request.payload,
+          comment: comment || null
+        }
+      )
+    }
+
+    if (request.payload?.baseline?.project_id) {
+      await logProjectActivity(request.payload.baseline.project_id, 'approval_request', requestId, 'rejected', { 
+        action_type: (request.approval_policies as any)?.action_type, 
+        comment: comment || '' 
+      })
+    }
   }
 
   revalidatePath('/dashboard')

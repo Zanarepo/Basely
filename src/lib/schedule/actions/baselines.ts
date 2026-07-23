@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { createClient } from '@/utils/supabase/server'
 import { dispatchNotification } from '@/lib/notifications/actions'
+import { logProjectActivity } from '@/lib/projects/activity-actions'
 import type { ActionResponse } from './types'
 
 /**
@@ -114,6 +115,8 @@ export async function saveBaseline(projectId: string, name: string): Promise<Act
   if (snapErr) {
     return { ok: false, error: snapErr.message }
   }
+
+  await logProjectActivity(projectId, 'schedule_baseline', bLine.id, 'created', { name })
 
   return { ok: true }
 }

@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { wbsElementSchema } from '@/lib/validations/wbs'
+import { logProjectActivity } from '@/lib/projects/activity-actions'
 import type { WbsElement, WbsStatus, RaciRoleType, DeliverableItem, AcceptanceCriteriaItem } from './constants'
 import { recalculateSchedule } from '@/lib/schedule/actions/recalculate'
 
@@ -94,6 +95,8 @@ export async function createWbsElement(
     await recalculateSchedule(projectId)
   }
 
+  await logProjectActivity(projectId, 'wbs_element', data.id, 'created', { name: name.trim() })
+
   revalidatePath(`/dashboard/projects/${projectId}`)
   revalidatePath('/dashboard')
   return { ok: true, id: data.id }
@@ -170,6 +173,8 @@ export async function updateWbsElement(
     await recalculateSchedule(projectId)
   }
 
+  await logProjectActivity(projectId, 'wbs_element', id, 'updated', { name: payload.name || 'WBS Element Updated' })
+
   revalidatePath(`/dashboard/projects/${projectId}`)
   return { ok: true }
 }
@@ -189,6 +194,8 @@ export async function deleteWbsElement(id: string, projectId: string): Promise<A
 
   // Recalculate schedule to update timelines after deletion
   await recalculateSchedule(projectId)
+
+  await logProjectActivity(projectId, 'wbs_element', id, 'deleted', { id })
 
   revalidatePath(`/dashboard/projects/${projectId}`)
   revalidatePath('/dashboard')
@@ -348,6 +355,13 @@ export async function assignRaciRole(
     })
   }
 
+  await logProjectActivity(projectId, 'raci', stakeholderId, 'created', { 
+    role_type: roleType, 
+    wbs_element_id: wbsElementId,
+    wbs_name: wbsData?.name,
+    stakeholder_name: stakeholderData?.name
+  })
+
   revalidatePath(`/dashboard/projects/${projectId}`)
   return { ok: true }
 }
@@ -370,6 +384,9 @@ export async function removeRaciRole(
     .eq('role_type', roleType)
 
   if (error) return { ok: false, error: error.message }
+  
+  await logProjectActivity(projectId, 'raci', stakeholderId, 'deleted', { role_type: roleType, wbs_element_id: wbsElementId })
+  
   revalidatePath(`/dashboard/projects/${projectId}`)
   return { ok: true }
 }

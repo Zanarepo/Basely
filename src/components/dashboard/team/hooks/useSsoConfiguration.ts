@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
-
+import { saveSsoConfig, deleteSsoConfig as removeSsoConfig } from '@/lib/workspace/sso-actions'
 export type SsoProtocol = 'saml' | 'oauth'
 
 export interface SsoConfiguration {
@@ -49,35 +49,13 @@ export function useSsoConfiguration(organizationId: string) {
 
     try {
       setIsSaving(true)
-      const supabase = createClient()
+      const result = await saveSsoConfig(organizationId, updates, config?.id)
 
-      const payload = {
-        organization_id: organizationId,
-        ...updates,
+      if (!result.success) {
+        return { success: false, error: result.error || 'Failed to save SSO configuration' }
       }
 
-      let response
-      if (config?.id) {
-        response = await supabase
-          .from('sso_configurations')
-          .update(payload)
-          .eq('id', config.id)
-          .select()
-          .single()
-      } else {
-        response = await supabase
-          .from('sso_configurations')
-          .insert(payload)
-          .select()
-          .single()
-      }
-
-      if (response.error) {
-        console.error('Error saving SSO config:', response.error)
-        return { success: false, error: 'Failed to save SSO configuration' }
-      }
-
-      setConfig(response.data)
+      setConfig(result.data)
       return { success: true, error: null }
     } catch (err) {
       console.error('Error in saveConfig:', err)
@@ -92,15 +70,10 @@ export function useSsoConfiguration(organizationId: string) {
     
     try {
       setIsSaving(true)
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('sso_configurations')
-        .delete()
-        .eq('id', config.id)
+      const result = await removeSsoConfig(organizationId, config.id)
 
-      if (error) {
-        console.error('Error deleting SSO config:', error)
-        return { success: false, error: 'Failed to remove SSO configuration' }
+      if (!result.success) {
+        return { success: false, error: result.error || 'Failed to remove SSO configuration' }
       }
 
       setConfig(null)

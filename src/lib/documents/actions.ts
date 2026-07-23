@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logProjectActivity } from '@/lib/projects/activity-actions'
 
 export type DocumentSectionDef = {
   key: string
@@ -133,6 +134,9 @@ export async function saveGeneratedDocument(
       })
 
     if (error) return { ok: false, error: error.message }
+
+    // Log snapshot published
+    await logProjectActivity(projectId, 'document', documentType, 'published', { period_end: periodEnd })
   } else {
     // Drafts are upserted using the partial unique index or manually
     // To be safe with the partial index, we can just do an update or insert
@@ -153,6 +157,9 @@ export async function saveGeneratedDocument(
         })
         .eq('id', existing.id)
       if (error) return { ok: false, error: error.message }
+      
+      // Log updated
+      await logProjectActivity(projectId, 'document', existing.id, 'updated', { document_type: documentType })
     } else {
       const { error } = await supabase
         .from('generated_documents')
@@ -165,6 +172,9 @@ export async function saveGeneratedDocument(
           updated_at: now,
         })
       if (error) return { ok: false, error: error.message }
+      
+      // Log created
+      await logProjectActivity(projectId, 'document', documentType, 'created', { document_type: documentType })
     }
   }
 

@@ -3,8 +3,8 @@
 import { createClient } from '@/utils/supabase/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
-
 import { dispatchNotification } from '@/lib/notifications/actions'
+import { logProjectActivity } from '@/lib/projects/activity-actions'
 
 export type Comment = {
   id: string
@@ -93,6 +93,13 @@ export async function postComment(
     console.error('Error posting comment:', commentError)
     return { success: false, error: commentError.message }
   }
+
+  // Log comment activity
+  await logProjectActivity(projectId, 'comment', newComment.id, 'created', { 
+    entity_type: entityType, 
+    entity_id: entityId, 
+    body_snippet: body.substring(0, 50) + (body.length > 50 ? '...' : '') 
+  })
 
   // 2. Insert mentions if any
   if (mentionsToCreate.length > 0) {

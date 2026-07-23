@@ -8,6 +8,7 @@ import {
 } from '@/components/dashboard/WorkspaceMembersPanel'
 import { SsoSettingsPanel } from '@/components/dashboard/team/SsoSettingsPanel'
 import { ApprovalPoliciesPanel } from '@/components/dashboard/team/ApprovalPoliciesPanel'
+import { GovernanceAuditLogPanel } from '@/components/dashboard/team/GovernanceAuditLogPanel'
 
 export default async function TeamPage() {
   const supabase = await createClient()
@@ -96,6 +97,10 @@ export default async function TeamPage() {
               <SsoSettingsPanel
                 organizationId={active.organization_id}
                 members={memberList}
+                isAdmin={isAdmin}
+              />
+              <GovernanceAuditLogPanel
+                organizationId={active.organization_id}
                 isAdmin={isAdmin}
               />
             </>

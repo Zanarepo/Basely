@@ -2,11 +2,12 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logProjectActivity } from '@/lib/projects/activity-actions'
 
 export async function createRisk(projectId: string, data: any) {
   const supabase = await createClient()
 
-  const { error } = await supabase
+  const { data: newRisk, error } = await supabase
     .from('risks')
     .insert([
       {
@@ -22,11 +23,15 @@ export async function createRisk(projectId: string, data: any) {
         linked_wbs_element_id: data.linked_wbs_element_id || null
       }
     ])
+    .select()
+    .single()
 
   if (error) {
     console.error('Create risk error:', error)
     return { ok: false, error: error.message }
   }
+
+  await logProjectActivity(projectId, 'risk', newRisk.id, 'created', { title: data.title })
 
   revalidatePath(`/dashboard/projects/${projectId}/risks`)
   return { ok: true }
@@ -46,6 +51,8 @@ export async function updateRisk(id: string, projectId: string, data: any) {
     return { ok: false, error: error.message }
   }
 
+  await logProjectActivity(projectId, 'risk', id, 'updated', { title: data.title || 'Risk Updated' })
+
   revalidatePath(`/dashboard/projects/${projectId}/risks`)
   return { ok: true }
 }
@@ -64,6 +71,8 @@ export async function deleteRisk(id: string, projectId: string) {
     return { ok: false, error: error.message }
   }
 
+  await logProjectActivity(projectId, 'risk', id, 'deleted', { id })
+
   revalidatePath(`/dashboard/projects/${projectId}/risks`)
   return { ok: true }
 }
@@ -71,7 +80,7 @@ export async function deleteRisk(id: string, projectId: string) {
 export async function createIssue(projectId: string, data: any) {
   const supabase = await createClient()
 
-  const { error } = await supabase
+  const { data: newIssue, error } = await supabase
     .from('issues')
     .insert([
       {
@@ -84,11 +93,15 @@ export async function createIssue(projectId: string, data: any) {
         linked_risk_id: data.linked_risk_id || null
       }
     ])
+    .select()
+    .single()
 
   if (error) {
     console.error('Create issue error:', error)
     return { ok: false, error: error.message }
   }
+
+  await logProjectActivity(projectId, 'issue', newIssue.id, 'created', { title: data.title })
 
   revalidatePath(`/dashboard/projects/${projectId}/risks`)
   return { ok: true }
@@ -108,6 +121,8 @@ export async function updateIssue(id: string, projectId: string, data: any) {
     return { ok: false, error: error.message }
   }
 
+  await logProjectActivity(projectId, 'issue', id, 'updated', { title: data.title || 'Issue Updated' })
+
   revalidatePath(`/dashboard/projects/${projectId}/risks`)
   return { ok: true }
 }
@@ -125,6 +140,8 @@ export async function deleteIssue(id: string, projectId: string) {
     console.error('Delete issue error:', error)
     return { ok: false, error: error.message }
   }
+
+  await logProjectActivity(projectId, 'issue', id, 'deleted', { id })
 
   revalidatePath(`/dashboard/projects/${projectId}/risks`)
   return { ok: true }

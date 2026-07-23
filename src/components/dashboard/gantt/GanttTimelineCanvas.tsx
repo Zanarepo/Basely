@@ -253,6 +253,7 @@ export function GanttTimelineCanvas({
           elements={elements}
           onPointerDown={handlePointerDown}
           onItemHover={handleItemHover}
+          onItemLeave={() => setHoveredItem(null)}
           onStartDrawLink={handleStartDrawLink}
           onAnchorPointerUp={handleAnchorPointerUp as any}
         />

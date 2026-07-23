@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { logGovernanceEvent } from '@/lib/governance/actions'
 
 const WORKSPACE_ROLES = ['Admin', 'PM', 'Team Member', 'Viewer'] as const
 type WorkspaceRole = (typeof WORKSPACE_ROLES)[number]
@@ -23,6 +24,13 @@ export async function updateWorkspaceMemberRole(
     p_organization_id: organizationId, p_member_user_id: memberUserId, p_role: role,
   })
   if (error) return { ok: false, error: error.message }
+  
+  await logGovernanceEvent(organizationId, 'permission_change', {
+    action: 'update_role',
+    target_user_id: memberUserId,
+    new_role: role
+  })
+  
   return { ok: true }
 }
 
@@ -51,6 +59,13 @@ export async function updateWorkspaceMemberActiveStatus(
     p_is_active: isActive,
   })
   if (error) return { ok: false, error: error.message }
+
+  await logGovernanceEvent(organizationId, 'permission_change', {
+    action: 'update_active_status',
+    target_user_id: memberUserId,
+    is_active: isActive
+  })
+
   return { ok: true }
 }
 
@@ -80,6 +95,13 @@ export async function updateWorkspaceMemberAdminPrivilege(
     p_can_manage: canManageAllMembers,
   })
   if (error) return { ok: false, error: error.message }
+
+  await logGovernanceEvent(organizationId, 'permission_change', {
+    action: 'update_admin_privilege',
+    target_user_id: memberUserId,
+    can_manage_all_members: canManageAllMembers
+  })
+
   return { ok: true }
 }
 

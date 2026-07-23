@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { recalculateSchedule } from './recalculate'
 import type { ActionResponse } from './types'
+import { logProjectActivity } from '@/lib/projects/activity-actions'
 
 /**
  * Updates an activity's duration and recalculates schedule.
@@ -25,6 +26,12 @@ export async function updateActivityDuration(
 
   if (updErr) {
     return { ok: false, error: updErr.message }
+  }
+
+  // Fetch the name for logging
+  const { data } = await supabase.from('activities').select('name').eq('id', activityId).single()
+  if (data) {
+    await logProjectActivity(projectId, 'activity', activityId, 'updated', { name: data.name, field: 'duration' })
   }
 
   return recalculateSchedule(projectId)
@@ -52,6 +59,11 @@ export async function updateActivityConstraint(
 
   if (updErr) {
     return { ok: false, error: updErr.message }
+  }
+
+  const { data } = await supabase.from('activities').select('name').eq('id', activityId).single()
+  if (data) {
+    await logProjectActivity(projectId, 'activity', activityId, 'updated', { name: data.name, field: 'constraint' })
   }
 
   return recalculateSchedule(projectId)
@@ -152,6 +164,11 @@ export async function updateActivityScheduling(
     await recalculateSchedule(projectId)
     
     return { ok: false, error: recalcRes.error }
+  }
+
+  const { data } = await supabase.from('activities').select('name').eq('id', activityId).single()
+  if (data) {
+    await logProjectActivity(projectId, 'activity', activityId, 'updated', { name: data.name, field: 'scheduling' })
   }
 
   return { ok: true }

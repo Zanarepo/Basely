@@ -149,7 +149,9 @@ export function useGanttCanvasInteraction({
     e.stopPropagation()
     e.preventDefault()
 
-    e.currentTarget.setPointerCapture(e.pointerId)
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    }
 
     // Position of anchor circle relative to scroll canvas
     const x = edge === 'end' 
@@ -186,8 +188,23 @@ export function useGanttCanvasInteraction({
       setDrawingLink((prev) => (prev ? { ...prev, currentX: x, currentY: y } : null))
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = async (e: PointerEvent) => {
+      const currentLink = drawingLink; // capture in closure
       setDrawingLink(null)
+
+      if (currentLink) {
+        // Since pointer is captured, we must use elementsFromPoint to find the drop target
+        const elementsUnderPointer = document.elementsFromPoint(e.clientX, e.clientY)
+        const targetBar = elementsUnderPointer.find(el => el.id && el.id.startsWith('bar-'))
+        
+        if (targetBar) {
+          const succId = targetBar.id.replace('bar-', '')
+          const predId = currentLink.fromId
+          if (predId !== succId) {
+            await onCreateDependency(predId, succId)
+          }
+        }
+      }
     };
 
     window.addEventListener('pointermove', handlePointerMove)
@@ -199,7 +216,7 @@ export function useGanttCanvasInteraction({
       window.removeEventListener('pointerup', handlePointerUp)
       window.removeEventListener('pointercancel', handlePointerUp)
     }
-  }, [drawingLink, containerRef])
+  }, [drawingLink, containerRef, onCreateDependency])
 
   const handleAnchorPointerUp = async (e: React.PointerEvent, targetRow: any) => {
     if (!hasEditAccess || !drawingLink || !targetRow.activity) return

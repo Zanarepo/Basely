@@ -47,6 +47,10 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       console.error('Database project fetch error:', projectError)
     } else {
       console.warn(`Project ID ${id} was not found or blocked by RLS for user ${user.id}`)
+      console.warn('DEBUG: Searching for project ID without RLS to see if it exists...');
+      const adminClient = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!);
+      const { data: debugProj } = await adminClient.from('projects').select('id, name').eq('id', id).single();
+      console.warn('DEBUG: admin project result:', debugProj);
     }
     // If not found or RLS blocks it, return 404
     notFound()

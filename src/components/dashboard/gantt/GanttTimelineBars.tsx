@@ -13,6 +13,7 @@ type GanttTimelineBarsProps = {
   elements: any[]
   onPointerDown: (e: React.PointerEvent, row: any, type: 'move' | 'resize-left' | 'resize-right') => void
   onItemHover: (e: React.MouseEvent, row: any) => void
+  onItemLeave: () => void
   onStartDrawLink: (e: React.PointerEvent, row: any, rowHeight: number, headerHeight: number, edge: 'start' | 'end') => void
   onAnchorPointerUp: (e: React.PointerEvent, row: any) => void
 }
@@ -29,6 +30,7 @@ export function GanttTimelineBars({
   elements,
   onPointerDown,
   onItemHover,
+  onItemLeave,
   onStartDrawLink,
   onAnchorPointerUp,
 }: GanttTimelineBarsProps) {
@@ -90,6 +92,7 @@ export function GanttTimelineBars({
                 hasEditAccess && !isSummary ? 'cursor-grab active:cursor-grabbing' : ''
               }`}
               onPointerEnter={(e) => onItemHover(e, row)}
+              onPointerLeave={() => onItemLeave()}
               onPointerDown={(e) => !isSummary && onPointerDown(e, row, 'move')}
               onPointerUp={(e) => onAnchorPointerUp(e, row)}
               style={{
@@ -124,7 +127,7 @@ export function GanttTimelineBars({
                 // --- Milestone Diamond ---
                 <div className="w-full h-full flex items-center justify-center relative z-10">
                   <div
-                    className={`w-5 h-5 rotate-45 transform origin-center border-2 ${
+                    className={`w-5 h-5 rotate-45 transform origin-center border-2 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-indigo-400 group-hover:brightness-110 ${
                       isCritical
                         ? 'bg-red-500 border-red-700'
                         : 'bg-emerald-400 border-emerald-600'
@@ -137,7 +140,7 @@ export function GanttTimelineBars({
               ) : (
                 // --- Standard Task Bar ---
                 <div
-                  className={`w-full h-full rounded-md shadow-sm border overflow-hidden relative z-10 transition-colors ${
+                  className={`w-full h-full rounded-md shadow-sm border overflow-hidden relative z-10 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-indigo-400 group-hover:brightness-110 ${
                     row.element.status === 'Complete'
                       ? 'bg-emerald-500 border-emerald-600'
                       : row.element.status === 'In Progress'

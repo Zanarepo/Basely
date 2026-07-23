@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import type { EstimationMethod } from './types'
 import { dispatchNotification } from '@/lib/notifications/actions'
+import { logProjectActivity } from '@/lib/projects/activity-actions'
 
 export async function saveCostEstimate(
   wbsElementId: string, 
@@ -44,6 +45,12 @@ export async function saveCostEstimate(
       .single()
       
     if (error) throw error
+
+    const { data: wbsData } = await supabase.from('wbs_elements').select('project_id, name').eq('id', wbsElementId).single()
+    if (wbsData) {
+      await logProjectActivity(wbsData.project_id, 'cost_account', data.id, 'updated', { name: `Estimate for ${wbsData.name}`, total: payload.budgeted_total })
+    }
+
     return { success: true, data }
   } else {
     // Insert new
@@ -63,6 +70,12 @@ export async function saveCostEstimate(
       .single()
       
     if (error) throw error
+
+    const { data: wbsData } = await supabase.from('wbs_elements').select('project_id, name').eq('id', wbsElementId).single()
+    if (wbsData) {
+      await logProjectActivity(wbsData.project_id, 'cost_account', data.id, 'created', { name: `Estimate for ${wbsData.name}`, total: payload.budgeted_total })
+    }
+
     return { success: true, data }
   }
 }
@@ -217,6 +230,8 @@ export async function createBudgetBaseline(projectId: string, name: string) {
       if (sError) throw sError
     }
     
+    await logProjectActivity(projectId, 'budget_baseline', baseline.id, 'created', { name })
+
     return { success: true, data: baseline }
   }
 
@@ -270,6 +285,8 @@ export async function createBudgetBaseline(projectId: string, name: string) {
     
   if (bError) throw bError
 
+  await logProjectActivity(projectId, 'budget_baseline', baseline.id, 'created', { name })
+
   return { success: true, data: baseline }
 }
 
@@ -310,6 +327,9 @@ export async function createResourceRate(projectId: string, payload: {
     .single()
 
   if (error) throw error
+  
+  await logProjectActivity(projectId, 'resources', data.id, 'created', { name: payload.name, type: payload.type, rate: payload.rate })
+  
   return { success: true, data }
 }
 
@@ -332,17 +352,29 @@ export async function updateResourceRate(rateId: string, payload: {
     .single()
 
   if (error) throw error
+  
+  if (data?.project_id) {
+    await logProjectActivity(data.project_id, 'resources', rateId, 'updated', { name: payload.name, type: payload.type, rate: payload.rate })
+  }
+  
   return { success: true, data }
 }
 
 export async function deleteResourceRate(rateId: string) {
   const supabase = await createClient()
+  const { data } = await supabase.from('resource_rates').select('project_id').eq('id', rateId).single()
+  
   const { error } = await supabase
     .from('resource_rates')
     .delete()
     .eq('id', rateId)
 
   if (error) throw error
+  
+  if (data?.project_id) {
+    await logProjectActivity(data.project_id, 'resources', rateId, 'deleted', { id: rateId })
+  }
+  
   return { success: true }
 }
 
@@ -373,17 +405,33 @@ export async function assignResourceToActivity(wbsElementId: string, resourceRat
     .single()
 
   if (error) throw error
+  
+  const { data: wbsData } = await supabase.from('wbs_elements').select('project_id, name').eq('id', wbsElementId).single()
+  if (wbsData?.project_id) {
+    await logProjectActivity(wbsData.project_id, 'resources', data.id, 'created', { wbs_element_id: wbsElementId, quantity, type: 'assignment' })
+  }
+  
   return { success: true, data }
 }
 
 export async function deleteResourceAssignment(assignmentId: string) {
   const supabase = await createClient()
+  const { data: assignmentData } = await supabase.from('activity_resource_assignments').select('wbs_element_id').eq('id', assignmentId).single()
+  
   const { error } = await supabase
     .from('activity_resource_assignments')
     .delete()
     .eq('id', assignmentId)
 
   if (error) throw error
+  
+  if (assignmentData?.wbs_element_id) {
+    const { data: wbsData } = await supabase.from('wbs_elements').select('project_id').eq('id', assignmentData.wbs_element_id).single()
+    if (wbsData?.project_id) {
+      await logProjectActivity(wbsData.project_id, 'resources', assignmentId, 'deleted', { id: assignmentId, type: 'assignment' })
+    }
+  }
+  
   return { success: true }
 }
 
@@ -425,17 +473,28 @@ export async function updateBudgetBaseline(baselineId: string, name: string) {
     .single()
 
   if (error) throw error
+
+  await logProjectActivity(data.project_id, 'budget_baseline', baselineId, 'updated', { name })
+
   return { success: true, data }
 }
 
 export async function deleteBudgetBaseline(baselineId: string) {
   const supabase = await createClient()
+  
+  const { data } = await supabase.from('budget_baselines').select('project_id').eq('id', baselineId).single()
+  
   const { error } = await supabase
     .from('budget_baselines')
     .delete()
     .eq('id', baselineId)
 
   if (error) throw error
+  
+  if (data?.project_id) {
+    await logProjectActivity(data.project_id, 'budget_baseline', baselineId, 'deleted', {})
+  }
+  
   return { success: true }
 }
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { getWbsElements } from '@/lib/wbs/actions'
 import { getScheduleData } from '@/lib/schedule/actions/queries'
 import { recalculateSchedule } from '@/lib/schedule/actions/recalculate'
-import { updateActivityDuration } from '@/lib/schedule/actions/activities'
+import { updateActivityDuration, updateActivityConstraint } from '@/lib/schedule/actions/activities'
 import { createDependency, deleteDependency } from '@/lib/schedule/actions/dependencies'
 import { saveBaseline } from '@/lib/schedule/actions/baselines'
 import { getPendingApprovalsForProject } from '@/lib/approvals/actions'
@@ -224,20 +224,8 @@ export function useGanttData(projectId: string) {
       const newEsDate = new Date(currentEs.getTime() + deltaDays * 24 * 60 * 60 * 1000)
       const newEsStr = newEsDate.toISOString().split('T')[0]!
 
-      // Update constraints in the DB
-      const { error: dbError } = await supabase
-        .from('activities')
-        .update({
-          constraint_type: 'Start No Earlier Than',
-          constraint_date: newEsStr,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-
-      if (dbError) throw new Error(dbError.message)
-
-      // Recalculate CPM
-      const res = await recalculateSchedule(projectId)
+      // Update constraints and log activity
+      const res = await updateActivityConstraint(projectId, id, 'Start No Earlier Than', newEsStr)
       if (!res.ok) throw new Error(res.error)
 
       await fetchData()

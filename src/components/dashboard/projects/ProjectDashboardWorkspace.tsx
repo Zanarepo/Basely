@@ -6,6 +6,9 @@ import ScheduleHealthWidget from './widgets/ScheduleHealthWidget'
 import CostHealthWidget from './widgets/CostHealthWidget'
 import MilestonesWidget from './widgets/MilestonesWidget'
 import RisksWidget from './widgets/RisksWidget'
+import ProjectActivityPanel from './widgets/ProjectActivityPanel'
+import { useState } from 'react'
+import { Activity } from 'lucide-react'
 
 export default function ProjectDashboardWorkspace({
   projectId
@@ -23,6 +26,8 @@ export default function ProjectDashboardWorkspace({
     topRisks,
     refresh
   } = useProjectDashboardData(projectId)
+
+  const [isActivityPanelOpen, setIsActivityPanelOpen] = useState(false)
 
   if (loading) {
     return (
@@ -94,13 +99,23 @@ export default function ProjectDashboardWorkspace({
           </div>
         </div>
 
-        <button
-          onClick={refresh}
-          className="self-start sm:self-center flex items-center gap-2 px-4 py-2 bg-white dark:bg-app-surface text-app-fg border border-app-border rounded-xl hover:bg-gray-50 dark:hover:bg-app-hover text-sm font-semibold shadow-sm transition-all cursor-pointer"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Sync Live Data
-        </button>
+        <div className="self-start sm:self-center flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsActivityPanelOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-sm font-semibold shadow-sm transition-all cursor-pointer"
+          >
+            <Activity className="h-4 w-4" />
+            Activity Log
+          </button>
+          
+          <button
+            onClick={refresh}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-app-surface text-app-fg border border-app-border rounded-xl hover:bg-gray-50 dark:hover:bg-app-hover text-sm font-semibold shadow-sm transition-all cursor-pointer"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Sync Live Data
+          </button>
+        </div>
       </div>
 
       {/* Widgets Responsive Grid */}
@@ -125,10 +140,17 @@ export default function ProjectDashboardWorkspace({
         </div>
 
         {/* Widget 4: Risks list */}
-        <div className="md:col-span-2 lg:col-span-3">
+        <div className="lg:col-span-1 md:col-span-2 lg:col-span-1">
           <RisksWidget risks={topRisks} />
         </div>
       </div>
+
+      {/* Slide-out Activity Panel */}
+      <ProjectActivityPanel 
+        projectId={projectId}
+        isOpen={isActivityPanelOpen}
+        onClose={() => setIsActivityPanelOpen(false)}
+      />
     </div>
   )
 }

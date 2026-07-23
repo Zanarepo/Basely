@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Loader2, X, Link as LinkIcon, Unlink } from 'lucide-react'
+import { logProjectActivity } from '@/lib/projects/activity-actions'
 
 type WorkspaceMember = {
   userId: string
@@ -114,13 +115,15 @@ export function StakeholderForm({ projectId, stakeholderId, onClose, workspaceMe
       const { error } = await supabase.from('stakeholders').update(payload).eq('id', stakeholderId)
       if (error) console.error(error)
       else {
+        await logProjectActivity(projectId, 'stakeholder', stakeholderId, 'updated', { name: finalName })
         onShowToast('success', 'Stakeholder updated successfully')
         onClose()
       }
     } else {
-      const { error } = await supabase.from('stakeholders').insert(payload)
+      const { data: newStakeholder, error } = await supabase.from('stakeholders').insert(payload).select('id').single()
       if (error) console.error(error)
       else {
+        await logProjectActivity(projectId, 'stakeholder', newStakeholder.id, 'created', { name: finalName })
         onShowToast('success', 'Stakeholder created successfully')
         onClose()
       }
