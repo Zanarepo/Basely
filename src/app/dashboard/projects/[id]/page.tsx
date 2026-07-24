@@ -189,9 +189,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         const callerUserName = callerMember?.name || callerMember?.email || 'Unknown User'
         return (
           <div className="absolute top-0 right-0 z-50 flex items-center gap-3">
-            {isOrgOwner || callerRole === 'Admin' ? (
-              <ProjectIntegrationsMenu projectId={project.id} />
-            ) : null}
+            <ProjectIntegrationsMenu projectId={project.id} />
             <LivePresenceWrapper
               projectId={project.id}
               activeTab={activeTab}

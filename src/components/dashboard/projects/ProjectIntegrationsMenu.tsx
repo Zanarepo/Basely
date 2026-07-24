@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Blocks, X, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { Blocks, X, ArrowLeft, CheckCircle2, Calendar } from 'lucide-react'
 import ProjectSlackSettings from './ProjectSlackSettings'
 import ProjectTeamsSettings from './ProjectTeamsSettings'
 import ProjectGoogleChatSettings from './ProjectGoogleChatSettings'
+import CalendarSyncSettings from '@/components/dashboard/integrations/CalendarSyncSettings'
 import { createClient } from '@/utils/supabase/client'
+import { useWorkspace } from '@/components/dashboard/WorkspaceContext'
 
 const SlackIcon = ({ className }: { className?: string }) => (
   <svg 
@@ -41,11 +43,14 @@ const GoogleChatIcon = ({ className }: { className?: string }) => (
 )
 
 export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
+  const { activeWorkspace } = useWorkspace()
+  const isAdminOrOwner = activeWorkspace?.role === 'Admin' || activeWorkspace?.role === 'Owner'
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedApp, setSelectedApp] = useState<'slack' | 'teams' | 'google_chat' | null>(null)
+  const [selectedApp, setSelectedApp] = useState<'slack' | 'teams' | 'google_chat' | 'calendar' | null>(null)
   const [isSlackConfigured, setIsSlackConfigured] = useState(false)
   const [isTeamsConfigured, setIsTeamsConfigured] = useState(false)
   const [isGoogleChatConfigured, setIsGoogleChatConfigured] = useState(false)
+  const [isCalendarConfigured, setIsCalendarConfigured] = useState(false)
 
   useEffect(() => {
     if (!isOpen || selectedApp !== null) return
@@ -61,6 +66,18 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
       setIsSlackConfigured(!!project?.slack_webhook_url)
       setIsTeamsConfigured(!!project?.teams_webhook_url)
       setIsGoogleChatConfigured(!!project?.google_chat_webhook_url)
+      
+      const { data: calendarData } = await supabase
+        .from('calendar_connections')
+        .select('synced_project_ids')
+        .eq('provider', 'google')
+        .maybeSingle()
+        
+      if (calendarData && (calendarData.synced_project_ids || []).includes(projectId)) {
+        setIsCalendarConfigured(true)
+      } else {
+        setIsCalendarConfigured(false)
+      }
     }
     checkConfigs()
   }, [isOpen, selectedApp, projectId])
@@ -100,7 +117,9 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                         ? 'Configure Teams' 
                         : selectedApp === 'google_chat'
                           ? 'Configure Google Chat'
-                          : 'Project Integrations'}
+                          : selectedApp === 'calendar'
+                            ? 'Google Calendar Sync'
+                            : 'Project Integrations'}
                   </h2>
                   <p className="text-sm text-app-muted mt-1">
                     {selectedApp 
@@ -123,9 +142,11 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
              <div className="p-6 overflow-y-auto">
               {!selectedApp ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {/* Slack Integration Card */}
-                  <div 
-                    onClick={() => setSelectedApp('slack')}
+                  {isAdminOrOwner && (
+                    <>
+                      {/* Slack Integration Card */}
+                      <div 
+                        onClick={() => setSelectedApp('slack')}
                     className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all"
                   >
                     {isSlackConfigured && (
@@ -194,13 +215,41 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                       {isGoogleChatConfigured ? 'Configured' : 'Configure'}
                     </div>
                   </div>
+                    </>
+                  )}
+                  
+                  {/* Google Calendar Card */}
+                  <div 
+                    onClick={() => setSelectedApp('calendar')}
+                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all"
+                  >
+                    {isCalendarConfigured && (
+                      <div className="absolute top-3 right-3 text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 p-1 rounded-full" title="Integration Configured">
+                        <CheckCircle2 className="h-4 w-4" />
+                      </div>
+                    )}
+                    <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Calendar className="h-6 w-6 text-blue-500" />
+                    </div>
+                    <h3 className="text-base font-bold text-app-fg mb-1">Google Calendar</h3>
+                    <p className="text-xs text-app-muted mb-4">Sync project milestones to your calendar</p>
+                    <div className={`mt-auto px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                      isCalendarConfigured 
+                        ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
+                        : 'bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-400'
+                    }`}>
+                      {isCalendarConfigured ? 'Configured' : 'Configure'}
+                    </div>
+                  </div>
                 </div>
               ) : selectedApp === 'slack' ? (
                 <ProjectSlackSettings projectId={projectId} />
               ) : selectedApp === 'teams' ? (
                 <ProjectTeamsSettings projectId={projectId} />
-              ) : (
+              ) : selectedApp === 'google_chat' ? (
                 <ProjectGoogleChatSettings projectId={projectId} />
+              ) : (
+                <CalendarSyncSettings projectId={projectId} />
               )}
             </div>
           </div>
