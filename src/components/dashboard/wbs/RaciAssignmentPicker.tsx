@@ -42,11 +42,11 @@ export function RaciAssignmentPicker({
   const [searchQuery, setSearchQuery] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
   const [localAssignments, setLocalAssignments] = useState<RaciAssignment[]>(assignments)
-  
+
   useEffect(() => {
     setLocalAssignments(assignments)
   }, [assignments])
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const supabase = createClient()
@@ -58,7 +58,7 @@ export function RaciAssignmentPicker({
         .select('id, name, organization_type, linked_user_id, profiles(full_name, email)')
         .eq('project_id', projectId)
         .order('name', { ascending: true })
-      
+
       if (data) setStakeholders(data)
       setLoading(false)
     }
@@ -78,39 +78,34 @@ export function RaciAssignmentPicker({
   const filteredStakeholders = useMemo(() => {
     if (!searchQuery) return stakeholders
     const query = searchQuery.toLowerCase()
-    return stakeholders.filter(s => 
-      s.name.toLowerCase().includes(query) || 
+    return stakeholders.filter(s =>
+      s.name.toLowerCase().includes(query) ||
       (s.profiles?.full_name?.toLowerCase().includes(query)) ||
       (s.profiles?.email?.toLowerCase().includes(query))
     )
   }, [stakeholders, searchQuery])
 
   const availableStakeholders = useMemo(() => {
-    if (hasEditAccess) return filteredStakeholders
-    if (callerRole === 'Team Member') {
-      return filteredStakeholders.filter(s => s.linked_user_id === callerUserId)
-    }
-    return []
-  }, [filteredStakeholders, hasEditAccess, callerRole, callerUserId])
+    return filteredStakeholders
+  }, [filteredStakeholders])
 
-  const canEditRole = (role: RaciRoleType) => {
-    if (hasEditAccess) return true
-    if (callerRole === 'Team Member' && role === 'Responsible') {
-      const isMissingR = !localAssignments.some(a => a.roleType === 'Responsible')
-      const isMyTask = localAssignments.some(a => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId)
-      return isMissingR || isMyTask
+  const canEditRole = (role: RaciRoleType, stakeholderId: string) => {
+    if (callerRole === 'Team Member') {
+      const stakeholder = stakeholders.find(s => s.id === stakeholderId)
+      return stakeholder?.linked_user_id === callerUserId
     }
+    if (hasEditAccess) return true
     return false
   }
 
   const handleToggleAssignment = async (stakeholderId: string, roleType: RaciRoleType) => {
-    if (!canEditRole(roleType) || isUpdating) return
+    if (!canEditRole(roleType, stakeholderId) || isUpdating) return
     setIsUpdating(true)
-    
+
     // Optimistic UI Update
     const existing = localAssignments.find(a => a.stakeholderId === stakeholderId && a.roleType === roleType)
     const stakeholder = stakeholders.find(s => s.id === stakeholderId)
-    
+
     let newAssignments = [...localAssignments]
     if (existing) {
       newAssignments = newAssignments.filter(a => !(a.stakeholderId === stakeholderId && a.roleType === roleType))
@@ -134,10 +129,10 @@ export function RaciAssignmentPicker({
       })
     }
     setLocalAssignments(newAssignments)
-    
+
     try {
       let res: ActionResponse
-      
+
       if (existing) {
         res = await removeRaciRole(projectId, wbsElementId, stakeholderId, roleType)
       } else {
@@ -150,7 +145,12 @@ export function RaciAssignmentPicker({
 
       if (!res.ok) {
         setLocalAssignments(assignments) // Revert on failure
-        onShowToast('error', res.error || 'Failed to update RACI assignment')
+        const errorStr = String(res.error)
+        if (errorStr.includes('violates row-level security policy') || errorStr.includes('42501')) {
+           onShowToast('error', 'You can only assign yourself as Responsible for this task.')
+        } else {
+           onShowToast('error', res.error || 'Failed to update RACI assignment')
+        }
       } else {
         onAssignmentChanged?.()
       }
@@ -176,8 +176,7 @@ export function RaciAssignmentPicker({
             </h4>
             <p className="text-xs text-app-muted">{description}</p>
           </div>
-          {canEditRole(role) && (
-            <button
+          <button
               type="button"
               onClick={() => {
                 setOpenRole(isOpen ? null : role)
@@ -187,7 +186,6 @@ export function RaciAssignmentPicker({
             >
               {isOpen ? 'Close' : 'Assign'}
             </button>
-          )}
         </div>
 
         {/* Assigned Users */}
@@ -203,8 +201,8 @@ export function RaciAssignmentPicker({
                     {initial}
                   </div>
                   <span>{name}</span>
-                  {hasEditAccess && (
-                    <button 
+                  {canEditRole(role, a.stakeholderId) && (
+                    <button
                       type="button"
                       onClick={() => handleToggleAssignment(a.stakeholderId, role)}
                       disabled={isUpdating}
@@ -219,7 +217,7 @@ export function RaciAssignmentPicker({
           </div>
         ) : (
           <div className="text-xs text-app-muted italic py-1">
-            {role === 'Responsible' || role === 'Accountable' 
+            {role === 'Responsible' || role === 'Accountable'
               ? `⚠️ No ${role.toLowerCase()} assigned`
               : 'None assigned'}
           </div>
@@ -250,27 +248,27 @@ export function RaciAssignmentPicker({
               ) : (
                 <div className="max-h-48 overflow-y-auto overflow-x-hidden p-1.5 custom-scrollbar bg-slate-50 dark:bg-slate-900 border-t border-app-border">
                   {availableStakeholders.map(s => {
-                  const isAssigned = roleAssignments.some(a => a.stakeholderId === s.id)
-                  const name = s.profiles?.full_name || s.name
-                  return (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => handleToggleAssignment(s.id, role)}
-                      disabled={isUpdating}
-                      className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg hover:bg-app-hover transition-colors text-left"
-                    >
-                      <div className="flex items-center gap-2">
-                        {s.organization_type === 'internal' ? <User className="w-3.5 h-3.5 text-indigo-400" /> : <Users className="w-3.5 h-3.5 text-emerald-400" />}
-                        <span className="text-app-fg font-medium truncate max-w-[160px]">{name}</span>
-                        <span className="text-xs text-app-muted px-1.5 py-0.5 rounded bg-app-bg">
-                          {s.organization_type}
-                        </span>
-                      </div>
-                      {isAssigned && <Check className="w-4 h-4 text-indigo-500" />}
-                    </button>
-                  )
-                })}
+                    const isAssigned = roleAssignments.some(a => a.stakeholderId === s.id)
+                    const name = s.profiles?.full_name || s.name
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => handleToggleAssignment(s.id, role)}
+                        disabled={isUpdating || !canEditRole(role, s.id)}
+                        className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg hover:bg-app-hover transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <div className="flex items-center gap-2">
+                          {s.organization_type === 'internal' ? <User className="w-3.5 h-3.5 text-indigo-400" /> : <Users className="w-3.5 h-3.5 text-emerald-400" />}
+                          <span className="text-app-fg font-medium truncate max-w-[160px]">{name}</span>
+                          <span className="text-xs text-app-muted px-1.5 py-0.5 rounded bg-app-bg">
+                            {s.organization_type}
+                          </span>
+                        </div>
+                        {isAssigned && <Check className="w-4 h-4 text-indigo-500" />}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>

@@ -79,7 +79,7 @@ export function WbsBoardCard({
           </span>
         )}
         <div className="flex items-center gap-1.5 ml-auto">
-          {hasEditAccess && onDeleteCard && (
+          {hasEditAccess && onDeleteCard && (callerRole !== 'Team Member' || t.createdBy === callerUserId) && (
             <button
               type="button"
               onClick={(e) => {

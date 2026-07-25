@@ -34,6 +34,8 @@ export function WbsNodeRow({
   getElementProgress,
   selectedIds,
   toggleSelection,
+  callerUserId,
+  callerRole,
 }: WbsNodeRowProps) {
   const { element, children } = node
   const isExpanded = expandedNodeIds.has(element.id)
@@ -276,17 +278,19 @@ export function WbsNodeRow({
               >
                 <FolderPlus className="h-3.5 w-3.5" />
               </button>
-              <button
-                type="button"
-                title="Delete element"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onDelete(element)
-                }}
-                className="p-1.5 text-app-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              {(callerRole !== 'Team Member' || element.createdBy === callerUserId) && (
+                <button
+                  type="button"
+                  title="Delete element"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDelete(element)
+                  }}
+                  className="p-1.5 text-app-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -316,6 +320,8 @@ export function WbsNodeRow({
               getElementProgress={getElementProgress}
               selectedIds={selectedIds}
               toggleSelection={toggleSelection}
+              callerUserId={callerUserId}
+              callerRole={callerRole}
             />
           ))}
         </div>

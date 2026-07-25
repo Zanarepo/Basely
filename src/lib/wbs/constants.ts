@@ -35,6 +35,7 @@ export type WbsElement = {
   name: string
   description: string | null
   ownerId?: string | null // Deprecated, use raciAssignments
+  createdBy?: string | null
   deliverables: string | null
   deliverablesData?: DeliverableItem[]
   acceptanceCriteria: string | null

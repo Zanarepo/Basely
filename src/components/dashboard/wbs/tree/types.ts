@@ -25,6 +25,8 @@ export type WbsTreeProps = {
   toggleSelection: (id: string) => void
   selectAll: () => void
   clearSelection: () => void
+  callerUserId?: string
+  callerRole?: string
 }
 
 export type WbsNodeRowProps = {
@@ -46,4 +48,6 @@ export type WbsNodeRowProps = {
   getElementProgress: (id: string) => number
   selectedIds: string[]
   toggleSelection: (id: string) => void
+  callerUserId?: string
+  callerRole?: string
 }

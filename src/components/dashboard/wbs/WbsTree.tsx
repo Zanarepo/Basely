@@ -24,6 +24,8 @@ export function WbsTree({
   toggleSelection,
   selectAll,
   clearSelection,
+  callerUserId,
+  callerRole,
 }: WbsTreeProps) {
   return (
     <div className="space-y-1 min-w-[800px] pb-4">
@@ -62,6 +64,8 @@ export function WbsTree({
           getElementProgress={getElementProgress}
           selectedIds={selectedIds}
           toggleSelection={toggleSelection}
+          callerUserId={callerUserId}
+          callerRole={callerRole}
         />
       ))}
     </div>

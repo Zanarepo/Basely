@@ -1,0 +1,14 @@
+1. Global Search & Command Palette (Cmd+K) ❌
+Not Started. We do not currently have cmdk installed, nor do we have any global search overlay components built. You still have to click through tabs to navigate the app. Building this out next would indeed be a massive UX win.
+
+2. Project Dashboard Analytics & EVM Metrics ⚠️
+Partially Done. We have some underlying EVM logic (I see EvmStatusResolver.tsx), but we do not have a high-level "Executive Summary" dashboard with Burn-down charts, SPI/CPI metrics, and Budget vs. Actuals visual graphs. Currently, it's mostly detailed tabs rather than a single analytical overview.
+
+3. Activity Log & Audit Trail ⚠️
+Partially Done. We have built out the backend database tables for this (project_activity_logs and governance_audit_logs) and we have some component-level history (like DocumentHistoryModal and GovernanceAuditLogPanel). However, we are missing the centralized, project-level "History" tab that aggregates all these events into a single chronological timeline.
+
+4. Role-Based Access Control (RBAC) Granularity ❌
+Not Started. Our database currently supports standard roles (owner, admin, member, guest). We do not have granular, permission-specific roles like cost_manager or risk_officer implemented in the RLS policies or UI yet.
+
+5. Real-Time Multiplayer Sync (WebSockets) ⚠️
+Partially Done. We have Supabase Realtime enabled for live notifications and active user presence (20260721210000_enable_realtime.sql), but we do not have field-level locking, conflict resolution (like CRDTs/Yjs), or live-broadcasting of Gantt chart edits to prevent two PMs from overwriting each other's changes.

@@ -9,11 +9,13 @@ import CostWorkspace from '@/components/dashboard/cost/CostWorkspace'
 import StakeholderWorkspace from '@/components/dashboard/stakeholders/StakeholderWorkspace'
 import RiskRegisterWorkspace from '@/components/dashboard/risks/RiskRegisterWorkspace'
 import DocumentsWorkspace from '@/components/dashboard/documents/DocumentsWorkspace'
+import TeamPermissionsWorkspace from '@/components/dashboard/team/TeamPermissionsWorkspace'
 import { ProjectTeamRoster } from '@/components/dashboard/ProjectTeamRoster'
 import { ProjectWizardModal } from '@/components/dashboard/ProjectWizardModal'
 import { ProjectIntegrationsMenu } from '@/components/dashboard/projects/ProjectIntegrationsMenu'
 import { LivePresenceWrapper } from '@/components/dashboard/presence/LivePresenceWrapper'
 import ProjectDashboardWorkspace from '@/components/dashboard/projects/ProjectDashboardWorkspace'
+import ProjectNavigationTabs from '@/components/dashboard/projects/ProjectNavigationTabs'
 
 // Planning components type definition
 type ProjectPageProps = {
@@ -87,7 +89,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       .maybeSingle(),
     supabase
       .from('project_members')
-      .select('user_id')
+      .select('user_id, can_edit_schedule, can_edit_cost, can_edit_risks, can_edit_documents, project_role_title')
       .eq('project_id', project.id)
   ])
 
@@ -122,11 +124,20 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
   const isOrgOwner = org?.owner_id === user.id
   const callerRole = callerMembership?.role ?? 'Viewer'
   const isCreator = project.created_by === user.id
-  const hasEditAccess =
+  
+  // Base edit access (Admins, PMs, Creators, Owners have global access)
+  const baseEditAccess =
     isOrgOwner ||
     callerRole === 'Admin' ||
     isCreator ||
     (callerRole === 'PM' && !project.is_archived)
+
+  // Specific granular access overrides
+  const callerProjectMember = projectMembersData?.find(pm => pm.user_id === user.id)
+  const hasScheduleEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_schedule) && !project.is_archived
+  const hasCostEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_cost) && !project.is_archived
+  const hasRisksEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_risks) && !project.is_archived
+  const hasDocumentsEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_documents) && !project.is_archived
 
   const canAssignMembers =
     isOrgOwner ||
@@ -138,7 +149,8 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     isOrgOwner ||
     callerRole === 'Admin' ||
     isCreator ||
-    callerRole === 'PM'
+    callerRole === 'PM' ||
+    !!callerProjectMember?.can_edit_cost
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '—'
@@ -201,83 +213,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       })()}
 
       {/* Tabs list */}
-      <div className="border-b border-app-border mb-6 overflow-x-auto no-scrollbar">
-        <nav className="flex space-x-6 min-w-max pb-1">
-          <Link
-            href={`/dashboard/projects/${project.id}?tab=dashboard`}
-            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-              activeTab === 'dashboard'
-                ? 'border-indigo-500 text-indigo-500 font-bold'
-                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
-            }`}
-          >
-            Dashboard
-          </Link>
-          <Link
-            href={`/dashboard/projects/${project.id}?tab=wbs`}
-            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-              activeTab === 'wbs'
-                ? 'border-indigo-500 text-indigo-500 font-bold'
-                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
-            }`}
-          >
-            Work Breakdown Structure (WBS)
-          </Link>
-          <Link
-            href={`/dashboard/projects/${project.id}?tab=gantt`}
-            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-              activeTab === 'gantt'
-                ? 'border-indigo-500 text-indigo-500 font-bold'
-                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
-            }`}
-          >
-            Gantt & Scheduling
-          </Link>
-          {canViewCost && (
-            <Link
-              href={`/dashboard/projects/${project.id}?tab=cost`}
-              className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-                activeTab === 'cost'
-                  ? 'border-indigo-500 text-indigo-500 font-bold'
-                  : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
-              }`}
-            >
-              Budget & Cost
-            </Link>
-          )}
-          <Link
-            href={`/dashboard/projects/${project.id}?tab=stakeholders`}
-            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-              activeTab === 'stakeholders'
-                ? 'border-indigo-500 text-indigo-500 font-bold'
-                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
-            }`}
-          >
-            Stakeholders
-          </Link>
-          <Link
-            href={`/dashboard/projects/${project.id}?tab=risks`}
-            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-              activeTab === 'risks'
-                ? 'border-indigo-500 text-indigo-500 font-bold'
-                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
-            }`}
-          >
-            Risks & Issues
-          </Link>
-          <Link
-            href={`/dashboard/projects/${project.id}?tab=documents`}
-            className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
-              activeTab === 'documents'
-                ? 'border-indigo-500 text-indigo-500 font-bold'
-                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
-            }`}
-          >
-            Documents
-            <span className="bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider">New</span>
-          </Link>
-        </nav>
-      </div>
+      <ProjectNavigationTabs projectId={project.id} activeTab={activeTab} canViewCost={canViewCost} canViewTeamAccess={canAssignMembers} />
 
       {/* Conditional tab workspaces */}
       {activeTab === 'dashboard' && (
@@ -289,7 +225,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           projectId={project.id}
           workspaceMembers={workspaceMembers}
           callerUserId={user.id}
-          hasEditAccess={hasEditAccess && !project.is_archived}
+          hasEditAccess={hasScheduleEditAccess}
           canAssignMembers={canAssignMembers && !project.is_archived}
           callerRole={callerRole}
           allowTeamScheduleEdits={project.allow_team_schedule_edits}
@@ -299,7 +235,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       {activeTab === 'gantt' && (
         <GanttWorkspace
           projectId={project.id}
-          hasEditAccess={hasEditAccess && !project.is_archived}
+          hasEditAccess={hasScheduleEditAccess}
           workspaceMembers={workspaceMembers}
         />
       )}
@@ -307,7 +243,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       {activeTab === 'cost' && canViewCost && (
         <CostWorkspace
           projectId={project.id}
-          hasEditAccess={hasEditAccess && !project.is_archived}
+          hasEditAccess={hasCostEditAccess}
         />
       )}
 
@@ -322,7 +258,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       {activeTab === 'risks' && (
         <RiskRegisterWorkspace
           projectId={project.id}
-          hasEditAccess={hasEditAccess && !project.is_archived}
+          hasEditAccess={hasRisksEditAccess}
           workspaceMembers={workspaceMembers}
         />
       )}
@@ -331,7 +267,16 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         <DocumentsWorkspace
           projectId={project.id}
           projectContext={project}
-          hasEditAccess={hasEditAccess && !project.is_archived}
+          hasEditAccess={hasDocumentsEditAccess}
+        />
+      )}
+
+      {activeTab === 'team' && (
+        <TeamPermissionsWorkspace
+          projectId={project.id}
+          workspaceMembers={workspaceMembers}
+          projectMembersData={projectMembersData ?? []}
+          hasEditAccess={canAssignMembers}
         />
       )}
     </div>

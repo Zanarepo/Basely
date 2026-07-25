@@ -7,7 +7,7 @@ export async function fetchAutoFillText(projectId: string, sectionSource: string
   console.log(`[AutoFill] Starting fetch for source: ${sectionSource} in project: ${projectId}`)
   const supabase = await createClient()
   let text = ''
-  const src = sectionSource
+  const src = sectionSource.trim()
 
   if (src.startsWith('wbs')) {
     const { data: wbs, error: wbsErr } = await supabase

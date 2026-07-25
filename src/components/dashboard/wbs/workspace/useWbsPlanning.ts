@@ -11,7 +11,7 @@ import { useWbsMutations } from './hooks/useWbsMutations'
 
 export type { TreeNode }
 
-export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
+export function useWbsPlanning(projectId: string, hasEditAccess: boolean, callerRole?: string, callerUserId?: string) {
   const [elements, setElements] = useState<WbsElement[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -85,7 +85,9 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean) {
     selectedIds,
     setSelectedIds,
     showToast,
-    loadElements
+    loadElements,
+    callerRole,
+    callerUserId
   })
 
   return {

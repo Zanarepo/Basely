@@ -41,6 +41,9 @@ export function WbsPlanningWorkspace({
   const initialView = (searchParams.get('wbsView') as WbsViewType) || 'tree'
   const [currentView, setCurrentView] = useState<WbsViewType>(initialView)
   const [isImporting, setIsImporting] = useState(false)
+  
+  const elementIdFromUrl = searchParams.get('element')
+  const [processedElementId, setProcessedElementId] = useState<string | null>(null)
 
   const {
     elements,
@@ -79,7 +82,26 @@ export function WbsPlanningWorkspace({
     selectAll,
     clearSelection,
     handleBulkDelete,
-  } = useWbsPlanning(projectId, hasEditAccess)
+  } = useWbsPlanning(projectId, hasEditAccess, callerRole, callerUserId)
+
+  useEffect(() => {
+    if (elementIdFromUrl && elementIdFromUrl !== processedElementId && elements.length > 0) {
+      setActiveElementId(elementIdFromUrl)
+      setProcessedElementId(elementIdFromUrl)
+      
+      // Also ensure the path to this node is expanded
+      const el = elements.find(e => e.id === elementIdFromUrl)
+      if (el && el.parentId) {
+        let current: any = el
+        const toExpand = new Set<string>()
+        while (current?.parentId) {
+          toExpand.add(current.parentId)
+          current = elements.find(e => e.id === current.parentId)
+        }
+        setExpandedNodeIds(prev => new Set([...Array.from(prev), ...Array.from(toExpand)]))
+      }
+    }
+  }, [elementIdFromUrl, processedElementId, elements, setActiveElementId, setExpandedNodeIds])
 
   // Auto-open a specific WBS element when navigating from entity references
   useEffect(() => {
@@ -219,6 +241,8 @@ export function WbsPlanningWorkspace({
                   toggleSelection={toggleSelection}
                   selectAll={selectAll}
                   clearSelection={clearSelection}
+                  callerUserId={callerUserId}
+                  callerRole={callerRole}
                 />
               </div>
             )}

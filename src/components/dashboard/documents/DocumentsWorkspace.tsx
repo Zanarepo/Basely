@@ -64,24 +64,35 @@ export default function DocumentsWorkspace({
     <div className="flex flex-col md:flex-row gap-6 relative animate-fade-in h-[calc(100vh-16rem)] min-h-[600px]">
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
+      {/* Expand Button (Visible when sidebar is closed) */}
+      {!isSidebarOpen && (
+        <div className="absolute left-0 top-0 z-10 h-full flex items-start pt-2 -ml-2">
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-1.5 text-app-muted hover:text-app-fg hover:bg-app-surface border border-transparent hover:border-app-border rounded-md transition-colors bg-app-bg shadow-sm"
+            title="Expand sidebar"
+          >
+            <PanelLeftOpen className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Left Sidebar Menu for Documents */}
       <div 
-        className={`shrink-0 flex flex-col transition-all duration-300 ease-in-out border-app-border h-full overflow-y-auto no-scrollbar ${
-          isSidebarOpen ? 'w-full md:w-64 border-r pr-6 bg-transparent' : 'w-12 border-transparent bg-transparent'
+        className={`shrink-0 flex flex-col transition-all duration-300 ease-in-out h-full overflow-y-auto no-scrollbar ${
+          isSidebarOpen ? 'w-full md:w-64 border-r border-app-border pr-6 opacity-100' : 'w-0 opacity-0 overflow-hidden'
         }`}
       >
-        <div className="flex items-center justify-between mb-4 pl-2">
-          {isSidebarOpen && (
-            <div className="text-xs font-bold text-app-muted uppercase tracking-wider">
-              Project Documents
-            </div>
-          )}
+        <div className="flex items-center justify-between mb-4 pl-2 min-w-[200px]">
+          <div className="text-xs font-bold text-app-muted uppercase tracking-wider">
+            Project Documents
+          </div>
           <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            onClick={() => setIsSidebarOpen(false)}
             className="p-1.5 text-app-muted hover:text-app-fg hover:bg-app-surface border border-transparent hover:border-app-border rounded-md transition-colors"
-            title={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            title="Collapse sidebar"
           >
-            {isSidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
+            <PanelLeftClose className="w-4 h-4" />
           </button>
         </div>
         

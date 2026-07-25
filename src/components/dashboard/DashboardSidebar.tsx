@@ -13,6 +13,7 @@ import {
   User,
   CheckSquare,
   Settings,
+  Search,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { useWorkspace } from './WorkspaceContext'
@@ -112,6 +113,25 @@ export function DashboardSidebar({
 
       <div className={`p-3 ${collapsed ? 'px-2' : ''}`}>
         <WorkspaceSwitcher collapsed={collapsed} onCreateWorkspace={onCreateWorkspace} />
+      </div>
+
+      <div className={`px-3 mb-2 ${collapsed ? 'px-2' : ''}`}>
+        <button
+          onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+          title={collapsed ? 'Search (Cmd+K)' : undefined}
+          className={`w-full flex items-center rounded-xl border border-app-border bg-app-surface hover:bg-app-hover transition-colors text-app-muted hover:text-app-fg ${collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5 gap-3'
+            }`}
+        >
+          <Search className="w-4 h-4 shrink-0" />
+          {!collapsed && (
+            <div className="flex items-center justify-between flex-1">
+              <span className="text-sm">Search</span>
+              <kbd className="hidden sm:inline-flex items-center gap-1 rounded bg-app-bg px-1.5 font-mono text-[10px] font-medium text-app-muted border border-app-border">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            </div>
+          )}
+        </button>
       </div>
 
       <nav className={`flex-1 px-3 space-y-1 ${collapsed ? 'px-2' : ''}`}>

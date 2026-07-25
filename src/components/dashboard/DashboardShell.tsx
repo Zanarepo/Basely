@@ -5,6 +5,7 @@ import { DashboardSidebar } from './DashboardSidebar'
 import { InviteTeamModal } from './InviteTeamModal'
 import { CreateWorkspaceModal } from './CreateWorkspaceModal'
 import { WorkspaceProvider, type Workspace } from './WorkspaceContext'
+import { GlobalSearchOverlay } from './GlobalSearchOverlay'
 
 type DashboardShellProps = {
   workspaces: Workspace[]
@@ -42,9 +43,15 @@ export function DashboardShell({
           onCreateWorkspace={() => setCreateWsOpen(true)}
         />
 
-        <main className="relative flex-1 min-w-0 overflow-auto">{children}</main>
+        <main className="relative flex-1 min-w-0 overflow-auto">
+          {children}
+        </main>
+        
+        <GlobalSearchOverlay />
       </div>
-      <InviteTeamModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+
+      <InviteTeamModal
+        open={inviteOpen} onClose={() => setInviteOpen(false)} />
       <CreateWorkspaceModal open={createWsOpen} onClose={() => setCreateWsOpen(false)} />
     </WorkspaceProvider>
   )

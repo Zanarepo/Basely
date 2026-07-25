@@ -85,7 +85,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
       />
 
       {/* Side Sheet Panel */}
-      <div className="fixed inset-y-0 right-0 w-full sm:w-[400px] bg-app-surface border-l border-app-border shadow-2xl flex flex-col z-40 animate-in slide-in-from-right-8 duration-200">
+      <div className="fixed inset-y-0 right-0 w-full sm:w-[400px] bg-app-surface-solid border-l border-app-border shadow-2xl flex flex-col z-40 animate-in slide-in-from-right-8 duration-200">
         <div className="flex items-center justify-between p-6 border-b border-app-border bg-app-surface-solid">
           <h3 className="font-semibold text-lg text-app-fg">
             {showSettings ? 'Notification Settings' : 'Notifications'}

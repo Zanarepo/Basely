@@ -8,6 +8,10 @@ import { WbsBasicDetails } from './sidepanel/WbsBasicDetails'
 import { WbsSchedulingFields } from './sidepanel/WbsSchedulingFields'
 import { WbsDependenciesList } from './sidepanel/WbsDependenciesList'
 import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
+import { Paperclip } from 'lucide-react'
+import { AttachmentList } from '@/components/dashboard/collaboration/attachments/AttachmentList'
+import { AttachmentPicker } from '@/components/dashboard/collaboration/attachments/AttachmentPicker'
+import { useEntityAttachments } from '@/components/dashboard/collaboration/hooks/useEntityAttachments'
 
 import { useWbsElementState } from './hooks/useWbsElementState'
 import { useWbsScheduling } from './hooks/useWbsScheduling'
@@ -58,16 +62,24 @@ export function WbsElementSidePanel({
   })
 
   const [isRaciOpen, setIsRaciOpen] = useState(false)
+  const [isAttachmentsOpen, setIsAttachmentsOpen] = useState(false)
+
+  const {
+    attachments,
+    isLoading: isAttachmentsLoading,
+    handleAddAttachment,
+    handleDeleteAttachment
+  } = useEntityAttachments(element?.projectId, 'wbs_element', element?.id)
   const [isScheduleOpen, setIsScheduleOpen] = useState(false)
 
   const isTeamMember = callerRole === 'Team Member'
-  const isResponsible = element?.raciAssignments?.some(a => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId)
-  const isAccountable = element?.raciAssignments?.some(a => a.roleType === 'Accountable' && a.stakeholder?.linked_user_id === callerUserId)
+  const isResponsible = element?.raciAssignments?.some(a => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId) ?? false
+  const isAccountable = element?.raciAssignments?.some(a => a.roleType === 'Accountable' && a.stakeholder?.linked_user_id === callerUserId) ?? false
   
-  const effectiveEditAccess = hasEditAccess && !isTeamMember
-  const canEditSchedule = !!(effectiveEditAccess || (allowTeamScheduleEdits && isResponsible))
-  const canCheckDeliverables = hasEditAccess || isResponsible
-  const canCheckCriteria = hasEditAccess || isAccountable
+  const effectiveEditAccess = hasEditAccess && (!isTeamMember || isResponsible)
+  const canEditSchedule = hasEditAccess && !!(effectiveEditAccess || (allowTeamScheduleEdits && isResponsible))
+  const canCheckDeliverables = hasEditAccess && (effectiveEditAccess || isResponsible)
+  const canCheckCriteria = hasEditAccess && (effectiveEditAccess || isAccountable)
 
   if (!element) return null
 
@@ -85,7 +97,7 @@ export function WbsElementSidePanel({
             <div className="flex items-center gap-2">
               <Settings2 className="h-5 w-5 text-indigo-500" />
               <h3 className="text-lg font-bold text-app-fg">
-                WBS Element Details <span className="text-sm font-normal text-app-muted">({element.code})</span>
+                WBS Element Details <span className="text-sm font-normal text-app-muted">({element?.code})</span>
               </h3>
             </div>
             <button
@@ -131,10 +143,10 @@ export function WbsElementSidePanel({
                 customStatuses={customStatuses}
                 onAddCustomStatus={onAddCustomStatus}
                 onAutoSaveDeliverables={(items) => {
-                  onSave(element.id, { deliverablesData: items })
+                  if (element?.id) onSave(element.id, { deliverablesData: items })
                 }}
                 onAutoSaveCriteria={(items) => {
-                  onSave(element.id, { acceptanceCriteriaData: items })
+                  if (element?.id) onSave(element.id, { acceptanceCriteriaData: items })
                 }}
                 canAssignMembers={canAssignMembers}
                 callerRole={callerRole}
@@ -161,9 +173,9 @@ export function WbsElementSidePanel({
                 {isRaciOpen && (
                   <div className="p-4 border-t border-app-border bg-app-surface-solid">
                     <RaciAssignmentPicker
-                      projectId={element.projectId}
-                      wbsElementId={element.id}
-                      assignments={element.raciAssignments || []}
+                      projectId={element?.projectId || ''}
+                      wbsElementId={element?.id || ''}
+                      assignments={element?.raciAssignments || []}
                       hasEditAccess={hasEditAccess}
                       onAssignmentChanged={onAssignmentChanged}
                       onShowToast={onShowToast}
@@ -227,11 +239,50 @@ export function WbsElementSidePanel({
                 </div>
               )}
               
+              
+              <div className="border border-app-border rounded-xl bg-app-surface">
+                <button
+                  type="button"
+                  onClick={() => setIsAttachmentsOpen(!isAttachmentsOpen)}
+                  className={`w-full flex items-center justify-between px-4 py-3 bg-app-surface hover:bg-app-hover transition-colors ${
+                    isAttachmentsOpen ? 'rounded-t-xl' : 'rounded-xl'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
+                    <Paperclip className="w-4 h-4 text-app-muted" />
+                    Attachments ({attachments.length})
+                  </div>
+                  {isAttachmentsOpen ? (
+                    <ChevronDown className="w-4 h-4 text-app-muted" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-app-muted" />
+                  )}
+                </button>
+                
+                {isAttachmentsOpen && (
+                  <div className="p-4 border-t border-app-border bg-app-surface-solid rounded-b-xl space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-sm font-medium text-app-fg">Files</h4>
+                      {effectiveEditAccess && (
+                        <AttachmentPicker onAttach={handleAddAttachment} />
+                      )}
+                    </div>
+                    <AttachmentList
+                      attachments={attachments}
+                      isLoading={isAttachmentsLoading}
+                      onDelete={handleDeleteAttachment}
+                      currentUserIsAdmin={callerRole === 'owner' || callerRole === 'admin'}
+                      currentUserId={callerUserId}
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="mt-8 border-t border-app-border pt-6">
                 <CommentThread
-                  projectId={element.projectId}
+                  projectId={element?.projectId || ''}
                   entityType="activity"
-                  entityId={element.id}
+                  entityId={element?.id || ''}
                   currentUserId={callerUserId}
                   workspaceMembers={workspaceMembers}
                 />

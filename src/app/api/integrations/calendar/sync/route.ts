@@ -5,9 +5,18 @@ import { createClient } from '@/utils/supabase/server'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
-  // In production, you would want to secure this endpoint using a secret 
-  // passed via Authorization header (e.g., from Vercel Cron).
-  // For now, we leave it open for local testing.
+  const authHeader = request.headers.get('authorization')
+  const { searchParams } = new URL(request.url)
+  const token = searchParams.get('token')
+
+  const cronSecret = process.env.CRON_SECRET
+
+  if (
+    !cronSecret ||
+    (authHeader !== `Bearer ${cronSecret}` && token !== cronSecret)
+  ) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const supabase = await createClient()
 

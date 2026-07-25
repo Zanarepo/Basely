@@ -22,6 +22,8 @@ interface UseWbsMutationsProps {
   setSelectedIds: (ids: string[]) => void
   showToast: (type: 'success' | 'error' | 'info', msg: string) => void
   loadElements: () => Promise<void>
+  callerRole?: string
+  callerUserId?: string
 }
 
 export function useWbsMutations({
@@ -37,9 +39,20 @@ export function useWbsMutations({
   selectedIds,
   setSelectedIds,
   showToast,
-  loadElements
+  loadElements,
+  callerRole,
+  callerUserId
 }: UseWbsMutationsProps) {
   const [isPending, startTransition] = useTransition()
+
+  const handleErrorToast = (prefix: string, error: string | null | undefined) => {
+    const errorStr = String(error)
+    if (errorStr.includes('violates row-level security policy') || errorStr.includes('42501')) {
+      showToast('error', 'You must be assigned to this task to edit or move it.')
+    } else {
+      showToast('error', `${prefix}: ${errorStr}`)
+    }
+  }
 
   const syncStateToDatabase = (list: WbsElement[]) => {
     startTransition(async () => {
@@ -52,7 +65,7 @@ export function useWbsMutations({
         }))
       const res = await updateWbsSortOrders(projectId, updates)
       if (!res.ok) {
-        showToast('error', `Failed to sync undo/redo structure to database: ${res.error}`)
+        handleErrorToast('Failed to sync structure', res.error)
       }
     })
   }
@@ -119,7 +132,7 @@ export function useWbsMutations({
         setActiveElementId(result.id)
         loadElements()
       } else {
-        showToast('error', `Could not create element: ${result.error}`)
+        handleErrorToast('Could not create element', result.error)
         loadElements()
       }
     })
@@ -140,7 +153,7 @@ export function useWbsMutations({
       if (result.ok) {
         showToast('success', 'Element renamed')
       } else {
-        showToast('error', `Could not rename: ${result.error}`)
+        handleErrorToast('Could not rename', result.error)
         loadElements()
       }
     })
@@ -238,7 +251,7 @@ export function useWbsMutations({
       }
       return true
     } else {
-      showToast('error', `Could not save details: ${result.error}`)
+      handleErrorToast('Could not save details', result.error)
       loadElements()
       return false
     }
@@ -294,7 +307,7 @@ export function useWbsMutations({
         showToast('success', 'WBS element deleted')
         loadElements()
       } else {
-        showToast('error', `Could not delete element: ${result.error}`)
+        handleErrorToast('Could not delete element', result.error)
         loadElements()
       }
     })
@@ -307,8 +320,23 @@ export function useWbsMutations({
 
     saveSnapshot(elements)
 
-    const idsToDelete = new Set(selectedIds)
-    const queue = [...selectedIds]
+    let validSelectedIds = selectedIds
+    if (callerRole === 'Team Member') {
+      validSelectedIds = selectedIds.filter(id => {
+        const el = elements.find(e => e.id === id)
+        return el?.createdBy === callerUserId
+      })
+      if (validSelectedIds.length === 0) {
+        showToast('error', 'You can only bulk delete tasks you created.')
+        return
+      }
+      if (validSelectedIds.length < selectedIds.length) {
+        if (!window.confirm(`You can only delete tasks you created. ${validSelectedIds.length} out of ${selectedIds.length} tasks will be deleted. Proceed?`)) return
+      }
+    }
+
+    const idsToDelete = new Set(validSelectedIds)
+    const queue = [...validSelectedIds]
     while (queue.length > 0) {
       const currentId = queue.shift()!
       const children = elements.filter(e => e.parentId === currentId)
@@ -333,7 +361,7 @@ export function useWbsMutations({
         setSelectedIds([])
         loadElements()
       } else {
-        showToast('error', `Could not delete elements: ${result.error}`)
+        handleErrorToast('Could not delete elements', result.error)
         loadElements()
       }
     })
@@ -428,7 +456,7 @@ export function useWbsMutations({
         showToast('success', 'WBS structure updated')
         loadElements()
       } else {
-        showToast('error', `Could not update structure: ${result.error}`)
+        handleErrorToast('Could not update structure', result.error)
         loadElements()
       }
     })

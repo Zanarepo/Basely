@@ -35,6 +35,7 @@ export async function getWbsElements(projectId: string): Promise<
     name: d.name,
     description: d.description,
     ownerId: d.owner_id,
+    createdBy: d.created_by,
     deliverables: d.deliverables,
     deliverablesData: d.deliverables_data || [],
     acceptanceCriteria: d.acceptance_criteria,
@@ -77,6 +78,7 @@ export async function createWbsElement(
     parent_id: parentId,
     name: name.trim(),
     sort_order: sortOrder,
+    created_by: user.id,
   }
 
   if (initialData?.status) insertPayload.status = initialData.status
@@ -90,10 +92,33 @@ export async function createWbsElement(
 
   if (error) return { ok: false, error: error.message }
 
-  // If a work package was directly created, we might need to recalculate schedule
   if (initialData?.isWorkPackage) {
     await recalculateSchedule(projectId)
   }
+
+    // Auto-assign the creator as Responsible so they can edit it
+    const { data: stakeholder } = await supabase
+      .from('stakeholders')
+      .select('id')
+      .eq('linked_user_id', user.id)
+      .eq('project_id', projectId)
+      .single()
+      
+    if (stakeholder) {
+      const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
+      const adminSupabase = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SECRET_KEY!
+      )
+
+      const { error: raciError } = await adminSupabase.from('raci_assignments').insert({
+        project_id: projectId,
+        wbs_element_id: data.id,
+        stakeholder_id: stakeholder.id,
+        role_type: 'Responsible'
+      })
+      if (raciError) console.error("Raci Auto Assign Error:", raciError);
+    }
 
   await logProjectActivity(projectId, 'wbs_element', data.id, 'created', { name: name.trim() })
 
