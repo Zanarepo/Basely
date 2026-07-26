@@ -22,6 +22,7 @@ interface DocumentHeaderProps {
   handleExportDocx: () => void
   handleExportXlsx: () => void
   onShowTemplateSelector?: () => void
+  isReadOnlyTemplate?: boolean
 }
 
 export default function DocumentHeader({
@@ -41,7 +42,8 @@ export default function DocumentHeader({
   handleExportPdf,
   handleExportDocx,
   handleExportXlsx,
-  onShowTemplateSelector
+  onShowTemplateSelector,
+  isReadOnlyTemplate = false,
 }: DocumentHeaderProps) {
   const isTabularDoc = template.document_type === 'wbs_dictionary' || template.document_type === 'raci_matrix'
   const [showMoreMenu, setShowMoreMenu] = useState(false)
@@ -91,7 +93,7 @@ export default function DocumentHeader({
           </button>
         )}
 
-        {template.document_type === 'status_report' && !isSnapshot && hasEditAccess && (
+        {template.document_type === 'status_report' && !isSnapshot && hasEditAccess && !isReadOnlyTemplate && (
           <button
             onClick={() => setShowSnapshotModal(true)}
             className="btn-primary text-xs px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 border-transparent text-white"
@@ -101,7 +103,7 @@ export default function DocumentHeader({
           </button>
         )}
 
-        {hasEditAccess && !isSnapshot && (
+        {hasEditAccess && !isSnapshot && !isReadOnlyTemplate && (
           <button
             onClick={handleSave}
             disabled={isPending || !isDirty}

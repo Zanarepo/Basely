@@ -3,9 +3,11 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
+import { dispatchNotification } from '@/lib/notifications/actions'
 
 export async function createRisk(projectId: string, data: any) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { data: newRisk, error } = await supabase
     .from('risks')
@@ -33,12 +35,24 @@ export async function createRisk(projectId: string, data: any) {
 
   await logProjectActivity(projectId, 'risk', newRisk.id, 'created', { title: data.title })
 
+  if (user) {
+    await dispatchNotification({
+      userId: user.id,
+      triggerType: 'risk_change',
+      referenceEntityType: 'risk',
+      referenceEntityId: newRisk.id,
+      projectId,
+      contentSummary: `New risk created: ${data.title} (Impact: ${data.impact}, Probability: ${data.probability})`,
+    })
+  }
+
   revalidatePath(`/dashboard/projects/${projectId}/risks`)
   return { ok: true }
 }
 
 export async function updateRisk(id: string, projectId: string, data: any) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { error } = await supabase
     .from('risks')
@@ -52,6 +66,17 @@ export async function updateRisk(id: string, projectId: string, data: any) {
   }
 
   await logProjectActivity(projectId, 'risk', id, 'updated', { title: data.title || 'Risk Updated' })
+
+  if (user) {
+    await dispatchNotification({
+      userId: user.id,
+      triggerType: 'risk_change',
+      referenceEntityType: 'risk',
+      referenceEntityId: id,
+      projectId,
+      contentSummary: `Risk assessment updated: ${data.title || 'Risk item'}`,
+    })
+  }
 
   revalidatePath(`/dashboard/projects/${projectId}/risks`)
   return { ok: true }

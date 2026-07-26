@@ -6,6 +6,10 @@ import ProjectDocument from './ProjectDocument'
 import { getReportSnapshots } from '@/lib/documents/actions'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
 import { useSearchParams } from 'next/navigation'
+import { ClosureDocumentsRouter, ClosureDocType } from './closure/ClosureDocumentsRouter'
+import { ClosureSidebarSection } from './closure/ClosureSidebarSection'
+import { PlanningSidebarSection } from './planning/PlanningSidebarSection'
+import { PlanningDocumentsRouter, PlanningDocType } from './planning/PlanningDocumentsRouter'
 
 interface DocumentsWorkspaceProps {
   projectId: string
@@ -19,13 +23,14 @@ export default function DocumentsWorkspace({
   hasEditAccess,
 }: DocumentsWorkspaceProps) {
   const searchParams = useSearchParams()
-  const initialDoc = searchParams.get('doc') as 'charter' | 'wbs_dictionary' | 'raci' | 'status_report' | null
+  const initialDoc = searchParams.get('doc') as string | null
   
-  const [activeTab, setActiveTab] = useState<'charter' | 'wbs_dictionary' | 'raci' | 'status_report'>(initialDoc || 'charter')
+  const [activeTab, setActiveTab] = useState<string>(initialDoc || 'charter')
   const [activeSnapshotId, setActiveSnapshotId] = useState<string | null>(null)
   const [snapshots, setSnapshots] = useState<any[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
+
 
   const showToast = useCallback((type: 'success' | 'error' | 'info', message: string) => {
     const id = Math.random().toString(36).substring(2, 9)
@@ -135,6 +140,34 @@ export default function DocumentsWorkspace({
             </button>
 
             <div className="text-xs font-bold text-app-muted uppercase tracking-wider mt-6 mb-2 pl-2">
+              Registers
+            </div>
+
+            <button 
+              onClick={() => setActiveTab('stakeholder_register')}
+              className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                activeTab === 'stakeholder_register'
+                  ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                  : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Stakeholder Register
+            </button>
+
+            <button 
+              onClick={() => setActiveTab('risk_register')}
+              className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                activeTab === 'risk_register'
+                  ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                  : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Risk Register
+            </button>
+
+            <div className="text-xs font-bold text-app-muted uppercase tracking-wider mt-6 mb-2 pl-2">
               Reports
             </div>
 
@@ -171,13 +204,29 @@ export default function DocumentsWorkspace({
                 ))}
               </div>
             )}
+
+            <PlanningSidebarSection
+              activeTab={activeTab}
+              onSelect={(doc) => {
+                setActiveTab(doc)
+                setActiveSnapshotId(null)
+              }}
+            />
+
+            <ClosureSidebarSection
+              activeTab={activeTab}
+              onSelect={(doc) => {
+                setActiveTab(doc)
+                setActiveSnapshotId(null)
+              }}
+            />
           </div>
         )}
       </div>
 
       {/* Main Document Engine Area */}
       <div className="flex-1 min-w-0 h-full overflow-hidden">
-        {['charter', 'wbs_dictionary', 'raci', 'status_report'].includes(activeTab) && (
+        {['charter', 'wbs_dictionary', 'raci', 'status_report', 'stakeholder_register', 'risk_register'].includes(activeTab) && (
           <ProjectDocument
             key={activeTab + (activeSnapshotId || 'draft')}
             documentType={activeTab}
@@ -187,6 +236,25 @@ export default function DocumentsWorkspace({
             onShowToast={showToast}
             isSnapshot={!!activeSnapshotId}
             snapshotId={activeSnapshotId || undefined}
+          />
+        )}
+
+        {['closure_report', 'lessons_learned', 'handover_document', 'post_implementation_review', 'signoff_board'].includes(activeTab) && (
+          <ClosureDocumentsRouter
+            documentType={activeTab as ClosureDocType}
+            projectId={projectId}
+            hasEditAccess={hasEditAccess}
+            currentLifecycle={projectContext?.lifecycle_status || 'Execution'}
+            onShowToast={showToast}
+          />
+        )}
+
+        {['scope_statement', 'communication_plan', 'quality_management_plan', 'procurement_plan'].includes(activeTab) && (
+          <PlanningDocumentsRouter
+            documentType={activeTab as PlanningDocType}
+            projectId={projectId}
+            hasEditAccess={hasEditAccess}
+            onShowToast={showToast}
           />
         )}
       </div>

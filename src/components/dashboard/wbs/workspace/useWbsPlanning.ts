@@ -18,14 +18,20 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean, caller
 
   const loadElements = async () => {
     setLoading(true)
-    const result = await getWbsElements(projectId)
-    if (result.ok) {
-      setElements(result.data)
-      setError(null)
-    } else {
-      setError(result.error)
+    try {
+      const result = await getWbsElements(projectId)
+      if (result.ok) {
+        setElements(result.data)
+        setError(null)
+      } else {
+        setError(result.error || 'Failed to load WBS elements.')
+      }
+    } catch (err: any) {
+      console.error('Error fetching WBS elements:', err)
+      setError(err?.message || 'Network connection or dev server interruption occurred.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   useEffect(() => {

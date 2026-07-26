@@ -83,6 +83,53 @@ export function useGanttData(projectId: string) {
     fetchData()
   }, [projectId])
 
+  // Subscribe to Realtime changes for schedule tables
+  useEffect(() => {
+    if (!projectId) return
+
+    let timeoutId: NodeJS.Timeout
+
+    const handleRealtimeUpdate = (payload: any) => {
+      // Debounce the fetch to avoid spamming the database during bulk updates
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        setHudMessage({ text: 'Schedule updated by another user, syncing...', type: 'info' })
+        fetchData(true)
+      }, 500)
+    }
+
+    const setupRealtime = async () => {
+      const supabase = (await import('@/utils/supabase/client')).createClient()
+      
+      const channel = supabase.channel(`schedule_sync:${projectId}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'activities', filter: `project_id=eq.${projectId}` },
+          handleRealtimeUpdate
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'dependencies', filter: `project_id=eq.${projectId}` },
+          handleRealtimeUpdate
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'wbs_elements', filter: `project_id=eq.${projectId}` },
+          handleRealtimeUpdate
+        )
+        .subscribe()
+
+      return channel
+    }
+
+    let channelPromise = setupRealtime()
+
+    return () => {
+      clearTimeout(timeoutId)
+      channelPromise.then(channel => channel.unsubscribe())
+    }
+  }, [projectId])
+
   // Get snapshots when baseline selection changes
   useEffect(() => {
     if (!selectedBaselineId) {

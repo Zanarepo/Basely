@@ -11,6 +11,7 @@ type GanttTimelineBarsProps = {
   timelineStart: string
   hasEditAccess: boolean
   elements: any[]
+  lockedActivities?: { [activityId: string]: string }
   onPointerDown: (e: React.PointerEvent, row: any, type: 'move' | 'resize-left' | 'resize-right') => void
   onItemHover: (e: React.MouseEvent, row: any) => void
   onItemLeave: () => void
@@ -28,6 +29,7 @@ export function GanttTimelineBars({
   timelineStart,
   hasEditAccess,
   elements,
+  lockedActivities = {},
   onPointerDown,
   onItemHover,
   onItemLeave,
@@ -49,6 +51,7 @@ export function GanttTimelineBars({
         const isSummary = !row.element.isWorkPackage
         const isMilestone = row.activity?.type === 'Milestone'
         const isCritical = row.activity?.isCritical ?? false
+        const isLockedByOther = row.activity ? !!lockedActivities[row.activity.id] : false
 
         // Position y
         const topY = row.rowIndex * rowHeight
@@ -89,8 +92,8 @@ export function GanttTimelineBars({
             <div
               id={row.activity ? `bar-${row.activity.id}` : undefined}
               className={`absolute group flex items-center transition-shadow ${
-                hasEditAccess && !isSummary ? 'cursor-grab active:cursor-grabbing' : ''
-              }`}
+                hasEditAccess && !isSummary && !isLockedByOther ? 'cursor-grab active:cursor-grabbing' : ''
+              } ${isLockedByOther ? 'opacity-50 pointer-events-none' : ''}`}
               onPointerEnter={(e) => onItemHover(e, row)}
               onPointerLeave={() => onItemLeave()}
               onPointerDown={(e) => !isSummary && onPointerDown(e, row, 'move')}
@@ -133,8 +136,11 @@ export function GanttTimelineBars({
                         : 'bg-emerald-400 border-emerald-600'
                     }`}
                   />
-                  {row.activity?.constraintType !== 'As Soon As Possible' && (
-                    <Lock className="w-3 h-3 absolute -right-4 text-rose-500" />
+                  {(row.activity?.constraintType !== 'As Soon As Possible' || isLockedByOther) && (
+                    <Lock className={`w-3 h-3 absolute -right-4 ${isLockedByOther ? 'text-amber-500' : 'text-rose-500'}`} />
+                  )}
+                  {isCritical && (
+                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-red-500 whitespace-nowrap select-none pointer-events-none">CPM</span>
                   )}
                 </div>
               ) : (
@@ -143,10 +149,10 @@ export function GanttTimelineBars({
                   className={`w-full h-full rounded-md shadow-sm border overflow-hidden relative z-10 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-indigo-400 group-hover:brightness-110 ${
                     row.element.status === 'Complete'
                       ? 'bg-emerald-500 border-emerald-600'
-                      : row.element.status === 'In Progress'
-                      ? 'bg-blue-500 border-blue-600'
                       : isCritical
                       ? 'bg-red-500 border-red-600'
+                      : row.element.status === 'In Progress'
+                      ? 'bg-blue-500 border-blue-600'
                       : 'bg-indigo-500 border-indigo-600'
                   }`}
                 >
@@ -158,8 +164,12 @@ export function GanttTimelineBars({
                       style={{ width: `${row.percentComplete}%` }}
                     />
                   )}
-                  {row.activity?.constraintType !== 'As Soon As Possible' && (
-                    <Lock className="w-3 h-3 absolute top-1.5 left-1 text-white/70" />
+                  {(row.activity?.constraintType !== 'As Soon As Possible' || isLockedByOther) && (
+                    <Lock className={`w-3 h-3 absolute top-1.5 left-1 ${isLockedByOther ? 'text-amber-400' : 'text-white/70'}`} />
+                  )}
+                  {/* CPM Badge for critical path tasks */}
+                  {isCritical && (
+                    <span className="absolute top-0.5 right-1 text-[7px] font-bold text-white/90 leading-none tracking-wide select-none pointer-events-none drop-shadow-sm">CPM</span>
                   )}
                 </div>
               )}
@@ -176,6 +186,18 @@ export function GanttTimelineBars({
                 >
                   <div className="absolute right-0 -top-1 bottom-0 w-[2px] h-[10px] bg-indigo-400 dark:bg-indigo-600" />
                 </div>
+              )}
+              {/* Float Days Label */}
+              {!isSummary && !isMilestone && row.activity?.totalFloat > 0 && (
+                <span
+                  className="absolute pointer-events-none select-none text-[8px] text-indigo-400 dark:text-indigo-500 font-medium whitespace-nowrap leading-none"
+                  style={{
+                    left: `calc(100% + 4px)`,
+                    top: '-2px',
+                  }}
+                >
+                  {row.activity.totalFloat}d float
+                </span>
               )}
 
               {/* Resize Handles (Left / Right) */}

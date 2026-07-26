@@ -16,6 +16,7 @@ import { ProjectIntegrationsMenu } from '@/components/dashboard/projects/Project
 import { LivePresenceWrapper } from '@/components/dashboard/presence/LivePresenceWrapper'
 import ProjectDashboardWorkspace from '@/components/dashboard/projects/ProjectDashboardWorkspace'
 import ProjectNavigationTabs from '@/components/dashboard/projects/ProjectNavigationTabs'
+import { LifecycleStatusBadge } from '@/components/dashboard/projects/lifecycle/components/LifecycleStatusBadge'
 
 // Planning components type definition
 type ProjectPageProps = {
@@ -40,7 +41,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
   // 1. Fetch project with RLS enforcement
   const { data: project, error: projectError } = await supabase
     .from('projects')
-    .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, organization_id, created_by, allow_team_schedule_edits')
+    .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, organization_id, created_by, allow_team_schedule_edits, lifecycle_status')
     .eq('id', id)
     .maybeSingle()
 
@@ -182,6 +183,12 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
             <Workflow className="h-3.5 w-3.5" />
             {project.methodology}
           </span>
+          <LifecycleStatusBadge 
+            projectId={project.id} 
+            initialStatus={project.lifecycle_status || 'Executing'} 
+            canEdit={baseEditAccess && !project.is_archived} 
+            showFullStepper={true} 
+          />
           {project.is_archived && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-500 border border-amber-500/25">
               <Lock className="h-3.5 w-3.5" />
@@ -237,6 +244,8 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           projectId={project.id}
           hasEditAccess={hasScheduleEditAccess}
           workspaceMembers={workspaceMembers}
+          currentUserId={user.id}
+          currentUserName={user.user_metadata?.full_name || user.email || 'Unknown'}
         />
       )}
 

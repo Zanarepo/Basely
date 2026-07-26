@@ -19,6 +19,9 @@ interface WbsBoardCardProps {
   onDragLeaveTask: (e: React.DragEvent) => void
   onDropOnTask: (e: React.DragEvent, targetTaskId: string, targetStatus: string) => void
   onDragEnd: () => void
+  onTouchStart?: (e: React.TouchEvent, taskId: string, sourceCol: string) => void
+  onTouchMove?: (e: React.TouchEvent) => void
+  onTouchEnd?: (e: React.TouchEvent) => void
 }
 
 export function WbsBoardCard({
@@ -39,6 +42,9 @@ export function WbsBoardCard({
   onDragLeaveTask,
   onDropOnTask,
   onDragEnd,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
 }: WbsBoardCardProps) {
   const responsible = t.raciAssignments?.find((a) => a.roleType === 'Responsible')
   const responsibleName = responsible?.stakeholder?.name || null
@@ -62,11 +68,16 @@ export function WbsBoardCard({
       onDragLeave={onDragLeaveTask}
       onDrop={(e) => onDropOnTask(e, t.id, colName)}
       onDragEnd={onDragEnd}
-      className={`group/task group relative bg-app-surface border rounded-xl p-3 shadow-xs transition-all duration-200
+      onTouchStart={(e) => onTouchStart?.(e, t.id, colName)}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      data-task-id={t.id}
+      data-board-column={colName}
+      className={`group/task group relative bg-app-surface border rounded-xl p-3.5 sm:p-3 shadow-xs transition-all duration-200 select-none touch-pan-y
         ${isResponsible ? 'border-indigo-400 ring-1 ring-indigo-400/50 bg-indigo-50/30 dark:bg-indigo-500/5' : 'border-app-border'}
         ${canDragTask ? 'cursor-grab active:cursor-grabbing hover:border-indigo-400 hover:shadow-md' : 'cursor-pointer hover:border-slate-300'}
-        ${draggedTaskId === t.id ? 'opacity-40 border-dashed scale-95' : ''}
-        ${dragOverTaskId === t.id ? 'border-t-2 border-t-indigo-500 transform translate-y-1' : ''}
+        ${draggedTaskId === t.id ? 'opacity-40 border-dashed scale-95 bg-indigo-500/5' : ''}
+        ${dragOverTaskId === t.id ? 'border-t-2 border-t-indigo-500 transform translate-y-1 shadow-lg' : ''}
       `}
     >
       <div className="flex items-center justify-between mb-2">
@@ -86,7 +97,7 @@ export function WbsBoardCard({
                 e.stopPropagation()
                 onDeleteCard(t.id)
               }}
-              className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200"
+              className="p-1.5 sm:p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200"
               title="Delete Card"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -96,7 +107,7 @@ export function WbsBoardCard({
             {visibleColIndex + 1}/{visibleColumnsLength}
           </span>
           <span 
-            className="text-[9px] font-semibold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded truncate max-w-[120px]"
+            className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded truncate max-w-[110px]"
             title={tagText}
           >
             {tagText}

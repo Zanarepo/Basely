@@ -9,11 +9,15 @@ import { GanttToolbar } from './GanttToolbar'
 import { GanttSidebar } from './GanttSidebar'
 import { ScheduleSheetModal } from './ScheduleSheetModal'
 import { useGanttData } from '@/lib/schedule/useGanttData'
+import { useGanttPresence } from './useGanttPresence'
+import { LiveCursorsOverlay } from '../wbs/workspace/LiveCursorsOverlay'
 
 type GanttWorkspaceProps = {
   projectId: string
   hasEditAccess: boolean
   workspaceMembers: any[]
+  currentUserId: string
+  currentUserName: string
 }
 
 const ROW_HEIGHT = 48
@@ -22,6 +26,8 @@ export default function GanttWorkspace({
   projectId,
   hasEditAccess,
   workspaceMembers,
+  currentUserId,
+  currentUserName,
 }: GanttWorkspaceProps) {
   const {
     loading,
@@ -73,6 +79,15 @@ export default function GanttWorkspace({
     window.print()
   }
 
+  const {
+    activeUsers,
+    showCursors,
+    toggleCursors,
+    lockedActivities,
+    acquireLock,
+    releaseLock,
+  } = useGanttPresence(projectId, currentUserId, currentUserName)
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
@@ -103,6 +118,9 @@ export default function GanttWorkspace({
           <span className="text-xs font-bold text-app-fg">{hudMessage.text}</span>
         </div>
       )}
+
+      {/* Live Cursors Overlay */}
+      <LiveCursorsOverlay activeUsers={activeUsers} showCursors={showCursors} />
 
       {/* Gantt Header Toolbar */}
       <GanttToolbar
@@ -162,6 +180,9 @@ export default function GanttWorkspace({
             onDeleteDependency={handleDeleteDependency}
             hasEditAccess={hasEditAccess}
             expandedNodeIds={expandedNodeIds}
+            lockedActivities={lockedActivities}
+            acquireLock={acquireLock}
+            releaseLock={releaseLock}
           />
         </div>
       </div>

@@ -13,6 +13,7 @@ export type Risk = {
   impact: number
   risk_score: number
   response_strategy: 'Avoid' | 'Mitigate' | 'Transfer' | 'Accept' | null
+  mitigation_plan: string | null
   status: string
   owner_stakeholder_id: string | null
   allocated_contingency_amount: number | null

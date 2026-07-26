@@ -9,18 +9,19 @@ type TabKey = 'dashboard' | 'wbs' | 'gantt' | 'cost' | 'stakeholders' | 'risks' 
 interface TabInfo {
   id: TabKey
   label: string
+  shortLabel: string
   isNew?: boolean
 }
 
 const ALL_TABS: TabInfo[] = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'wbs', label: 'Work Breakdown Structure (WBS)' },
-  { id: 'gantt', label: 'Gantt & Scheduling' },
-  { id: 'cost', label: 'Budget & Cost' },
-  { id: 'stakeholders', label: 'Stakeholders' },
-  { id: 'risks', label: 'Risks & Issues' },
-  { id: 'documents', label: 'Documents' },
-  { id: 'team', label: 'Team & Access', isNew: true },
+  { id: 'dashboard', label: 'Dashboard', shortLabel: 'Dashboard' },
+  { id: 'wbs', label: 'Work Breakdown Structure (WBS)', shortLabel: 'WBS' },
+  { id: 'gantt', label: 'Gantt & Scheduling', shortLabel: 'Gantt' },
+  { id: 'cost', label: 'Budget & Cost', shortLabel: 'Cost' },
+  { id: 'stakeholders', label: 'Stakeholders', shortLabel: 'People' },
+  { id: 'risks', label: 'Risks & Issues', shortLabel: 'Risks' },
+  { id: 'documents', label: 'Documents', shortLabel: 'Docs' },
+  { id: 'team', label: 'Team & Access', shortLabel: 'Team', isNew: true },
 ]
 
 const DEFAULT_VISIBLE: TabKey[] = ['dashboard', 'wbs', 'gantt', 'team']
@@ -55,7 +56,6 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as TabKey[]
-        // Ensure only valid tabs are loaded
         const validTabs = parsed.filter(t => availableTabs.some(at => at.id === t))
         if (validTabs.length > 0) {
           setVisibleTabs(prev => {
@@ -85,7 +85,6 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
     setVisibleTabs(prev => {
       let newTabs: TabKey[]
       if (prev.includes(tabId)) {
-        // Don't allow hiding the active tab or the very last tab
         if (prev.length === 1 || tabId === activeTab) return prev
         newTabs = prev.filter(id => id !== tabId)
       } else {
@@ -96,7 +95,6 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
     })
   }
 
-  // Ensure active tab is ALWAYS visible, regardless of preferences
   const finalVisibleTabs = visibleTabs.includes(activeTab as TabKey) 
     ? visibleTabs 
     : [...visibleTabs, activeTab as TabKey]
@@ -104,14 +102,14 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
   const pinnedTabs = availableTabs.filter(t => finalVisibleTabs.includes(t.id))
   const unpinnedTabs = availableTabs.filter(t => !finalVisibleTabs.includes(t.id))
 
-  // Don't render complex UI during SSR to prevent hydration mismatch
   if (!mounted) {
     return (
       <div className="border-b border-app-border mb-6">
-        <nav className="flex space-x-6 min-w-max pb-1">
+        <nav className="flex gap-4 sm:gap-6 min-w-max pb-1">
           {availableTabs.slice(0, 3).map((tab) => (
             <div key={tab.id} className="pb-3 text-sm font-bold text-app-muted border-b-2 border-transparent">
-              {tab.label}
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.shortLabel}</span>
             </div>
           ))}
         </nav>
@@ -121,20 +119,21 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
 
   return (
     <div className="border-b border-app-border mb-6 overflow-visible relative">
-      <nav className="flex items-center space-x-6 pb-1 flex-wrap md:flex-nowrap">
+      <nav className="flex items-center gap-4 md:gap-6 pb-1 flex-wrap md:flex-nowrap">
         
         {/* Pinned Tabs */}
         {pinnedTabs.map((tab) => (
           <Link
             key={tab.id}
             href={`/dashboard/projects/${projectId}?tab=${tab.id}`}
-            className={`pb-3 text-sm transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
+            className={`pb-3 text-sm transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === tab.id
                 ? 'border-indigo-500 text-indigo-500 font-bold'
                 : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
             }`}
           >
-            {tab.label}
+            <span className="hidden sm:inline">{tab.label}</span>
+            <span className="sm:hidden">{tab.shortLabel}</span>
             {tab.isNew && (
               <span className="bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider">
                 New
@@ -144,17 +143,17 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
         ))}
 
         {/* More Menu */}
-        <div className="relative pb-3" ref={dropdownRef}>
+        <div className="relative pb-3 ml-auto sm:ml-0" ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-1.5 text-sm font-medium text-app-muted hover:text-app-fg transition-colors p-1 rounded-md cursor-pointer"
+            className="flex items-center gap-1.5 text-sm font-medium text-app-muted hover:text-app-fg transition-colors p-1.5 sm:p-1 rounded-md cursor-pointer bg-app-surface sm:bg-transparent border sm:border-transparent border-app-border"
             title="More Tabs"
           >
             <MoreHorizontal className="w-5 h-5" />
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute top-full left-0 md:left-auto md:right-0 mt-1 w-64 bg-app-surface-solid border border-app-border shadow-xl rounded-xl z-50 overflow-hidden">
+            <div className="absolute top-full right-0 mt-1 w-64 bg-app-surface-solid border border-app-border shadow-xl rounded-xl z-50 overflow-hidden">
               
               {!isCustomizeMode ? (
                 <div className="p-2">
@@ -189,7 +188,7 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
                   
                   <button
                     onClick={() => setIsCustomizeMode(true)}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors cursor-pointer"
                   >
                     <Settings2 className="w-4 h-4" />
                     Customize Toolbar
@@ -203,7 +202,7 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
                     </span>
                     <button 
                       onClick={() => setIsCustomizeMode(false)}
-                      className="text-xs text-indigo-500 font-bold hover:underline"
+                      className="text-xs text-indigo-500 font-bold hover:underline cursor-pointer"
                     >
                       Done
                     </button>
@@ -218,7 +217,7 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
                           key={tab.id}
                           disabled={isRequired}
                           onClick={() => toggleTab(tab.id)}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
                             isRequired ? 'opacity-50 cursor-not-allowed' : 'hover:bg-app-bg'
                           }`}
                         >

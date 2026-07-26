@@ -35,6 +35,7 @@ export default function RiskForm({
   const [probability, setProbability] = useState<number>(existingRisk?.probability || 3)
   const [impact, setImpact] = useState<number>(existingRisk?.impact || 3)
   const [responseStrategy, setResponseStrategy] = useState<string>(existingRisk?.response_strategy || 'Mitigate')
+  const [mitigationPlan, setMitigationPlan] = useState(existingRisk?.mitigation_plan || '')
   const [status, setStatus] = useState<string>(existingRisk?.status || 'Identified')
   const [ownerId, setOwnerId] = useState<string>(existingRisk?.owner_stakeholder_id || '')
   const [allocatedAmount, setAllocatedAmount] = useState<string>(existingRisk?.allocated_contingency_amount?.toString() || '')
@@ -120,6 +121,7 @@ export default function RiskForm({
       probability,
       impact,
       response_strategy: responseStrategy || null,
+      mitigation_plan: mitigationPlan || null,
       status,
       owner_stakeholder_id: ownerId || null,
       allocated_contingency_amount: currentAllocation > 0 ? currentAllocation : null,
@@ -263,6 +265,18 @@ export default function RiskForm({
                   <option value="Closed">Closed</option>
                 </select>
               </div>
+            </div>
+
+            {/* Mitigation Plan */}
+            <div>
+              <label className="block text-sm font-semibold text-app-fg mb-1.5">Mitigation Plan / Strategy Details</label>
+              <textarea
+                value={mitigationPlan}
+                onChange={(e) => setMitigationPlan(e.target.value)}
+                rows={4}
+                placeholder="Describe the actionable steps and strategies planned to mitigate or address this risk..."
+                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+              />
             </div>
 
             {/* Owner */}

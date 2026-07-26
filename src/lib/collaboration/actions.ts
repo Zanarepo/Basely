@@ -162,7 +162,7 @@ export async function postComment(
           if (stData?.linked_user_id) targetUserId = stData.linked_user_id
         }
 
-        if (targetUserId && targetUserId !== userData.user.id && !notifiedUserIds.has(targetUserId)) {
+        if (targetUserId && !notifiedUserIds.has(targetUserId)) {
           notifiedUserIds.add(targetUserId)
           // Remove the @mentions from the body snippet so it doesn't redundantly show the recipient's name
           const snippet = body.replace(/@[a-zA-Z0-9_\- ]+/g, '').trim() || 'left a comment'
@@ -193,7 +193,7 @@ export async function postComment(
           const { data: stData } = await supabaseAdmin.from('stakeholders').select('linked_user_id').eq('id', entityData.owner_stakeholder_id).single()
           const ownerUserId = stData?.linked_user_id
 
-          if (ownerUserId && ownerUserId !== userData.user.id && !notifiedUserIds.has(ownerUserId)) {
+          if (ownerUserId && !notifiedUserIds.has(ownerUserId)) {
             const snippet = body.replace(/@[a-zA-Z0-9_\- ]+/g, '').trim() || 'left a comment'
             await dispatchNotification({
               userId: ownerUserId,

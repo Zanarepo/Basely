@@ -21,6 +21,8 @@ import {
   deleteProject,
   updateProjectMembers,
 } from '@/lib/projects/actions'
+import InitiationWorkspace from './initiation/InitiationWorkspace'
+import { BusinessCase, FeasibilityStudy } from '@/lib/initiation/actions'
 
 type ProjectType = {
   id: string
@@ -58,6 +60,8 @@ type ProjectsDashboardProps = {
   isOwner: boolean
   callerRole: string
   callerCanManageAll: boolean
+  businessCases: BusinessCase[]
+  feasibilityStudies: FeasibilityStudy[]
 }
 
 let toastCounter = 0
@@ -69,6 +73,8 @@ export function ProjectsDashboard({
   callerUserId,
   isOwner,
   callerRole,
+  businessCases,
+  feasibilityStudies
 }: ProjectsDashboardProps) {
   const { activeWorkspace } = useWorkspace()
   const [wizardOpen, setWizardOpen] = useState(false)
@@ -77,7 +83,7 @@ export function ProjectsDashboard({
   
   // Show active vs archived projects tab
   const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active')
-  const [viewMode, setViewMode] = useState<'list' | 'portfolio'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'portfolio' | 'initiation'>('list')
   
   // Member assignment dropdown state: project ID that currently has its member picker open
   const [openMemberPickerProjectId, setOpenMemberPickerProjectId] = useState<string | null>(null)
@@ -307,9 +313,29 @@ export function ProjectsDashboard({
         >
           Portfolio Health
         </button>
+        <button
+          onClick={() => setViewMode('initiation')}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+            viewMode === 'initiation'
+              ? 'border-indigo-500 text-indigo-500 font-bold'
+              : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
+          }`}
+        >
+          Initiation / Ideas
+        </button>
       </div>
 
-      {viewMode === 'portfolio' ? (
+      {viewMode === 'initiation' ? (
+        <InitiationWorkspace 
+          organizationId={organizationId}
+          businessCases={businessCases}
+          feasibilityStudies={feasibilityStudies}
+          callerUserId={callerUserId}
+          isOwner={isOwner}
+          callerRole={callerRole}
+          projects={projects}
+        />
+      ) : viewMode === 'portfolio' ? (
         <PortfolioWorkspace projects={projects} />
       ) : (
         <>

@@ -2,6 +2,7 @@ type GanttTimelineTooltipProps = {
   hoveredItem: {
     x: number
     y: number
+    yBottom: number
     elementName: string
     duration: number
     es: string | null
@@ -15,19 +16,28 @@ type GanttTimelineTooltipProps = {
   } | null
 }
 
+// Tooltip height threshold: if y is less than this, flip below the bar
+const FLIP_THRESHOLD = 140
+
 export function GanttTimelineTooltip({ hoveredItem }: GanttTimelineTooltipProps) {
   if (!hoveredItem) return null
 
   const isMilestone = hoveredItem.isMilestone
+  const flipBelow = hoveredItem.y < FLIP_THRESHOLD
 
   return (
     <div
-      className={`absolute z-50 text-white text-xs rounded-lg shadow-xl p-3 border pointer-events-none transform -translate-x-1/2 -translate-y-full min-w-[200px] ${
+      className={`absolute z-50 text-white text-xs rounded-lg shadow-xl p-3 border pointer-events-none -translate-x-1/2 min-w-[200px] ${
+        flipBelow ? '' : '-translate-y-full'
+      } ${
         isMilestone
           ? 'bg-amber-950 border-amber-700'
           : 'bg-slate-900 border-slate-700'
       }`}
-      style={{ left: `${hoveredItem.x}px`, top: `${hoveredItem.y}px` }}
+      style={{
+        left: `${hoveredItem.x}px`,
+        top: flipBelow ? `${hoveredItem.yBottom}px` : `${hoveredItem.y}px`,
+      }}
     >
       {isMilestone ? (
         <>
@@ -87,10 +97,16 @@ export function GanttTimelineTooltip({ hoveredItem }: GanttTimelineTooltipProps)
         </div>
       )}
 
-      {/* Triangle pointer */}
-      <div className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] ${
-        isMilestone ? 'border-t-amber-950' : 'border-t-slate-900'
-      }`} />
+      {/* Triangle pointer — flips direction based on position */}
+      {flipBelow ? (
+        <div className={`absolute -top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] ${
+          isMilestone ? 'border-b-amber-950' : 'border-b-slate-900'
+        }`} />
+      ) : (
+        <div className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] ${
+          isMilestone ? 'border-t-amber-950' : 'border-t-slate-900'
+        }`} />
+      )}
     </div>
   )
 }

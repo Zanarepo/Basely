@@ -2,13 +2,10 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 import { ACTIVE_ORG_COOKIE } from '@/lib/workspace/constants'
 import { Users } from 'lucide-react'
-import {
-  WorkspaceMembersPanel,
-  type WorkspaceMember,
-} from '@/components/dashboard/WorkspaceMembersPanel'
-import { SsoSettingsPanel } from '@/components/dashboard/team/SsoSettingsPanel'
-import { ApprovalPoliciesPanel } from '@/components/dashboard/team/ApprovalPoliciesPanel'
-import { GovernanceAuditLogPanel } from '@/components/dashboard/team/GovernanceAuditLogPanel'
+import { type WorkspaceMember } from '@/components/dashboard/WorkspaceMembersPanel'
+import { TeamPageTabs } from '@/components/dashboard/team/TeamPageTabs'
+
+const INVITE_ROLES = new Set(['Admin', 'PM'])
 
 export default async function TeamPage() {
   const supabase = await createClient()
@@ -37,8 +34,9 @@ export default async function TeamPage() {
   const orgName = organization?.name ?? 'Your workspace'
   const isOwner = organization?.owner_id === user?.id
   const isAdmin = active?.role === 'Admin' || isOwner
+  const canInvite = isOwner || INVITE_ROLES.has(active?.role ?? '')
 
-  // 2️⃣ Load all members (only if user is admin/owner, or show limited if active)
+  // 2️⃣ Load all members
   let memberList: WorkspaceMember[] = []
   if (active) {
     const { data } = await supabase
@@ -63,7 +61,14 @@ export default async function TeamPage() {
     })
   }
 
-  // 3️⃣ Render the team page
+  // 3️⃣ Load current user's profile for the Profile tab
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, email')
+    .eq('id', user!.id)
+    .single()
+
+  // 4️⃣ Render the team page with tabs
   return (
     <div className="relative z-10 max-w-4xl mx-auto px-6 py-10">
       <div className="flex items-center gap-3 mb-8">
@@ -72,40 +77,24 @@ export default async function TeamPage() {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-app-fg">Team & Permissions</h1>
+          <h1 className="text-2xl font-bold text-app-fg">Team & Settings</h1>
           <p className="text-sm text-app-muted">{orgName}</p>
         </div>
       </div>
 
       {active && (
-        <div className="space-y-8">
-          <WorkspaceMembersPanel
-            organizationId={active.organization_id}
-            members={memberList}
-            isOwner={isOwner}
-            callerUserId={user!.id}
-            callerCanManageAllMembers={(active as any)?.can_manage_all_members === true}
-          />
-
-          {isAdmin && (
-            <>
-              <ApprovalPoliciesPanel
-                organizationId={active.organization_id}
-                members={memberList}
-                isAdmin={isAdmin}
-              />
-              <SsoSettingsPanel
-                organizationId={active.organization_id}
-                members={memberList}
-                isAdmin={isAdmin}
-              />
-              <GovernanceAuditLogPanel
-                organizationId={active.organization_id}
-                isAdmin={isAdmin}
-              />
-            </>
-          )}
-        </div>
+        <TeamPageTabs
+          organizationId={active.organization_id}
+          orgName={orgName}
+          members={memberList}
+          isOwner={isOwner}
+          isAdmin={isAdmin}
+          canInvite={canInvite}
+          callerUserId={user!.id}
+          callerCanManageAllMembers={(active as any)?.can_manage_all_members === true}
+          profileName={profile?.full_name ?? ''}
+          profileEmail={profile?.email ?? user!.email ?? ''}
+        />
       )}
     </div>
   )

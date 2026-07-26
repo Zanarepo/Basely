@@ -13,6 +13,9 @@ type UseGanttCanvasInteractionProps = {
   activities: Activity[]
   dependencies: Dependency[]
   elements: any[]
+  lockedActivities?: { [activityId: string]: string }
+  acquireLock?: (activityId: string) => void
+  releaseLock?: (activityId: string) => void
 }
 
 export function useGanttCanvasInteraction({
@@ -26,6 +29,9 @@ export function useGanttCanvasInteraction({
   activities,
   dependencies,
   elements,
+  lockedActivities = {},
+  acquireLock,
+  releaseLock,
 }: UseGanttCanvasInteractionProps) {
   // Drag states
   const [dragging, setDragging] = useState<{
@@ -50,6 +56,7 @@ export function useGanttCanvasInteraction({
   const [hoveredItem, setHoveredItem] = useState<{
     x: number
     y: number
+    yBottom: number
     elementName: string
     duration: number
     es: string | null
@@ -69,8 +76,12 @@ export function useGanttCanvasInteraction({
     type: 'move' | 'resize-left' | 'resize-right'
   ) => {
     if (!hasEditAccess || !row.activity || !row.es) return
+    if (lockedActivities[row.activity.id]) return // Do not allow interaction if locked by another user
+
     e.stopPropagation()
     e.preventDefault()
+
+    if (acquireLock) acquireLock(row.activity.id)
 
     // Capture pointer to track dragging outside bounds
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -118,6 +129,7 @@ export function useGanttCanvasInteraction({
 
       // Clear drag state synchronously so UI responds immediately
       setDragging(null)
+      if (releaseLock) releaseLock(act.id)
 
       const deltaX = e.clientX - startX
       const deltaDays = Math.round(deltaX / dayWidth)
@@ -263,6 +275,7 @@ export function useGanttCanvasInteraction({
     setHoveredItem({
       x: rect.left - (containerRect?.left ?? 0) + scrollLeft + rect.width / 2,
       y: rect.top - (containerRect?.top ?? 0) + scrollTop - 10,
+      yBottom: rect.bottom - (containerRect?.top ?? 0) + scrollTop + 10,
       elementName: row.element.name,
       duration: row.duration,
       es: row.es,

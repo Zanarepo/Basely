@@ -5,8 +5,12 @@ export async function proxy(request: NextRequest) {
   const url = request.nextUrl.clone()
   const pathname = url.pathname.replace(/\/+$/, '') || '/'
 
-  // Let the auth callback exchange the code without membership checks
-  if (pathname.startsWith('/auth/callback')) {
+  // Let the auth callback and public API/webhook routes run without browser session/cookie proxying
+  if (
+    pathname.startsWith('/auth/callback') ||
+    pathname.startsWith('/api/v1') ||
+    pathname.startsWith('/api/internal')
+  ) {
     return NextResponse.next()
   }
 
@@ -61,8 +65,10 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - api/v1 (stateless external REST API)
+     * - api/internal (internal webhook/generation API)
      * - images/assets (static files)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/v1|api/internal|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

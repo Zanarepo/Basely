@@ -20,6 +20,7 @@ interface DocumentEngineProps {
   onShowToast: (type: 'success' | 'error', msg: string) => void
   isSnapshot?: boolean
   onShowTemplateSelector?: () => void
+  isReadOnlyTemplate?: boolean // For pre-project entities that don't save to generated_documents
 }
 
 export default function DocumentEngine({
@@ -31,6 +32,7 @@ export default function DocumentEngine({
   onShowToast,
   isSnapshot = false,
   onShowTemplateSelector,
+  isReadOnlyTemplate = false,
 }: DocumentEngineProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -190,6 +192,7 @@ export default function DocumentEngine({
         handleExportDocx={handleExportDocx}
         handleExportXlsx={handleExportXlsx}
         onShowTemplateSelector={onShowTemplateSelector}
+        isReadOnlyTemplate={isReadOnlyTemplate}
       />
 
       {/* Document Content Rendering */}

@@ -132,4 +132,20 @@ body {
   .crud-panel {
     @apply backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6 shadow-sm;
   }
+
+  /* Mobile & Touch Utilities */
+  .no-scrollbar::-webkit-scrollbar,
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar,
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
 }
+

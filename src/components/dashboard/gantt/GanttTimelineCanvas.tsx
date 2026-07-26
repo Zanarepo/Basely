@@ -25,6 +25,9 @@ type GanttTimelineCanvasProps = {
   onDeleteDependency: (depId: string) => Promise<boolean>
   hasEditAccess: boolean
   expandedNodeIds: Set<string>
+  lockedActivities?: { [activityId: string]: string }
+  acquireLock?: (activityId: string) => void
+  releaseLock?: (activityId: string) => void
 }
 
 const ROW_HEIGHT = 48
@@ -45,6 +48,9 @@ export function GanttTimelineCanvas({
   onDeleteDependency,
   hasEditAccess,
   expandedNodeIds,
+  lockedActivities = {},
+  acquireLock,
+  releaseLock,
 }: GanttTimelineCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -193,6 +199,9 @@ export function GanttTimelineCanvas({
     activities,
     dependencies,
     elements,
+    lockedActivities,
+    acquireLock,
+    releaseLock,
   })
 
   // Render grid timelines
@@ -251,6 +260,7 @@ export function GanttTimelineCanvas({
           timelineStart={timelineStart}
           hasEditAccess={hasEditAccess}
           elements={elements}
+          lockedActivities={lockedActivities}
           onPointerDown={handlePointerDown}
           onItemHover={handleItemHover}
           onItemLeave={() => setHoveredItem(null)}

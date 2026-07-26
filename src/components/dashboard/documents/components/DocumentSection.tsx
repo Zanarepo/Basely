@@ -5,7 +5,15 @@ import WbsDictionaryResolver from '../resolvers/WbsDictionaryResolver'
 import RaciMatrixResolver from '../resolvers/RaciMatrixResolver'
 import ScheduleStatusResolver from '../resolvers/ScheduleStatusResolver'
 import EvmStatusResolver from '../resolvers/EvmStatusResolver'
+import { ScopeStatementResolver } from '../planning/ScopeStatementResolver'
+import { CommunicationPlanResolver } from '../planning/CommunicationPlanResolver'
+import { QualityManagementPlanResolver } from '../planning/QualityManagementPlanResolver'
+import { ProcurementPlanResolver } from '../planning/ProcurementPlanResolver'
 import TopRisksResolver from '../resolvers/TopRisksResolver'
+import StakeholderRegisterResolver from '../resolvers/StakeholderRegisterResolver'
+import RiskRegisterResolver from '../resolvers/RiskRegisterResolver'
+import BusinessCaseResolver from '../resolvers/BusinessCaseResolver'
+import FeasibilityStudyResolver from '../resolvers/FeasibilityStudyResolver'
 
 interface DocumentSectionProps {
   section: any
@@ -87,6 +95,14 @@ export default function DocumentSection({
         <div className="py-2 pl-4 border-l-2 border-indigo-500/30 text-app-fg text-sm">
           {section.source === 'wbs.dictionary' || section.source === 'wbs.prototype' || section.source?.startsWith('wbs.') ? (
             <WbsDictionaryResolver projectId={projectId} />
+          ) : section.resolver?.startsWith('scope_statement_') || section.source === 'scope_statement_data' ? (
+            <ScopeStatementResolver projectId={projectId} sectionKey={section.resolver.replace('scope_statement_', '')} />
+          ) : section.resolver === 'communication_plan_entries' || section.source === 'communication_plan_data' ? (
+            <CommunicationPlanResolver projectId={projectId} />
+          ) : section.resolver === 'quality_management_plan_data' ? (
+            <QualityManagementPlanResolver projectId={projectId} />
+          ) : section.resolver === 'procurement_plan_entries' ? (
+            <ProcurementPlanResolver projectId={projectId} />
           ) : section.source === 'raci.matrix' ? (
             <RaciMatrixResolver projectId={projectId} />
           ) : section.source === 'status.schedule' ? (
@@ -95,6 +111,14 @@ export default function DocumentSection({
             <EvmStatusResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.cost : undefined} />
           ) : section.source === 'status.risks' ? (
             <TopRisksResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.risks : undefined} />
+          ) : section.source === 'register.stakeholders' ? (
+            <StakeholderRegisterResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.stakeholders : undefined} />
+          ) : section.source === 'register.risks' ? (
+            <RiskRegisterResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.risks : undefined} />
+          ) : section.source?.startsWith('initiation.business_case') ? (
+            <BusinessCaseResolver entityId={projectId} field={section.source.split('_').pop() as any} />
+          ) : section.source?.startsWith('initiation.feasibility') ? (
+            <FeasibilityStudyResolver entityId={projectId} field={section.source.split('_').pop() as any} />
           ) : (
             <p className="font-medium">{resolveDataBoundSource(section.source)}</p>
           )}

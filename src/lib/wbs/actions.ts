@@ -122,6 +122,15 @@ export async function createWbsElement(
 
   await logProjectActivity(projectId, 'wbs_element', data.id, 'created', { name: name.trim() })
 
+  await dispatchNotification({
+    userId: user.id,
+    triggerType: 'assignment',
+    referenceEntityType: 'wbs',
+    referenceEntityId: data.id,
+    projectId,
+    contentSummary: `New WBS Task Created: "${name.trim()}"`
+  }).catch(err => console.error('Webhook notification failed:', err))
+
   revalidatePath(`/dashboard/projects/${projectId}`)
   revalidatePath('/dashboard')
   return { ok: true, id: data.id }
@@ -362,7 +371,7 @@ export async function assignRaciRole(
     .eq('id', wbsElementId)
     .single()
 
-  if (stakeholderData?.linked_user_id && stakeholderData.linked_user_id !== user.id) {
+  if (stakeholderData?.linked_user_id) {
     const wbsName = wbsData?.name || 'a task'
     await dispatchNotification({
       userId: stakeholderData.linked_user_id,

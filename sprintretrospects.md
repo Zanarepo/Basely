@@ -114,3 +114,32 @@ Open Questions for You:
 
 Which platform should we build the first integration for to test the waters? (Slack or MS Teams?)
 Would you like to start with Phase 1 (Project-level Webhooks) to get a quick win, or tackle both phases at once?
+
+
+
+Mitigation strategy for Risk and issue
+
+
+1. Cost Engineer / Financial Controller
+What they care about: Budgets, Actuals, Invoices, and Earned Value (EVM).
+Activities in the app: They need to log in to input Actual Costs (AC), lock budget baselines, and approve financial change requests.
+Why they need a special role: You don't want them messing up the Gantt chart schedule, and you definitely don't want regular team members editing the project budget.
+2. Risk Manager / Risk Officer
+What they care about: The Risk Register and Issue Logs.
+Activities in the app: Identifying new risks, updating probability/impact scores, and documenting mitigation strategies.
+Why they need a special role: In highly regulated industries (like construction or pharma), a dedicated Risk Officer reviews all projects in the portfolio. They need to jump into a project, update the Risk tab, and jump out.
+3. Resource Manager
+What they care about: Who is doing what, and if anyone is overworked.
+Activities in the app: Reviewing resource requests from the PM, allocating specific personnel to WBS elements, and checking cross-project availability.
+Why they need a special role: PMs often "request" a role (e.g., "I need a Senior Developer"), but the Resource Manager logs in to actually assign a specific person to that task based on portfolio capacity.
+4. Executive Sponsor / Portfolio Director
+What they care about: High-level health (RAG status, SPI/CPI).
+Activities in the app: They mostly view dashboards, but they also take action on Governance Approvals (e.g., approving a phase-gate so the project can move from "Planning" to "Execution", or approving a major baseline change).
+5. Quality Assurance (QA) / Auditors
+What they care about: The Audit Trail, Governance Logs, and Document Sign-offs.
+Activities in the app: They don't manage the project; they review the Activity Logs to ensure the PM followed company compliance rules, and they sign off on QA documents.
+6. External Clients or Vendors
+What they care about: Only the specific tasks they are contracted to do, or the high-level progress they are paying for.
+Activities in the app: Uploading deliverable attachments, updating the status of their assigned WBS elements, or viewing a filtered Gantt chart.
+Why they need a special role: They should NEVER be able to see internal budgets, margins, or internal team discussions.
+If you are building out RBAC Granularity, implementing a Cost Manager and an External Vendor role are usually the two most impressive features to show off, because they immediately prove the app is built for complex, real-world enterprise environments!

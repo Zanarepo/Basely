@@ -169,7 +169,13 @@ export default function RiskList({
                       <h3 className="text-base font-semibold text-app-fg line-clamp-1">{risk.title}</h3>
                     </div>
                     {risk.description && (
-                      <p className="text-sm text-app-muted line-clamp-2 mb-3">{risk.description}</p>
+                      <p className="text-sm text-app-muted line-clamp-2 mb-2">{risk.description}</p>
+                    )}
+                    {risk.mitigation_plan && (
+                      <div className="mb-3 p-2.5 bg-indigo-500/5 border border-indigo-500/10 rounded-md">
+                        <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 mb-0.5">Mitigation Plan</p>
+                        <p className="text-sm text-app-muted line-clamp-2">{risk.mitigation_plan}</p>
+                      </div>
                     )}
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-app-muted font-medium">
                       <span className="flex items-center gap-1.5">

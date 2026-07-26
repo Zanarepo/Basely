@@ -85,7 +85,7 @@ export async function dispatchNotification(payload: NotificationPayload) {
   if (emailEnabled && payload.emailContext) {
     if (userData && userData.email) {
       try {
-        await sendEmail(userData.email, payload.emailContext)
+        await sendDirectEmail(userData.email, payload.emailContext)
       } catch (err) {
         console.error('Failed to dispatch email notification', err)
       }
@@ -102,7 +102,7 @@ export async function dispatchNotification(payload: NotificationPayload) {
   if (payload.projectId) {
     const { data: projectData } = await supabase
       .from('projects')
-      .select('name, slack_webhook_url, teams_webhook_url, google_chat_webhook_url')
+      .select('name, organization_id, slack_webhook_url, teams_webhook_url, google_chat_webhook_url')
       .eq('id', payload.projectId)
       .single()
 
@@ -110,60 +110,21 @@ export async function dispatchNotification(payload: NotificationPayload) {
       // Slack Webhook Delivery
       if (projectData.slack_webhook_url) {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const blocks: any[] = [
-            {
-              type: "header",
-              text: {
-                type: "plain_text",
-                text: `🚀 Update: ${projectData.name}`,
-                emoji: true
-              }
-            },
-            {
-              type: "section",
-              text: {
-                type: "mrkdwn",
-                text: payload.contentSummary
-              }
-            },
-            {
-              type: "context",
-              elements: [
-                {
-                  type: "mrkdwn",
-                  text: `👤 *For:* ${userData?.full_name || 'A team member'}`
-                }
-              ]
-            }
-          ]
+          const detailLink = payload.emailContext?.actionUrl ? `\n<${payload.emailContext.actionUrl}|*👉 View Details in Basely*>` : ''
+          const slackText = `🚀 *New Update in ${projectData.name}*\n\n*Event:* \`${payload.triggerType}\`\n*Details:* ${payload.contentSummary}\n*For User:* ${userData?.full_name || 'Team member'}${detailLink}`
 
-          if (payload.emailContext?.actionUrl) {
-            blocks.push({
-              type: "actions",
-              elements: [
-                {
-                  type: "button",
-                  text: {
-                    type: "plain_text",
-                    text: "View Details",
-                    emoji: true
-                  },
-                  url: payload.emailContext.actionUrl,
-                  action_id: "view_action"
-                }
-              ]
-            })
-          }
-
-          await fetch(projectData.slack_webhook_url, {
+          const res = await fetch(projectData.slack_webhook_url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              text: `Activity in ${projectData.name}: ${payload.contentSummary}`,
-              blocks: blocks
+              text: slackText
             })
           })
+          if (!res.ok) {
+            console.error(`Slack webhook rejected with status ${res.status}: ${await res.text()}`)
+          } else {
+            console.log(`✅ Successfully delivered real-time event to Project Slack Webhook`)
+          }
         } catch (err) {
           console.error('Failed to dispatch project Slack webhook', err)
         }
@@ -228,16 +189,71 @@ export async function dispatchNotification(payload: NotificationPayload) {
               text: `🚀 *Update in ${projectData.name}*\n${payload.contentSummary}\n👤 *For:* ${userData?.full_name || 'A team member'}${detailUrl}`
             })
           })
-        } catch (err) {
-          console.error('Failed to dispatch project Google Chat webhook', err)
+          } catch (err) {
+            console.error('Failed to dispatch Google Chat notification', err)
+          }
+        }
+
+        // 6. Organization-Level Developer Webhooks
+        if (projectData.organization_id) {
+          const { data: webhooks } = await supabase
+            .from('webhook_subscriptions')
+            .select('id, target_url, signing_secret')
+            .eq('organization_id', projectData.organization_id)
+            .eq('active', true)
+            .in('event_type', [payload.triggerType, 'all', '*'])
+          
+          if (webhooks && webhooks.length > 0) {
+            const webhookPayload = JSON.stringify({
+              event: payload.triggerType,
+              timestamp: new Date().toISOString(),
+              data: {
+                reference_entity_type: payload.referenceEntityType,
+                reference_entity_id: payload.referenceEntityId,
+                project_id: payload.projectId,
+                content_summary: payload.contentSummary,
+                title: payload.emailContext?.title || payload.contentSummary,
+                description: payload.contentSummary,
+                message: payload.contentSummary
+              }
+            })
+            
+            const encoder = new TextEncoder()
+            
+            for (const wh of webhooks) {
+              try {
+                const key = await crypto.subtle.importKey(
+                  'raw',
+                  encoder.encode(wh.signing_secret),
+                  { name: 'HMAC', hash: 'SHA-256' },
+                  false,
+                  ['sign']
+                )
+                const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(webhookPayload))
+                const signatureArray = Array.from(new Uint8Array(signatureBuffer))
+                const signature = signatureArray.map(b => b.toString(16).padStart(2, '0')).join('')
+
+                const res = await fetch(wh.target_url, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Webhook-Signature': `sha256=${signature}`
+                  },
+                  body: webhookPayload
+                })
+                console.log(`Successfully dispatched ${payload.triggerType} webhook to ${wh.target_url} (status: ${res.status})`)
+              } catch (err) {
+                console.error(`Failed to dispatch developer webhook to ${wh.target_url}`, err)
+              }
+            }
+          }
         }
       }
     }
-  }
 }
 
-// Internal email sender mimicking the Sprint 1 invitation pattern
-async function sendEmail(to: string, context: NonNullable<NotificationPayload['emailContext']>) {
+// Internal and external email sender for platform invites & closure signoffs
+export async function sendDirectEmail(to: string, context: { subject: string; title: string; message: string; actionUrl: string }) {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
     console.warn('RESEND_API_KEY is missing. Skipping email delivery.')

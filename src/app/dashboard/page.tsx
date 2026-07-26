@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { ACTIVE_ORG_COOKIE } from '@/lib/workspace/constants'
 import { LayoutDashboard } from 'lucide-react'
 import { ProjectsDashboard } from '@/components/dashboard/ProjectsDashboard'
+import { getBusinessCases, getFeasibilityStudies } from '@/lib/initiation/actions'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -100,6 +101,10 @@ export default async function DashboardPage() {
     }
   })
 
+  // 5️⃣ Fetch Pre-Project / Initiation Entities
+  const businessCases = await getBusinessCases(active.organization_id)
+  const feasibilityStudies = await getFeasibilityStudies(active.organization_id)
+
   return (
     <div className="relative z-10 max-w-4xl mx-auto px-6 py-10">
       <div className="flex items-center gap-3 mb-8">
@@ -122,6 +127,8 @@ export default async function DashboardPage() {
         isOwner={isOwner}
         callerRole={active.role}
         callerCanManageAll={active.can_manage_all_members === true}
+        businessCases={businessCases}
+        feasibilityStudies={feasibilityStudies}
       />
     </div>
   )
