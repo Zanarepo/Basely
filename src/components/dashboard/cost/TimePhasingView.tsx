@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Activity, RefreshCw } from 'lucide-react'
+import { Activity, RefreshCw, Loader2 } from 'lucide-react'
 import type { WbsCostData } from '@/lib/cost/types'
 import { generateLinearTimePhasing } from '@/lib/cost/actions'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
@@ -11,7 +11,7 @@ type Props = {
   wbsCostData: WbsCostData[]
   projectCurrency: string
   hasEditAccess: boolean
-  onDataChange: () => void
+  onDataChange: (silent?: boolean) => void
 }
 
 export default function TimePhasingView({ projectId, wbsCostData, projectCurrency, hasEditAccess, onDataChange }: Props) {
@@ -55,7 +55,7 @@ export default function TimePhasingView({ projectId, wbsCostData, projectCurrenc
         endDate,
         selectedWp.costAccount.budgeted_total
       )
-      onDataChange()
+      onDataChange(true)
     } catch (err: any) {
       setError(err.message || "Failed to generate time phasing")
     } finally {
@@ -124,7 +124,7 @@ export default function TimePhasingView({ projectId, wbsCostData, projectCurrenc
                   disabled={isGenerating}
                   className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
                 >
-                  {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                  {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                   Generate Linear Distribution
                 </button>
               )}

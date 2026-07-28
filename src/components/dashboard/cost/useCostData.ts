@@ -15,8 +15,8 @@ export function useCostData(projectId: string) {
   const [projectCurrency, setProjectCurrency] = useState<string>('USD')
   const [globalOverhead, setGlobalOverhead] = useState<number>(0)
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true)
+  const fetchAll = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     setError(null)
     const supabase = createClient()
 
@@ -144,7 +144,7 @@ export function useCostData(projectId: string) {
       console.error("Error fetching cost data:", err)
       setError(err.message)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [projectId])
 

@@ -66,6 +66,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
       case 'risk': return `${base}?tab=risks&riskId=${notif.reference_entity_id}`
       case 'issue': return `${base}?tab=risks&issueId=${notif.reference_entity_id}`
       case 'document': return `${base}?tab=documents`
+      case 'change_request': return `${base}?tab=documents&doc=change_requests`
       case 'activity': return `${base}?tab=wbs&elementId=${notif.reference_entity_id}`
       case 'approval_request':
         if (notif.content_summary?.toLowerCase().includes('schedule')) {

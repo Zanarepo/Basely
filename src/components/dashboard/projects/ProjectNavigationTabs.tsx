@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { Settings2, MoreHorizontal, Check } from 'lucide-react'
 
-type TabKey = 'dashboard' | 'wbs' | 'gantt' | 'cost' | 'stakeholders' | 'risks' | 'documents' | 'team'
+type TabKey = 'dashboard' | 'wbs' | 'gantt' | 'releases' | 'cost' | 'stakeholders' | 'risks' | 'documents' | 'action_items' | 'team'
 
 interface TabInfo {
   id: TabKey
@@ -17,14 +17,16 @@ const ALL_TABS: TabInfo[] = [
   { id: 'dashboard', label: 'Dashboard', shortLabel: 'Dashboard' },
   { id: 'wbs', label: 'Work Breakdown Structure (WBS)', shortLabel: 'WBS' },
   { id: 'gantt', label: 'Gantt & Scheduling', shortLabel: 'Gantt' },
+  { id: 'releases', label: 'Releases & Iterations', shortLabel: 'Releases', isNew: true },
   { id: 'cost', label: 'Budget & Cost', shortLabel: 'Cost' },
   { id: 'stakeholders', label: 'Stakeholders', shortLabel: 'People' },
   { id: 'risks', label: 'Risks & Issues', shortLabel: 'Risks' },
   { id: 'documents', label: 'Documents', shortLabel: 'Docs' },
-  { id: 'team', label: 'Team & Access', shortLabel: 'Team', isNew: true },
+  { id: 'action_items', label: 'Action Items', shortLabel: 'Actions' },
+  { id: 'team', label: 'Team & Access', shortLabel: 'Team' },
 ]
 
-const DEFAULT_VISIBLE: TabKey[] = ['dashboard', 'wbs', 'gantt', 'team']
+const DEFAULT_VISIBLE: TabKey[] = ['dashboard', 'wbs', 'gantt', 'releases', 'team']
 
 interface Props {
   projectId: string

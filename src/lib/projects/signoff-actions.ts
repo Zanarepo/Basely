@@ -183,8 +183,12 @@ export async function verifySignoffToken(token: string): Promise<SignoffTokenVer
 
   const supabase = createAdminClient()
   
+  // Token prefixes determine the target table to achieve exact reuse of this mechanism
+  const isDeliverable = token.startsWith('sign_deliverable_')
+  const tableName = isDeliverable ? 'deliverable_signoffs' : 'project_signoffs'
+
   const { data: signoff, error: signErr } = await supabase
-    .from('project_signoffs')
+    .from(tableName)
     .select('*')
     .eq('token', token)
     .maybeSingle()
@@ -197,11 +201,27 @@ export async function verifySignoffToken(token: string): Promise<SignoffTokenVer
     return { ok: false, error: 'This sign-off link has expired. Please request a new acceptance URL from your Project Manager.' }
   }
 
-  const { data: project } = await supabase
-    .from('projects')
-    .select('id, name, client_name, methodology, lifecycle_status')
-    .eq('id', signoff.project_id)
-    .maybeSingle()
+  let project
+  
+  if (isDeliverable) {
+    // For deliverable signoffs, we get the project via wbs_elements
+    const { data: wbs } = await supabase
+      .from('wbs_elements')
+      .select('project_id, projects(id, name, client_name, methodology, lifecycle_status)')
+      .eq('id', signoff.wbs_element_id)
+      .maybeSingle()
+      
+    project = Array.isArray(wbs?.projects) ? wbs.projects[0] : wbs?.projects
+  } else {
+    // For project signoffs, we get it directly
+    const { data: p } = await supabase
+      .from('projects')
+      .select('id, name, client_name, methodology, lifecycle_status')
+      .eq('id', signoff.project_id)
+      .maybeSingle()
+      
+    project = p
+  }
 
   return {
     ok: true,
@@ -233,9 +253,12 @@ export async function submitProjectSignoff({
 
   // Case 1: Token-based external unauthenticated access
   if (token) {
+    const isDeliverable = token.startsWith('sign_deliverable_')
+    const tableName = isDeliverable ? 'deliverable_signoffs' : 'project_signoffs'
+    
     const supabase = createAdminClient()
     const { data: record, error: findErr } = await supabase
-      .from('project_signoffs')
+      .from(tableName)
       .select('*')
       .eq('token', token)
       .maybeSingle()
@@ -244,7 +267,7 @@ export async function submitProjectSignoff({
     if (record.signed_at) return { ok: false, error: 'This acceptance record has already been formally executed and is locked against alteration.' }
 
     const { error: updErr } = await supabase
-      .from('project_signoffs')
+      .from(tableName)
       .update({
         signed_at: timestamp,
         signature_reference: signatureReference.trim(),
@@ -269,40 +292,38 @@ export async function submitProjectSignoff({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Unauthorized: Sign in required.' }
 
-  const { data: record, error: findErr } = await supabase
-    .from('project_signoffs')
-    .select('id, project_id, signed_at, signer_name')
-    .eq('id', signoffId)
-    .maybeSingle()
+  if (signoffId) {
+    // We don't strictly know if it's a project signoff or a deliverable signoff ID here.
+    // Try updating project_signoffs first, if it fails because of RLS or ID not found, try deliverable_signoffs.
+    
+    const { error: updErr1 } = await supabase
+      .from('project_signoffs')
+      .update({
+        signed_at: timestamp,
+        signature_reference: signatureReference.trim(),
+        comments: comments?.trim() || null
+      })
+      .eq('id', signoffId)
+      .is('signed_at', null)
 
-  if (findErr || !record) return { ok: false, error: 'Sign-off record not found.' }
-  if (record.signed_at) return { ok: false, error: 'Record already signed and immutable.' }
+    if (updErr1) {
+      // Try deliverable_signoffs
+      const { error: updErr2 } = await supabase
+        .from('deliverable_signoffs')
+        .update({
+          signed_at: timestamp,
+          signature_reference: signatureReference.trim(),
+          conditions_notes: comments?.trim() || null // mapping comments to conditions_notes
+        })
+        .eq('id', signoffId)
+        .is('signed_at', null)
+        
+      if (updErr2) {
+         return { ok: false, error: 'Failed to record sign-off. You may lack permission, the record may already be signed, or the ID is invalid.' }
+      }
+    }
+  }
 
-  const { error: updErr } = await supabase
-    .from('project_signoffs')
-    .update({
-      signed_at: timestamp,
-      signature_reference: signatureReference.trim(),
-      comments: comments?.trim() || null
-    })
-    .eq('id', signoffId)
-
-  if (updErr) return { ok: false, error: updErr.message }
-
-  await logProjectActivity(record.project_id, 'project', record.project_id, 'approved', {
-    signoff_completed: { by: record.signer_name, type: 'internal_user', signature: signatureReference }
-  })
-
-  await dispatchNotification({
-    userId: user.id,
-    triggerType: 'approval_update',
-    referenceEntityType: 'project',
-    referenceEntityId: record.project_id,
-    projectId: record.project_id,
-    contentSummary: `Formal Project Sign-off completed by ${record.signer_name} (${signatureReference}).`
-  })
-
-  revalidatePath(`/dashboard/projects/${record.project_id}`)
   return { ok: true }
 }
 

@@ -6,7 +6,7 @@ interface UseResourceSettingsProps {
   globalOverhead: number
   contingencyAmount: number
   contingencyType: 'flat' | 'percentage'
-  onDataChange: () => void
+  onDataChange: (silent?: boolean) => void
 }
 
 export function useResourceSettings({
@@ -32,7 +32,7 @@ export function useResourceSettings({
       const val = parseFloat(overheadVal)
       if (isNaN(val) || val < 0) return
       await updateGlobalOverhead(projectId, val)
-      onDataChange()
+      onDataChange(true)
       setIsEditingOverhead(false)
     } catch (error) {
       console.error('Failed to save overhead:', error)
@@ -45,7 +45,7 @@ export function useResourceSettings({
       const val = parseFloat(contingencyVal)
       if (isNaN(val) || val < 0) return
       await updateProjectContingency(projectId, val, selectedContingencyType)
-      onDataChange()
+      onDataChange(true)
       setIsEditingContingency(false)
     } catch (error) {
       console.error('Failed to save contingency:', error)

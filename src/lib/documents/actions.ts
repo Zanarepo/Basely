@@ -219,6 +219,71 @@ export async function getDocumentTemplate(documentType: string, templateId?: str
     }
   }
 
+  if (documentType === 'budget_baseline') {
+    return {
+      id: data?.id || 'budget_baseline_template',
+      document_type: 'budget_baseline',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'executive_summary', title: 'Executive Budget Summary', type: 'free_text' },
+        { key: 'budget_baseline_table', title: 'Work Package Estimates & S-Curve Baseline', type: 'data_bound', source: 'cost.budget_baseline' }
+      ]
+    }
+  }
+
+  if (documentType === 'issue_log') {
+    return {
+      id: data?.id || 'issue_log_template',
+      document_type: 'issue_log',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'executive_summary', title: 'Issue Management & Governance Summary', type: 'free_text' },
+        { key: 'issue_roster', title: 'Active & Resolved Issue Log', type: 'data_bound', source: 'accountability.issue_log' }
+      ]
+    }
+  }
+
+  if (documentType === 'schedule_document') {
+    return {
+      id: data?.id || 'schedule_document_template',
+      document_type: 'schedule_document',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'schedule_assumptions', title: 'Scheduling Assumptions & Constraints', type: 'free_text' },
+        { key: 'schedule_narrative', title: 'Baseline Schedule, Milestones & Critical Path Summary', type: 'data_bound', source: 'planning.schedule_document' }
+      ]
+    }
+  }
+
+  if (documentType === 'change_management_plan') {
+    return {
+      id: data?.id || 'change_management_plan_template',
+      document_type: 'change_management_plan',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'change_philosophy', title: 'Change Control Philosophy & Escalation Process', type: 'free_text' },
+        { key: 'approval_workflows', title: 'Configured Approval Workflows & Thresholds', type: 'data_bound', source: 'governance.change_management_plan' }
+      ]
+    }
+  }
+
+  if (documentType === 'project_management_plan') {
+    return {
+      id: data?.id || 'project_management_plan_template',
+      document_type: 'project_management_plan',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'executive_overview', title: 'Master Project Plan Executive Overview', type: 'free_text' },
+        { key: 'sub_plans_aggregator', title: 'Integrated Sub-Plans & References', type: 'data_bound', source: 'master.project_management_plan' }
+      ]
+    }
+  }
+
   if (error) {
     console.error('Failed to load document template:', error)
     return null
@@ -277,9 +342,11 @@ export async function saveGeneratedDocument(
   const supabase = await createClient()
   const now = new Date().toISOString()
 
+  let docId = ''
+
   if (isSnapshot) {
     // Snapshots are always inserts now
-    const { error } = await supabase
+    const { data: newDoc, error } = await supabase
       .from('generated_documents')
       .insert({
         project_id: projectId,
@@ -292,11 +359,14 @@ export async function saveGeneratedDocument(
         generated_at: now,
         updated_at: now,
       })
+      .select('id')
+      .single()
 
     if (error) return { ok: false, error: error.message }
+    docId = newDoc?.id || projectId
 
     // Log snapshot published
-    await logProjectActivity(projectId, 'document', documentType, 'published', { period_end: periodEnd })
+    await logProjectActivity(projectId, 'document', docId, 'published', { period_end: periodEnd, document_type: documentType })
   } else {
     // Drafts are upserted using the partial unique index or manually
     // To be safe with the partial index, we can just do an update or insert
@@ -309,6 +379,7 @@ export async function saveGeneratedDocument(
       .maybeSingle()
 
     if (existing) {
+      docId = existing.id
       const { error } = await supabase
         .from('generated_documents')
         .update({
@@ -322,7 +393,7 @@ export async function saveGeneratedDocument(
       // Log updated
       await logProjectActivity(projectId, 'document', existing.id, 'updated', { document_type: documentType })
     } else {
-      const { error } = await supabase
+      const { data: newDoc, error } = await supabase
         .from('generated_documents')
         .insert({
           project_id: projectId,
@@ -333,10 +404,13 @@ export async function saveGeneratedDocument(
           generated_at: now,
           updated_at: now,
         })
+        .select('id')
+        .single()
       if (error) return { ok: false, error: error.message }
+      docId = newDoc?.id || projectId
       
       // Log created
-      await logProjectActivity(projectId, 'document', documentType, 'created', { document_type: documentType })
+      await logProjectActivity(projectId, 'document', docId, 'created', { document_type: documentType })
     }
   }
 
@@ -347,7 +421,7 @@ export async function saveGeneratedDocument(
       projectId,
       triggerType: isSnapshot ? 'status_report' : 'document_change',
       referenceEntityType: 'document',
-      referenceEntityId: documentType,
+      referenceEntityId: docId || projectId,
       contentSummary: isSnapshot
         ? `Published status report snapshot for period ending ${periodEnd || 'now'}`
         : `Generated/updated ${documentType} document draft`

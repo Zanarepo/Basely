@@ -14,9 +14,10 @@ import {
   Loader2, 
   Download, 
   Printer, 
-  Save, 
+  Save,
   FileText 
 } from 'lucide-react'
+import { DocumentLoader } from '../DocumentLoader'
 
 export interface ClosureReportViewerProps {
   projectId: string
@@ -79,12 +80,7 @@ export function ClosureReportViewer({
   }
 
   if (loading || !data) {
-    return (
-      <div className="w-full min-h-[400px] flex flex-col items-center justify-center p-8 text-app-muted space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-        <p className="text-xs sm:text-sm font-bold animate-pulse">Compiling EVM baselines & deliverable audit records...</p>
-      </div>
-    )
+    return <DocumentLoader message="Compiling EVM baselines & deliverable audit records..." />
   }
 
   const handleSaveSnapshot = async () => {
@@ -221,13 +217,54 @@ export function ClosureReportViewer({
                 data.deliverables.map((item) => (
                   <tr key={item.id} className="hover:bg-app-hover/30 transition-colors">
                     <td className="py-3 px-3 font-mono text-indigo-400 font-bold whitespace-nowrap">{item.code}</td>
-                    <td className="py-3 px-3 text-app-fg font-medium">{item.name}</td>
+                    <td className="py-3 px-3 text-app-fg font-medium">
+                      <div className="flex items-center gap-2">
+                        {item.name.replace(/\s*\(?milestone\)?\s*/i, '')}
+                        {item.isMilestone && (
+                          <span className="text-[9px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                            milestone
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="py-3 px-3 text-app-muted whitespace-nowrap">{item.owner}</td>
                     <td className="py-3 px-3 text-right">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20 text-xs">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Accepted</span>
-                      </span>
+                      {(() => {
+                        const status = item.status.toLowerCase()
+                        
+                        if (item.isMilestone) {
+                          const isAchieved = ['complete', 'completed', 'accepted', 'approved', 'achieved'].includes(status)
+                          
+                          let colorClass = 'bg-app-bg text-app-muted border-app-border'
+                          let text = 'Pending'
+                          
+                          if (isAchieved) {
+                            colorClass = 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                            text = 'Achieved'
+                          }
+                          
+                          return (
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md font-bold border text-xs ${colorClass}`}>
+                              {isAchieved && <CheckCircle2 className="w-3.5 h-3.5" />}
+                              <span className="capitalize">{text}</span>
+                            </span>
+                          )
+                        } else {
+                          const isComplete = ['complete', 'completed', 'accepted', 'approved'].includes(status)
+                          const isInProgress = ['in progress', 'in-progress', 'active'].includes(status)
+                          
+                          let colorClass = 'bg-app-bg text-app-muted border-app-border'
+                          if (isComplete) colorClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          else if (isInProgress) colorClass = 'bg-sky-500/10 text-sky-400 border-sky-500/20'
+
+                          return (
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md font-bold border text-xs ${colorClass}`}>
+                              {isComplete && <CheckCircle2 className="w-3.5 h-3.5" />}
+                              <span className="capitalize">{item.status}</span>
+                            </span>
+                          )
+                        }
+                      })()}
                     </td>
                   </tr>
                 ))
@@ -262,7 +299,7 @@ export function ClosureReportViewer({
                   </span>
                 </div>
                 <p className="text-xs text-app-muted leading-relaxed">
-                  <strong className="text-indigo-400">Mitigation Strategy: </strong> {risk.mitigationPlan}
+                  <strong className="text-indigo-400">Mitigation Plan: </strong> {risk.mitigationPlan}
                 </p>
               </div>
             ))}

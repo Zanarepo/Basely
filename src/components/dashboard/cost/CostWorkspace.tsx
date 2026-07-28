@@ -45,7 +45,7 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
       <div className="p-6 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/50 rounded-2xl text-red-600 dark:text-red-400">
         <h3 className="font-semibold mb-2">Error loading cost data</h3>
         <p className="text-sm">{error}</p>
-        <button onClick={refresh} className="mt-4 px-4 py-2 bg-red-100 dark:bg-red-900/20 rounded-lg text-sm font-semibold hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors">
+        <button onClick={() => refresh()} style={{ cursor: 'pointer' }} className="mt-4 px-4 py-2 bg-red-100 dark:bg-red-900/20 rounded-lg text-sm font-semibold hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors cursor-pointer">
           Retry
         </button>
       </div>

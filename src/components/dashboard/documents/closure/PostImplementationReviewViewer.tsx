@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { resolvePIRData, PostImplementationReviewData } from '@/lib/documents/resolvers/handover-and-pir-resolver'
+import { lockPIRSchedule, getPIRSchedule } from '@/lib/documents/resolvers/pir-actions'
 import { LifecycleGatingBanner } from './LifecycleGatingBanner'
 import type { ProjectLifecycleStatus } from '@/lib/projects/lifecycle-types'
 import { 
@@ -17,6 +18,7 @@ import {
   BarChart2,
   Bell
 } from 'lucide-react'
+import { DocumentLoader } from '../DocumentLoader'
 
 export interface PostImplementationReviewViewerProps {
   projectId: string
@@ -37,9 +39,10 @@ export function PostImplementationReviewViewer({
   const [loading, setLoading] = useState(true)
   const [outcomeText, setOutcomeText] = useState('')
   const [roiText, setRoiText] = useState('')
-  const [scheduledDelay, setScheduledDelay] = useState<number>(60) // Default 60 days post-closure
+  const [scheduledDelay, setScheduledDelay] = useState<number | null>(60) // Default 60 days post-closure
   const [customReviewDate, setCustomReviewDate] = useState<string>('')
   const [saving, setSaving] = useState(false)
+  const [lockedDate, setLockedDate] = useState<string | null>(null)
 
   // PIR specifically requires 'Closed' status per Phase 11 PRD Section 5.3
   const isUnlocked = currentLifecycle === 'Closed'
@@ -54,10 +57,14 @@ export function PostImplementationReviewViewer({
       setLoading(true)
       try {
         const res = await resolvePIRData(projectId)
+        const scheduleRes = await getPIRSchedule(projectId)
         if (isMounted && res) {
           setData(res)
           setOutcomeText(res.defaultSections.outcome_assessment)
           setRoiText(res.defaultSections.roi_and_business_impact)
+          if (scheduleRes?.pir_scheduled_date) {
+            setLockedDate(scheduleRes.pir_scheduled_date)
+          }
         }
       } catch (err) {
         console.error('Failed to load PIR data:', err)
@@ -83,20 +90,31 @@ export function PostImplementationReviewViewer({
   }
 
   if (loading || !data) {
-    return (
-      <div className="w-full min-h-[400px] flex flex-col items-center justify-center p-8 text-app-muted space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-        <p className="text-xs sm:text-sm font-bold animate-pulse">Comparing planned charter objectives against final EVM actuals...</p>
-      </div>
-    )
+    return <DocumentLoader message="Comparing planned charter objectives against final EVM actuals..." />
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true)
-    setTimeout(() => {
+    let targetDate: Date
+    if (customReviewDate) {
+      targetDate = new Date(customReviewDate)
+    } else {
+      targetDate = new Date()
+      targetDate.setDate(targetDate.getDate() + (scheduledDelay || 60))
+    }
+    
+    try {
+      const result = await lockPIRSchedule(projectId, targetDate.toISOString())
+      setLockedDate(result.scheduledDate)
+      const msg = customReviewDate 
+        ? `PIR schedule locked for ${targetDate.toLocaleDateString()} with automated notification reminder.`
+        : `PIR schedule locked for ${scheduledDelay} days post-closure with automated notification reminder.`
+      onShowToast?.('success', msg)
+    } catch (error: any) {
+      onShowToast?.('error', error.message || 'Failed to lock PIR schedule')
+    } finally {
       setSaving(false)
-      onShowToast?.('success', `PIR schedule locked for ${scheduledDelay} days post-closure with automated notification reminder.`)
-    }, 800)
+    }
   }
 
   return (
@@ -120,20 +138,36 @@ export function PostImplementationReviewViewer({
         <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
           <button
             onClick={() => window.print()}
-            className="p-2.5 rounded-xl bg-app-bg border border-app-border hover:bg-app-hover text-app-fg transition-all cursor-pointer"
+            className="p-2.5 rounded-xl bg-app-surface border border-app-border hover:bg-app-hover text-app-fg transition-all cursor-pointer"
             title="Print or Export PDF"
           >
             <Printer className="w-4 h-4" />
           </button>
-          {hasEditAccess && (
+          {!hasEditAccess ? (
             <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-indigo-500/20 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              disabled
+              className="px-4 py-2.5 rounded-xl text-white font-bold text-xs sm:text-sm transition-all shadow-md flex items-center gap-2 cursor-not-allowed bg-app-surface text-app-muted border border-app-border"
             >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span>Lock PIR & Schedule Reminder</span>
+              <Save className="w-4 h-4" />
+              <span>No Access</span>
             </button>
+          ) : (
+            <div className="flex flex-col md:flex-row items-center gap-3">
+              {lockedDate && (
+                <span className="text-green-500 text-xs font-bold flex items-center gap-1.5 whitespace-nowrap">
+                  <CheckCircle2 className="w-4 h-4" /> 
+                  Locked for {new Date(lockedDate).toLocaleDateString()}
+                </span>
+              )}
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-4 py-2.5 rounded-xl text-white font-bold text-xs sm:text-sm transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50 bg-indigo-500 hover:bg-indigo-600 shadow-indigo-500/20 active:scale-95"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                <span>{lockedDate ? 'Update Schedule' : 'Lock PIR & Schedule Reminder'}</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -162,7 +196,10 @@ export function PostImplementationReviewViewer({
             <button
               key={days}
               type="button"
-              onClick={() => setScheduledDelay(days)}
+              onClick={() => {
+                setScheduledDelay(days)
+                setCustomReviewDate('')
+              }}
               className={`px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 scheduledDelay === days 
                   ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/25' 
@@ -177,8 +214,13 @@ export function PostImplementationReviewViewer({
             <input
               type="date"
               value={customReviewDate}
-              onChange={(e) => setCustomReviewDate(e.target.value)}
-              className="bg-app-surface border border-app-border rounded-xl px-2.5 py-1 text-xs text-app-fg focus:outline-none focus:border-indigo-500"
+              onChange={(e) => {
+                setCustomReviewDate(e.target.value)
+                setScheduledDelay(null)
+              }}
+              className={`bg-app-surface border rounded-xl px-2.5 py-1 text-xs text-app-fg focus:outline-none focus:border-indigo-500 ${
+                customReviewDate ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-app-border'
+              }`}
             />
           </div>
         </div>

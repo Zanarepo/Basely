@@ -275,6 +275,24 @@ export async function assignProjectMember(projectId: string, memberUserId: strin
 
   if (error) return { ok: false, error: error.message }
 
+  try {
+    const { data: profile } = await supabase.from('profiles').select('full_name, email').eq('id', memberUserId).maybeSingle()
+    const name = profile?.full_name?.trim() || profile?.email || 'Project Member'
+    const email = profile?.email || null
+    await supabase.from('stakeholders').insert({
+      project_id: projectId,
+      name,
+      email,
+      organization_type: 'internal',
+      role_title: 'Project Member',
+      linked_user_id: memberUserId,
+      influence: 3,
+      interest: 3,
+    })
+  } catch (err) {
+    console.error('Error syncing stakeholder for project member:', err)
+  }
+
   revalidatePath('/dashboard')
   return { ok: true }
 }

@@ -16,6 +16,8 @@ export type Activity = {
   freeFloat: number | null
   isCritical: boolean
   calendarId: string | null
+  iterationId?: string | null
+  iteration_id?: string | null
 }
 
 export type Dependency = {

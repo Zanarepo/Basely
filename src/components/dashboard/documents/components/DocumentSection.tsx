@@ -14,6 +14,11 @@ import StakeholderRegisterResolver from '../resolvers/StakeholderRegisterResolve
 import RiskRegisterResolver from '../resolvers/RiskRegisterResolver'
 import BusinessCaseResolver from '../resolvers/BusinessCaseResolver'
 import FeasibilityStudyResolver from '../resolvers/FeasibilityStudyResolver'
+import { BudgetBaselineResolver } from '../resolvers/BudgetBaselineResolver'
+import { IssueLogResolver } from '../resolvers/IssueLogResolver'
+import { ScheduleDocumentResolver } from '../resolvers/ScheduleDocumentResolver'
+import { ChangeManagementPlanResolver } from '../resolvers/ChangeManagementPlanResolver'
+import { ProjectManagementPlanResolver } from '../resolvers/ProjectManagementPlanResolver'
 
 interface DocumentSectionProps {
   section: any
@@ -73,6 +78,7 @@ export default function DocumentSection({
                 handleAutoFillSection(section)
               }}
               className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer"
+              style={{ cursor: 'pointer' }}
               title="Auto-fill content using live project data"
             >
               <RefreshCw className="w-3 h-3 text-indigo-500" /> Auto-fill from Project Data
@@ -119,6 +125,16 @@ export default function DocumentSection({
             <BusinessCaseResolver entityId={projectId} field={section.source.split('_').pop() as any} />
           ) : section.source?.startsWith('initiation.feasibility') ? (
             <FeasibilityStudyResolver entityId={projectId} field={section.source.split('_').pop() as any} />
+          ) : section.source === 'cost.budget_baseline' ? (
+            <BudgetBaselineResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.budget_baseline : undefined} />
+          ) : section.source === 'accountability.issue_log' ? (
+            <IssueLogResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.issue_log : undefined} />
+          ) : section.source === 'planning.schedule_document' ? (
+            <ScheduleDocumentResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.schedule_document : undefined} />
+          ) : section.source === 'governance.change_management_plan' ? (
+            <ChangeManagementPlanResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.change_management : undefined} />
+          ) : section.source === 'master.project_management_plan' ? (
+            <ProjectManagementPlanResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.project_management_plan : undefined} />
           ) : (
             <p className="font-medium">{resolveDataBoundSource(section.source)}</p>
           )}

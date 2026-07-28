@@ -4,7 +4,7 @@ import { createAdminClient } from '@/utils/supabase/admin'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> }
+  { params }: any
 ) {
   try {
     const { projectId } = await params

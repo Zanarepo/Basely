@@ -39,6 +39,7 @@ export interface ClosureReportData {
     name: string
     status: string
     owner: string
+    isMilestone?: boolean
   }>
   risksSummary: {
     totalRisks: number
@@ -88,15 +89,27 @@ export async function resolveClosureReportData(projectId: string): Promise<Closu
     }
   }
 
-  // 2. Fetch WBS Elements & Activities for Schedule & Deliverables
   let wbsData: any[] = []
+  let profilesMap: Record<string, { full_name?: string, email?: string }> = {}
   try {
     const { data } = await supabase
       .from('wbs_elements')
       .select('*')
       .eq('project_id', projectId)
       .order('created_at', { ascending: true })
-    if (data) wbsData = data
+    if (data) {
+      wbsData = data
+      const ownerIds = [...new Set(data.map((w: any) => w.owner_id).filter(Boolean))]
+      if (ownerIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', ownerIds)
+        if (profiles) {
+          profilesMap = profiles.reduce((acc: any, p: any) => ({ ...acc, [p.id]: p }), {})
+        }
+      }
+    }
   } catch (err) {
     console.warn('WBS fetch non-critical error:', err)
   }
@@ -112,15 +125,46 @@ export async function resolveClosureReportData(projectId: string): Promise<Closu
     console.warn('Activities fetch non-critical error:', err)
   }
 
-  const deliverables = (wbsData || []).map((w: any) => ({
-    id: String(w.id || Math.random()),
-    code: String(w.code || 'WBS-PKG'),
-    name: String(w.name || 'Core Deliverable Work Package'),
-    status: String(w.status || 'completed'),
-    owner: String(w.owner || w.owner_id || 'Project Engineering Lead')
-  }))
+  const deliverables = (wbsData || [])
+    .filter((w: any) => {
+      // A true parent element has other elements pointing to it as their parent
+      const isParent = wbsData.some((child: any) => child.parent_id === w.id)
+      
+      const wbsActivities = actData.filter((a: any) => a.wbs_element_id === w.id)
+      const hasMilestoneActivity = wbsActivities.some((a: any) => {
+        const duration = Number(a.duration_days || a.duration || 0)
+        return duration === 0 || a.name?.toLowerCase().includes('milestone') || a.type === 'milestone'
+      })
+      const isMilestone = w.name?.toLowerCase().includes('milestone') || hasMilestoneActivity
+      
+      // Cache it for the map function
+      w._computedIsMilestone = isMilestone
 
-  const activities = actData || []
+      // Exclude true parent elements (containers). Keep leaf nodes (tasks) and ALL milestones.
+      return !isParent || isMilestone
+    })
+    .map((w: any) => {
+      const ownerId = w.owner_id || w.owner
+      const profile = ownerId ? profilesMap[ownerId] : null
+      const ownerName = profile?.full_name?.trim() || profile?.email || ownerId || 'N/A'
+      
+      const isMilestone = w._computedIsMilestone
+      
+      return {
+        id: String(w.id || Math.random()),
+        code: String(w.code || 'WBS-PKG'),
+        name: String(w.name || 'Core Deliverable Work Package'),
+        status: String(w.status || 'N/A'),
+        owner: String(ownerName),
+        isMilestone
+      }
+    })
+
+  const activities = (actData || []).filter((a: any) => {
+    const duration = Number(a.duration_days || a.duration || 0)
+    const isActivityMilestone = duration === 0 || a.name?.toLowerCase().includes('milestone') || a.type === 'milestone'
+    return !isActivityMilestone
+  })
   const totalActivities = activities.length
   const completedActivities = activities.filter((a: any) => (Number(a.percent_complete) || 0) >= 100 || a.actual_end_date).length
   const actualCompletionPercentage = totalActivities > 0 ? Math.round((completedActivities / totalActivities) * 100) : (deliverables.length > 0 ? 100 : 100)
@@ -189,7 +233,8 @@ export async function resolveClosureReportData(projectId: string): Promise<Closu
 
   const totalRisks = risks.length
   const mitigatedRisks = risks.filter((r: any) => 
-    ['closed', 'mitigated', 'resolved'].includes(String(r.status || '').toLowerCase())
+    ['closed', 'mitigated', 'resolved'].includes(String(r.status || '').toLowerCase()) ||
+    (r.mitigation_plan && String(r.mitigation_plan).trim() !== '')
   ).length
   const openRisks = totalRisks - mitigatedRisks
 
@@ -204,7 +249,7 @@ export async function resolveClosureReportData(projectId: string): Promise<Closu
     .map((r: any) => ({
       title: String(r.title || 'Untitled Risk'),
       severity: r.impact ? `${r.impact} Impact` : String(r.severity || 'High Priority'),
-      mitigationPlan: String(r.response_strategy || r.description || 'Active Risk Mitigation Monitored'),
+      mitigationPlan: String(r.mitigation_plan || r.response_strategy || r.description || 'Active Risk Mitigation Monitored'),
       status: String(r.status || 'Closed')
     }))
 

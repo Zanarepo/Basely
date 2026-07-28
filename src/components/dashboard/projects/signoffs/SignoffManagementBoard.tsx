@@ -20,7 +20,8 @@ import {
   Mail, 
   Loader2, 
   PenTool,
-  Trash2
+  Trash2,
+  Search
 } from 'lucide-react'
 
 export interface SignoffManagementBoardProps {
@@ -44,6 +45,7 @@ export function SignoffManagementBoard({
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const loadSignoffs = useCallback(async () => {
     setLoading(true)
@@ -138,8 +140,13 @@ export function SignoffManagementBoard({
   const completedCount = signoffs.filter((s) => !!s.signed_at).length
   const totalCount = signoffs.length
 
+  const filteredSignoffs = signoffs.filter(s => 
+    s.signer_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    s.signer_email?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
-    <div className="w-full space-y-6 sm:space-y-8 animate-in fade-in duration-300">
+    <div className="w-full h-full overflow-y-auto no-scrollbar space-y-6 sm:space-y-8 animate-in fade-in duration-300 pb-16">
       <InviteSignerModal
         projectId={projectId}
         isOpen={isInviteModalOpen}
@@ -164,20 +171,33 @@ export function SignoffManagementBoard({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
-          <div className="px-3 py-1.5 rounded-xl bg-app-bg border border-app-border text-xs font-mono font-bold text-app-muted flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>{completedCount} / {totalCount} Accepted</span>
+        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 shrink-0 self-stretch sm:self-auto">
+          <div className="relative w-full sm:w-auto">
+            <Search className="w-4 h-4 text-app-muted absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search signers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-3 py-2 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 w-full sm:w-48 transition-all"
+            />
           </div>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="px-3 py-1.5 rounded-xl bg-app-bg border border-app-border text-xs font-mono font-bold text-app-muted flex items-center gap-1.5 grow sm:grow-0 justify-center">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>{completedCount} / {totalCount} Accepted</span>
+            </div>
           {hasEditAccess && (
             <button
               onClick={() => setIsInviteModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Invite Signer</span>
+              <span className="hidden sm:inline">Invite Signer</span>
+              <span className="sm:hidden">Invite</span>
             </button>
           )}
+          </div>
         </div>
       </div>
 
@@ -232,9 +252,19 @@ export function SignoffManagementBoard({
             </button>
           )}
         </div>
+      ) : filteredSignoffs.length === 0 ? (
+        <div className="p-8 sm:p-12 text-center bg-app-surface border border-app-border rounded-2xl space-y-4 max-w-2xl mx-auto">
+          <Search className="w-12 h-12 text-app-muted/40 mx-auto" />
+          <div className="space-y-1">
+            <h3 className="text-base sm:text-lg font-bold text-app-fg">No matching signers found</h3>
+            <p className="text-xs sm:text-sm text-app-muted leading-relaxed">
+              Try adjusting your search query.
+            </p>
+          </div>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-          {signoffs.map((item) => {
+        <div className="flex flex-col gap-4">
+          {filteredSignoffs.map((item) => {
             const isSigned = !item.signed_at === false
             const isSelected = selectedIds.includes(item.id)
             return (

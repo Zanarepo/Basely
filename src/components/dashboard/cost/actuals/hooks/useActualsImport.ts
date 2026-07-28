@@ -12,7 +12,7 @@ interface UseActualsImportProps {
   wbsCostData: WbsCostData[]
   projectCurrency: string
   csvText: string
-  onDataChange: () => void
+  onDataChange: (silent?: boolean) => void
 }
 
 export function useActualsImport({ wbsCostData, projectCurrency, csvText, onDataChange }: UseActualsImportProps) {
@@ -77,7 +77,7 @@ export function useActualsImport({ wbsCostData, projectCurrency, csvText, onData
 
       if (toImport.length > 0) {
         await bulkImportActualCosts(toImport)
-        onDataChange()
+        onDataChange(true)
       }
 
       setImportSummary({ success, failed, errors })

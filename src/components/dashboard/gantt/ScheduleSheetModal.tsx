@@ -1,6 +1,7 @@
 import { X, Download, FileSpreadsheet, AlertCircle } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 import type { Activity, Dependency } from '@/lib/schedule/cpm'
+import { IterationTagSelector } from '@/components/dashboard/releases/components/IterationTagSelector'
 
 type ScheduleSheetModalProps = {
   isOpen: boolean
@@ -193,6 +194,7 @@ export function ScheduleSheetModal({
                   <th className="px-4 py-3">Predecessors</th>
                   <th className="px-4 py-3 text-center">Float</th>
                   <th className="px-4 py-3 text-center">Status</th>
+                  <th className="px-4 py-3">Iteration / Sprint</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-app-border print:divide-gray-300">
@@ -288,6 +290,16 @@ export function ScheduleSheetModal({
                           )
                         ) : (
                           <span className="text-[10px] uppercase font-bold text-app-subtle">Summary</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2">
+                        {el.projectId && (
+                          <IterationTagSelector
+                            projectId={el.projectId}
+                            entityType={act ? 'activity' : 'wbs_element'}
+                            entityId={act ? act.id : el.id}
+                            currentIterationId={(act ? (act as any).iterationId : (el as any).iterationId) || null}
+                          />
                         )}
                       </td>
                     </tr>

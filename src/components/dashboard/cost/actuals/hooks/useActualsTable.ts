@@ -6,7 +6,7 @@ const ITEMS_PER_PAGE = 10
 
 interface UseActualsTableProps {
   wbsCostData: WbsCostData[]
-  onDataChange: () => void
+  onDataChange: (silent?: boolean) => void
 }
 
 export function useActualsTable({ wbsCostData, onDataChange }: UseActualsTableProps) {
@@ -47,7 +47,7 @@ export function useActualsTable({ wbsCostData, onDataChange }: UseActualsTablePr
     if (!confirm('Delete this actual cost?')) return
     try {
       await deleteActualCost(id)
-      onDataChange()
+      onDataChange(true)
       setSelectedIds((prev) => prev.filter((s) => s !== id))
     } catch (err: any) {
       alert(err.message || 'Failed to delete')
@@ -61,7 +61,7 @@ export function useActualsTable({ wbsCostData, onDataChange }: UseActualsTablePr
     try {
       await bulkDeleteActualCosts(selectedIds)
       setSelectedIds([])
-      onDataChange()
+      onDataChange(true)
     } catch (err: any) {
       alert(err.message || 'Failed to delete actuals')
     }

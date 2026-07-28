@@ -12,7 +12,7 @@ type Props = {
   baselines: BudgetBaseline[]
   projectCurrency: string
   hasEditAccess: boolean
-  onDataChange: () => void
+  onDataChange: (silent?: boolean) => void
 }
 
 export default function BaselineManager({ projectId, baselines, projectCurrency, hasEditAccess, onDataChange }: Props) {
@@ -53,7 +53,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
           alert("Approval request submitted and is pending admin review.")
           fetchPending()
         } else {
-          onDataChange()
+          onDataChange(true)
         }
     } catch (err: any) {
       setError(err.message || 'Failed to create baseline snapshot')
@@ -82,7 +82,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
     try {
       await updateBudgetBaseline(id, editingBaselineName.trim())
       setEditingBaselineId(null)
-      onDataChange()
+      onDataChange(true)
     } catch (err: any) {
       console.error(err)
     } finally {
@@ -96,7 +96,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
     try {
       await deleteBudgetBaseline(id)
       if (selectedBaselineId === id) setSelectedBaselineId(null)
-      onDataChange()
+      onDataChange(true)
     } catch (err: any) {
       console.error(err)
     } finally {

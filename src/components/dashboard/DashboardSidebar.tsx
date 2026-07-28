@@ -14,6 +14,7 @@ import {
   Search,
   X,
   Terminal,
+  ChevronUp,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { useWorkspace } from './WorkspaceContext'
@@ -43,6 +44,7 @@ export function DashboardSidebar({
   const [signingOut, setSigningOut] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isFooterOpen, setIsFooterOpen] = useState(false)
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -92,7 +94,6 @@ export function DashboardSidebar({
 
   if (activeWorkspace.role === 'Admin') {
     navItems.push({ href: '/dashboard/settings/templates', label: 'Templates', icon: Settings })
-    navItems.push({ href: '/dashboard/settings/developers', label: 'Developers', icon: Terminal })
   }
 
   if (!mounted) {
@@ -209,32 +210,68 @@ export function DashboardSidebar({
         </nav>
 
         <div
-          className={`mt-auto border-t border-app-border p-3 space-y-2 ${
+          className={`mt-auto border-t border-app-border p-2 space-y-1 ${
             effectivelyCollapsed ? 'px-2' : ''
           }`}
         >
-          <ThemeToggle collapsed={effectivelyCollapsed} />
+          {/* Accordion Content */}
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isFooterOpen ? 'max-h-48 opacity-100 mb-2' : 'max-h-0 opacity-0 mb-0'}`}>
+            <div className="space-y-1 p-1">
+              {activeWorkspace.role === 'Admin' && (
+                <Link
+                  href="/dashboard/settings/developers"
+                  title={effectivelyCollapsed ? 'Developers' : undefined}
+                  className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 border border-transparent transition-all cursor-pointer ${
+                    effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                  }`}
+                >
+                  <Terminal className="h-5 w-5 shrink-0" />
+                  {!effectivelyCollapsed && <span className="text-sm font-medium">Developers</span>}
+                </Link>
+              )}
+              
+              <div className={effectivelyCollapsed ? 'flex justify-center p-1' : 'px-1 py-1'}>
+                <ThemeToggle collapsed={effectivelyCollapsed} />
+              </div>
 
-          {!effectivelyCollapsed && (
-            <p className="px-2 text-xs text-app-subtle truncate" title={userEmail}>
-              {userEmail}
-            </p>
-          )}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={signingOut}
+                title="Sign out"
+                className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-rose-500 dark:hover:text-rose-300 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer disabled:opacity-50 ${
+                  effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                }`}
+              >
+                {signingOut ? (
+                  <Loader2 className="h-5 w-5 animate-spin shrink-0" />
+                ) : (
+                  <LogOut className="h-5 w-5 shrink-0" />
+                )}
+                {!effectivelyCollapsed && <span className="text-sm font-medium">Sign out</span>}
+              </button>
+            </div>
+          </div>
+
+          {/* Accordion Trigger */}
           <button
-            type="button"
-            onClick={handleSignOut}
-            disabled={signingOut}
-            title="Sign out"
-            className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-rose-500 dark:hover:text-rose-300 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer disabled:opacity-50 ${
-              effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+            onClick={() => setIsFooterOpen(!isFooterOpen)}
+            title={effectivelyCollapsed ? userEmail : undefined}
+            className={`w-full flex items-center justify-between rounded-xl hover:bg-app-hover transition-colors text-app-fg cursor-pointer border border-transparent hover:border-app-border/50 ${
+              effectivelyCollapsed ? 'p-2 justify-center' : 'p-2'
             }`}
           >
-            {signingOut ? (
-              <Loader2 className="h-5 w-5 animate-spin shrink-0" />
-            ) : (
-              <LogOut className="h-5 w-5 shrink-0" />
+            <div className="flex items-center gap-3 truncate">
+               <div className="w-8 h-8 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                  <span className="font-semibold text-sm uppercase">{userEmail ? userEmail[0] : 'U'}</span>
+               </div>
+               {!effectivelyCollapsed && (
+                 <span className="text-sm font-medium truncate">{userEmail}</span>
+               )}
+            </div>
+            {!effectivelyCollapsed && (
+              <ChevronUp className={`w-4 h-4 text-app-muted shrink-0 transition-transform duration-300 ${isFooterOpen ? 'rotate-180' : ''}`} />
             )}
-            {!effectivelyCollapsed && <span className="text-sm font-medium">Sign out</span>}
           </button>
         </div>
 

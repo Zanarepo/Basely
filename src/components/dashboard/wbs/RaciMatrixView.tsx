@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Search, Loader2, AlertCircle, ChevronRight, ChevronDown, PanelLeftClose, PanelLeft } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
+import { getProjectRaciStakeholders } from '@/lib/wbs/actions'
 
 type Stakeholder = {
   id: string
@@ -29,14 +30,14 @@ export function RaciMatrixView({ projectId, elements, expandedNodeIds = new Set(
 
   useEffect(() => {
     async function loadStakeholders() {
-      const { data } = await supabase
-        .from('stakeholders')
-        .select('id, name, organization_type, profiles(full_name, email)')
-        .eq('project_id', projectId)
-        .order('name', { ascending: true })
-      
-      if (data) setStakeholders(data)
-      setLoading(false)
+      try {
+        const data = await getProjectRaciStakeholders(projectId)
+        if (data) setStakeholders(data)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
     }
     loadStakeholders()
   }, [projectId])

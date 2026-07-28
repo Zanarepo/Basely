@@ -63,6 +63,7 @@ export async function getScheduleData(projectId: string): Promise<ActionResponse
     freeFloat: a.free_float !== null ? Number(a.free_float) : null,
     isCritical: a.is_critical,
     calendarId: a.calendar_id,
+    iterationId: a.iteration_id || null,
   }))
 
   const mappedDeps = (dependencies || []).map((d: any) => ({

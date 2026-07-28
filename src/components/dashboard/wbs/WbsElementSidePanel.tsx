@@ -12,6 +12,7 @@ import { Paperclip } from 'lucide-react'
 import { AttachmentList } from '@/components/dashboard/collaboration/attachments/AttachmentList'
 import { AttachmentPicker } from '@/components/dashboard/collaboration/attachments/AttachmentPicker'
 import { useEntityAttachments } from '@/components/dashboard/collaboration/hooks/useEntityAttachments'
+import { IterationTagSelector } from '@/components/dashboard/releases/components/IterationTagSelector'
 
 import { useWbsElementState } from './hooks/useWbsElementState'
 import { useWbsScheduling } from './hooks/useWbsScheduling'
@@ -152,6 +153,21 @@ export function WbsElementSidePanel({
                 callerRole={callerRole}
                 callerUserId={callerUserId}
               />
+
+              {element?.projectId && element?.id && (
+                <div className="py-1">
+                  <IterationTagSelector
+                    projectId={element.projectId}
+                    entityType="wbs_element"
+                    entityId={element.id}
+                    currentIterationId={(element as any).iterationId}
+                    disabled={!hasEditAccess}
+                    onUpdated={(newVal) => {
+                      if (onAssignmentChanged) onAssignmentChanged()
+                    }}
+                  />
+                </div>
+              )}
 
               <div className="border border-app-border rounded-xl overflow-hidden bg-app-surface">
                 <button

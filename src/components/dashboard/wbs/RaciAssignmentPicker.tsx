@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Search, Check, ChevronDown, User, Users, Loader2 } from 'lucide-react'
-import { assignRaciRole, removeRaciRole, replaceAccountableRole } from '@/lib/wbs/actions'
+import { assignRaciRole, removeRaciRole, replaceAccountableRole, getProjectRaciStakeholders } from '@/lib/wbs/actions'
 import type { RaciRoleType, RaciAssignment } from '@/lib/wbs/constants'
 import type { ActionResponse } from '@/lib/wbs/actions'
 
@@ -53,14 +53,14 @@ export function RaciAssignmentPicker({
 
   useEffect(() => {
     async function loadStakeholders() {
-      const { data, error } = await supabase
-        .from('stakeholders')
-        .select('id, name, organization_type, linked_user_id, profiles(full_name, email)')
-        .eq('project_id', projectId)
-        .order('name', { ascending: true })
-
-      if (data) setStakeholders(data)
-      setLoading(false)
+      try {
+        const data = await getProjectRaciStakeholders(projectId)
+        if (data) setStakeholders(data)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
     }
     loadStakeholders()
   }, [projectId])

@@ -27,6 +27,7 @@ interface ResourceRatesTableProps {
   unit: ResourceUnit
   setUnit: (val: ResourceUnit) => void
   handleSave: () => void
+  isSaving: boolean
   cancelEdit: () => void
   startEdit: (r: ResourceRate) => void
   handleDelete: (id: string) => void
@@ -56,6 +57,7 @@ export function ResourceRatesTable({
   unit,
   setUnit,
   handleSave,
+  isSaving,
   cancelEdit,
   startEdit,
   handleDelete
@@ -203,6 +205,7 @@ export function ResourceRatesTable({
           unit={unit}
           setUnit={setUnit}
           onSave={handleSave}
+          isSaving={isSaving}
           onCancel={cancelEdit}
         />
       )}

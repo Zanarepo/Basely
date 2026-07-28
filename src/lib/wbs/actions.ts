@@ -45,6 +45,7 @@ export async function getWbsElements(projectId: string): Promise<
     sortOrder: d.sort_order,
     createdAt: d.created_at,
     updatedAt: d.updated_at,
+    iterationId: d.iteration_id || null,
     duration: d.activities ? Number(d.activities.duration) : undefined,
     raciAssignments: d.raci_assignments?.map((r: any) => ({
       id: r.id,
@@ -454,4 +455,66 @@ export async function replaceAccountableRole(
   if (error) return { ok: false, error: error.message }
   revalidatePath(`/dashboard/projects/${projectId}`)
   return { ok: true }
+}
+
+export async function getProjectRaciStakeholders(projectId: string): Promise<any[]> {
+  const supabase = await createClient()
+
+  // 1. Fetch existing stakeholders
+  const { data: existingStakeholders } = await supabase
+    .from('stakeholders')
+    .select('id, name, organization_type, linked_user_id, profiles(full_name, email)')
+    .eq('project_id', projectId)
+    .order('name', { ascending: true })
+
+  let stakeholdersList = existingStakeholders ? [...existingStakeholders] : []
+
+  // 2. Fetch project members
+  const { data: members } = await supabase
+    .from('project_members')
+    .select('user_id, project_role_title')
+    .eq('project_id', projectId)
+
+  if (members && members.length > 0) {
+    const userIds = members.map(m => m.user_id).filter(Boolean)
+    const { data: profiles } = userIds.length > 0
+      ? await supabase.from('profiles').select('id, full_name, email').in('id', userIds)
+      : { data: [] }
+
+    let addedNew = false
+    for (const m of members) {
+      if (!m.user_id) continue
+      const alreadyExists = stakeholdersList.some(s => s.linked_user_id === m.user_id)
+      if (!alreadyExists) {
+        const prof = (profiles || []).find(p => p.id === m.user_id)
+        const name = prof?.full_name?.trim() || prof?.email || 'Project Member'
+        const email = prof?.email || null
+
+        await supabase
+          .from('stakeholders')
+          .insert({
+            project_id: projectId,
+            name: name,
+            email: email,
+            organization_type: 'internal',
+            role_title: m.project_role_title || 'Project Member',
+            linked_user_id: m.user_id,
+            influence: 3,
+            interest: 3,
+          })
+        addedNew = true
+      }
+    }
+
+    if (addedNew) {
+      const { data: updated } = await supabase
+        .from('stakeholders')
+        .select('id, name, organization_type, linked_user_id, profiles(full_name, email)')
+        .eq('project_id', projectId)
+        .order('name', { ascending: true })
+      if (updated) stakeholdersList = updated
+    }
+  }
+
+  return stakeholdersList
 }

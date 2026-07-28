@@ -10,17 +10,22 @@ import { ClosureDocumentsRouter, ClosureDocType } from './closure/ClosureDocumen
 import { ClosureSidebarSection } from './closure/ClosureSidebarSection'
 import { PlanningSidebarSection } from './planning/PlanningSidebarSection'
 import { PlanningDocumentsRouter, PlanningDocType } from './planning/PlanningDocumentsRouter'
+import { ExecutionSidebarSection, ExecutionDocType } from './execution/ExecutionSidebarSection'
+import { ExecutionDocumentsRouter } from './execution/ExecutionDocumentsRouter'
+import { SidebarAccordion } from './SidebarAccordion'
 
 interface DocumentsWorkspaceProps {
   projectId: string
   projectContext: any
   hasEditAccess: boolean
+  isManager?: boolean
 }
 
 export default function DocumentsWorkspace({
   projectId,
   projectContext,
   hasEditAccess,
+  isManager = false,
 }: DocumentsWorkspaceProps) {
   const searchParams = useSearchParams()
   const initialDoc = searchParams.get('doc') as string | null
@@ -28,7 +33,7 @@ export default function DocumentsWorkspace({
   const [activeTab, setActiveTab] = useState<string>(initialDoc || 'charter')
   const [activeSnapshotId, setActiveSnapshotId] = useState<string | null>(null)
   const [snapshots, setSnapshots] = useState<any[]>([])
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
 
 
@@ -65,152 +70,227 @@ export default function DocumentsWorkspace({
     return () => window.removeEventListener('snapshot-saved', handleSnapshotSaved)
   }, [projectId, activeTab])
 
+  // Listener for sub-plan direct navigation events and hash deep linking
+  useEffect(() => {
+    const handleTabChange = (e: any) => {
+      if (e.detail && e.detail.tab) {
+        setActiveTab(e.detail.tab)
+        setActiveSnapshotId(null)
+      }
+    }
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '')
+      if (hash) {
+        setActiveTab(hash)
+        setActiveSnapshotId(null)
+      }
+    }
+    window.addEventListener('document-tab-change', handleTabChange as EventListener)
+    window.addEventListener('hashchange', handleHashChange)
+    if (window.location.hash) {
+      handleHashChange()
+    }
+    return () => {
+      window.removeEventListener('document-tab-change', handleTabChange as EventListener)
+      window.removeEventListener('hashchange', handleHashChange)
+    }
+  }, [])
+
   return (
     <div className="flex flex-col md:flex-row gap-6 relative animate-fade-in h-[calc(100vh-16rem)] min-h-[600px]">
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
-      {/* Expand Button (Visible when sidebar is closed) */}
+      {/* Expand Button & Hover Area (Visible when sidebar is closed) */}
       {!isSidebarOpen && (
-        <div className="absolute left-0 top-0 z-10 h-full flex items-start pt-2 -ml-2">
+        <div 
+          className="absolute left-0 top-0 z-20 h-full w-16 flex items-start pt-6 pl-0 cursor-pointer"
+          onMouseEnter={() => {
+            if (window.innerWidth >= 768) setIsSidebarOpen(true)
+          }}
+          onClick={() => setIsSidebarOpen(true)}
+        >
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="p-1.5 text-app-muted hover:text-app-fg hover:bg-app-surface border border-transparent hover:border-app-border rounded-md transition-colors bg-app-bg shadow-sm"
+            className="p-2.5 text-indigo-500 bg-indigo-500/10 hover:bg-indigo-500 hover:text-white border border-l-0 border-indigo-500/20 rounded-r-2xl shadow-sm hover:shadow-md hover:shadow-indigo-500/20 transition-all hover:pl-4 cursor-pointer group"
             title="Expand sidebar"
           >
-            <PanelLeftOpen className="w-4 h-4" />
+            <PanelLeftOpen className="w-5 h-5 transition-transform group-hover:scale-110" />
           </button>
         </div>
       )}
 
       {/* Left Sidebar Menu for Documents */}
       <div 
-        className={`shrink-0 flex flex-col transition-all duration-300 ease-in-out h-full overflow-y-auto no-scrollbar ${
-          isSidebarOpen ? 'w-full md:w-64 border-r border-app-border pr-6 opacity-100' : 'w-0 opacity-0 overflow-hidden'
+        onMouseLeave={() => {
+          if (window.innerWidth >= 768) setIsSidebarOpen(false)
+        }}
+        className={`shrink-0 flex flex-col transition-all duration-400 ease-out overflow-y-auto no-scrollbar ${
+          isSidebarOpen 
+            ? 'absolute z-40 w-full md:w-72 h-full md:h-[calc(100%-2rem)] md:mt-4 md:ml-4 bg-app-surface/95 backdrop-blur-2xl md:border md:border-app-border md:rounded-2xl border-r border-app-border shadow-[0_8px_40px_-12px_rgba(0,0,0,0.2)] opacity-100 pr-2 pl-4 py-4 translate-x-0' 
+            : 'absolute z-40 w-0 md:w-0 h-full md:h-[calc(100%-2rem)] md:mt-4 md:ml-4 bg-app-surface/95 backdrop-blur-2xl opacity-0 overflow-hidden -translate-x-8'
         }`}
       >
-        <div className="flex items-center justify-between mb-4 pl-2 min-w-[200px]">
+        <div className="flex items-center justify-between mb-6 pl-2 pr-2 min-w-[200px]">
           <div className="text-xs font-bold text-app-muted uppercase tracking-wider">
             Project Documents
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="p-1.5 text-app-muted hover:text-app-fg hover:bg-app-surface border border-transparent hover:border-app-border rounded-md transition-colors"
+            className="p-1.5 text-app-muted hover:text-indigo-400 hover:bg-indigo-500/10 border border-transparent hover:border-indigo-500/20 rounded-lg transition-colors cursor-pointer"
             title="Collapse sidebar"
           >
-            <PanelLeftClose className="w-4 h-4" />
+            <PanelLeftClose className="w-5 h-5" />
           </button>
         </div>
         
         {isSidebarOpen && (
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={() => setActiveTab('charter')}
-              className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
-                activeTab === 'charter'
-                  ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
-                  : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              Project Charter
-            </button>
+          <nav className="flex-1 overflow-y-auto pr-2 pb-8 flex flex-col gap-1.5 custom-scrollbar">
+            <SidebarAccordion title="Core Documents">
+              <button 
+                onClick={() => { setActiveTab('charter'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                  activeTab === 'charter'
+                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+                }`}
+              >
+                <FileText className="w-4 h-4 text-blue-500" />
+                Project Charter
+              </button>
 
-            <button 
-              onClick={() => setActiveTab('wbs_dictionary')}
-              className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
-                activeTab === 'wbs_dictionary'
-                  ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
-                  : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
-              }`}
-            >
-              <Layers className="w-4 h-4" />
-              WBS Dictionary
-            </button>
+              <button 
+                onClick={() => { setActiveTab('wbs_dictionary'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                  activeTab === 'wbs_dictionary'
+                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+                }`}
+              >
+                <Layers className="w-4 h-4 text-indigo-500" />
+                WBS Dictionary
+              </button>
 
-            <button 
-              onClick={() => setActiveTab('raci')}
-              className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
-                activeTab === 'raci'
-                  ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
-                  : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
-              }`}
-            >
-              <FileSearch className="w-4 h-4" />
-              RACI Matrix
-            </button>
+              <button 
+                onClick={() => { setActiveTab('raci'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                  activeTab === 'raci'
+                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+                }`}
+              >
+                <FileSearch className="w-4 h-4 text-emerald-500" />
+                RACI Matrix
+              </button>
 
-            <div className="text-xs font-bold text-app-muted uppercase tracking-wider mt-6 mb-2 pl-2">
-              Registers
-            </div>
+              <button 
+                onClick={() => { setActiveTab('project_management_plan'); setActiveSnapshotId(null); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                style={{ cursor: 'pointer' }}
+                className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                  activeTab === 'project_management_plan'
+                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+                }`}
+              >
+                <Layers className="w-4 h-4 text-purple-500" />
+                Project Management Plan
+              </button>
+            </SidebarAccordion>
 
-            <button 
-              onClick={() => setActiveTab('stakeholder_register')}
-              className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
-                activeTab === 'stakeholder_register'
-                  ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
-                  : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              Stakeholder Register
-            </button>
+            <SidebarAccordion title="Registers">
+              <button 
+                onClick={() => { setActiveTab('stakeholder_register'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                  activeTab === 'stakeholder_register'
+                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+                }`}
+              >
+                <FileText className="w-4 h-4 text-amber-500" />
+                Stakeholder Register
+              </button>
 
-            <button 
-              onClick={() => setActiveTab('risk_register')}
-              className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
-                activeTab === 'risk_register'
-                  ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
-                  : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              Risk Register
-            </button>
+              <button 
+                onClick={() => { setActiveTab('risk_register'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                  activeTab === 'risk_register'
+                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+                }`}
+              >
+                <FileText className="w-4 h-4 text-rose-500" />
+                Risk Register
+              </button>
 
-            <div className="text-xs font-bold text-app-muted uppercase tracking-wider mt-6 mb-2 pl-2">
-              Reports
-            </div>
+              <button 
+                onClick={() => { setActiveTab('issue_log'); setActiveSnapshotId(null); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                style={{ cursor: 'pointer' }}
+                className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                  activeTab === 'issue_log'
+                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+                }`}
+              >
+                <FileSearch className="w-4 h-4 text-orange-500" />
+                Issue Log
+              </button>
+            </SidebarAccordion>
 
-            <button 
-              onClick={() => { setActiveTab('status_report'); setActiveSnapshotId(null) }}
-              className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
-                activeTab === 'status_report' && !activeSnapshotId
-                  ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
-                  : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              New Status Report
-            </button>
+            <SidebarAccordion title="Reports">
+              <button 
+                onClick={() => { setActiveTab('status_report'); setActiveSnapshotId(null); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
+                  activeTab === 'status_report' && !activeSnapshotId
+                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
+                }`}
+              >
+                <FileText className="w-4 h-4 text-cyan-500" />
+                New Status Report
+              </button>
 
-            {activeTab === 'status_report' && snapshots.length > 0 && (
-              <div className="mt-4 flex flex-col gap-1 pl-4 border-l-2 border-app-border ml-2">
-                <div className="text-[10px] font-bold text-app-muted uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <History className="w-3 h-3" /> Report History
+              {activeTab === 'status_report' && snapshots.length > 0 && (
+                <div className="mt-2 flex flex-col gap-1 pl-4 border-l-2 border-app-border ml-2">
+                  <div className="text-[10px] font-bold text-app-muted uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <History className="w-3 h-3" /> Report History
+                  </div>
+                  {snapshots.map((snap) => (
+                    <button
+                      key={snap.id}
+                      onClick={() => { setActiveTab('status_report'); setActiveSnapshotId(snap.id); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                      className={`text-left text-xs py-2 px-3 rounded-lg transition-colors flex items-center gap-2 ${
+                        activeSnapshotId === snap.id
+                          ? 'bg-indigo-500/10 text-indigo-500 font-bold'
+                          : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
+                      }`}
+                    >
+                      <Calendar className="w-3 h-3 shrink-0" />
+                      <span className="truncate">
+                        {snap.generated_at ? new Date(snap.generated_at).toLocaleDateString() : 'Unknown Date'} - {snap.period_end || 'Snapshot'}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-                {snapshots.map((snap) => (
-                  <button
-                    key={snap.id}
-                    onClick={() => { setActiveTab('status_report'); setActiveSnapshotId(snap.id) }}
-                    className={`text-left text-xs py-2 px-3 rounded-lg transition-colors flex items-center gap-2 ${
-                      activeSnapshotId === snap.id
-                        ? 'bg-indigo-500/10 text-indigo-500 font-bold'
-                        : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
-                    }`}
-                  >
-                    <Calendar className="w-3.5 h-3.5 shrink-0" />
-                    {new Date(snap.period_end || snap.generated_at).toLocaleDateString()}
-                  </button>
-                ))}
-              </div>
-            )}
+              )}
+            </SidebarAccordion>
 
             <PlanningSidebarSection
               activeTab={activeTab}
               onSelect={(doc) => {
                 setActiveTab(doc)
                 setActiveSnapshotId(null)
+                if (window.innerWidth < 768) setIsSidebarOpen(false)
               }}
+            />
+
+            <ExecutionSidebarSection
+              activeTab={activeTab}
+              onSelect={(doc) => {
+                setActiveTab(doc)
+                setActiveSnapshotId(null)
+                if (window.innerWidth < 768) setIsSidebarOpen(false)
+              }}
+              hasEditAccess={hasEditAccess}
+              isManager={isManager}
             />
 
             <ClosureSidebarSection
@@ -218,15 +298,16 @@ export default function DocumentsWorkspace({
               onSelect={(doc) => {
                 setActiveTab(doc)
                 setActiveSnapshotId(null)
+                if (window.innerWidth < 768) setIsSidebarOpen(false)
               }}
             />
-          </div>
+          </nav>
         )}
       </div>
 
       {/* Main Document Engine Area */}
-      <div className="flex-1 min-w-0 h-full overflow-hidden">
-        {['charter', 'wbs_dictionary', 'raci', 'status_report', 'stakeholder_register', 'risk_register'].includes(activeTab) && (
+      <div className="flex-1 min-w-0 h-full overflow-hidden md:pl-8">
+        {['charter', 'wbs_dictionary', 'raci', 'status_report', 'stakeholder_register', 'risk_register', 'project_management_plan', 'issue_log', 'schedule_document', 'budget_baseline', 'change_management_plan'].includes(activeTab) && (
           <ProjectDocument
             key={activeTab + (activeSnapshotId || 'draft')}
             documentType={activeTab}
@@ -245,6 +326,16 @@ export default function DocumentsWorkspace({
             projectId={projectId}
             hasEditAccess={hasEditAccess}
             currentLifecycle={projectContext?.lifecycle_status || 'Execution'}
+            onShowToast={showToast}
+          />
+        )}
+
+        {['meeting_minutes', 'change_requests', 'deliverables'].includes(activeTab) && (
+          <ExecutionDocumentsRouter
+            documentType={activeTab as ExecutionDocType}
+            projectId={projectId}
+            hasEditAccess={hasEditAccess}
+            isManager={isManager}
             onShowToast={showToast}
           />
         )}

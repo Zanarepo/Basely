@@ -1,4 +1,4 @@
-import { X } from 'lucide-react'
+import { X, Loader2 } from 'lucide-react'
 
 interface ActualsFormProps {
   editingId: string | null
@@ -120,9 +120,9 @@ export function ActualsForm({
           <button
             onClick={handleSave}
             disabled={isSaving || !formWbsId || !formAmount || !formDate}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
           >
-            {isSaving ? 'Saving...' : editingId ? 'Update Actual Cost' : 'Save Actual Cost'}
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : editingId ? 'Update Actual Cost' : 'Save Actual Cost'}
           </button>
         </div>
       </div>

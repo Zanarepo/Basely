@@ -21,6 +21,8 @@ export type ActivityEntityType =
   | 'status_report'
   | 'approval_request'
   | 'comment'
+  | 'iteration'
+  | 'release'
 
 export type ActivityActionType = 
   | 'created'
@@ -52,13 +54,17 @@ export async function logProjectActivity(
       return { ok: false, error: 'Unauthorized' }
     }
 
+    // Ensure entity_id is a valid UUID for database column compatibility
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const validEntityId = uuidRegex.test(entityId) ? entityId : (projectId || '00000000-0000-0000-0000-000000000000')
+
     const { error } = await supabase
       .from('project_activity_logs')
       .insert({
         project_id: projectId,
         actor_user_id: user.id,
         entity_type: entityType,
-        entity_id: entityId,
+        entity_id: validEntityId,
         action: action,
         detail: detail,
       })

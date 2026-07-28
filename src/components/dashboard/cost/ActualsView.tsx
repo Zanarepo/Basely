@@ -17,7 +17,7 @@ type Props = {
   wbsCostData: WbsCostData[]
   projectCurrency: string
   hasEditAccess: boolean
-  onDataChange: () => void
+  onDataChange: (silent?: boolean) => void
 }
 
 export default function ActualsView({

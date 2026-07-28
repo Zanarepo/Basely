@@ -5,7 +5,7 @@ import { recordActualCost, updateActualCost } from '@/lib/actuals/actions'
 interface UseActualsFormProps {
   wbsCostData: WbsCostData[]
   projectCurrency: string
-  onDataChange: () => void
+  onDataChange: (silent?: boolean) => void
 }
 
 export function useActualsForm({ wbsCostData, projectCurrency, onDataChange }: UseActualsFormProps) {
@@ -70,9 +70,9 @@ export function useActualsForm({ wbsCostData, projectCurrency, onDataChange }: U
         })
       }
       setIsAdding(false)
-      setEditingId(null)
+      setIsAdding(false)
       resetForm()
-      onDataChange()
+      onDataChange(true)
     } catch (err: any) {
       alert(err.message || 'Failed to save actual cost')
     } finally {

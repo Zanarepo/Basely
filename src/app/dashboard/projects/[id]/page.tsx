@@ -5,11 +5,13 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { ArrowLeft, Briefcase, Workflow, CalendarRange, Clock, Lock } from 'lucide-react'
 import { WbsPlanningWorkspace } from '@/components/dashboard/wbs/WbsPlanningWorkspace'
 import GanttWorkspace from '@/components/dashboard/gantt/GanttWorkspace'
+import { ReleasesWorkspace } from '@/components/dashboard/releases/ReleasesWorkspace'
 import CostWorkspace from '@/components/dashboard/cost/CostWorkspace'
 import StakeholderWorkspace from '@/components/dashboard/stakeholders/StakeholderWorkspace'
 import RiskRegisterWorkspace from '@/components/dashboard/risks/RiskRegisterWorkspace'
 import DocumentsWorkspace from '@/components/dashboard/documents/DocumentsWorkspace'
 import TeamPermissionsWorkspace from '@/components/dashboard/team/TeamPermissionsWorkspace'
+import { ActionItemsTracker } from '@/components/dashboard/action-items/ActionItemsTracker'
 import { ProjectTeamRoster } from '@/components/dashboard/ProjectTeamRoster'
 import { ProjectWizardModal } from '@/components/dashboard/ProjectWizardModal'
 import { ProjectIntegrationsMenu } from '@/components/dashboard/projects/ProjectIntegrationsMenu'
@@ -140,6 +142,10 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
   const hasRisksEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_risks) && !project.is_archived
   const hasDocumentsEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_documents) && !project.is_archived
 
+  const isManager = baseEditAccess || 
+    (callerProjectMember?.project_role_title?.toLowerCase().includes('manager') ?? false) || 
+    (callerProjectMember?.project_role_title?.toLowerCase().includes('pm') ?? false)
+
   const canAssignMembers =
     isOrgOwner ||
     callerRole === 'Admin' ||
@@ -249,6 +255,14 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       )}
 
+      {activeTab === 'releases' && (
+        <ReleasesWorkspace
+          projectId={project.id}
+          hasEditAccess={hasScheduleEditAccess}
+          methodology={project.methodology}
+        />
+      )}
+
       {activeTab === 'cost' && canViewCost && (
         <CostWorkspace
           projectId={project.id}
@@ -277,7 +291,17 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           projectId={project.id}
           projectContext={project}
           hasEditAccess={hasDocumentsEditAccess}
+          isManager={isManager}
         />
+      )}
+
+      {activeTab === 'action_items' && (
+        <div className="bg-app-bg border border-app-border rounded-xl shadow-sm h-[calc(100vh-14rem)] min-h-[600px] overflow-hidden mt-6">
+          <ActionItemsTracker
+            projectId={project.id}
+            hasEditAccess={hasDocumentsEditAccess}
+          />
+        </div>
       )}
 
       {activeTab === 'team' && (

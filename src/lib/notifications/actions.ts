@@ -58,6 +58,12 @@ export async function dispatchNotification(payload: NotificationPayload) {
   const emailEnabled = prefsData ? prefsData.email_enabled : true
   const slackEnabled = prefsData ? prefsData.slack_enabled : false
 
+  // Ensure reference_entity_id is a valid UUID for database column compatibility
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const validEntityId = uuidRegex.test(payload.referenceEntityId) 
+    ? payload.referenceEntityId 
+    : (payload.projectId || payload.userId || '00000000-0000-0000-0000-000000000000')
+
   // 2. In-App Notification (Always fires)
   const { error: insertError } = await supabase
     .from('notifications')
@@ -65,7 +71,7 @@ export async function dispatchNotification(payload: NotificationPayload) {
       user_id: payload.userId,
       trigger_type: payload.triggerType,
       reference_entity_type: payload.referenceEntityType,
-      reference_entity_id: payload.referenceEntityId,
+      reference_entity_id: validEntityId,
       project_id: payload.projectId || null,
       content_summary: payload.contentSummary,
     })

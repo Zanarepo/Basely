@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Save, AlertCircle, RefreshCw, Search, DollarSign } from 'lucide-react'
+import { Save, AlertCircle, Search, DollarSign, Loader2 } from 'lucide-react'
 import type { WbsCostData, EstimationMethod, ResourceRate } from '@/lib/cost/types'
 import { saveCostEstimate, reconcileBottomUpEstimate } from '@/lib/cost/actions'
 import ActivityAssignmentSheet from './ActivityAssignmentSheet'
@@ -14,7 +14,7 @@ type Props = {
   projectCurrency: string
   globalOverhead: number
   hasEditAccess: boolean
-  onDataChange: () => void
+  onDataChange: (silent?: boolean) => void
 }
 
 export default function CostEstimationView({ 
@@ -95,7 +95,7 @@ export default function CostEstimationView({
         setTotal(finalTotal.toString())
       }
 
-      onDataChange() // refresh global cost data
+      onDataChange(true) // refresh global cost data silently
     } catch (err: any) {
       setError(err.message || 'Failed to save estimate')
     } finally {
@@ -109,7 +109,7 @@ export default function CostEstimationView({
       setIsSaving(true)
       await reconcileBottomUpEstimate(selectedWp.costAccount.id, selectedWp.costAccount.resource_calculated_total)
       setTotal(selectedWp.costAccount.resource_calculated_total.toString())
-      onDataChange()
+      onDataChange(true)
     } catch (err: any) {
       setError(err.message || 'Failed to reconcile')
     } finally {
@@ -368,7 +368,7 @@ export default function CostEstimationView({
                   disabled={isSaving}
                   className="flex items-center gap-2 px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-semibold shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-default disabled:hover:translate-y-0 disabled:hover:shadow-sm"
                 >
-                  {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save Estimate
                 </button>
               )}

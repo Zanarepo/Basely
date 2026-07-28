@@ -7,6 +7,7 @@ import CostHealthWidget from './widgets/CostHealthWidget'
 import MilestonesWidget from './widgets/MilestonesWidget'
 import RisksWidget from './widgets/RisksWidget'
 import ProjectActivityPanel from './widgets/ProjectActivityPanel'
+import ProjectReleaseHealthPanel from './widgets/ProjectReleaseHealthPanel'
 import { useState } from 'react'
 import { Activity } from 'lucide-react'
 
@@ -24,10 +25,12 @@ export default function ProjectDashboardWorkspace({
     ragStatus,
     upcomingMilestones,
     topRisks,
+    activeRelease,
     refresh
   } = useProjectDashboardData(projectId)
 
   const [isActivityPanelOpen, setIsActivityPanelOpen] = useState(false)
+  const [isReleaseHealthPanelOpen, setIsReleaseHealthPanelOpen] = useState(false)
 
   if (loading) {
     return (
@@ -109,6 +112,14 @@ export default function ProjectDashboardWorkspace({
           </button>
           
           <button
+            onClick={() => setIsReleaseHealthPanelOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-sm font-semibold shadow-sm transition-all cursor-pointer"
+          >
+            <Activity className="h-4 w-4" />
+            Release Health
+          </button>
+
+          <button
             onClick={refresh}
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-app-surface text-app-fg border border-app-border rounded-xl hover:bg-gray-50 dark:hover:bg-app-hover text-sm font-semibold shadow-sm transition-all cursor-pointer"
           >
@@ -150,6 +161,14 @@ export default function ProjectDashboardWorkspace({
         projectId={projectId}
         isOpen={isActivityPanelOpen}
         onClose={() => setIsActivityPanelOpen(false)}
+      />
+
+      {/* Slide-out Release Health Panel */}
+      <ProjectReleaseHealthPanel
+        release={activeRelease}
+        methodology={project.methodology}
+        isOpen={isReleaseHealthPanelOpen}
+        onClose={() => setIsReleaseHealthPanelOpen(false)}
       />
     </div>
   )

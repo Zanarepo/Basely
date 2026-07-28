@@ -13,9 +13,10 @@ import {
   Save, 
   Printer, 
   Users, 
-  Clock, 
+  Clock,
   Workflow 
 } from 'lucide-react'
+import { DocumentLoader } from '../DocumentLoader'
 
 export interface LessonsLearnedEditorProps {
   projectId: string
@@ -77,12 +78,7 @@ export function LessonsLearnedEditor({
   }
 
   if (loading || !data) {
-    return (
-      <div className="w-full min-h-[400px] flex flex-col items-center justify-center p-8 text-app-muted space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-        <p className="text-xs sm:text-sm font-bold animate-pulse">Initializing structured retrospective framework...</p>
-      </div>
-    )
+    return <DocumentLoader message="Initializing structured retrospective framework..." />
   }
 
   const handleSectionChange = (key: string, val: string) => {

@@ -16,7 +16,7 @@ interface ResourceRatesManagerProps {
   contingencyAmount: number
   contingencyType: 'flat' | 'percentage'
   hasEditAccess: boolean
-  onDataChange: () => void
+  onDataChange: (silent?: boolean) => void
 }
 
 export default function ResourceRatesManager({
@@ -72,6 +72,7 @@ export default function ResourceRatesManager({
     startEdit,
     cancelEdit,
     handleSave,
+    isSaving,
     handleDelete,
     handleBulkDelete,
     handleSelectAll
@@ -127,6 +128,7 @@ export default function ResourceRatesManager({
         unit={unit}
         setUnit={setUnit}
         handleSave={handleSave}
+        isSaving={isSaving}
         cancelEdit={cancelEdit}
         startEdit={startEdit}
         handleDelete={handleDelete}
@@ -139,7 +141,7 @@ export default function ResourceRatesManager({
           onClose={() => setIsImporting(false)}
           onSuccess={() => {
             setIsImporting(false)
-            onDataChange()
+            onDataChange(true)
           }}
         />
       )}

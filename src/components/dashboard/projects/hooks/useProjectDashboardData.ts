@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { calculateProjectRagStatus, type RagStatus } from '@/lib/dashboard/rag-logic'
+import type { Release } from '@/lib/releases/types'
 
 export interface ProjectInfo {
   id: string
@@ -68,6 +69,7 @@ export function useProjectDashboardData(projectId: string) {
   const [ragStatus, setRagStatus] = useState<RagStatus>('Green')
   const [upcomingMilestones, setUpcomingMilestones] = useState<DashboardMilestone[]>([])
   const [topRisks, setTopRisks] = useState<DashboardRisk[]>([])
+  const [activeRelease, setActiveRelease] = useState<Release | null>(null)
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true)
@@ -86,15 +88,42 @@ export function useProjectDashboardData(projectId: string) {
       if (projErr) throw projErr
       setProject(projData)
 
-      // 2. Fetch all schedule activities & baselines
-      const [actRes, baseRes] = await Promise.all([
+      // 2. Fetch all schedule activities & baselines & active release
+      const [actRes, baseRes, relRes] = await Promise.all([
         supabase.from('activities').select('*').eq('project_id', projectId),
-        supabase.from('baselines').select('id').eq('project_id', projectId).order('saved_at', { ascending: false }).limit(1)
+        supabase.from('baselines').select('id').eq('project_id', projectId).order('saved_at', { ascending: false }).limit(1),
+        supabase.from('releases').select('*, iterations(*)').eq('project_id', projectId).in('status', ['in_progress', 'planned']).order('sequence_number', { ascending: true }).limit(1).maybeSingle()
       ])
 
       if (actRes.error) throw actRes.error
       const activities = actRes.data || []
       const latestBaseline = baseRes.data?.[0] || null
+      
+      if (relRes.data) {
+        setActiveRelease({
+          id: relRes.data.id,
+          projectId: relRes.data.project_id,
+          name: relRes.data.name,
+          objective: relRes.data.objective,
+          sequenceNumber: relRes.data.sequence_number,
+          status: relRes.data.status,
+          createdAt: relRes.data.created_at,
+          updatedAt: relRes.data.updated_at,
+          iterations: (relRes.data.iterations || []).map((i: any) => ({
+            id: i.id,
+            projectId: i.project_id,
+            name: i.name,
+            sequenceNumber: i.sequence_number,
+            startDate: i.start_date,
+            endDate: i.end_date,
+            createdAt: i.created_at,
+            updatedAt: i.updated_at,
+            labelOverride: i.label_override
+          }))
+        } as any)
+      } else {
+        setActiveRelease(null)
+      }
 
       // Fetch baseline snapshots if a baseline exists
       let baselineSnapshots: BaselineSnapshot[] = []
@@ -208,21 +237,28 @@ export function useProjectDashboardData(projectId: string) {
         .order('snapshot_date', { ascending: false })
         .limit(1)
 
-      let costMetrics: CostHealth
+      let costMetrics: CostHealth | null = null
 
       if (!evmErr && snapshots && snapshots.length > 0) {
         const snap = snapshots[0]
-        costMetrics = {
-          cpi: snap.cpi !== null ? Number(snap.cpi) : null,
-          spi: snap.spi !== null ? Number(snap.spi) : null,
-          eac: Number(snap.eac) || 0,
-          vac: Number(snap.vac) || 0,
-          pv: Number(snap.pv) || 0,
-          ev: Number(snap.ev) || 0,
-          ac: Number(snap.ac) || 0,
-          bac: (Number(snap.eac) || 0) + (Number(snap.vac) || 0) // BAC = EAC + VAC
+        const snapshotBac = (Number(snap.eac) || 0) + (Number(snap.vac) || 0) // BAC = EAC + VAC
+        
+        // If snapshot is valid and has actual budget data, use it. Otherwise, fall through to robust live calculation.
+        if (snapshotBac > 0 || Number(snap.pv) > 0 || Number(snap.ev) > 0) {
+          costMetrics = {
+            cpi: snap.cpi !== null ? Number(snap.cpi) : null,
+            spi: snap.spi !== null ? Number(snap.spi) : null,
+            eac: Number(snap.eac) || 0,
+            vac: Number(snap.vac) || 0,
+            pv: Number(snap.pv) || 0,
+            ev: Number(snap.ev) || 0,
+            ac: Number(snap.ac) || 0,
+            bac: snapshotBac
+          }
         }
-      } else {
+      } 
+      
+      if (!costMetrics) {
         // Fallback: compute live cost values from accounts and actual costs
         const [accountsRes, actualsRes] = await Promise.all([
           supabase.from('cost_accounts').select('budgeted_total').eq('project_id', projectId),
@@ -230,10 +266,13 @@ export function useProjectDashboardData(projectId: string) {
         ])
 
         const bac = (accountsRes.data || []).reduce((sum, a) => sum + (Number(a.budgeted_total) || 0), 0)
+        // Ensure we capture actual costs accurately
         const ac = (actualsRes.data || []).reduce((sum, a) => sum + (Number(a.amount) || 0), 0)
         const ev = bac * (overallPercentComplete / 100)
         const cpi = ac > 0 ? ev / ac : 1.0
-        const spi = overallPercentComplete / 100 // raw approximation fallback
+        // If overallPercentComplete is 0 but we have a baseline, we'd need pv. 
+        // For fallback, use bac * time elapsed or just percent complete.
+        const spi = overallPercentComplete > 0 ? overallPercentComplete / 100 : 1.0 
         const eac = cpi > 0 ? ac + (bac - ev) / cpi : bac
         const vac = bac - eac
 
@@ -248,12 +287,12 @@ export function useProjectDashboardData(projectId: string) {
           bac
         }
       }
-      setCostHealth(costMetrics)
+      setCostHealth(costMetrics as CostHealth)
 
       // 4. Calculate RAG status
       const currentRag = calculateProjectRagStatus({
-        cpi: costMetrics.cpi,
-        spi: costMetrics.spi,
+        cpi: costMetrics!.cpi,
+        spi: costMetrics!.spi,
         criticalPathSlippageDays: slippageDays
       })
       setRagStatus(currentRag)
@@ -294,6 +333,7 @@ export function useProjectDashboardData(projectId: string) {
     ragStatus,
     upcomingMilestones,
     topRisks,
+    activeRelease,
     refresh: fetchDashboardData
   }
 }

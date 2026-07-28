@@ -15,6 +15,7 @@ import {
   Mail, 
   Shield 
 } from 'lucide-react'
+import { DocumentLoader } from '../DocumentLoader'
 
 export interface HandoverViewerProps {
   projectId: string
@@ -76,12 +77,7 @@ export function HandoverViewer({
   }
 
   if (loading || !data) {
-    return (
-      <div className="w-full min-h-[400px] flex flex-col items-center justify-center p-8 text-app-muted space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-        <p className="text-xs sm:text-sm font-bold animate-pulse">Compiling operational handover and RACI transfer matrix...</p>
-      </div>
-    )
+    return <DocumentLoader message="Compiling operational handover and RACI transfer matrix..." />
   }
 
   const handleSave = () => {

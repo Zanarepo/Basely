@@ -1,6 +1,6 @@
 'use client'
 
-import { X } from 'lucide-react'
+import { X, Loader2 } from 'lucide-react'
 import { ResourceType, ResourceUnit } from '@/lib/cost/types'
 
 interface ResourceRateFormModalProps {
@@ -14,6 +14,7 @@ interface ResourceRateFormModalProps {
   setRate: (val: number) => void
   unit: ResourceUnit
   setUnit: (val: ResourceUnit) => void
+  isSaving: boolean
   onSave: () => void
   onCancel: () => void
 }
@@ -29,6 +30,7 @@ export function ResourceRateFormModal({
   setRate,
   unit,
   setUnit,
+  isSaving,
   onSave,
   onCancel,
 }: ResourceRateFormModalProps) {
@@ -114,10 +116,10 @@ export function ResourceRateFormModal({
           </button>
           <button
             onClick={onSave}
-            disabled={!name.trim()}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm"
+            disabled={!name.trim() || isSaving}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
           >
-            {isEditing ? 'Save Changes' : 'Add Resource'}
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (isEditing ? 'Save Changes' : 'Add Resource')}
           </button>
         </div>
       </div>

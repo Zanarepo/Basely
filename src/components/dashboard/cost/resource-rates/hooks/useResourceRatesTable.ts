@@ -6,7 +6,7 @@ interface UseResourceRatesTableProps {
   projectId: string
   resourceRates: ResourceRate[]
   projectCurrency: string
-  onDataChange: () => void
+  onDataChange: (silent?: boolean) => void
 }
 
 export function useResourceRatesTable({
@@ -17,6 +17,7 @@ export function useResourceRatesTable({
 }: UseResourceRatesTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   
@@ -61,6 +62,7 @@ export function useResourceRatesTable({
   const handleSave = async () => {
     if (!name.trim()) return
 
+    setIsSaving(true)
     try {
       if (isCreating) {
         await createResourceRate(projectId, {
@@ -71,11 +73,13 @@ export function useResourceRatesTable({
           name, type, rate, unit, currency: projectCurrency
         })
       }
-      onDataChange()
+      onDataChange(true)
       cancelEdit()
     } catch (error) {
       console.error('Failed to save resource rate:', error)
       alert('Failed to save resource rate.')
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -83,7 +87,7 @@ export function useResourceRatesTable({
     if (!confirm('Are you sure you want to delete this resource? Any existing assignments will be removed or broken.')) return
     try {
       await deleteResourceRate(id)
-      onDataChange()
+      onDataChange(true)
       setSelectedIds(prev => prev.filter(s => s !== id))
     } catch (error) {
       console.error('Failed to delete resource rate:', error)
@@ -98,7 +102,7 @@ export function useResourceRatesTable({
     try {
       await bulkDeleteResourceRates(selectedIds)
       setSelectedIds([])
-      onDataChange()
+      onDataChange(true)
     } catch (error) {
       console.error('Failed to bulk delete resource rates:', error)
       alert('Failed to delete resource rates.')
@@ -135,6 +139,7 @@ export function useResourceRatesTable({
     startEdit,
     cancelEdit,
     handleSave,
+    isSaving,
     handleDelete,
     handleBulkDelete,
     handleSelectAll

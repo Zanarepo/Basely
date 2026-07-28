@@ -12,6 +12,7 @@
   --app-subtle: #64748b;
   --app-surface: rgb(15 23 42 / 0.6);
   --app-surface-solid: #0f172a;
+  --app-card: #0f172a;
   --app-input: rgb(2 6 23 / 0.8);
   --app-border: rgb(30 41 59 / 0.8);
   --app-hover: rgb(30 41 59 / 0.5);
@@ -33,6 +34,7 @@
   --app-subtle: #64748b;
   --app-surface: rgb(255 255 255 / 0.85);
   --app-surface-solid: #ffffff;
+  --app-card: #ffffff;
   --app-input: #f8fafc;
   --app-border: rgb(226 232 240 / 0.95);
   --app-hover: rgb(241 245 249 / 1);
@@ -56,6 +58,7 @@
   --color-app-subtle: var(--app-subtle);
   --color-app-surface: var(--app-surface);
   --color-app-surface-solid: var(--app-surface-solid);
+  --color-app-card: var(--app-card);
   --color-app-input: var(--app-input);
   --color-app-border: var(--app-border);
   --color-app-hover: var(--app-hover);

@@ -5,6 +5,7 @@ import DocumentEngine from './DocumentEngine'
 import { getDocumentTemplate, getGeneratedDocument, updateDocumentTemplateId, DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
 import { getCustomTemplates, CustomDocumentTemplate } from '@/lib/documents/template-actions'
 import { FileText, LayoutTemplate, ArrowRight } from 'lucide-react'
+import { DocumentLoader } from './DocumentLoader'
 
 interface ProjectDocumentProps {
   documentType: string
@@ -100,14 +101,7 @@ export default function ProjectDocument({
   }
 
   if (loading) {
-    return (
-      <div className="flex h-full min-h-[600px] items-center justify-center bg-app-surface border border-app-border rounded-xl shadow-sm">
-        <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
-          <p className="text-sm text-app-muted font-medium">Loading Document Engine...</p>
-        </div>
-      </div>
-    )
+    return <DocumentLoader />
   }
 
   if (needsTemplateSelection) {

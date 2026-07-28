@@ -2,11 +2,12 @@
 
 import React from 'react'
 import { FileCheck2, Lightbulb, ArrowRightLeft, History, ShieldCheck } from 'lucide-react'
+import { SidebarAccordion } from '../SidebarAccordion'
 import { ClosureDocType } from './ClosureDocumentsRouter'
 
 export interface ClosureSidebarSectionProps {
   activeTab: string
-  onSelect: (doc: ClosureDocType) => void
+  onSelect: (docType: ClosureDocType) => void
 }
 
 export function ClosureSidebarSection({ activeTab, onSelect }: ClosureSidebarSectionProps) {
@@ -19,10 +20,7 @@ export function ClosureSidebarSection({ activeTab, onSelect }: ClosureSidebarSec
   ]
 
   return (
-    <>
-      <div className="text-xs font-bold text-app-muted uppercase tracking-wider mt-6 mb-2 pl-2">
-        Project Closure Suite
-      </div>
+    <SidebarAccordion title="Project Closure Suite">
       <div className="flex flex-col gap-1">
         {items.map((item) => {
           const isActive = activeTab === item.key
@@ -42,6 +40,6 @@ export function ClosureSidebarSection({ activeTab, onSelect }: ClosureSidebarSec
           )
         })}
       </div>
-    </>
+    </SidebarAccordion>
   )
 }
