@@ -2,6 +2,7 @@ import { User, FileText, CheckSquare, Plus, Check, X, ChevronDown, ChevronRight 
 import { useState } from 'react'
 import type { WbsStatus, ChecklistItem } from '@/lib/wbs/constants'
 import { WbsChecklist } from './WbsChecklist'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 type WbsBasicDetailsProps = {
   name: string
@@ -118,19 +119,14 @@ export function WbsBasicDetails({
              </div>
           ) : (
             <div className="flex flex-col gap-2">
-              <select
-                id="wbs-status"
-                disabled={!hasEditAccess || saving}
+              <EnterpriseSelect
                 value={status}
-                onChange={(e) => setStatus(e.target.value as WbsStatus)}
-                className="w-full px-3 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 cursor-pointer text-sm disabled:opacity-50"
-              >
-                {customStatuses.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setStatus(val as WbsStatus)}
+                options={customStatuses}
+                disabled={!hasEditAccess || saving}
+                size="lg"
+                placeholder="Select status..."
+              />
               {hasEditAccess && !saving && (
                 <button
                   type="button"

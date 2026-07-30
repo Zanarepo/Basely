@@ -19,6 +19,9 @@ import { LivePresenceWrapper } from '@/components/dashboard/presence/LivePresenc
 import ProjectDashboardWorkspace from '@/components/dashboard/projects/ProjectDashboardWorkspace'
 import ProjectNavigationTabs from '@/components/dashboard/projects/ProjectNavigationTabs'
 import { LifecycleStatusBadge } from '@/components/dashboard/projects/lifecycle/components/LifecycleStatusBadge'
+import RaidWorkspace from '@/components/dashboard/risks/raid/RaidWorkspace'
+import AdrWorkspace from '@/components/dashboard/projects/adr/AdrWorkspace'
+import SkillsMatrixTable from '@/components/dashboard/team/capacity/SkillsMatrixTable'
 
 // Planning components type definition
 type ProjectPageProps = {
@@ -311,6 +314,31 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           workspaceMembers={workspaceMembers}
           projectMembersData={projectMembersData ?? []}
           hasEditAccess={canAssignMembers}
+        />
+      )}
+
+      {activeTab === 'raid' && (
+        <RaidWorkspace
+          projectId={project.id}
+          organizationId={project.organization_id || 'default_org'}
+          methodology={project.methodology}
+        />
+      )}
+
+      {activeTab === 'adr' && (
+        <AdrWorkspace
+          projectId={project.id}
+          organizationId={project.organization_id || 'default_org'}
+          methodology={project.methodology}
+        />
+      )}
+
+      {activeTab === 'capacity' && (
+        <SkillsMatrixTable
+          projectId={project.id}
+          organizationId={project.organization_id || 'default_org'}
+          methodology={project.methodology}
+          workspaceMembers={workspaceMembers}
         />
       )}
     </div>

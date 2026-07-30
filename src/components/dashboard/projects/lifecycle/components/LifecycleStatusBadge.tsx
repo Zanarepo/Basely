@@ -139,7 +139,7 @@ export function LifecycleStatusBadge({
 
       {/* Responsive Dropdown Menu (Mobile, Tablet, Desktop) */}
       {dropdownOpen && (
-        <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 md:w-96 z-40 bg-app-surface border border-app-border rounded-xl shadow-xl p-2 animate-in fade-in zoom-in-95 duration-150 max-h-[80vh] overflow-y-auto flex flex-col">
+        <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 md:w-96 z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-150 max-h-[80vh] overflow-y-auto flex flex-col">
           <div className="p-2 border-b border-app-border flex items-center justify-between text-xs font-bold text-app-muted uppercase tracking-wider shrink-0">
             <span>Select Project Lifecycle Stage</span>
             <button 

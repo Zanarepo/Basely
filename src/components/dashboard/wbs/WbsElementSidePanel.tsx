@@ -13,6 +13,7 @@ import { AttachmentList } from '@/components/dashboard/collaboration/attachments
 import { AttachmentPicker } from '@/components/dashboard/collaboration/attachments/AttachmentPicker'
 import { useEntityAttachments } from '@/components/dashboard/collaboration/hooks/useEntityAttachments'
 import { IterationTagSelector } from '@/components/dashboard/releases/components/IterationTagSelector'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 import { useWbsElementState } from './hooks/useWbsElementState'
 import { useWbsScheduling } from './hooks/useWbsScheduling'
@@ -240,16 +241,18 @@ export function WbsElementSidePanel({
                         </div>
                         <div>
                           <label className="auth-label block mb-1">Estimation Method</label>
-                          <select
+                          <EnterpriseSelect
                             value={elementState.estimationMethod}
-                            onChange={(e) => elementState.setEstimationMethod(e.target.value as any)}
+                            onChange={(val) => elementState.setEstimationMethod(val as any)}
                             disabled={!hasEditAccess || saving}
-                            className="w-full px-3 py-2 bg-app-input border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:border-green-500 disabled:opacity-50"
-                          >
-                            <option value="bottom_up">Bottom-Up</option>
-                            <option value="analogous">Analogous</option>
-                            <option value="parametric">Parametric</option>
-                          </select>
+                            size="md"
+                            options={[
+                              { value: 'bottom_up', label: 'Bottom-Up' },
+                              { value: 'analogous', label: 'Analogous' },
+                              { value: 'parametric', label: 'Parametric' }
+                            ]}
+                            placeholder="Select method..."
+                          />
                         </div>
                       </div>
                     </div>
@@ -257,16 +260,15 @@ export function WbsElementSidePanel({
                 </div>
               )}
 
-              {elementState.isWorkPackage && (
                 <div className="border border-indigo-500/25 rounded-xl overflow-hidden bg-indigo-500/5 dark:bg-indigo-950/20 shadow-xs">
                   <button
                     type="button"
                     onClick={() => setIsScheduleOpen(!isScheduleOpen)}
-                    className="w-full flex items-center justify-between px-4 py-3 bg-transparent hover:bg-indigo-500/10 transition-colors"
+                    className="w-full flex items-center justify-between px-4 py-3 bg-transparent hover:bg-indigo-500/10 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2 text-sm font-semibold text-indigo-700 dark:text-indigo-400">
                       <CalIcon className="w-4 h-4" />
-                      Scheduling & Dependencies
+                      {elementState.isWorkPackage ? 'Scheduling & Dependencies' : 'External RAID Governance & Dependencies'}
                     </div>
                     {isScheduleOpen ? (
                       <ChevronDown className="w-4 h-4 text-indigo-500/70" />
@@ -304,11 +306,12 @@ export function WbsElementSidePanel({
                         handleTogglePredecessor={schedulingState.handleTogglePredecessor}
                         handleUpdatePredType={schedulingState.handleUpdatePredType}
                         handleUpdatePredLag={schedulingState.handleUpdatePredLag}
+                        projectId={element?.projectId}
+                        wbsElementId={element?.id}
                       />
                     </div>
                   )}
                 </div>
-              )}
               
               
               <div className="border border-app-border rounded-xl bg-app-surface">
