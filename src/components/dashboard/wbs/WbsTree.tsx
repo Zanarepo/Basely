@@ -26,6 +26,8 @@ export function WbsTree({
   clearSelection,
   callerUserId,
   callerRole,
+  showFinancials,
+  currency,
 }: WbsTreeProps) {
   return (
     <div className="space-y-1 min-w-[800px] pb-4">
@@ -66,6 +68,8 @@ export function WbsTree({
           toggleSelection={toggleSelection}
           callerUserId={callerUserId}
           callerRole={callerRole}
+          showFinancials={showFinancials}
+          currency={currency}
         />
       ))}
     </div>

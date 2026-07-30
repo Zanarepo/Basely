@@ -27,6 +27,8 @@ export type WbsTreeProps = {
   clearSelection: () => void
   callerUserId?: string
   callerRole?: string
+  showFinancials?: boolean
+  currency?: string
 }
 
 export type WbsNodeRowProps = {
@@ -50,4 +52,6 @@ export type WbsNodeRowProps = {
   toggleSelection: (id: string) => void
   callerUserId?: string
   callerRole?: string
+  showFinancials?: boolean
+  currency?: string
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Loader2, User, Building, Trash2, Mail, Phone, ExternalLink, Search } from 'lucide-react'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 type Stakeholder = {
   id: string
@@ -153,35 +154,40 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
         <div className="flex gap-4 items-center">
           <div className="flex items-center gap-2">
             <span className="text-sm text-app-subtle font-medium">Type:</span>
-            <select
-              value={orgTypeFilter}
-              onChange={(e) => setOrgTypeFilter(e.target.value as any)}
-              className="text-sm bg-app-surface border border-app-border rounded-lg px-2 py-1 text-app-fg"
-            >
-              <option value="all">All</option>
-              <option value="internal">Internal</option>
-              <option value="external">External</option>
-            </select>
+            <div className="w-32">
+              <EnterpriseSelect
+                value={orgTypeFilter}
+                onChange={(val) => setOrgTypeFilter(val as any)}
+                size="sm"
+                options={[
+                  { value: 'all', label: 'All Types' },
+                  { value: 'internal', label: 'Internal', description: 'Internal staff and teams' },
+                  { value: 'external', label: 'External', description: 'External partners & clients' },
+                ]}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-app-subtle font-medium">Min Influence:</span>
-            <select
-              value={minInfluence}
-              onChange={(e) => setMinInfluence(Number(e.target.value))}
-              className="text-sm bg-app-surface border border-app-border rounded-lg px-2 py-1 text-app-fg"
-            >
-              {[1,2,3,4,5].map(v => <option key={v} value={v}>{v}</option>)}
-            </select>
+            <div className="w-24">
+              <EnterpriseSelect
+                value={minInfluence}
+                onChange={(val) => setMinInfluence(Number(val))}
+                size="sm"
+                options={[1, 2, 3, 4, 5].map(v => ({ value: v, label: `${v}+` }))}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-app-subtle font-medium">Min Interest:</span>
-            <select
-              value={minInterest}
-              onChange={(e) => setMinInterest(Number(e.target.value))}
-              className="text-sm bg-app-surface border border-app-border rounded-lg px-2 py-1 text-app-fg"
-            >
-              {[1,2,3,4,5].map(v => <option key={v} value={v}>{v}</option>)}
-            </select>
+            <div className="w-24">
+              <EnterpriseSelect
+                value={minInterest}
+                onChange={(val) => setMinInterest(Number(val))}
+                size="sm"
+                options={[1, 2, 3, 4, 5].map(v => ({ value: v, label: `${v}+` }))}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-2 relative ml-2">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-app-muted" />

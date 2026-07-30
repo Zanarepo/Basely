@@ -5,6 +5,7 @@ import { ShieldAlert, ShieldCheck, Key, Save, Loader2, Trash2, Link as LinkIcon,
 import { useSsoConfiguration, SsoProtocol } from './hooks/useSsoConfiguration'
 import type { WorkspaceMember } from '@/components/dashboard/WorkspaceMembersPanel'
 import { CollapsibleSection } from './CollapsibleSection'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface SsoSettingsPanelProps {
   organizationId: string
@@ -221,18 +222,21 @@ export function SsoSettingsPanel({ organizationId, members, isAdmin }: SsoSettin
                 <div className="space-y-1.5 pl-8 mt-4 border-l-2 border-amber-500/20">
                   <label className="text-sm font-medium text-amber-600 dark:text-amber-500">Break-Glass Admin (Required)</label>
                   <p className="text-xs text-app-muted mb-2">Select an admin who can bypass SSO via password in case the Identity Provider is down.</p>
-                  <select
-                    value={breakGlassAdminId}
-                    onChange={(e) => setBreakGlassAdminId(e.target.value)}
-                    className="w-full sm:w-80 px-3 py-2 rounded-lg bg-app-surface-solid border border-amber-500/30 text-sm text-app-fg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
-                  >
-                    <option value="">-- Select Break-Glass Admin --</option>
-                    {admins.map(admin => (
-                      <option key={admin.userId} value={admin.userId}>
-                        {admin.name} ({admin.email})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="w-full sm:w-80">
+                    <EnterpriseSelect
+                      value={breakGlassAdminId}
+                      onChange={(val) => setBreakGlassAdminId(val)}
+                      placeholder="-- Select Break-Glass Admin --"
+                      options={[
+                        { value: '', label: '-- Select Break-Glass Admin --', description: 'Emergency access admin' },
+                        ...admins.map(admin => ({
+                          value: admin.userId,
+                          label: admin.name,
+                          description: `Admin Email: ${admin.email}`
+                        }))
+                      ]}
+                    />
+                  </div>
                 </div>
               )}
             </div>

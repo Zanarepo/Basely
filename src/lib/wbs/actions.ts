@@ -18,7 +18,7 @@ export async function getWbsElements(projectId: string): Promise<
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('wbs_elements')
-    .select('*, activities(duration), raci_assignments(*, stakeholder:stakeholders(*, profiles(full_name, email)))')
+    .select('*, activities(duration), raci_assignments(*, stakeholder:stakeholders(*, profiles(full_name, email))), cost_accounts(id, budgeted_total, estimation_method)')
     .eq('project_id', projectId)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
@@ -27,34 +27,51 @@ export async function getWbsElements(projectId: string): Promise<
     return { ok: false, error: error.message }
   }
 
-  const mapped: WbsElement[] = data.map((d: any) => ({
-    id: d.id,
-    projectId: d.project_id,
-    parentId: d.parent_id,
-    code: d.code,
-    name: d.name,
-    description: d.description,
-    ownerId: d.owner_id,
-    createdBy: d.created_by,
-    deliverables: d.deliverables,
-    deliverablesData: d.deliverables_data || [],
-    acceptanceCriteria: d.acceptance_criteria,
-    acceptanceCriteriaData: d.acceptance_criteria_data || [],
-    status: d.status as WbsStatus,
-    isWorkPackage: d.is_work_package,
-    sortOrder: d.sort_order,
-    createdAt: d.created_at,
-    updatedAt: d.updated_at,
-    iterationId: d.iteration_id || null,
-    duration: d.activities ? Number(d.activities.duration) : undefined,
-    raciAssignments: d.raci_assignments?.map((r: any) => ({
-      id: r.id,
-      wbsElementId: r.wbs_element_id,
-      stakeholderId: r.stakeholder_id,
-      roleType: r.role_type,
-      stakeholder: r.stakeholder
-    })) || [],
-  }))
+  const mapped: WbsElement[] = data.map((d: any) => {
+    // Determine cost from cost_accounts (handles array or object)
+    let cost = undefined;
+    let estimationMethod = undefined;
+    if (d.cost_accounts) {
+      if (Array.isArray(d.cost_accounts) && d.cost_accounts.length > 0) {
+        cost = Number(d.cost_accounts[0].budgeted_total);
+        estimationMethod = d.cost_accounts[0].estimation_method;
+      } else if (!Array.isArray(d.cost_accounts)) {
+        cost = Number(d.cost_accounts.budgeted_total);
+        estimationMethod = d.cost_accounts.estimation_method;
+      }
+    }
+
+    return {
+      id: d.id,
+      projectId: d.project_id,
+      parentId: d.parent_id,
+      code: d.code,
+      name: d.name,
+      description: d.description,
+      ownerId: d.owner_id,
+      createdBy: d.created_by,
+      deliverables: d.deliverables,
+      deliverablesData: d.deliverables_data || [],
+      acceptanceCriteria: d.acceptance_criteria,
+      acceptanceCriteriaData: d.acceptance_criteria_data || [],
+      status: d.status as WbsStatus,
+      isWorkPackage: d.is_work_package,
+      sortOrder: d.sort_order,
+      createdAt: d.created_at,
+      updatedAt: d.updated_at,
+      iterationId: d.iteration_id || null,
+      duration: d.activities ? Number(d.activities.duration) : undefined,
+      cost,
+      estimationMethod,
+      raciAssignments: d.raci_assignments?.map((r: any) => ({
+        id: r.id,
+        wbsElementId: r.wbs_element_id,
+        stakeholderId: r.stakeholder_id,
+        roleType: r.role_type,
+        stakeholder: r.stakeholder
+      })) || [],
+    }
+  })
 
   return { ok: true, data: mapped }
 }
@@ -149,6 +166,8 @@ export async function updateWbsElement(
     acceptanceCriteriaData?: AcceptanceCriteriaItem[]
     status?: WbsStatus
     isWorkPackage?: boolean
+    cost?: number
+    estimationMethod?: 'analogous' | 'parametric' | 'bottom_up'
   }
 ): Promise<ActionResponse> {
   const supabase = await createClient()
@@ -201,6 +220,35 @@ export async function updateWbsElement(
       .from('activities')
       .update({ percent_complete: percentComplete })
       .eq('wbs_element_id', id)
+  }
+
+  // Handle Cost Accounts sync
+  if (payload.isWorkPackage === false) {
+    // If changed to a summary node, we delete any associated cost account
+    await supabase.from('cost_accounts').delete().eq('wbs_element_id', id)
+  } else if (payload.cost !== undefined || payload.estimationMethod !== undefined) {
+    // Check if it's a work package before syncing cost account
+    let isWp = payload.isWorkPackage
+    if (isWp === undefined) {
+      const { data: elData } = await supabase.from('wbs_elements').select('is_work_package').eq('id', id).single()
+      isWp = elData?.is_work_package
+    }
+    if (isWp) {
+      const { data: existingCost } = await supabase.from('cost_accounts').select('id').eq('wbs_element_id', id).maybeSingle()
+      const costUpdate: any = {}
+      if (payload.cost !== undefined) costUpdate.budgeted_total = payload.cost
+      if (payload.estimationMethod !== undefined) costUpdate.estimation_method = payload.estimationMethod
+
+      if (existingCost) {
+        await supabase.from('cost_accounts').update(costUpdate).eq('id', existingCost.id)
+      } else {
+        await supabase.from('cost_accounts').insert({
+          wbs_element_id: id,
+          budgeted_total: payload.cost || 0,
+          estimation_method: payload.estimationMethod || 'bottom_up'
+        })
+      }
+    }
   }
 
   // Recalculate schedule if name or work package status changes

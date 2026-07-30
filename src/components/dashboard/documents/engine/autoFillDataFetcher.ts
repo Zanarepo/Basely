@@ -177,6 +177,60 @@ export async function fetchAutoFillText(projectId: string, sectionSource: string
     } else {
       text = `Debug: Unhandled project source - ${src}`
     }
+  } else if (src.startsWith('release.')) {
+    // Find the most recent release
+    const { data: releases } = await supabase
+      .from('releases')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('sequence_number', { ascending: false })
+      .limit(1)
+
+    const release = releases?.[0]
+    if (!release) {
+      text = '• No releases defined in this project.'
+    } else {
+      if (src === 'release.scope') {
+        const { fetchProjectReleasesData } = await import('@/lib/releases/actions')
+        const releaseData = await fetchProjectReleasesData(projectId)
+        const scopeItems = (releaseData.scopeItemsMap?.[release.id] || []).filter(s => s.source !== 'excluded')
+        
+        if (scopeItems.length > 0) {
+          text = '### Release Scope\n| Item | Type | Source | Iteration |\n|---|---|---|---|\n'
+          text += scopeItems.map(s => `| ${s.title} | ${s.entityType === 'wbs_element' ? 'WBS' : s.entityType === 'activity' ? 'Activity' : 'Custom'} | ${s.source === 'auto_derived' ? 'Derived' : 'Manual Override'} | ${s.iterationName || '-'} |`).join('\n')
+        } else {
+          text = '• No scope items defined for this release.'
+        }
+      } else if (src === 'release.criteria') {
+        const { data: criteria } = await supabase.from('release_exit_criteria').select('*').eq('release_id', release.id)
+        if (criteria && criteria.length > 0) {
+          text = '### Exit Criteria\n| Criterion | Met? |\n|---|---|\n'
+          text += criteria.map(c => `| ${c.criterion_text} | ${c.is_met ? 'Yes' : 'No'} |`).join('\n')
+        } else {
+          text = '• No exit criteria defined.'
+        }
+      } else if (src === 'release.deployment') {
+        const { data: deployment } = await supabase.from('release_deployment_plans').select('*').eq('release_id', release.id).order('sort_order', { ascending: true })
+        if (deployment && deployment.length > 0) {
+          text = '### Deployment Plan\n| Step | Executor | Completed? |\n|---|---|---|\n'
+          text += deployment.map(d => `| ${d.step_text} | ${d.executor_name || '-'} | ${d.is_completed ? 'Yes' : 'No'} |`).join('\n')
+        } else {
+          text = '• No deployment plan defined.'
+        }
+      } else if (src === 'release.qa') {
+        const { data: qa } = await supabase.from('release_readiness_items').select('*').eq('release_id', release.id)
+        if (qa && qa.length > 0) {
+          text = '### QA Readiness\n| Category | Item | Status |\n|---|---|---|\n'
+          text += qa.map(q => `| ${q.category || '-'} | ${q.item_text} | ${q.is_checked ? 'Verified' : 'Pending'} |`).join('\n')
+        } else {
+          text = '• No QA readiness items defined.'
+        }
+      } else if (src === 'release.defects') {
+        text = '• No defects explicitly linked to this release scope.'
+      } else {
+        text = `Debug: Unhandled release source - ${src}`
+      }
+    }
   } else {
     text = `Debug: Unhandled source - ${src}`
   }

@@ -5,6 +5,7 @@ import { Plus, Search, AlertCircle, Edit2, Trash2, MessageSquare } from 'lucide-
 import type { Risk, Issue } from './useRiskData'
 import IssueForm from './IssueForm'
 import { deleteIssue } from '@/lib/risks/actions'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface IssueListProps {
   projectId: string
@@ -95,17 +96,19 @@ export default function IssueList({
               className="w-full pl-9 pr-4 py-2 text-sm bg-app-bg border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
             />
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-sm bg-app-bg border border-app-border rounded-lg focus:outline-none"
-          >
-            <option value="all">All Statuses</option>
-            <option value="Open">Open</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Resolved">Resolved</option>
-            <option value="Closed">Closed</option>
-          </select>
+          <div className="w-44">
+            <EnterpriseSelect
+              value={statusFilter}
+              onChange={(val) => setStatusFilter(val)}
+              options={[
+                { value: 'all', label: 'All Statuses' },
+                { value: 'Open', label: 'Open', description: 'Newly logged issue' },
+                { value: 'In Progress', label: 'In Progress', description: 'Resolution underway' },
+                { value: 'Resolved', label: 'Resolved', description: 'Fix implemented & verified' },
+                { value: 'Closed', label: 'Closed', description: 'Issue closed' },
+              ]}
+            />
+          </div>
         </div>
 
         {hasEditAccess && (

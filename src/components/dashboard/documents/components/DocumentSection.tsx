@@ -1,4 +1,5 @@
-import { RefreshCw, FileText } from 'lucide-react'
+import { useState } from 'react'
+import { RefreshCw, FileText, Trash2, Loader2 } from 'lucide-react'
 import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
 import StructuredEditableField from './StructuredEditableField'
 import WbsDictionaryResolver from '../resolvers/WbsDictionaryResolver'
@@ -19,6 +20,9 @@ import { IssueLogResolver } from '../resolvers/IssueLogResolver'
 import { ScheduleDocumentResolver } from '../resolvers/ScheduleDocumentResolver'
 import { ChangeManagementPlanResolver } from '../resolvers/ChangeManagementPlanResolver'
 import { ProjectManagementPlanResolver } from '../resolvers/ProjectManagementPlanResolver'
+import { ProductStrategyResolver } from '../resolvers/ProductStrategyResolver'
+import { OkrKpiReportResolver } from '../resolvers/OkrKpiReportResolver'
+import { PrdDocumentResolver } from '../resolvers/PrdDocumentResolver'
 
 interface DocumentSectionProps {
   section: any
@@ -31,6 +35,7 @@ interface DocumentSectionProps {
   freeText: Record<string, string>
   handleAutoFillSection: (section: any) => void
   handleFreeTextChange: (key: string, value: string) => void
+  onRemoveSection?: (key: string) => void
 }
 
 export default function DocumentSection({
@@ -43,8 +48,36 @@ export default function DocumentSection({
   hasEditAccess,
   freeText,
   handleAutoFillSection,
-  handleFreeTextChange
+  handleFreeTextChange,
+  onRemoveSection
 }: DocumentSectionProps) {
+  const [isRemoving, setIsRemoving] = useState(false)
+  const [isAutoFilling, setIsAutoFilling] = useState(false)
+
+  const handleAutoFillClick = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (isAutoFilling) return
+    setIsAutoFilling(true)
+    try {
+      await handleAutoFillSection(section)
+    } finally {
+      setIsAutoFilling(false)
+    }
+  }
+
+  const handleRemoveClick = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (isRemoving || !onRemoveSection) return
+    setIsRemoving(true)
+    try {
+      onRemoveSection(section.key)
+    } finally {
+      setIsRemoving(false)
+    }
+  }
+
   const resolveDataBoundSource = (source?: string) => {
     if (!source) return '—'
 
@@ -61,27 +94,53 @@ export default function DocumentSection({
       return String(projectValue)
     }
 
+    if (source.startsWith('release.')) {
+      return `Pending generation: Click "Auto-fill from Project Data" to pull data from the most recent release.`
+    }
+
+    if (source.startsWith('initiation.') || source.startsWith('cost.') || source.startsWith('accountability.') || source.startsWith('planning.') || source.startsWith('register.')) {
+       return `Pending generation: Click "Auto-fill from Project Data" to pull the latest ${source.split('.')[0]} records.`
+    }
+
     return `Unknown source: ${source}`
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 group relative transition-all duration-200">
       <div className="flex items-center justify-between border-b border-app-border/60 pb-2">
         <h3 className="text-base font-bold text-app-fg">{section.title}</h3>
         <div className="flex items-center gap-2">
+          {section.isCustom && hasEditAccess && !isSnapshot && onRemoveSection && (
+            <button
+              type="button"
+              disabled={isRemoving}
+              onClick={handleRemoveClick}
+              style={{ cursor: 'pointer' }}
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-opacity duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer disabled:opacity-50"
+              title="Remove Custom Section"
+            >
+              {isRemoving ? (
+                <>
+                  <Loader2 className="w-3 h-3 text-rose-500 animate-spin" /> Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-3 h-3 text-rose-500" /> Delete Section
+                </>
+              )}
+            </button>
+          )}
           {section.source && hasEditAccess && !isSnapshot && (
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                handleAutoFillSection(section)
-              }}
-              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer"
+              disabled={isAutoFilling}
+              onClick={handleAutoFillClick}
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer disabled:opacity-50"
               style={{ cursor: 'pointer' }}
               title="Auto-fill content using live project data"
             >
-              <RefreshCw className="w-3 h-3 text-indigo-500" /> Auto-fill from Project Data
+              <RefreshCw className={`w-3 h-3 text-indigo-500 ${isAutoFilling ? 'animate-spin' : ''}`} />
+              {isAutoFilling ? 'Auto-filling...' : 'Auto-fill from Project Data'}
             </button>
           )}
           {section.type === 'data_bound' && template.document_type !== 'charter' ? (
@@ -135,6 +194,22 @@ export default function DocumentSection({
             <ChangeManagementPlanResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.change_management : undefined} />
           ) : section.source === 'master.project_management_plan' ? (
             <ProjectManagementPlanResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.project_management_plan : undefined} />
+          ) : section.source?.startsWith('product.') ? (
+            <ProductStrategyResolver projectId={projectId} source={section.source as any} />
+          ) : section.source?.startsWith('okrs.') ? (
+            <OkrKpiReportResolver projectId={projectId} organizationId={projectContext?.organization_id || ''} source={section.source} />
+          ) : section.source?.startsWith('prd.') ? (
+            <PrdDocumentResolver projectId={projectId} source={section.source as any} />
+          ) : freeText[section.key] ? (
+            <div className="-ml-4 mt-2">
+              <StructuredEditableField
+                value={freeText[section.key]}
+                onChange={(val) => handleFreeTextChange(section.key, val)}
+                title={section.title}
+                hasEditAccess={hasEditAccess && !isSnapshot}
+                isDataBound={true}
+              />
+            </div>
           ) : (
             <p className="font-medium">{resolveDataBoundSource(section.source)}</p>
           )}
@@ -150,6 +225,7 @@ export default function DocumentSection({
             title={section.title}
             hasEditAccess={hasEditAccess && !isSnapshot}
             isDataBound={section.type === 'data_bound'}
+            placeholder={section.placeholder}
           />
         </div>
       )}

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { X, Save, Loader2, Calendar as CalendarIcon, User, AlignLeft } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { createActionItem, updateActionItem } from '@/lib/actions/action-items'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface ActionItemModalProps {
   projectId: string
@@ -118,16 +119,19 @@ export function ActionItemModal({ projectId, itemId, sourceMeetingId, onClose, o
                 <label className="text-xs font-bold uppercase tracking-wider text-app-muted flex items-center gap-1.5">
                   <User className="w-4 h-4" /> Owner
                 </label>
-                <select
+                <EnterpriseSelect
                   value={ownerId}
-                  onChange={(e) => setOwnerId(e.target.value)}
-                  className="bg-app-card border border-app-border rounded-xl px-3 py-2 text-sm text-app-fg focus:outline-none focus:border-indigo-500 transition-colors"
-                >
-                  <option value="">Unassigned</option>
-                  {stakeholders.map(s => (
-                    <option key={s.id} value={s.id}>{s.name} {s.role_title ? `(${s.role_title})` : ''}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setOwnerId(val)}
+                  placeholder="Unassigned"
+                  options={[
+                    { value: '', label: 'Unassigned', description: 'No designated owner yet' },
+                    ...stakeholders.map(s => ({
+                      value: s.id,
+                      label: s.name,
+                      description: s.role_title ? `Role: ${s.role_title}` : 'Project Stakeholder'
+                    }))
+                  ]}
+                />
               </div>
 
               <div className="flex flex-col gap-2">

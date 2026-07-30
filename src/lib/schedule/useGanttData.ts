@@ -8,6 +8,7 @@ import { saveBaseline, deleteBaseline, renameBaseline } from '@/lib/schedule/act
 import { getPendingApprovalsForProject } from '@/lib/approvals/actions'
 import type { WbsElement } from '@/lib/wbs/constants'
 import type { Activity, Dependency } from '@/lib/schedule/cpm'
+import { createClient } from '@/utils/supabase/client'
 
 export function useGanttData(projectId: string) {
   // Loading & Data States
@@ -88,45 +89,43 @@ export function useGanttData(projectId: string) {
     if (!projectId) return
 
     let timeoutId: NodeJS.Timeout
+    let isMounted = true
 
     const handleRealtimeUpdate = (payload: any) => {
       // Debounce the fetch to avoid spamming the database during bulk updates
       clearTimeout(timeoutId)
       timeoutId = setTimeout(() => {
+        if (!isMounted) return
         setHudMessage({ text: 'Schedule updated by another user, syncing...', type: 'info' })
         fetchData(true)
       }, 500)
     }
 
-    const setupRealtime = async () => {
-      const supabase = (await import('@/utils/supabase/client')).createClient()
-      
-      const channel = supabase.channel(`schedule_sync:${projectId}`)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'activities', filter: `project_id=eq.${projectId}` },
-          handleRealtimeUpdate
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'dependencies', filter: `project_id=eq.${projectId}` },
-          handleRealtimeUpdate
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'wbs_elements', filter: `project_id=eq.${projectId}` },
-          handleRealtimeUpdate
-        )
-        .subscribe()
+    const supabase = createClient()
+    const channelName = `schedule_sync:${projectId}_${Math.random().toString(36).substring(7)}`
 
-      return channel
-    }
-
-    let channelPromise = setupRealtime()
+    const channel = supabase.channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'activities', filter: `project_id=eq.${projectId}` },
+        handleRealtimeUpdate
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'dependencies', filter: `project_id=eq.${projectId}` },
+        handleRealtimeUpdate
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'wbs_elements', filter: `project_id=eq.${projectId}` },
+        handleRealtimeUpdate
+      )
+      .subscribe()
 
     return () => {
+      isMounted = false
       clearTimeout(timeoutId)
-      channelPromise.then(channel => channel.unsubscribe())
+      supabase.removeChannel(channel)
     }
   }, [projectId])
 
@@ -138,7 +137,7 @@ export function useGanttData(projectId: string) {
     }
     const fetchSnapshots = async () => {
       try {
-        const supabase = (await import('@/utils/supabase/client')).createClient()
+        const supabase = createClient()
         const { data } = await supabase
           .from('baseline_activity_snapshots')
           .select('*')
@@ -263,8 +262,6 @@ export function useGanttData(projectId: string) {
       if (!act) return false
 
       setHudMessage({ text: 'Updating activity schedule dates...', type: 'info' })
-
-      const supabase = (await import('@/utils/supabase/client')).createClient()
 
       // Calculate new constraint parameters
       const currentEs = new Date(act.es!)

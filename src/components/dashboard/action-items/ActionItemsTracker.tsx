@@ -5,6 +5,7 @@ import { Plus, Search, Loader2, CheckCircle2, Circle, Clock, Filter, Trash2 } fr
 import { createClient } from '@/utils/supabase/client'
 import { deleteActionItem } from '@/lib/actions/action-items'
 import { ActionItemModal } from './ActionItemModal'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface ActionItemsTrackerProps {
   projectId: string
@@ -125,16 +126,18 @@ export function ActionItemsTracker({ projectId, hasEditAccess, onShowToast }: Ac
 
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-app-muted" />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-app-card border border-app-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
-          >
-            <option value="all">All Statuses</option>
-            <option value="open">Open</option>
-            <option value="in_progress">In Progress</option>
-            <option value="done">Done</option>
-          </select>
+          <div className="w-40">
+            <EnterpriseSelect
+              value={statusFilter}
+              onChange={(val) => setStatusFilter(val)}
+              options={[
+                { value: 'all', label: 'All Statuses' },
+                { value: 'open', label: 'Open', description: 'Pending execution' },
+                { value: 'in_progress', label: 'In Progress', description: 'Actively being worked on' },
+                { value: 'done', label: 'Done', description: 'Completed action item' },
+              ]}
+            />
+          </div>
         </div>
       </div>
 

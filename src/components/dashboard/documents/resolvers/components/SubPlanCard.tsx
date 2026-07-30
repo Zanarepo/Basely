@@ -32,7 +32,10 @@ export function SubPlanCard({ plan, onNavigateToTab }: SubPlanCardProps) {
   }
 
   return (
-    <div className="group bg-white dark:bg-app-card border border-app-border hover:border-indigo-500/50 rounded-xl p-5 transition-all duration-200 flex flex-col justify-between relative shadow-sm hover:shadow-md">
+    <div 
+      className="group bg-app-card border border-app-border hover:border-indigo-500/50 rounded-xl p-5 transition-all duration-200 flex flex-col justify-between relative shadow-sm hover:shadow-md cursor-pointer"
+      onClick={handleActionClick}
+    >
       <div>
         {/* Header and Status Badge */}
         <div className="flex items-start justify-between gap-3 mb-3.5">

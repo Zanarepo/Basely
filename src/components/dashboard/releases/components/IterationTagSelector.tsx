@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Layers, Zap, Loader2, Check } from 'lucide-react'
 import { useIterationTagging } from '../hooks/useIterationTagging'
 import { getIterationLabel } from '@/lib/releases/types'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface IterationTagSelectorProps {
   projectId: string
@@ -36,8 +37,8 @@ export function IterationTagSelector({
   const defaultLabel = getIterationLabel(methodology)
   const isSprint = defaultLabel === 'Sprint'
 
-  const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value || null
+  const handleSelectChange = async (valStr: string) => {
+    const val = valStr || null
     setSelectedId(val || '')
     setSaving(true)
     const res = await tagWorkItem(entityType, entityId, val)
@@ -63,22 +64,25 @@ export function IterationTagSelector({
       
       <span className="text-app-muted shrink-0">{defaultLabel}:</span>
 
-      <select
-        value={selectedId}
-        onChange={handleChange}
-        disabled={disabled || saving || hookLoading}
-        className="bg-transparent text-xs font-bold text-app-fg focus:outline-none cursor-pointer border-none p-0 pr-1 truncate max-w-[150px]"
-      >
-        <option value="">-- Unmapped --</option>
-        {iterations.map(i => {
-          const lbl = getIterationLabel(methodology, i.labelOverride)
-          return (
-            <option key={i.id} value={i.id} className="bg-app-card text-app-fg">
-              [{lbl}] {i.name}
-            </option>
-          )
-        })}
-      </select>
+      <div className="w-52">
+        <EnterpriseSelect
+          value={selectedId}
+          onChange={handleSelectChange}
+          disabled={disabled || saving || hookLoading}
+          placeholder="-- Unmapped --"
+          options={[
+            { value: '', label: '-- Unmapped --', description: 'No sprint or phase assigned' },
+            ...iterations.map(i => {
+              const lbl = getIterationLabel(methodology, i.labelOverride)
+              return {
+                value: i.id,
+                label: `[${lbl}] ${i.name}`,
+                description: i.startDate && i.endDate ? `${i.startDate} → ${i.endDate}` : `Active ${lbl}`
+              }
+            })
+          ]}
+        />
+      </div>
 
       {saving && <Loader2 className="h-3.5 w-3.5 text-indigo-500 animate-spin shrink-0 ml-1" />}
       {justSaved && !saving && <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0 ml-1 animate-in zoom-in-50" />}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { X, Loader2 } from 'lucide-react'
 import { ProcurementEntry } from '@/lib/planning/procurement-actions'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 type ProcurementEntryFormProps = {
   entry: ProcurementEntry | null
@@ -121,21 +122,21 @@ export function ProcurementEntryForm({ entry, costAccounts, onClose, onSave }: P
 
             <div>
               <label className="block text-sm font-medium text-app-fg mb-1">Link to Cost Account</label>
-              <select
+              <EnterpriseSelect
                 value={linkedCostAccountId}
-                onChange={e => {
-                  setLinkedCostAccountId(e.target.value)
-                  if (e.target.value) setCost('')
+                onChange={val => {
+                  setLinkedCostAccountId(val)
+                  if (val) setCost('')
                 }}
-                className="w-full bg-app-surface border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">-- None --</option>
-                {costAccounts.map(ca => (
-                  <option key={ca.id} value={ca.id}>
-                    {ca.wbs_elements?.code} {ca.wbs_elements?.name}
-                  </option>
-                ))}
-              </select>
+                placeholder="-- None --"
+                options={[
+                  { value: '', label: '-- None --' },
+                  ...costAccounts.map(ca => ({
+                    value: ca.id,
+                    label: `${ca.wbs_elements?.code || ''} ${ca.wbs_elements?.name || ''}`.trim()
+                  }))
+                ]}
+              />
             </div>
           </div>
         </form>

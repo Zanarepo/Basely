@@ -8,6 +8,7 @@ import { createClient } from '@/utils/supabase/client'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils'
 import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface RiskFormProps {
   projectId: string
@@ -240,30 +241,30 @@ export default function RiskForm({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-app-fg mb-1.5">Strategy</label>
-                <select
+                <EnterpriseSelect
                   value={responseStrategy}
-                  onChange={(e) => setResponseStrategy(e.target.value)}
-                  className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                >
-                  <option value="Avoid">Avoid</option>
-                  <option value="Mitigate">Mitigate</option>
-                  <option value="Transfer">Transfer</option>
-                  <option value="Accept">Accept</option>
-                </select>
+                  onChange={(val) => setResponseStrategy(val)}
+                  options={[
+                    { value: 'Avoid', label: 'Avoid', description: 'Change plans to avoid risk entirely' },
+                    { value: 'Mitigate', label: 'Mitigate', description: 'Reduce impact or likelihood' },
+                    { value: 'Transfer', label: 'Transfer', description: 'Shift liability to third party' },
+                    { value: 'Accept', label: 'Accept', description: 'Acknowledge and manage' },
+                  ]}
+                />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-app-fg mb-1.5">Status</label>
-                <select
+                <EnterpriseSelect
                   value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                >
-                  <option value="Identified">Identified</option>
-                  <option value="Monitoring">Monitoring</option>
-                  <option value="Mitigating">Mitigating</option>
-                  <option value="Occurred">Occurred</option>
-                  <option value="Closed">Closed</option>
-                </select>
+                  onChange={(val) => setStatus(val)}
+                  options={[
+                    { value: 'Identified', label: 'Identified', description: 'Newly documented risk' },
+                    { value: 'Monitoring', label: 'Monitoring', description: 'Under active observation' },
+                    { value: 'Mitigating', label: 'Mitigating', description: 'Mitigation plan in effect' },
+                    { value: 'Occurred', label: 'Occurred', description: 'Risk event triggered' },
+                    { value: 'Closed', label: 'Closed', description: 'Risk resolved or expired' },
+                  ]}
+                />
               </div>
             </div>
 
@@ -282,18 +283,19 @@ export default function RiskForm({
             {/* Owner */}
             <div>
               <label className="block text-sm font-semibold text-app-fg mb-1.5">Risk Owner</label>
-              <select
+              <EnterpriseSelect
                 value={ownerId}
-                onChange={(e) => setOwnerId(e.target.value)}
-                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="">Unassigned</option>
-                {stakeholders.map((st) => (
-                  <option key={st.id} value={st.id}>
-                    {st.name} {st.role_title ? `(${st.role_title})` : ''}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setOwnerId(val)}
+                placeholder="Unassigned"
+                options={[
+                  { value: '', label: 'Unassigned', description: 'No designated owner yet' },
+                  ...stakeholders.map((st) => ({
+                    value: st.id,
+                    label: st.name,
+                    description: st.role_title ? `Role: ${st.role_title}` : 'Project Stakeholder'
+                  }))
+                ]}
+              />
               <p className="text-xs text-app-muted mt-1.5">Assign an owner from the project stakeholder register.</p>
             </div>
 

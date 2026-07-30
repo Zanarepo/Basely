@@ -242,6 +242,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           canAssignMembers={canAssignMembers && !project.is_archived}
           callerRole={callerRole}
           allowTeamScheduleEdits={project.allow_team_schedule_edits}
+          currency={project.currency}
         />
       )}
 

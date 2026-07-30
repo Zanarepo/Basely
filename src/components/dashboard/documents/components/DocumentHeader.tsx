@@ -84,7 +84,12 @@ export default function DocumentHeader({
         {/* Change Template Button */}
         {onShowTemplateSelector && (
           <button
-            onClick={onShowTemplateSelector}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              onShowTemplateSelector()
+            }}
+            style={{ cursor: 'pointer' }}
             className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
             title="Change the template used for this document"
           >
@@ -95,7 +100,12 @@ export default function DocumentHeader({
 
         {template.document_type === 'status_report' && !isSnapshot && hasEditAccess && !isReadOnlyTemplate && (
           <button
-            onClick={() => setShowSnapshotModal(true)}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              setShowSnapshotModal(true)
+            }}
+            style={{ cursor: 'pointer' }}
             className="btn-primary text-xs px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 border-transparent text-white"
           >
             <Save className="w-3.5 h-3.5 mr-1.5" />
@@ -105,30 +115,49 @@ export default function DocumentHeader({
 
         {hasEditAccess && !isSnapshot && !isReadOnlyTemplate && (
           <button
-            onClick={handleSave}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              if (!isPending && isDirty) handleSave()
+            }}
+            style={{ cursor: 'pointer' }}
             disabled={isPending || !isDirty}
-            className="btn-secondary text-xs px-3 py-1.5"
+            className="btn-secondary text-xs px-3 py-1.5 inline-flex items-center"
           >
-            <Save className="w-3.5 h-3.5 mr-1.5" />
+            {isPending ? (
+              <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin text-indigo-500" />
+            ) : (
+              <Save className="w-3.5 h-3.5 mr-1.5" />
+            )}
             {isPending ? 'Saving...' : 'Save Draft'}
           </button>
         )}
 
         {(hasEditAccess || generatedDoc) && !isSnapshot && (
           <button
-            onClick={handleRegenerate}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              if (!isPending) handleRegenerate()
+            }}
+            style={{ cursor: 'pointer' }}
             disabled={isPending}
-            className="btn-primary text-xs px-3 py-1.5"
+            className="btn-primary text-xs px-3 py-1.5 inline-flex items-center"
           >
             <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isPending ? 'animate-spin' : ''}`} />
-            Regenerate
+            {isPending ? 'Regenerating...' : 'Regenerate'}
           </button>
         )}
 
         {/* More Actions Menu */}
         <div className="relative" ref={menuRef}>
           <button
-            onClick={() => setShowMoreMenu(!showMoreMenu)}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              setShowMoreMenu(!showMoreMenu)
+            }}
+            style={{ cursor: 'pointer' }}
             className="btn-secondary p-1.5 rounded-lg text-app-muted hover:text-app-fg transition-colors"
             title="More Options"
           >

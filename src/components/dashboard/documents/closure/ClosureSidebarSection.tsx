@@ -3,17 +3,21 @@
 import React from 'react'
 import { FileCheck2, Lightbulb, ArrowRightLeft, History, ShieldCheck } from 'lucide-react'
 import { SidebarAccordion } from '../SidebarAccordion'
-import { ClosureDocType } from './ClosureDocumentsRouter'
+export type ClosureDocType = 'closure_report' | 'lessons_learned' | 'handover_document' | 'post_implementation_review' | 'signoff_board' | 'release_notes'
 
 export interface ClosureSidebarSectionProps {
   activeTab: string
   onSelect: (docType: ClosureDocType) => void
+  methodology?: string
 }
 
-export function ClosureSidebarSection({ activeTab, onSelect }: ClosureSidebarSectionProps) {
+export function ClosureSidebarSection({ activeTab, onSelect, methodology }: ClosureSidebarSectionProps) {
+  const isWaterfall = methodology === 'Waterfall'
+
   const items: Array<{ key: ClosureDocType; label: string; icon: React.ReactNode }> = [
     { key: 'closure_report', label: 'Closure Report', icon: <FileCheck2 className="w-4 h-4 text-orange-400" /> },
     { key: 'lessons_learned', label: 'Lessons Learned', icon: <Lightbulb className="w-4 h-4 text-purple-400" /> },
+    { key: 'release_notes', label: isWaterfall ? 'Phase Handover Notes' : 'Release Notes', icon: <FileCheck2 className="w-4 h-4 text-emerald-400" /> },
     { key: 'handover_document', label: 'Final Handover', icon: <ArrowRightLeft className="w-4 h-4 text-sky-400" /> },
     { key: 'post_implementation_review', label: 'PIR & ROI Review', icon: <History className="w-4 h-4 text-indigo-400" /> },
     { key: 'signoff_board', label: 'Closure Sign-offs', icon: <ShieldCheck className="w-4 h-4 text-emerald-400" /> }

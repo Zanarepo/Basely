@@ -6,6 +6,7 @@ import { CustomDocumentTemplate, getCustomTemplates, saveCustomTemplate, deleteC
 import TemplateBuilderForm from './TemplateBuilderForm'
 import { DocumentSectionDef } from '@/lib/documents/actions'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface TemplatesWorkspaceProps {
   organizationId: string
@@ -104,14 +105,14 @@ export default function TemplatesWorkspace({ organizationId }: TemplatesWorkspac
             </div>
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-app-muted mb-2 block">Document Type</label>
-              <select
+              <EnterpriseSelect
                 value={editingTemplate.document_type || 'status_report'}
-                onChange={(e) => setEditingTemplate(prev => ({ ...prev!, document_type: e.target.value }))}
-                className="w-full px-4 py-2 bg-gray-50 dark:bg-app-surface-alt border border-app-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-app-fg transition-all"
-              >
-                <option value="status_report">Status Report</option>
-                <option value="charter">Project Charter</option>
-              </select>
+                onChange={(val) => setEditingTemplate(prev => ({ ...prev!, document_type: val }))}
+                options={[
+                  { value: 'status_report', label: 'Status Report', description: 'Periodic project executive status update' },
+                  { value: 'charter', label: 'Project Charter', description: 'Formal project initiation & mandate document' },
+                ]}
+              />
             </div>
             <div className="md:col-span-2">
               <label className="text-xs font-bold uppercase tracking-wider text-app-muted mb-2 block">Description (Optional)</label>

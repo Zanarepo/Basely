@@ -6,6 +6,7 @@ import type { Issue, Risk } from './useRiskData'
 import { createIssue, updateIssue } from '@/lib/risks/actions'
 import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
 import { createClient } from '@/utils/supabase/client'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface IssueFormProps {
   projectId: string
@@ -140,51 +141,53 @@ export default function IssueForm({
             {/* Status */}
             <div>
               <label className="block text-sm font-semibold text-app-fg mb-1.5">Status</label>
-              <select
+              <EnterpriseSelect
                 value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Resolved">Resolved</option>
-                <option value="Closed">Closed</option>
-              </select>
+                onChange={(val) => setStatus(val)}
+                options={[
+                  { value: 'Open', label: 'Open', description: 'Newly logged issue' },
+                  { value: 'In Progress', label: 'In Progress', description: 'Resolution actively underway' },
+                  { value: 'Resolved', label: 'Resolved', description: 'Fix implemented & verified' },
+                  { value: 'Closed', label: 'Closed', description: 'Issue formally closed' },
+                ]}
+              />
             </div>
 
             {/* Owner */}
             <div>
               <label className="block text-sm font-semibold text-app-fg mb-1.5">Issue Owner</label>
-              <select
+              <EnterpriseSelect
                 value={ownerId}
-                onChange={(e) => setOwnerId(e.target.value)}
-                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="">Unassigned</option>
-                {stakeholders.map((st) => (
-                  <option key={st.id} value={st.id}>
-                    {st.name} {st.role_title ? `(${st.role_title})` : ''}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setOwnerId(val)}
+                placeholder="Unassigned"
+                options={[
+                  { value: '', label: 'Unassigned', description: 'No designated owner yet' },
+                  ...stakeholders.map((st) => ({
+                    value: st.id,
+                    label: st.name,
+                    description: st.role_title ? `Role: ${st.role_title}` : 'Project Stakeholder'
+                  }))
+                ]}
+              />
               <p className="text-xs text-app-muted mt-1.5">Assign an owner from the project stakeholder register.</p>
             </div>
 
             {/* Linked Risk */}
             <div>
               <label className="block text-sm font-semibold text-app-fg mb-1.5">Linked Risk (Optional)</label>
-              <select
+              <EnterpriseSelect
                 value={linkedRiskId}
-                onChange={(e) => setLinkedRiskId(e.target.value)}
-                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="">No Linked Risk</option>
-                {risks.map((risk) => (
-                  <option key={risk.id} value={risk.id}>
-                    {risk.title} (Score: {risk.risk_score})
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setLinkedRiskId(val)}
+                placeholder="No Linked Risk"
+                options={[
+                  { value: '', label: 'No Linked Risk' },
+                  ...risks.map((risk) => ({
+                    value: risk.id,
+                    label: risk.title,
+                    description: `Risk Score: ${risk.risk_score} | Status: ${risk.status}`
+                  }))
+                ]}
+              />
               <p className="text-xs text-app-muted mt-1.5">Link this issue to a previously identified risk.</p>
             </div>
           </form>

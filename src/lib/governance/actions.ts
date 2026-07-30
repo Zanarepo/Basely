@@ -3,7 +3,7 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { createClient } from '@/utils/supabase/server'
 
-export type GovernanceEventType = 'approval_decision' | 'permission_change' | 'sso_config_change'
+export type GovernanceEventType = 'approval_decision' | 'permission_change' | 'sso_config_change' | 'ai_generation'
 
 export async function logGovernanceEvent(
   organizationId: string,

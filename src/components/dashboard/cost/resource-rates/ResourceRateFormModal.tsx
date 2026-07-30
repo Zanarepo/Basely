@@ -2,6 +2,7 @@
 
 import { X, Loader2 } from 'lucide-react'
 import { ResourceType, ResourceUnit } from '@/lib/cost/types'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface ResourceRateFormModalProps {
   isEditing: boolean
@@ -65,15 +66,15 @@ export function ResourceRateFormModal({
           {/* Type */}
           <div>
             <label className="block text-sm font-medium text-app-fg mb-1.5">Type</label>
-            <select
+            <EnterpriseSelect
               value={type}
-              onChange={e => setType(e.target.value as ResourceType)}
-              className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-app-fg"
-            >
-              <option value="labor">Labor</option>
-              <option value="material">Material</option>
-              <option value="fixed">Fixed Cost</option>
-            </select>
+              onChange={(val) => setType(val as ResourceType)}
+              options={[
+                { value: 'labor', label: 'Labor (Human Resource / Time)', description: 'Billed by hourly or daily duration' },
+                { value: 'material', label: 'Material & Equipment', description: 'Physical components, licenses, or hardware' },
+                { value: 'fixed', label: 'Fixed Cost / Service', description: 'One-off fee or lump-sum contract amount' },
+              ]}
+            />
           </div>
 
           {/* Rate + Unit */}
@@ -92,16 +93,18 @@ export function ResourceRateFormModal({
                 />
               </div>
               <span className="text-app-muted font-medium">/</span>
-              <select
-                value={unit}
-                onChange={e => setUnit(e.target.value as ResourceUnit)}
-                className="bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-app-fg"
-              >
-                <option value="hr">hr</option>
-                <option value="day">day</option>
-                <option value="unit">unit</option>
-                <option value="flat">flat</option>
-              </select>
+              <div className="w-40">
+                <EnterpriseSelect
+                  value={unit}
+                  onChange={(val) => setUnit(val as ResourceUnit)}
+                  options={[
+                    { value: 'hr', label: 'hr (Hourly)', description: 'Per hour billing' },
+                    { value: 'day', label: 'day (Daily)', description: 'Per working day' },
+                    { value: 'unit', label: 'unit', description: 'Per item / unit' },
+                    { value: 'flat', label: 'flat', description: 'Fixed fee per task' },
+                  ]}
+                />
+              </div>
             </div>
           </div>
         </div>

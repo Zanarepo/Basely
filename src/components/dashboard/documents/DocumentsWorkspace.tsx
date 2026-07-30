@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { FileText, ChevronLeft, ChevronRight, Layers, FileSearch, History, Calendar, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { FileText, ChevronLeft, ChevronRight, Layers, FileSearch, History, Calendar, PanelLeftClose, PanelLeftOpen, FolderKanban, Box, ChevronDown } from 'lucide-react'
 import ProjectDocument from './ProjectDocument'
 import { getReportSnapshots } from '@/lib/documents/actions'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
@@ -13,6 +13,8 @@ import { PlanningDocumentsRouter, PlanningDocType } from './planning/PlanningDoc
 import { ExecutionSidebarSection, ExecutionDocType } from './execution/ExecutionSidebarSection'
 import { ExecutionDocumentsRouter } from './execution/ExecutionDocumentsRouter'
 import { SidebarAccordion } from './SidebarAccordion'
+import { ProductSidebarSection } from './product/ProductSidebarSection'
+import { ProductDocumentsRouter } from './product/ProductDocumentsRouter'
 
 interface DocumentsWorkspaceProps {
   projectId: string
@@ -35,6 +37,12 @@ export default function DocumentsWorkspace({
   const [snapshots, setSnapshots] = useState<any[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
+  
+  const productTabs = ['strategy_canvas_workspace', 'personas_workspace', 'north_star_kpis_workspace', 'okrs_workspace', 'voc_discovery_workspace', 'prioritization_workspace', 'roadmap_workspace', 'product_strategy_document', 'market_research_report', 'competitive_benchmarking_matrix', 'product_requirements_document']
+  const [documentDomain, setDocumentDomain] = useState<'project' | 'product'>(
+    productTabs.includes(initialDoc || 'charter') ? 'product' : 'project'
+  )
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
 
   const showToast = useCallback((type: 'success' | 'error' | 'info', message: string) => {
@@ -58,6 +66,13 @@ export default function DocumentsWorkspace({
     // Whenever tab changes, reset snapshot id unless we specifically set it
     if (activeTab !== 'status_report') {
       setActiveSnapshotId(null)
+    }
+    
+    // Auto-sync domain if tab changes externally (e.g. hash link)
+    if (productTabs.includes(activeTab)) {
+      setDocumentDomain('product')
+    } else {
+      setDocumentDomain('project')
     }
   }, [activeTab, projectId])
 
@@ -131,8 +146,36 @@ export default function DocumentsWorkspace({
         }`}
       >
         <div className="flex items-center justify-between mb-6 pl-2 pr-2 min-w-[200px]">
-          <div className="text-xs font-bold text-app-muted uppercase tracking-wider">
-            Project Documents
+          <div className="relative flex-1 mr-3">
+            <button 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:border-indigo-500/50 hover:shadow-md transition-all duration-200"
+            >
+              <div className="flex items-center gap-2">
+                 {documentDomain === 'project' ? <FolderKanban className="w-4 h-4 text-indigo-500"/> : <Box className="w-4 h-4 text-emerald-500"/>}
+                 <span>{documentDomain === 'project' ? 'Project Documents' : 'Product Suite'}</span>
+              </div>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {isDropdownOpen && (
+              <div className="absolute z-50 top-full mt-1.5 left-0 w-[240px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl rounded-xl py-1 overflow-hidden animate-fade-in-up">
+                 <button 
+                   onClick={() => { setDocumentDomain('project'); setIsDropdownOpen(false) }}
+                   className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-colors ${documentDomain === 'project' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                 >
+                   <FolderKanban className="w-4 h-4" />
+                   Project Documents
+                 </button>
+                 <button 
+                   onClick={() => { setDocumentDomain('product'); setIsDropdownOpen(false) }}
+                   className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-colors ${documentDomain === 'product' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                 >
+                   <Box className="w-4 h-4" />
+                   Product Suite
+                 </button>
+              </div>
+            )}
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
@@ -145,6 +188,8 @@ export default function DocumentsWorkspace({
         
         {isSidebarOpen && (
           <nav className="flex-1 overflow-y-auto pr-2 pb-8 flex flex-col gap-1.5 custom-scrollbar">
+            {documentDomain === 'project' && (
+              <>
             <SidebarAccordion title="Core Documents">
               <button 
                 onClick={() => { setActiveTab('charter'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
@@ -291,6 +336,7 @@ export default function DocumentsWorkspace({
               }}
               hasEditAccess={hasEditAccess}
               isManager={isManager}
+              methodology={projectContext?.methodology}
             />
 
             <ClosureSidebarSection
@@ -300,14 +346,29 @@ export default function DocumentsWorkspace({
                 setActiveSnapshotId(null)
                 if (window.innerWidth < 768) setIsSidebarOpen(false)
               }}
+              methodology={projectContext?.methodology}
             />
+            </>
+            )}
+
+            {documentDomain === 'product' && (
+              <ProductSidebarSection
+                activeTab={activeTab}
+                onSelect={(doc) => {
+                  setActiveTab(doc)
+                  setActiveSnapshotId(null)
+                  if (window.innerWidth < 768) setIsSidebarOpen(false)
+                }}
+              />
+            )}
+
           </nav>
         )}
       </div>
 
       {/* Main Document Engine Area */}
       <div className="flex-1 min-w-0 h-full overflow-hidden md:pl-8">
-        {['charter', 'wbs_dictionary', 'raci', 'status_report', 'stakeholder_register', 'risk_register', 'project_management_plan', 'issue_log', 'schedule_document', 'budget_baseline', 'change_management_plan'].includes(activeTab) && (
+        {['charter', 'wbs_dictionary', 'raci', 'status_report', 'stakeholder_register', 'risk_register', 'project_management_plan', 'issue_log', 'schedule_document', 'budget_baseline', 'change_management_plan', 'release_notes', 'deployment_report', 'test_summary_report', 'product_strategy_document', 'market_research_report', 'competitive_benchmarking_matrix', 'okr_kpi_performance_report', 'product_requirements_document'].includes(activeTab) && (
           <ProjectDocument
             key={activeTab + (activeSnapshotId || 'draft')}
             documentType={activeTab}
@@ -317,6 +378,15 @@ export default function DocumentsWorkspace({
             onShowToast={showToast}
             isSnapshot={!!activeSnapshotId}
             snapshotId={activeSnapshotId || undefined}
+          />
+        )}
+
+        {['strategy_canvas_workspace', 'personas_workspace', 'north_star_kpis_workspace', 'okrs_workspace', 'voc_discovery_workspace', 'prioritization_workspace', 'roadmap_workspace'].includes(activeTab) && (
+          <ProductDocumentsRouter
+            documentType={activeTab}
+            projectId={projectId}
+            projectContext={projectContext}
+            hasEditAccess={hasEditAccess}
           />
         )}
 

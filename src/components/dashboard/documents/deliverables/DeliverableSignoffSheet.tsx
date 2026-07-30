@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { getDeliverables, generateDeliverableSignoffLink, initiateInternalDeliverableSignoff, getProjectStakeholders, getProjectMembers, DeliverableItem } from '@/lib/documents/deliverables'
 import { FileCheck, ExternalLink, ShieldCheck, ClipboardCheck, Copy, Check, Loader2, Trash2, Search } from 'lucide-react'
 import { DocumentLoader } from '../DocumentLoader'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface DeliverableSignoffSheetProps {
   projectId: string
@@ -183,7 +184,7 @@ export function DeliverableSignoffSheet({ projectId, hasEditAccess, onShowToast 
         ) : (
           <div className="grid gap-4">
             {filteredItems.map(item => (
-              <div key={item.id} className="group flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors">
+              <div key={item.id} className="group flex items-start gap-3 p-4 bg-app-card rounded-lg border border-app-border hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors cursor-pointer">
                 {item.signoff && (
                   <div className={`mt-1 transition-opacity ${selectedSignoffs.includes(item.signoff.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                     <input 
@@ -234,18 +235,16 @@ export function DeliverableSignoffSheet({ projectId, hasEditAccess, onShowToast 
                     <div className={`flex flex-col sm:flex-row gap-2 ${selectedWbs === item.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
                       {selectedWbs === item.id ? (
                         <div className="flex flex-col gap-2 min-w-[250px] p-3 bg-white dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 shadow-sm">
-                          <select
-                            className="text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-500 bg-gray-50 dark:bg-gray-600 w-full text-gray-900 dark:text-white"
+                          <EnterpriseSelect
                             value={selectedExternalId}
-                            onChange={e => setSelectedExternalId(e.target.value)}
-                          >
-                            <option value="">Select Stakeholder...</option>
-                            {stakeholders.map(sh => (
-                              <option key={sh.id} value={sh.id}>
-                                {sh.name} {sh.email ? `(${sh.email})` : ''}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={setSelectedExternalId}
+                            placeholder="Select Stakeholder..."
+                            size="sm"
+                            options={[
+                              { value: '', label: 'Select Stakeholder...' },
+                              ...stakeholders.map(sh => ({ value: sh.id, label: `${sh.name} ${sh.email ? `(${sh.email})` : ''}`.trim() }))
+                            ]}
+                          />
                           <div className="flex gap-2 justify-end mt-1">
                             <button onClick={() => setSelectedWbs(null)} className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer transition-colors">Cancel</button>
                             <button 
@@ -292,18 +291,16 @@ export function DeliverableSignoffSheet({ projectId, hasEditAccess, onShowToast 
                           )}
                           {selectedWbsForInternal === item.id ? (
                             <div className="flex flex-col gap-2 min-w-[250px] p-3 bg-white dark:bg-gray-700 rounded-md border border-emerald-200 dark:border-emerald-800 shadow-sm">
-                              <select
-                                className="text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-500 bg-gray-50 dark:bg-gray-600 w-full text-gray-900 dark:text-white"
+                              <EnterpriseSelect
                                 value={selectedInternalId}
-                                onChange={e => setSelectedInternalId(e.target.value)}
-                              >
-                                <option value="">Select Team Member...</option>
-                                {members.map(m => (
-                                  <option key={m.id} value={m.id}>
-                                    {m.name || m.email} {m.role_title ? `(${m.role_title})` : ''}
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={setSelectedInternalId}
+                                placeholder="Select Team Member..."
+                                size="sm"
+                                options={[
+                                  { value: '', label: 'Select Team Member...' },
+                                  ...members.map(m => ({ value: m.id, label: `${m.name || m.email} ${m.role_title ? `(${m.role_title})` : ''}`.trim() }))
+                                ]}
+                              />
                               <div className="flex gap-2 justify-end mt-1">
                                 <button onClick={() => setSelectedWbsForInternal(null)} className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer transition-colors">Cancel</button>
                                 <button 

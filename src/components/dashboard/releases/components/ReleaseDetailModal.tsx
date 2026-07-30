@@ -10,6 +10,7 @@ import { ReleaseDeploymentPlanSection } from './ReleaseDeploymentPlanSection'
 import { ReleaseRollbackPlanSection } from './ReleaseRollbackPlanSection'
 import { ReleasePromotionGate } from './ReleasePromotionGate'
 import ReleaseMetricsTab from './metrics/ReleaseMetricsTab'
+import { GtmRolloutPanel } from '@/components/dashboard/product/gtm/GtmRolloutPanel'
 import { getTerminology } from '@/utils/terminology'
 import type { Release, Iteration, ReleaseScopeItem, ReleaseStatus } from '@/lib/releases/types'
 
@@ -81,7 +82,7 @@ export function ReleaseDetailModal({
   onDeleteRollbackStep,
   onRefresh
 }: ReleaseDetailModalProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'metrics' | 'scope' | 'criteria' | 'readiness' | 'deployment' | 'rollback'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'metrics' | 'scope' | 'criteria' | 'readiness' | 'deployment' | 'rollback' | 'gtm_rollouts'>('overview')
   const [gateOpen, setGateOpen] = useState(false)
 
   if (!isOpen || !release) return null
@@ -148,7 +149,7 @@ export function ReleaseDetailModal({
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex items-center gap-6 px-6 border-t border-app-border/60 text-sm font-bold bg-app-card/30">
+          <div className="flex items-center gap-6 px-6 border-t border-app-border/60 text-sm font-bold bg-app-card/30 overflow-x-auto no-scrollbar">
             <button
               type="button"
               onClick={() => setActiveTab('overview')}
@@ -173,6 +174,19 @@ export function ReleaseDetailModal({
             >
               <Activity className="h-4 w-4" />
               <span>Health & Metrics</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('gtm_rollouts')}
+              className={`py-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
+                activeTab === 'gtm_rollouts'
+                  ? 'border-indigo-500 text-indigo-500 font-extrabold'
+                  : 'border-transparent text-app-muted hover:text-app-fg'
+              }`}
+            >
+              <Rocket className="h-4 w-4 text-indigo-500" />
+              <span>GTM Rollouts</span>
             </button>
 
             <button
@@ -253,9 +267,13 @@ export function ReleaseDetailModal({
         </div>
 
         {/* Tab Body */}
-        <div className="p-6 overflow-y-auto flex-1 bg-app-card/60">
+        <div className="p-6 overflow-y-auto flex-1 bg-app-card/60 custom-scrollbar">
           {activeTab === 'metrics' && (
             <ReleaseMetricsTab release={release} methodology={methodology || 'Agile'} />
+          )}
+          
+          {activeTab === 'gtm_rollouts' && (
+            <GtmRolloutPanel releaseId={release.id} />
           )}
 
           {activeTab === 'overview' && (

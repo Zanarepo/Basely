@@ -5,6 +5,7 @@ import { Shield, Loader2, Download, Filter, FileText } from 'lucide-react'
 import { useGovernanceAuditLog } from './hooks/useGovernanceAuditLog'
 import { CollapsibleSection } from './CollapsibleSection'
 import type { GovernanceEventType } from '@/lib/governance/actions'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface GovernanceAuditLogPanelProps {
   organizationId: string
@@ -12,9 +13,10 @@ interface GovernanceAuditLogPanelProps {
 }
 
 const EVENT_TYPE_LABELS: Record<GovernanceEventType, string> = {
-  approval_decision: 'Approval Decision',
-  permission_change: 'Permission Change',
-  sso_config_change: 'SSO Config Change'
+  'approval_decision': 'Approval Decision',
+  'permission_change': 'Permission Change',
+  'sso_config_change': 'SSO Config Change',
+  'ai_generation': 'AI Generation'
 }
 
 export function GovernanceAuditLogPanel({ organizationId, isAdmin }: GovernanceAuditLogPanelProps) {
@@ -45,16 +47,18 @@ export function GovernanceAuditLogPanel({ organizationId, isAdmin }: GovernanceA
               <div className="flex items-center gap-2 text-sm text-app-muted font-medium">
                 <Filter className="w-4 h-4" /> Filter by Event:
               </div>
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value as any)}
-                className="auth-input w-full sm:w-auto min-w-[200px]"
-              >
-                <option value="all">All Events</option>
-                <option value="approval_decision">Approval Decisions</option>
-                <option value="permission_change">Permission Changes</option>
-                <option value="sso_config_change">SSO Config Changes</option>
-              </select>
+              <div className="w-full sm:w-56">
+                <EnterpriseSelect
+                  value={filterType}
+                  onChange={(val) => setFilterType(val as any)}
+                  options={[
+                    { value: 'all', label: 'All Events', description: 'View all audit log activity' },
+                    { value: 'approval_decision', label: 'Approval Decisions', description: 'Sign-off and approval logs' },
+                    { value: 'permission_change', label: 'Permission Changes', description: 'Role & access privilege updates' },
+                    { value: 'sso_config_change', label: 'SSO Config Changes', description: 'Authentication policy modifications' },
+                  ]}
+                />
+              </div>
             </div>
             
             <button

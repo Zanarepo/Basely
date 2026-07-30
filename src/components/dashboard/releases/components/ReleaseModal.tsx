@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { X, Loader2, Rocket, Flag, Layers, Plus, Trash2 } from 'lucide-react'
 import { IterationBadge } from './IterationBadge'
 import type { Release, Iteration, ReleaseStatus } from '@/lib/releases/types'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface ReleaseModalProps {
   isOpen: boolean
@@ -150,17 +151,17 @@ export function ReleaseModal({
               <label className="text-xs font-semibold text-app-muted uppercase tracking-wider block">
                 Status
               </label>
-              <select
+              <EnterpriseSelect
                 value={status}
-                onChange={e => setStatus(e.target.value as ReleaseStatus)}
-                className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2.5 text-sm font-semibold text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                <option value="planned">Planned</option>
-                <option value="in_progress">In Progress</option>
-                <option value="released">Released (Completed)</option>
-                <option value="rolled_back">Rolled Back</option>
-                <option value="canceled">Canceled</option>
-              </select>
+                onChange={(val) => setStatus(val as ReleaseStatus)}
+                options={[
+                  { value: 'planned', label: 'Planned', description: 'Future milestone release' },
+                  { value: 'in_progress', label: 'In Progress', description: 'Currently active release cycle' },
+                  { value: 'released', label: 'Released', description: 'Completed and shipped' },
+                  { value: 'rolled_back', label: 'Rolled Back', description: 'Reverted due to issues' },
+                  { value: 'canceled', label: 'Canceled', description: 'Aborted release milestone' },
+                ]}
+              />
             </div>
           </div>
 

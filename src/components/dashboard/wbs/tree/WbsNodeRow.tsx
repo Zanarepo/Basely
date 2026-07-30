@@ -14,6 +14,8 @@ import type { WbsNodeRowProps } from './types'
 import { getStatusColor, getProgressColor } from './utils'
 import { useWbsDragAndDrop } from './hooks/useWbsDragAndDrop'
 import { useWbsNodeRename } from './hooks/useWbsNodeRename'
+import { IterationBadge } from '@/components/dashboard/releases/components/IterationBadge'
+import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
 export function WbsNodeRow({
   node,
@@ -36,6 +38,8 @@ export function WbsNodeRow({
   toggleSelection,
   callerUserId,
   callerRole,
+  showFinancials,
+  currency = 'USD',
 }: WbsNodeRowProps) {
   const { element, children } = node
   const isExpanded = expandedNodeIds.has(element.id)
@@ -245,6 +249,19 @@ export function WbsNodeRow({
             </div>
           )}
 
+          {/* Financials Badge */}
+          {showFinancials && typeof element.cost === 'number' && (
+            <div className="flex items-center w-24 justify-end">
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold shadow-2xs border ${
+                element.isWorkPackage
+                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                  : 'bg-emerald-500/5 text-emerald-600 dark:text-emerald-500 border-emerald-500/20'
+              }`}>
+                <CurrencyDisplay amount={element.cost} currency={currency} compactThreshold={1000} />
+              </span>
+            </div>
+          )}
+
           {/* Row context action buttons (visible on hover) */}
           {hasEditAccess && !isEditing && (
             <div className="opacity-0 group-hover/row:opacity-100 flex items-center gap-1 transition-opacity duration-150">
@@ -322,6 +339,8 @@ export function WbsNodeRow({
               toggleSelection={toggleSelection}
               callerUserId={callerUserId}
               callerRole={callerRole}
+              showFinancials={showFinancials}
+              currency={currency}
             />
           ))}
         </div>

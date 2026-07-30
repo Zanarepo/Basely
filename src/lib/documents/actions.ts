@@ -10,6 +10,7 @@ export type DocumentSectionDef = {
   title: string
   type: 'data_bound' | 'free_text'
   source?: string
+  placeholder?: string
 }
 
 export type DocumentTemplate = {
@@ -189,6 +190,47 @@ export async function getDocumentTemplate(documentType: string, templateId?: str
     }
   }
 
+  if (documentType === 'release_notes') {
+    return {
+      id: data?.id || 'release_notes_template',
+      document_type: 'release_notes',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'executive_summary', title: 'Summary & Context', type: 'free_text' },
+        { key: 'release_scope', title: 'Release Scope (Derived)', type: 'data_bound', source: 'release.scope' },
+        { key: 'release_exit_criteria', title: 'Exit Criteria', type: 'data_bound', source: 'release.criteria' }
+      ]
+    }
+  }
+
+  if (documentType === 'deployment_report') {
+    return {
+      id: data?.id || 'deployment_report_template',
+      document_type: 'deployment_report',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'deployment_summary', title: 'Deployment Summary', type: 'free_text' },
+        { key: 'deployment_plan', title: 'Deployment Plan & Execution', type: 'data_bound', source: 'release.deployment' }
+      ]
+    }
+  }
+
+  if (documentType === 'test_summary_report') {
+    return {
+      id: data?.id || 'test_summary_report_template',
+      document_type: 'test_summary_report',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'test_summary', title: 'QA Summary & Sign-off', type: 'free_text' },
+        { key: 'qa_readiness', title: 'QA Readiness Items', type: 'data_bound', source: 'release.qa' },
+        { key: 'linked_defects', title: 'Linked Defects', type: 'data_bound', source: 'release.defects' }
+      ]
+    }
+  }
+
   if (documentType === 'business_case') {
     return {
       id: data?.id || 'business_case_template',
@@ -280,6 +322,85 @@ export async function getDocumentTemplate(documentType: string, templateId?: str
       section_definitions: [
         { key: 'executive_overview', title: 'Master Project Plan Executive Overview', type: 'free_text' },
         { key: 'sub_plans_aggregator', title: 'Integrated Sub-Plans & References', type: 'data_bound', source: 'master.project_management_plan' }
+      ]
+    }
+  }
+
+  if (documentType === 'product_strategy_document') {
+    return {
+      id: data?.id || 'product_strategy_document_template',
+      document_type: 'product_strategy_document',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'strategy_vision', title: 'Product Vision Canvas & Core Pillars', type: 'data_bound', source: 'product.strategy_canvas' },
+        { key: 'executive_commentary', title: 'Executive Strategy & Strategic Intent', type: 'free_text' }
+      ]
+    }
+  }
+
+  if (documentType === 'market_research_report') {
+    return {
+      id: data?.id || 'market_research_report_template',
+      document_type: 'market_research_report',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'target_market_segmentation', title: 'Target Market & Customer Segments', type: 'data_bound', source: 'product.target_market' },
+        { key: 'customer_personas', title: 'Customer Personas & JTBD Analysis', type: 'data_bound', source: 'product.personas' },
+        { key: 'tam_sam_som_analysis', title: 'TAM / SAM / SOM Financial Opportunity', type: 'free_text' },
+        { key: 'industry_trends', title: 'Industry Trends & Macro Factors', type: 'free_text' }
+      ]
+    }
+  }
+
+  if (documentType === 'competitive_benchmarking_matrix') {
+    return {
+      id: data?.id || 'competitive_benchmarking_matrix_template',
+      document_type: 'competitive_benchmarking_matrix',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'defensibility_moats', title: 'Competitive Moat & Defensibility Profile', type: 'data_bound', source: 'product.competitive_moats' },
+        { key: 'competitor_feature_comparison', title: 'Competitor Feature & Pricing Matrix', type: 'free_text' },
+        { key: 'swot_evaluation', title: 'SWOT Evaluation', type: 'free_text' }
+      ]
+    }
+  }
+
+  if (documentType === 'okr_kpi_performance_report') {
+    return {
+      id: data?.id || 'okr_kpi_performance_report_template',
+      document_type: 'okr_kpi_performance_report',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'north_star_telemetry', title: 'Executive North Star KPI & Growth Levers', type: 'data_bound', source: 'okrs.north_star_report' },
+        { key: 'okr_hierarchy', title: 'Quarterly OKR Objectives & Key Results Hierarchy', type: 'data_bound', source: 'okrs.hierarchy_tree' },
+        { key: 'executive_commentary_and_adjustments', title: 'Quarterly Executive Commentary & Pivot Strategy', type: 'free_text' }
+      ]
+    }
+  }
+
+  if (documentType === 'product_requirements_document') {
+    return {
+      id: data?.id || 'product_requirements_document_template',
+      document_type: 'product_requirements_document',
+      is_custom: false,
+      created_at: data?.created_at || new Date().toISOString(),
+      section_definitions: [
+        { key: 'prd_objective', title: 'Objective & Business Value', type: 'data_bound', source: 'prd.objective_overview' },
+        { key: 'prd_scope_in', title: 'In Scope', type: 'free_text' },
+        { key: 'prd_scope_out', title: 'Out of Scope', type: 'free_text' },
+        { key: 'prd_acceptance_criteria', title: 'Acceptance Criteria', type: 'free_text' },
+        { 
+          key: 'prd_telemetry', 
+          title: 'Tracking & Metrics', 
+          type: 'free_text',
+          placeholder: 'Example:\n- Click rate on the "Checkout" button\n- Time spent on the new form (Goal: < 30s)\n- Daily Active Users (DAU) interacting with the feature'
+        },
+        { key: 'prd_discovery_insights', title: 'Linked Discovery Insights (VoC Evidence)', type: 'data_bound', source: 'prd.discovery_insights' },
+        { key: 'prd_wireframes', title: 'UX Wireframes & Visual Specifications', type: 'free_text' }
       ]
     }
   }

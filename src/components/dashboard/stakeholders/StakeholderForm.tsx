@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Loader2, X, Link as LinkIcon, Unlink } from 'lucide-react'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 type WorkspaceMember = {
   userId: string
@@ -69,8 +70,7 @@ export function StakeholderForm({ projectId, stakeholderId, onClose, workspaceMe
     setLoading(false)
   }
 
-  const handleLinkUser = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const uid = e.target.value
+  const handleLinkUser = (uid: string) => {
     if (!uid) {
       setLinkedUserId(null)
       return
@@ -179,16 +179,19 @@ export function StakeholderForm({ projectId, stakeholderId, onClose, workspaceMe
                 </button>
               </div>
             ) : (
-              <select
+              <EnterpriseSelect
                 value=""
-                onChange={handleLinkUser}
-                className="w-full bg-app-surface border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="" disabled>Select a workspace member...</option>
-                {workspaceMembers.map(m => (
-                  <option key={m.userId} value={m.userId}>{m.name} ({m.email})</option>
-                ))}
-              </select>
+                onChange={(val) => handleLinkUser(val)}
+                placeholder="Select a workspace member..."
+                options={[
+                  { value: '', label: 'Select a workspace member...' },
+                  ...workspaceMembers.map(m => ({
+                    value: m.userId,
+                    label: m.name,
+                    description: `${m.email} (${m.role || 'Member'})`
+                  }))
+                ]}
+              />
             )}
             <p className="text-[11px] text-app-subtle">
               Linking ensures name & email automatically stay synced with the user's platform profile.
@@ -212,14 +215,14 @@ export function StakeholderForm({ projectId, stakeholderId, onClose, workspaceMe
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-app-fg mb-1">Type</label>
-                <select
+                <EnterpriseSelect
                   value={orgType}
-                  onChange={e => setOrgType(e.target.value as any)}
-                  className="w-full bg-app-surface border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="internal">Internal</option>
-                  <option value="external">External</option>
-                </select>
+                  onChange={(val) => setOrgType(val as any)}
+                  options={[
+                    { value: 'internal', label: 'Internal', description: 'Internal staff & teammates' },
+                    { value: 'external', label: 'External', description: 'Clients, vendors, & sponsors' },
+                  ]}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-app-fg mb-1">Sub-Category</label>

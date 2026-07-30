@@ -32,6 +32,7 @@ type WbsElementSidePanelProps = {
   callerRole?: string
   callerUserId?: string
   allowTeamScheduleEdits?: boolean
+  currency?: string
 }
 
 export function WbsElementSidePanel({
@@ -48,9 +49,12 @@ export function WbsElementSidePanel({
   callerRole,
   callerUserId,
   allowTeamScheduleEdits = false,
+  currency = 'USD',
 }: WbsElementSidePanelProps) {
   const elementState = useWbsElementState(element)
   const schedulingState = useWbsScheduling(element, elementState.isWorkPackage)
+
+  const [isBudgetOpen, setIsBudgetOpen] = useState(false)
 
   const { saving, handleFormSubmit } = useWbsSubmit({
     element,
@@ -201,6 +205,57 @@ export function WbsElementSidePanel({
                   </div>
                 )}
               </div>
+
+              {elementState.isWorkPackage && (
+                <div className="border border-green-500/25 rounded-xl overflow-hidden bg-green-500/5 dark:bg-green-950/20 shadow-xs">
+                  <button
+                    type="button"
+                    onClick={() => setIsBudgetOpen(!isBudgetOpen)}
+                    className="w-full flex items-center justify-between px-4 py-3 bg-transparent hover:bg-green-500/10 transition-colors"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-semibold text-green-700 dark:text-green-400">
+                      <span className="w-4 h-4 flex items-center justify-center font-bold text-xs">$</span>
+                      Budget Estimate
+                    </div>
+                    {isBudgetOpen ? (
+                      <ChevronDown className="w-4 h-4 text-green-500/70" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-green-500/70" />
+                    )}
+                  </button>
+                  
+                  {isBudgetOpen && (
+                    <div className="p-4 border-t border-green-500/25 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="auth-label block mb-1">Budget Amount</label>
+                          <input
+                            type="number"
+                            value={elementState.cost || ''}
+                            onChange={(e) => elementState.setCost(e.target.value ? Number(e.target.value) : undefined)}
+                            disabled={!hasEditAccess || saving}
+                            placeholder="0.00"
+                            className="w-full px-3 py-2 bg-app-input border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:border-green-500 disabled:opacity-50"
+                          />
+                        </div>
+                        <div>
+                          <label className="auth-label block mb-1">Estimation Method</label>
+                          <select
+                            value={elementState.estimationMethod}
+                            onChange={(e) => elementState.setEstimationMethod(e.target.value as any)}
+                            disabled={!hasEditAccess || saving}
+                            className="w-full px-3 py-2 bg-app-input border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:border-green-500 disabled:opacity-50"
+                          >
+                            <option value="bottom_up">Bottom-Up</option>
+                            <option value="analogous">Analogous</option>
+                            <option value="parametric">Parametric</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {elementState.isWorkPackage && (
                 <div className="border border-indigo-500/25 rounded-xl overflow-hidden bg-indigo-500/5 dark:bg-indigo-950/20 shadow-xs">

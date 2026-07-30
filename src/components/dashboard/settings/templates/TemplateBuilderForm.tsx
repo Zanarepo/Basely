@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { DocumentSectionDef } from '@/lib/documents/actions'
 import { useTemplateBuilder } from './hooks/useTemplateBuilder'
 import { Trash2, GripVertical, Plus, Save, ChevronUp, ChevronDown } from 'lucide-react'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface TemplateBuilderFormProps {
   initialSections?: DocumentSectionDef[]
@@ -100,28 +101,28 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
                   
                   <div className={section.type === 'data_bound' ? "md:col-span-1" : "md:col-span-2"}>
                     <label className="text-[10px] font-bold uppercase tracking-wider text-app-muted mb-1 block">Field Type</label>
-                    <select
+                    <EnterpriseSelect
                       value={section.type}
-                      onChange={(e) => updateSection(index, { type: e.target.value as 'free_text' | 'data_bound' })}
-                      className="w-full text-sm px-3 py-1.5 border border-app-border rounded-lg bg-app-surface text-app-fg focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option value="free_text">Free Text Input</option>
-                      <option value="data_bound">Data Bound (AI Generated)</option>
-                    </select>
+                      onChange={(val) => updateSection(index, { type: val as 'free_text' | 'data_bound' })}
+                      options={[
+                        { value: 'free_text', label: 'Free Text Input', description: 'Manual narrative & commentary box' },
+                        { value: 'data_bound', label: 'Data Bound (AI Generated)', description: 'Auto-fills using real project live telemetry' },
+                      ]}
+                    />
                   </div>
                   
                   {section.type === 'data_bound' && (
                     <div className="md:col-span-1">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-app-muted mb-1 block">Data Source</label>
-                      <select
+                      <EnterpriseSelect
                         value={section.source || 'status.schedule'}
-                        onChange={(e) => updateSection(index, { source: e.target.value })}
-                        className="w-full text-sm px-3 py-1.5 border border-app-border rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 focus:ring-1 focus:ring-indigo-500"
-                      >
-                        {DATA_SOURCES.map(ds => (
-                          <option key={ds.value} value={ds.value}>{ds.label}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => updateSection(index, { source: val })}
+                        options={DATA_SOURCES.map(ds => ({
+                          value: ds.value,
+                          label: ds.label,
+                          description: `Live binding: ${ds.value}`
+                        }))}
+                      />
                     </div>
                   )}
                 </div>
@@ -188,28 +189,28 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
             </div>
             <div className={newSectionType === 'data_bound' ? "md:col-span-2" : "md:col-span-3"}>
               <label className="text-[10px] font-bold uppercase tracking-wider text-app-muted mb-1 block">Type</label>
-              <select
+              <EnterpriseSelect
                 value={newSectionType}
-                onChange={(e) => setNewSectionType(e.target.value as 'free_text' | 'data_bound')}
-                className="w-full text-sm px-3 py-2 border border-app-border rounded-lg bg-white dark:bg-app-surface text-app-fg focus:ring-1 focus:ring-indigo-500"
-              >
-                <option value="free_text">Free Text</option>
-                <option value="data_bound">Data Bound</option>
-              </select>
+                onChange={(val) => setNewSectionType(val as 'free_text' | 'data_bound')}
+                options={[
+                  { value: 'free_text', label: 'Free Text Input', description: 'Manual narrative box' },
+                  { value: 'data_bound', label: 'Data Bound (AI Generated)', description: 'Auto-fills using real project live telemetry' },
+                ]}
+              />
             </div>
             
             {newSectionType === 'data_bound' && (
               <div className="md:col-span-3">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-app-muted mb-1 block">Data Source</label>
-                <select
+                <EnterpriseSelect
                   value={newSectionSource}
-                  onChange={(e) => setNewSectionSource(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-indigo-500/30 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 focus:ring-1 focus:ring-indigo-500"
-                >
-                  {DATA_SOURCES.map(ds => (
-                    <option key={ds.value} value={ds.value}>{ds.label}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setNewSectionSource(val)}
+                  options={DATA_SOURCES.map(ds => ({
+                    value: ds.value,
+                    label: ds.label,
+                    description: `Live binding: ${ds.value}`
+                  }))}
+                />
               </div>
             )}
             

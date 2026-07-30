@@ -41,6 +41,8 @@ export function useWbsSubmit({
         acceptanceCriteriaData: elementState.acceptanceCriteriaData,
         status: elementState.status,
         isWorkPackage: elementState.isWorkPackage,
+        cost: elementState.cost,
+        estimationMethod: elementState.estimationMethod,
       })
 
       if (!wbsSuccess) {

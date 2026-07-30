@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Key, Plus, Trash2, Loader2, Copy, CheckCircle2, ShieldAlert, ChevronDown, ChevronRight } from 'lucide-react'
 import { useWorkspace } from '@/components/dashboard/WorkspaceContext'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface ApiKey {
   id: string
@@ -187,14 +188,14 @@ export function ApiKeysPanel() {
               </div>
               <div className="flex-1 w-full space-y-1.5">
                 <label className="text-xs font-semibold text-app-muted uppercase tracking-wider">Scope</label>
-                <select
+                <EnterpriseSelect
                   value={newKeyScope}
-                  onChange={(e) => setNewKeyScope(e.target.value as 'read_only' | 'read_write')}
-                  className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:border-indigo-500"
-                >
-                  <option value="read_only">Read Only</option>
-                  <option value="read_write">Read & Write</option>
-                </select>
+                  onChange={(val) => setNewKeyScope(val as 'read_only' | 'read_write')}
+                  options={[
+                    { value: 'read_only', label: 'Read Only', description: 'Query telemetry & reports without modifying records' },
+                    { value: 'read_write', label: 'Read & Write', description: 'Full CRUD access for automated integrations' },
+                  ]}
+                />
               </div>
               <button
                 type="submit"

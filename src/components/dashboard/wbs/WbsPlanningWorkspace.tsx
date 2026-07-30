@@ -24,6 +24,7 @@ type WbsPlanningWorkspaceProps = {
   canAssignMembers?: boolean
   callerRole?: string
   allowTeamScheduleEdits?: boolean
+  currency?: string
 }
 
 import { useWbsBoard } from './workspace/useWbsBoard'
@@ -36,6 +37,7 @@ export function WbsPlanningWorkspace({
   canAssignMembers = false,
   callerRole,
   allowTeamScheduleEdits = false,
+  currency = 'USD',
 }: WbsPlanningWorkspaceProps) {
   const searchParams = useSearchParams()
   const initialView = (searchParams.get('wbsView') as WbsViewType) || 'tree'
@@ -84,6 +86,20 @@ export function WbsPlanningWorkspace({
     handleBulkDelete,
   } = useWbsPlanning(projectId, hasEditAccess, callerRole, callerUserId)
 
+  const [showFinancials, setShowFinancials] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('wbsShowFinancials')
+      return saved ? JSON.parse(saved) : false
+    }
+    return false
+  })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('wbsShowFinancials', JSON.stringify(showFinancials))
+    }
+  }, [showFinancials])
+
   useEffect(() => {
     if (elementIdFromUrl && elementIdFromUrl !== processedElementId && elements.length > 0) {
       setActiveElementId(elementIdFromUrl)
@@ -98,10 +114,35 @@ export function WbsPlanningWorkspace({
           toExpand.add(current.parentId)
           current = elements.find(e => e.id === current.parentId)
         }
-        setExpandedNodeIds(prev => new Set([...Array.from(prev), ...Array.from(toExpand)]))
+        setExpandedNodeIds(prev => new Set([...prev, ...toExpand]))
       }
     }
   }, [elementIdFromUrl, processedElementId, elements, setActiveElementId, setExpandedNodeIds])
+
+  const treeNodesWithCosts = useMemo(() => {
+    // We only need to roll up costs if they are being displayed, but for 
+    // consistency we can always calculate them or calculate only when shown.
+    // Deep clone to avoid mutating the original treeNodes
+    const calculateCosts = (nodes: any[]): any[] => {
+      return nodes.map(node => {
+        const clonedChildren = calculateCosts(node.children)
+        let totalCost = node.element.cost || 0
+        for (const child of clonedChildren) {
+          totalCost += (child.element.cost || 0)
+        }
+        return {
+          ...node,
+          children: clonedChildren,
+          element: {
+            ...node.element,
+            cost: totalCost
+          }
+        }
+      })
+    }
+    
+    return calculateCosts(treeNodes)
+  }, [treeNodes])
 
   // Auto-open a specific WBS element when navigating from entity references
   useEffect(() => {
@@ -179,6 +220,8 @@ export function WbsPlanningWorkspace({
         onImport={() => setIsImporting(true)}
         selectedIds={selectedIds}
         handleBulkDelete={handleBulkDelete}
+        showFinancials={showFinancials}
+        onToggleFinancials={() => setShowFinancials(!showFinancials)}
       />
 
       {isImporting && (
@@ -222,7 +265,7 @@ export function WbsPlanningWorkspace({
             {currentView === 'tree' && (
               <div className="overflow-x-auto">
                 <WbsTree
-                  treeNodes={treeNodes}
+                  treeNodes={treeNodesWithCosts}
                   expandedNodeIds={expandedNodeIds}
                   onToggleExpand={handleToggleExpand}
                   activeElementId={activeElementId}
@@ -243,6 +286,8 @@ export function WbsPlanningWorkspace({
                   clearSelection={clearSelection}
                   callerUserId={callerUserId}
                   callerRole={callerRole}
+                  showFinancials={showFinancials}
+                  currency={currency}
                 />
               </div>
             )}
@@ -323,6 +368,7 @@ export function WbsPlanningWorkspace({
         callerRole={callerRole}
         callerUserId={callerUserId}
         allowTeamScheduleEdits={allowTeamScheduleEdits}
+        currency={currency}
       />
     </div>
   )

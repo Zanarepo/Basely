@@ -11,6 +11,7 @@ import { InviteTeamPanel } from './InviteTeamPanel'
 import { SsoSettingsPanel } from './SsoSettingsPanel'
 import { ApprovalPoliciesPanel } from './ApprovalPoliciesPanel'
 import { GovernanceAuditLogPanel } from './GovernanceAuditLogPanel'
+import { AiGovernancePanel } from './AiGovernancePanel'
 
 type Tab = 'members' | 'invite' | 'governance' | 'profile'
 
@@ -177,6 +178,7 @@ export function TeamPageTabs({
             role="tabpanel"
             className="animate-fade-in space-y-6"
           >
+            <AiGovernancePanel organizationId={organizationId} />
             <ApprovalPoliciesPanel
               organizationId={organizationId}
               members={members}

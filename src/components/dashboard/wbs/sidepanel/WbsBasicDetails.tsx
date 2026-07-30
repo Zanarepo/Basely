@@ -150,7 +150,16 @@ export function WbsBasicDetails({
           <button
             type="button"
             disabled={!hasEditAccess || saving}
-            onClick={() => setIsWorkPackage((v) => !v)}
+            onClick={() => {
+              if (isWorkPackage) {
+                const confirmed = window.confirm("Warning: Changing this Work Package to a Summary Element will delete any budget estimates associated with it. This action cannot be undone. Are you sure you want to proceed?");
+                if (confirmed) {
+                  setIsWorkPackage(false);
+                }
+              } else {
+                setIsWorkPackage(true);
+              }
+            }}
             className={`w-full py-2.5 px-3 rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
               isWorkPackage
                 ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/35 shadow-xs'
@@ -159,6 +168,9 @@ export function WbsBasicDetails({
           >
             {isWorkPackage ? 'Work Package (Leaf)' : 'Summary Element'}
           </button>
+          <p className="text-xs text-app-subtle leading-relaxed">
+            Summary elements break down into smaller tasks. Only <b>Work Packages</b> can be scheduled, assigned to people, and have budget estimates.
+          </p>
         </div>
       </div>
 

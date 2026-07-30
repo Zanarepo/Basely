@@ -13,6 +13,7 @@ import {
 } from '@/lib/workspace/member-actions'
 import { deleteWorkspace } from '@/lib/workspace/actions'
 import { CollapsibleSection } from './team/CollapsibleSection'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 const OWNER_ROLES = ['Admin', 'PM', 'Team Member', 'Viewer'] as const
 const ADMIN_ROLES = ['PM', 'Team Member', 'Viewer'] as const
@@ -269,16 +270,19 @@ export function WorkspaceMembersPanel({
                     Admin
                   </span>
                 ) : (
-                  <select
-                    key={member.userId + ':' + member.role}
-                    aria-label={'Role for ' + member.email}
-                    defaultValue={member.role}
-                    disabled={isPending}
-                    onChange={(event) => changeRole(member.userId, event.target.value as WorkspaceRole)}
-                    className="auth-input w-full sm:w-40 pl-3 cursor-pointer disabled:opacity-60"
-                  >
-                    {roles.map((role) => <option key={role} value={role}>{role}</option>)}
-                  </select>
+                  <div key={member.userId + ':' + member.role} className="w-full sm:w-44">
+                    <EnterpriseSelect
+                      aria-label={'Role for ' + member.email}
+                      value={member.role}
+                      disabled={isPending}
+                      onChange={(val) => changeRole(member.userId, val as WorkspaceRole)}
+                      options={roles.map((r) => ({
+                        value: r,
+                        label: r,
+                        description: r === 'Admin' ? 'Admin & settings control' : 'Standard collaboration access'
+                      }))}
+                    />
+                  </div>
                 )}
 
                 {/* Revoke / Reactivate Button */}
@@ -323,17 +327,22 @@ export function WorkspaceMembersPanel({
             This is permanent. You will remain an Admin after the transfer.
           </p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <select
-              value={newOwnerId}
-              onChange={(event) => setNewOwnerId(event.target.value)}
-              disabled={isPending}
-              className="auth-input flex-1 pl-3 cursor-pointer disabled:opacity-60"
-            >
-              <option value="">Choose a workspace member</option>
-              {members.filter((member) => !member.isOwner).map((member) => (
-                <option key={member.userId} value={member.userId}>{member.name} ({member.email})</option>
-              ))}
-            </select>
+            <div className="flex-1 min-w-[240px]">
+              <EnterpriseSelect
+                value={newOwnerId}
+                onChange={(val) => setNewOwnerId(val)}
+                disabled={isPending}
+                placeholder="Choose a workspace member"
+                options={[
+                  { value: '', label: 'Choose a workspace member', description: 'Select new owner' },
+                  ...members.filter((m) => !m.isOwner).map((m) => ({
+                    value: m.userId,
+                    label: m.name,
+                    description: `Email: ${m.email} | Role: ${m.role}`
+                  }))
+                ]}
+              />
+            </div>
             <button type="button" onClick={transfer} disabled={isPending || !newOwnerId}
               className="btn-primary disabled:opacity-50">
               Transfer ownership

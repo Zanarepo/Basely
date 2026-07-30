@@ -10,6 +10,8 @@ export function useWbsElementState(element: WbsElement | null) {
   const [acceptanceCriteriaData, setAcceptanceCriteriaData] = useState<AcceptanceCriteriaItem[]>([])
   const [status, setStatus] = useState<WbsStatus>('Not Started')
   const [isWorkPackage, setIsWorkPackage] = useState(false)
+  const [cost, setCost] = useState<number | undefined>(undefined)
+  const [estimationMethod, setEstimationMethod] = useState<'analogous' | 'parametric' | 'bottom_up'>('bottom_up')
 
   useEffect(() => {
     if (element) {
@@ -21,6 +23,8 @@ export function useWbsElementState(element: WbsElement | null) {
       setAcceptanceCriteriaData(element.acceptanceCriteriaData ?? [])
       setStatus(element.status)
       setIsWorkPackage(element.isWorkPackage)
+      setCost(element.cost)
+      setEstimationMethod(element.estimationMethod ?? 'bottom_up')
     }
   }, [element])
 
@@ -32,6 +36,8 @@ export function useWbsElementState(element: WbsElement | null) {
     acceptanceCriteria, setAcceptanceCriteria,
     acceptanceCriteriaData, setAcceptanceCriteriaData,
     status, setStatus,
-    isWorkPackage, setIsWorkPackage
+    isWorkPackage, setIsWorkPackage,
+    cost, setCost,
+    estimationMethod, setEstimationMethod
   }
 }

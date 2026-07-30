@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { Webhook, Plus, Trash2, Loader2, Activity, Globe, Zap, ChevronDown, ChevronRight } from 'lucide-react'
 import { useWorkspace } from '@/components/dashboard/WorkspaceContext'
 import { sendTestWebhook } from '@/lib/webhooks/actions'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface WebhookSubscription {
   id: string
@@ -167,15 +168,15 @@ export function WebhooksPanel() {
               </div>
               <div className="flex-[0.8] w-full space-y-1.5">
                 <label className="text-xs font-semibold text-app-muted uppercase tracking-wider">Event to send</label>
-                <select
+                <EnterpriseSelect
                   value={newEvent}
-                  onChange={(e) => setNewEvent(e.target.value)}
-                  className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:border-indigo-500"
-                >
-                  {EVENT_TYPES.map(evt => (
-                    <option key={evt.id} value={evt.id}>{evt.label}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setNewEvent(val)}
+                  options={EVENT_TYPES.map(evt => ({
+                    value: evt.id,
+                    label: evt.label,
+                    description: `Webhook Event: ${evt.id}`
+                  }))}
+                />
               </div>
               <button
                 type="submit"

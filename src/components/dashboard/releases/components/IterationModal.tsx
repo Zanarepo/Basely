@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { X, Loader2, Calendar, Hash, Tag } from 'lucide-react'
 import type { Iteration } from '@/lib/releases/types'
 import { getIterationLabel } from '@/lib/releases/types'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface IterationModalProps {
   isOpen: boolean
@@ -152,15 +153,15 @@ export function IterationModal({
                 <Tag className="h-3.5 w-3.5 text-purple-500" />
                 Methodology Label
               </label>
-              <select
+              <EnterpriseSelect
                 value={labelOverride}
-                onChange={e => setLabelOverride(e.target.value as any)}
-                className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer font-medium"
-              >
-                <option value="">Project Default ({defaultLabel})</option>
-                <option value="sprint">Sprint (Agile / Hybrid)</option>
-                <option value="phase">Phase (Waterfall / Hybrid)</option>
-              </select>
+                onChange={(val) => setLabelOverride(val as any)}
+                options={[
+                  { value: '', label: `Project Default (${defaultLabel})`, description: 'Inherit workspace methodology setting' },
+                  { value: 'sprint', label: 'Sprint', description: 'Agile / Hybrid time-boxed sprint' },
+                  { value: 'phase', label: 'Phase', description: 'Waterfall / Hybrid sequential stage' },
+                ]}
+              />
             </div>
           </div>
 

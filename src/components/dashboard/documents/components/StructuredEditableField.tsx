@@ -9,6 +9,7 @@ interface StructuredEditableFieldProps {
   title: string
   hasEditAccess: boolean
   isDataBound?: boolean
+  placeholder?: string
 }
 
 export default function StructuredEditableField({
@@ -16,7 +17,8 @@ export default function StructuredEditableField({
   onChange,
   title,
   hasEditAccess,
-  isDataBound = false
+  isDataBound = false,
+  placeholder
 }: StructuredEditableFieldProps) {
   // Start in view mode by default if there's text, otherwise edit mode
   const [isEditing, setIsEditing] = useState(!value)
@@ -70,8 +72,14 @@ export default function StructuredEditableField({
       <div className="flex items-center justify-end mb-2 absolute top-2 right-2 z-10">
         {hasEditAccess && (
           <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-app-surface border border-app-border rounded shadow-sm text-app-muted hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setIsEditing(!isEditing)
+            }}
+            style={{ cursor: 'pointer' }}
+            className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-app-surface border border-app-border rounded shadow-sm text-app-muted hover:text-indigo-500 transition-opacity duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100"
             title={isEditing ? "Switch to formatted view" : "Edit raw text"}
           >
             {isEditing ? (
@@ -91,7 +99,7 @@ export default function StructuredEditableField({
         <textarea
           value={value || ''}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={`Enter ${title.toLowerCase()}... (Markdown tables supported)`}
+          placeholder={placeholder || `Enter ${title.toLowerCase()}... (Markdown tables supported)`}
           rows={Math.max(6, (value?.split('\n').length || 0) + 1)}
           className="w-full p-3 pt-10 bg-app-bg border border-indigo-500/50 rounded-lg text-sm text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-y font-mono"
         />

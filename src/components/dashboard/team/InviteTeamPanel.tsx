@@ -13,6 +13,7 @@ import {
 import { useWorkspace } from '../WorkspaceContext'
 import { generateInviteLink } from '@/lib/invitations/actions'
 import { INVITE_ROLES, type InviteRole } from '@/lib/invitations/constants'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 export function InviteTeamPanel() {
   const { activeWorkspace } = useWorkspace()
@@ -157,19 +158,16 @@ export function InviteTeamPanel() {
         <label htmlFor="invitePanelRole" className="block text-sm font-medium text-app-fg">
           Role for new members
         </label>
-        <select
-          id="invitePanelRole"
+        <EnterpriseSelect
           value={role}
-          onChange={(e) => setRole(e.target.value as InviteRole)}
+          onChange={(val) => setRole(val as InviteRole)}
           disabled={isPending}
-          className="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer disabled:opacity-60"
-        >
-          {INVITE_ROLES.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
+          options={INVITE_ROLES.map((r) => ({
+            value: r,
+            label: r,
+            description: r === 'PM' ? 'Project & team management access' : r === 'Viewer' ? 'Read-only viewing access' : 'Standard member team collaboration access'
+          }))}
+        />
       </div>
 
       {/* Generated invite URL */}

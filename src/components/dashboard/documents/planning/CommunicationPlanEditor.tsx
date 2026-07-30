@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useCommunicationPlan } from './hooks/useCommunicationPlan'
 import { Save, Plus, Trash2, Pencil, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface CommunicationPlanEditorProps {
   projectId: string
@@ -158,30 +159,28 @@ export function CommunicationPlanEditor({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-xs font-bold text-app-muted uppercase tracking-wider mb-1">Stakeholder</label>
-                <select
+                <EnterpriseSelect
                   value={formData.stakeholder_id}
-                  onChange={(e) => setFormData({...formData, stakeholder_id: e.target.value})}
-                  className="w-full bg-app-bg border border-app-border rounded-lg p-2 text-sm text-app-fg outline-none focus:border-indigo-500"
-                >
-                  <option value="">Select Stakeholder...</option>
-                  {stakeholders.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setFormData({...formData, stakeholder_id: val})}
+                  placeholder="Select Stakeholder..."
+                  options={[
+                    { value: '', label: 'Select Stakeholder...' },
+                    ...stakeholders.map(s => ({ value: s.id, label: s.name }))
+                  ]}
+                />
               </div>
               
               <div>
                 <label className="block text-xs font-bold text-app-muted uppercase tracking-wider mb-1">Document</label>
-                <select
+                <EnterpriseSelect
                   value={formData.document_type}
-                  onChange={(e) => setFormData({...formData, document_type: e.target.value})}
-                  className="w-full bg-app-bg border border-app-border rounded-lg p-2 text-sm text-app-fg outline-none focus:border-indigo-500"
-                >
-                  <option value="">Select Document...</option>
-                  {availableDocs.map(d => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setFormData({...formData, document_type: val})}
+                  placeholder="Select Document..."
+                  options={[
+                    { value: '', label: 'Select Document...' },
+                    ...availableDocs.map(d => ({ value: d.id, label: d.name }))
+                  ]}
+                />
               </div>
 
               <div>

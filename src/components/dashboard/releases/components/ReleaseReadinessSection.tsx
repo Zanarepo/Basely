@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react'
 import { CheckSquare, Square, Trash2, Plus, RefreshCw, CheckCircle2, Loader2 } from 'lucide-react'
 import type { Release, ReleaseReadinessItem } from '@/lib/releases/types'
 import { formatDistanceToNow } from 'date-fns'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface ReleaseReadinessSectionProps {
   release: Release
@@ -155,18 +156,20 @@ export function ReleaseReadinessSection({
 
       {hasEditAccess && (
         <div className="pt-4 mt-6 border-t border-app-border flex items-center gap-3">
-          <select
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            className="px-3 py-2 text-sm bg-app-surface border border-app-border rounded-xl focus:outline-none focus:border-indigo-500 w-32"
-          >
-            <option>Product</option>
-            <option>Engineering</option>
-            <option>QA</option>
-            <option>DevOps</option>
-            <option>Security</option>
-            <option>Documentation</option>
-          </select>
+          <div className="w-44 shrink-0">
+            <EnterpriseSelect
+              value={newCategory}
+              onChange={(val) => setNewCategory(val)}
+              options={[
+                { value: 'Product', label: 'Product', description: 'Product & UX verification' },
+                { value: 'Engineering', label: 'Engineering', description: 'Code & build readiness' },
+                { value: 'QA', label: 'QA', description: 'Quality assurance signoffs' },
+                { value: 'DevOps', label: 'DevOps', description: 'Deployment & CI/CD status' },
+                { value: 'Security', label: 'Security', description: 'Vulnerability & review signoff' },
+                { value: 'Documentation', label: 'Documentation', description: 'User & API docs readiness' },
+              ]}
+            />
+          </div>
           <input
             type="text"
             placeholder="Add new readiness verification item..."

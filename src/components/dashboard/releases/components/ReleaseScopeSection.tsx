@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Plus, Trash2, ShieldCheck, UserCheck, Ban, Layers, ListTodo, FileText, Loader2, Sparkles } from 'lucide-react'
 import type { ReleaseScopeItem } from '@/lib/releases/types'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface ReleaseScopeSectionProps {
   releaseId: string
@@ -152,19 +153,19 @@ export function ReleaseScopeSection({
           {addMode === 'existing' ? (
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-app-muted block">Select Work Item from Project Repository</label>
-              <select
+              <EnterpriseSelect
                 value={selectedItemId}
-                onChange={e => setSelectedItemId(e.target.value)}
-                required
-                className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-xs font-semibold text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                <option value="">-- Choose WBS Element or Schedule Activity --</option>
-                {candidateItems.map(item => (
-                  <option key={item.id} value={item.id}>
-                    [{item.type === 'wbs_element' ? 'WBS' : 'Activity'}] {item.code ? `${item.code}: ` : ''}{item.title}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setSelectedItemId(val)}
+                placeholder="-- Choose WBS Element or Schedule Activity --"
+                options={[
+                  { value: '', label: '-- Choose WBS Element or Schedule Activity --' },
+                  ...candidateItems.map(item => ({
+                    value: item.id,
+                    label: `${item.code ? `${item.code}: ` : ''}${item.title}`,
+                    description: item.type === 'wbs_element' ? 'WBS Deliverable Element' : 'Schedule Project Activity'
+                  }))
+                ]}
+              />
             </div>
           ) : (
             <div className="space-y-1.5">

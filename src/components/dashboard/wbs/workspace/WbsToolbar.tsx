@@ -1,4 +1,4 @@
-import { Undo2, Redo2, Maximize2, Minimize2, Plus, Search, ListTree, Kanban, Table2, Upload, Trash2 } from 'lucide-react'
+import { Undo2, Redo2, Maximize2, Minimize2, Plus, Search, ListTree, Kanban, Table2, Upload, Trash2, DollarSign } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 
 export type WbsViewType = 'tree' | 'board' | 'grid' | 'raci' | 'unassigned'
@@ -20,6 +20,8 @@ type WbsToolbarProps = {
   onImport?: () => void
   selectedIds?: string[]
   handleBulkDelete?: () => void
+  showFinancials?: boolean
+  onToggleFinancials?: () => void
 }
 
 export function WbsToolbar({
@@ -39,6 +41,8 @@ export function WbsToolbar({
   onImport,
   selectedIds = [],
   handleBulkDelete,
+  showFinancials = false,
+  onToggleFinancials,
 }: WbsToolbarProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-app-surface border border-app-border rounded-2xl backdrop-blur-md">
@@ -133,6 +137,27 @@ export function WbsToolbar({
             <Minimize2 className="h-4 w-4" />
           </button>
         </div>
+
+        {/* Financials Toggle */}
+        {onToggleFinancials && (
+          <div className="flex rounded-xl bg-app-muted-surface border border-app-border p-1">
+            <button
+              type="button"
+              onClick={onToggleFinancials}
+              title={showFinancials ? "Hide Budget" : "Show Budget"}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                showFinancials 
+                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 shadow-sm' 
+                  : 'text-app-fg hover:bg-app-hover border border-transparent'
+              }`}
+            >
+              <DollarSign className="h-4 w-4" />
+              <span className="text-xs font-medium hidden md:inline">
+                {showFinancials ? "Hide Budget" : "Show Budget"}
+              </span>
+            </button>
+          </div>
+        )}
 
         {/* Add sibling root button */}
         {hasEditAccess && (

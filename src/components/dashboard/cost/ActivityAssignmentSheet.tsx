@@ -5,6 +5,7 @@ import { X, Plus, Trash2, Save } from 'lucide-react'
 import { ResourceRate, ActivityResourceAssignment } from '@/lib/cost/types'
 import { assignResourceToActivity, deleteResourceAssignment } from '@/lib/cost/actions'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface ActivityAssignmentSheetProps {
   wbsElementId: string
@@ -146,18 +147,20 @@ export default function ActivityAssignmentSheet({
             <div className="p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-lg space-y-3">
               <div>
                 <label className="block text-xs font-medium text-app-muted mb-1">Resource</label>
-                <select 
-                  value={selectedRateId} 
-                  onChange={e => setSelectedRateId(e.target.value)}
-                  className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
-                >
-                  <option value="">Select a resource...</option>
-                  {resourceRates.map(r => (
-                    <option key={r.id} value={r.id}>
-                      {r.name} (<CurrencyDisplay amount={r.rate} currency={projectCurrency} compactThreshold={1000} />/{r.unit})
-                    </option>
-                  ))}
-                </select>
+                <EnterpriseSelect
+                  value={selectedRateId}
+                  onChange={(val) => setSelectedRateId(val)}
+                  placeholder="Select a resource..."
+                  size="sm"
+                  options={[
+                    { value: '', label: 'Select a resource...' },
+                    ...resourceRates.map(r => ({
+                      value: r.id,
+                      label: `${r.name} (${projectCurrency || '$'}${r.rate.toLocaleString()}/${r.unit})`,
+                      description: `Type: ${r.type} | Rate: ${projectCurrency || '$'}${r.rate} per ${r.unit}`
+                    }))
+                  ]}
+                />
               </div>
               <div className="flex items-end gap-3">
                 <div className="flex-1">

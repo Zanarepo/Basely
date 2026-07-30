@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useWorkspace } from './WorkspaceContext'
 import { generateInviteLink } from '@/lib/invitations/actions'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 import { INVITE_ROLES, type InviteRole } from '@/lib/invitations/constants'
 
 type InviteTeamModalProps = {
@@ -196,19 +197,16 @@ export function InviteTeamModal({ open, onClose }: InviteTeamModalProps) {
               <label htmlFor="inviteRole" className="auth-label">
                 Role for new members
               </label>
-              <select
-                id="inviteRole"
+              <EnterpriseSelect
                 value={role}
-                onChange={(e) => setRole(e.target.value as InviteRole)}
+                onChange={(val) => setRole(val as InviteRole)}
                 disabled={isPending}
-                className="auth-input pl-4 cursor-pointer"
-              >
-                {INVITE_ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
+                options={INVITE_ROLES.map((r) => ({
+                  value: r,
+                  label: r,
+                  description: r === 'PM' ? 'Project & team management access' : r === 'Viewer' ? 'Read-only viewing access' : 'Standard member team collaboration access'
+                }))}
+              />
             </div>
 
             {inviteUrl && (

@@ -5,6 +5,7 @@ import { Plus, Search, Filter, ShieldAlert, ArrowUpDown, MoreVertical, Edit2, Tr
 import type { Risk, Issue } from './useRiskData'
 import RiskForm from './RiskForm'
 import { deleteRisk } from '@/lib/risks/actions'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface RiskListProps {
   projectId: string
@@ -94,29 +95,33 @@ export default function RiskList({
               className="w-full pl-9 pr-4 py-2 text-sm bg-app-bg border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
             />
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-sm bg-app-bg border border-app-border rounded-lg focus:outline-none"
-          >
-            <option value="all">All Statuses</option>
-            <option value="Identified">Identified</option>
-            <option value="Monitoring">Monitoring</option>
-            <option value="Mitigating">Mitigating</option>
-            <option value="Occurred">Occurred</option>
-            <option value="Closed">Closed</option>
-          </select>
-          <select
-            value={strategyFilter}
-            onChange={(e) => setStrategyFilter(e.target.value)}
-            className="px-3 py-2 text-sm bg-app-bg border border-app-border rounded-lg focus:outline-none"
-          >
-            <option value="all">All Strategies</option>
-            <option value="Avoid">Avoid</option>
-            <option value="Mitigate">Mitigate</option>
-            <option value="Transfer">Transfer</option>
-            <option value="Accept">Accept</option>
-          </select>
+          <div className="w-40">
+            <EnterpriseSelect
+              value={statusFilter}
+              onChange={(val) => setStatusFilter(val)}
+              options={[
+                { value: 'all', label: 'All Statuses' },
+                { value: 'Identified', label: 'Identified', description: 'Newly documented risks' },
+                { value: 'Monitoring', label: 'Monitoring', description: 'Under active observation' },
+                { value: 'Mitigating', label: 'Mitigating', description: 'Mitigation plan active' },
+                { value: 'Occurred', label: 'Occurred', description: 'Risk escalated to issue' },
+                { value: 'Closed', label: 'Closed', description: 'No longer active' },
+              ]}
+            />
+          </div>
+          <div className="w-40">
+            <EnterpriseSelect
+              value={strategyFilter}
+              onChange={(val) => setStrategyFilter(val)}
+              options={[
+                { value: 'all', label: 'All Strategies' },
+                { value: 'Avoid', label: 'Avoid', description: 'Change plans to avoid risk entirely' },
+                { value: 'Mitigate', label: 'Mitigate', description: 'Reduce impact or likelihood' },
+                { value: 'Transfer', label: 'Transfer', description: 'Shift liability to third party' },
+                { value: 'Accept', label: 'Accept', description: 'Acknowledge and manage' },
+              ]}
+            />
+          </div>
         </div>
 
         {hasEditAccess && (

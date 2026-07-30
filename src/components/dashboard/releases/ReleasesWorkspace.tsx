@@ -101,9 +101,9 @@ export function ReleasesWorkspace({
 
   const handleSaveIteration = async (name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null) => {
     if (editingIteration) {
-      await updateIteration(editingIteration.id, name, sequenceNumber, startDate, endDate, labelOverride)
+      return await updateIteration(editingIteration.id, name, sequenceNumber, startDate, endDate, labelOverride)
     } else {
-      await createIteration(name, sequenceNumber, startDate, endDate, labelOverride)
+      return await createIteration(name, sequenceNumber, startDate, endDate, labelOverride)
     }
   }
 
@@ -128,9 +128,9 @@ export function ReleasesWorkspace({
 
   const handleSaveRelease = async (name: string, objective: string | null, sequenceNumber: number, status: ReleaseStatus, iterationIds: string[], exitCriteriaTexts: string[]) => {
     if (editingRelease) {
-      await updateRelease(editingRelease.id, name, objective, sequenceNumber, status, iterationIds)
+      return await updateRelease(editingRelease.id, name, objective, sequenceNumber, status, iterationIds)
     } else {
-      await createRelease(name, objective, sequenceNumber, status, iterationIds, exitCriteriaTexts)
+      return await createRelease(name, objective, sequenceNumber, status, iterationIds, exitCriteriaTexts)
     }
   }
 

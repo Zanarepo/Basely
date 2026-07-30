@@ -1,4 +1,5 @@
 import { X, Loader2 } from 'lucide-react'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface ActualsFormProps {
   editingId: string | null
@@ -61,16 +62,19 @@ export function ActualsForm({
           {/* WBS Element */}
           <div>
             <label className="block text-sm font-medium text-app-fg mb-1.5">WBS Element *</label>
-            <select
+            <EnterpriseSelect
               value={formWbsId}
-              onChange={(e) => setFormWbsId(e.target.value)}
-              className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">Select a Work Package...</option>
-              {availableWorkPackages.map((w) => (
-                <option key={w.wbsId} value={w.wbsId}>{w.wbsCode} - {w.wbsName}</option>
-              ))}
-            </select>
+              onChange={(val) => setFormWbsId(val)}
+              placeholder="Select a Work Package..."
+              options={[
+                { value: '', label: 'Select a Work Package...' },
+                ...availableWorkPackages.map((w) => ({
+                  value: w.wbsId,
+                  label: `${w.wbsCode} - ${w.wbsName}`,
+                  description: `WBS Code: ${w.wbsCode}`
+                }))
+              ]}
+            />
           </div>
 
           {/* Date */}
