@@ -34,6 +34,11 @@ export async function deleteWorkspace(organizationId: string): Promise<{ ok: boo
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Not authenticated' }
 
+  const cookieStore = await cookies()
+  if (cookieStore.has('zn_impersonation')) {
+    return { ok: false, error: 'Destructive actions are blocked during impersonation sessions.' }
+  }
+
   // 1. Verify that the user is the Owner of this organization
   const { data: org, error: orgError } = await supabase
     .from('organizations')
@@ -67,7 +72,6 @@ export async function deleteWorkspace(organizationId: string): Promise<{ ok: boo
   }
 
   // 4. Update the active workspace cookie
-  const cookieStore = await cookies()
   if (memberships && memberships.length > 0) {
     cookieStore.set(ACTIVE_ORG_COOKIE, memberships[0].organization_id, {
       path: '/',
@@ -80,6 +84,21 @@ export async function deleteWorkspace(organizationId: string): Promise<{ ok: boo
 
   revalidatePath('/dashboard', 'layout')
   return { ok: true }
+}
+
+export async function checkWorkspaceCreationLimitAction(): Promise<{ allowed: boolean, reason?: string }> {
+  const { createClient } = await import('@/utils/supabase/server')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { allowed: false, reason: 'Not authenticated' }
+
+  const { checkWorkspaceCreationLimit } = await import('@/lib/organizations/tier-logic')
+  const limitResult = await checkWorkspaceCreationLimit(user.id)
+  
+  return {
+    allowed: limitResult.allowed,
+    reason: limitResult.reason
+  }
 }
 
 

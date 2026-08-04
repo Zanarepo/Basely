@@ -615,6 +615,7 @@ export function ProjectsDashboard({
         isOpen={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
         currentTier={tier}
+        organizationId={organizationId}
         onSelectTier={(t) => switchPlan(t)}
       />
     </div>

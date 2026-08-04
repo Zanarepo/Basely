@@ -16,6 +16,7 @@ import {
   Terminal,
   ChevronUp,
   Database,
+  Shield,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { useWorkspace } from './WorkspaceContext'
@@ -23,6 +24,7 @@ import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createClient } from '@/utils/supabase/client'
 import { NotificationBell } from './notifications/NotificationBell'
+import { usePlatformStaff } from '@/hooks/use-platform-staff'
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed'
 
@@ -48,6 +50,7 @@ export function DashboardSidebar({
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isFooterOpen, setIsFooterOpen] = useState(false)
+  const { isPlatformStaff } = usePlatformStaff()
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -211,6 +214,24 @@ export function DashboardSidebar({
           <div className="pt-2 mt-2 border-t border-app-border/50">
             <NotificationBell collapsed={effectivelyCollapsed} />
           </div>
+
+          {/* Platform Backoffice Link — only visible to internal staff */}
+          {isPlatformStaff && (
+            <div className="pt-2 mt-2 border-t border-app-border/50">
+              <Link
+                href="/backoffice"
+                title={effectivelyCollapsed ? 'Platform Backoffice' : undefined}
+                className={`flex items-center gap-3 rounded-xl transition-all duration-200 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 ${
+                  effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                }`}
+              >
+                <Shield className="h-5 w-5 shrink-0" />
+                {!effectivelyCollapsed && (
+                  <span className="text-sm font-bold">Backoffice</span>
+                )}
+              </Link>
+            </div>
+          )}
         </nav>
 
         <div

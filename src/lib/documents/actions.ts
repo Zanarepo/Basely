@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
 import { dispatchNotification } from '@/lib/notifications/actions'
+import { checkProjectFeatureAccess } from '@/lib/organizations/tier-logic'
 
 export type DocumentSectionDef = {
   key: string
@@ -460,6 +461,9 @@ export async function saveGeneratedDocument(
   periodEnd?: string,
   templateId?: string | null
 ): Promise<{ ok: boolean; error?: string }> {
+  const access = await checkProjectFeatureAccess(projectId, 'documentation.engine')
+  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
+
   const supabase = await createClient()
   const now = new Date().toISOString()
 
@@ -558,6 +562,9 @@ export async function updateDocumentTemplateId(
   documentType: string,
   templateId: string | null
 ): Promise<{ ok: boolean; error?: string }> {
+  const access = await checkProjectFeatureAccess(projectId, 'documentation.engine')
+  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
+
   const supabase = await createClient()
   
   const { error } = await supabase
@@ -581,6 +588,9 @@ export async function regenerateDocument(
   documentType: string,
   isSnapshot = false
 ): Promise<{ ok: boolean; error?: string }> {
+  const access = await checkProjectFeatureAccess(projectId, 'documentation.engine')
+  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
+
   const supabase = await createClient()
   const now = new Date().toISOString()
 

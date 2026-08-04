@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { checkProjectFeatureAccess } from '@/lib/organizations/tier-logic'
 
 export type RaidCategory = 'risk' | 'assumption' | 'issue' | 'dependency'
 export type RaidStatus = 'open' | 'in_progress' | 'mitigated' | 'closed' | 'verified' | 'invalidated'
@@ -72,6 +73,11 @@ export async function getWbsRaidBlockers(wbsElementId: string) {
 const isUuid = (str?: string) => str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)
 
 export async function upsertRaidEntry(data: Partial<RaidLogEntry>) {
+  if (data.project_id) {
+    const access = await checkProjectFeatureAccess(data.project_id, 'pm.adr_skills_raid')
+    if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -149,6 +155,10 @@ export async function upsertRaidEntry(data: Partial<RaidLogEntry>) {
 
 export async function deleteRaidEntry(id: string, projectId: string) {
   if (!isUuid(id)) return { ok: true }
+  
+  const access = await checkProjectFeatureAccess(projectId, 'pm.adr_skills_raid')
+  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('raid_log_entries')

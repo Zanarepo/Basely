@@ -4,6 +4,8 @@ import React, { useState } from 'react'
 import { Lock, Sparkles, ArrowRight, ShieldCheck, Zap } from 'lucide-react'
 import { UpgradePromptModal } from './UpgradePromptModal'
 import type { TierId } from '@/lib/organizations/tier-logic'
+import { useWorkspace } from '@/components/dashboard/WorkspaceContext'
+import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
 
 interface FeatureGateScreenProps {
   featureName: string
@@ -20,6 +22,9 @@ export const FeatureGateScreen: React.FC<FeatureGateScreenProps> = ({
 }) => {
   const [modalOpen, setModalOpen] = useState(false)
   const isEnterprise = requiredTier === 'enterprise'
+  
+  const { activeWorkspace } = useWorkspace()
+  const { tier, switchPlan } = useWorkspaceTier(activeWorkspace?.id)
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[450px] p-8 md:p-12 my-6 rounded-3xl backdrop-blur-xl bg-app-surface/90 border border-indigo-500/20 shadow-2xl relative overflow-hidden">
@@ -84,8 +89,14 @@ export const FeatureGateScreen: React.FC<FeatureGateScreenProps> = ({
       <UpgradePromptModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        currentTier="free"
-        onSelectTier={() => setModalOpen(false)}
+        currentTier={tier}
+        organizationId={activeWorkspace?.id || ''}
+        onSelectTier={async (t) => {
+          if (switchPlan) {
+             await switchPlan(t)
+          }
+          setModalOpen(false)
+        }}
         featureOrLimitName={featureName}
       />
     </div>

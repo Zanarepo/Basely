@@ -98,8 +98,11 @@ export function DashboardShell({
         isOpen={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
         currentTier={tier}
+        organizationId={activeWorkspace?.id || ''}
         onSelectTier={async (targetTier) => {
-          await switchPlan(targetTier)
+          if (switchPlan) {
+            await switchPlan(targetTier)
+          }
         }}
       />
     </WorkspaceProvider>

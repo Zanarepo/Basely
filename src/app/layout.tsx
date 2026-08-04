@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { Toaster } from 'sonner'
+import { cookies } from 'next/headers'
+import { ImpersonationBanner } from '@/components/backoffice/ImpersonationBanner'
 import './globals.css'
 
 const geistSans = Geist({
@@ -31,23 +32,37 @@ const themeInitScript = `
 })();
 `
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  let impersonationData = null
+  try {
+    const cookieStore = await cookies()
+    const impCookie = cookieStore.get('zn_impersonation')
+    if (impCookie) {
+      impersonationData = JSON.parse(Buffer.from(impCookie.value, 'base64').toString('utf-8'))
+    }
+  } catch(e) {}
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full flex flex-col bg-app-bg text-app-fg">
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: themeInitScript }}
-        />
+        {impersonationData && (
+          <ImpersonationBanner 
+            staffRole={impersonationData.staffRole} 
+            targetUserId={impersonationData.targetUserId} 
+            targetUserName={impersonationData.targetUserName || 'Unknown User'}
+          />
+        )}
         <ThemeProvider>{children}</ThemeProvider>
         <Toaster position="top-center" richColors />
       </body>

@@ -11,6 +11,7 @@ import {
   enforceDowngradeLocks,
   checkWorkspaceLockStatus,
 } from './tier-logic'
+import { PaystackAdapter } from '@/lib/payments/paystack-adapter'
 
 export async function getWorkspaceSubscriptionAction(organizationId: string): Promise<{ ok: boolean; subscription?: OrgSubscriptionInfo; error?: string }> {
   try {
@@ -85,6 +86,42 @@ export async function checkWorkspaceLockStatusAction(organizationId: string): Pr
     return await checkWorkspaceLockStatus(organizationId)
   } catch {
     return { isLocked: false }
+  }
+}
+
+export async function createCheckoutSessionAction(
+  organizationId: string,
+  tierId: TierId,
+  amount: number,
+  currency: string,
+  isAutoRenew: boolean
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'Authentication required' }
+
+    // Get the actual organization name
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('name')
+      .eq('id', organizationId)
+      .single()
+
+    const adapter = new PaystackAdapter()
+    const res = await adapter.initializeTransaction({
+      organizationId,
+      orgName: org?.name || 'Workspace',
+      tierId,
+      amount,
+      currency,
+      customerEmail: user.email || 'customer@basely.com',
+      autoRenew: isAutoRenew
+    })
+    
+    return res
+  } catch (err: any) {
+    return { ok: false, error: err.message || 'Failed to initialize checkout' }
   }
 }
 

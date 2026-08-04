@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/client'
 import { createOrganizationSchema } from '@/lib/validations/organization'
 import { Building2, Users, ShieldAlert, ArrowRight, Loader2 } from 'lucide-react'
 
-const MAX_FREE_OWNED_WORKSPACES = 1
+
 
 interface CreateOrganizationFormProps {
   onSuccess?: (organizationId: string) => void
@@ -34,28 +34,12 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
       const supabase = createClient()
 
       // Check workspace ownership limit for Free tier accounts
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data: userOrgs } = await supabase
-          .from('organizations')
-          .select('id')
-          .eq('owner_id', user.id)
-
-        if (userOrgs && userOrgs.length >= MAX_FREE_OWNED_WORKSPACES) {
-          // Check if any existing organization is upgraded to a paid plan
-          const orgIds = userOrgs.map((o) => o.id)
-          const { data: subs } = await supabase
-            .from('organization_subscriptions')
-            .select('tier_id, status')
-            .in('organization_id', orgIds)
-
-          const hasPaidPlan = subs?.some((s) => (s.tier_id === 'premium' || s.tier_id === 'enterprise') && s.status !== 'trialing')
-          if (!hasPaidPlan) {
-            setErrorMsg(`Free accounts can own a maximum of ${MAX_FREE_OWNED_WORKSPACES} workspace. Please upgrade your existing workspace to create additional organizations!`)
-            setLoading(false)
-            return
-          }
-        }
+      const { checkWorkspaceCreationLimitAction } = await import('@/lib/workspace/actions')
+      const limitCheck = await checkWorkspaceCreationLimitAction()
+      if (!limitCheck.allowed) {
+        setErrorMsg(limitCheck.reason || 'Workspace creation limit reached.')
+        setLoading(false)
+        return
       }
 
       const { data, error } = await supabase.rpc('create_organization_with_admin', {

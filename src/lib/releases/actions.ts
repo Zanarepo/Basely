@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
 import { dispatchNotification } from '@/lib/notifications/actions'
+import { checkProjectFeatureAccess } from '@/lib/organizations/tier-logic'
 import type { Iteration, Release, ReleaseStatus, ReleaseExitCriterion, ReleaseManualScope, ReleaseScopeItem, ReleaseReadinessItem, ReleaseDeploymentPlan, ReleaseRollbackPlan } from './types'
 
 export async function fetchProjectReleasesData(projectId: string): Promise<{
@@ -377,6 +378,9 @@ export async function createRelease(
   iterationIds: string[] = [],
   exitCriteriaTexts: string[] = []
 ): Promise<{ ok: boolean; error?: string }> {
+  const access = await checkProjectFeatureAccess(projectId, 'releases.management')
+  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
+
   const supabase = await createClient()
   const { data: release, error: relErr } = await supabase
     .from('releases')
@@ -439,6 +443,9 @@ export async function updateRelease(
   status: ReleaseStatus,
   iterationIds: string[]
 ): Promise<{ ok: boolean; error?: string }> {
+  const access = await checkProjectFeatureAccess(projectId, 'releases.management')
+  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
+
   const supabase = await createClient()
   const { error: updErr } = await supabase
     .from('releases')
@@ -468,6 +475,9 @@ export async function updateRelease(
 }
 
 export async function deleteRelease(id: string, projectId: string): Promise<{ ok: boolean; error?: string }> {
+  const access = await checkProjectFeatureAccess(projectId, 'releases.management')
+  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('releases')

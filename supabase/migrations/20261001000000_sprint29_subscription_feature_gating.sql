@@ -71,10 +71,13 @@ INSERT INTO public.tier_usage_limits (tier_id, limit_key, max_value)
 VALUES
   ('free', 'max_seats', 3),
   ('free', 'max_active_projects', 2),
+  ('free', 'max_workspaces', 1),
   ('premium', 'max_seats', -1),
   ('premium', 'max_active_projects', -1),
+  ('premium', 'max_workspaces', -1),
   ('enterprise', 'max_seats', -1),
-  ('enterprise', 'max_active_projects', -1)
+  ('enterprise', 'max_active_projects', -1),
+  ('enterprise', 'max_workspaces', -1)
 ON CONFLICT (tier_id, limit_key) DO UPDATE SET
   max_value = EXCLUDED.max_value;
 
