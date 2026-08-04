@@ -6,6 +6,8 @@ import { CreateWorkspaceModal } from './CreateWorkspaceModal'
 import { WorkspaceProvider, type Workspace } from './WorkspaceContext'
 import { GlobalSearchOverlay } from './GlobalSearchOverlay'
 import { Menu, Search, LayoutDashboard } from 'lucide-react'
+import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
+import { DowngradeBanner, UpgradePromptModal } from './billing'
 
 type DashboardShellProps = {
   workspaces: Workspace[]
@@ -22,6 +24,8 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const [createWsOpen, setCreateWsOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+  const { tier, isTrialing, isWorkspaceLocked, workspaceLockReason, daysRemaining, switchPlan } = useWorkspaceTier(activeWorkspace?.id)
 
   return (
     <WorkspaceProvider workspaces={workspaces} activeWorkspace={activeWorkspace}>
@@ -74,6 +78,14 @@ export function DashboardShell({
           </header>
 
           <main className="relative flex-1 min-w-0 overflow-auto">
+            <DowngradeBanner
+              isTrialing={isTrialing}
+              daysRemaining={daysRemaining}
+              isWorkspaceLocked={isWorkspaceLocked}
+              workspaceLockReason={workspaceLockReason}
+              canUpgrade={activeWorkspace?.isOwner || activeWorkspace?.role === 'Admin'}
+              onOpenUpgrade={() => setUpgradeModalOpen(true)}
+            />
             {children}
           </main>
         </div>
@@ -82,6 +94,14 @@ export function DashboardShell({
       </div>
 
       <CreateWorkspaceModal open={createWsOpen} onClose={() => setCreateWsOpen(false)} />
+      <UpgradePromptModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        currentTier={tier}
+        onSelectTier={async (targetTier) => {
+          await switchPlan(targetTier)
+        }}
+      />
     </WorkspaceProvider>
   )
 }

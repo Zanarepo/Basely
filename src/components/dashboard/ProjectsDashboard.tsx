@@ -23,6 +23,8 @@ import {
 } from '@/lib/projects/actions'
 import InitiationWorkspace from './initiation/InitiationWorkspace'
 import { BusinessCase, FeasibilityStudy } from '@/lib/initiation/actions'
+import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
+import { ManualPlanSwitcher, UsageProgressMeter, UpgradePromptModal, FeatureGateScreen } from './billing'
 
 type ProjectType = {
   id: string
@@ -34,6 +36,7 @@ type ProjectType = {
   startDate: string | null
   endDate: string | null
   isArchived: boolean
+  isLocked?: boolean
   createdBy: string | null
   assignedMembers: string[] // List of userIds
   memberPermissions: { userId: string; canDelete: boolean }[]
@@ -77,6 +80,8 @@ export function ProjectsDashboard({
   feasibilityStudies
 }: ProjectsDashboardProps) {
   const { activeWorkspace } = useWorkspace()
+  const { tier, subscription, switchPlan } = useWorkspaceTier(organizationId)
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const [wizardOpen, setWizardOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null)
@@ -291,6 +296,28 @@ export function ProjectsDashboard({
         </div>
       </div>
 
+      {/* Subscription Tier Engine & Live Testing Overrides (Sprint 29) */}
+      <div className="space-y-4">
+        <ManualPlanSwitcher organizationId={organizationId} />
+
+        {viewMode === 'list' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <UsageProgressMeter
+              label="Active Projects Quota"
+              current={projects.filter((p) => !p.isArchived).length}
+              max={tier === 'free' ? 2 : -1}
+              onUpgrade={() => setUpgradeModalOpen(true)}
+            />
+            <UsageProgressMeter
+              label="Assigned Edit-level Seats"
+              current={workspaceMembers.filter((m) => m.role === 'PM' || m.role === 'Admin' || m.isOwner).length}
+              max={tier === 'free' ? 3 : -1}
+              onUpgrade={() => setUpgradeModalOpen(true)}
+            />
+          </div>
+        )}
+      </div>
+
       {/* View Mode Tabs */}
       <div className="border-b border-app-border flex space-x-6">
         <button
@@ -326,17 +353,33 @@ export function ProjectsDashboard({
       </div>
 
       {viewMode === 'initiation' ? (
-        <InitiationWorkspace 
-          organizationId={organizationId}
-          businessCases={businessCases}
-          feasibilityStudies={feasibilityStudies}
-          callerUserId={callerUserId}
-          isOwner={isOwner}
-          callerRole={callerRole}
-          projects={projects}
-        />
+        tier === 'free' ? (
+          <FeatureGateScreen
+            featureName="Initiation & Business Cases"
+            description="Manage business cases, feasibility studies and project ideation before full project kick-off. Available on the Premium plan."
+            canUpgrade={isAdmin}
+          />
+        ) : (
+          <InitiationWorkspace 
+            organizationId={organizationId}
+            businessCases={businessCases}
+            feasibilityStudies={feasibilityStudies}
+            callerUserId={callerUserId}
+            isOwner={isOwner}
+            callerRole={callerRole}
+            projects={projects}
+          />
+        )
       ) : viewMode === 'portfolio' ? (
-        <PortfolioWorkspace projects={projects} />
+        tier === 'free' ? (
+          <FeatureGateScreen
+            featureName="Portfolio Health"
+            description="Aggregate EVM metrics, budget burn, schedule variance and risk heatmaps across all your projects. Available on the Premium plan."
+            canUpgrade={isAdmin}
+          />
+        ) : (
+          <PortfolioWorkspace projects={projects} />
+        )
       ) : (
         <>
           {/* Search Filter Row */}
@@ -404,6 +447,8 @@ export function ProjectsDashboard({
                 onRestore={() => handleRestore(project)}
                 onDelete={() => handleDelete(project)}
                 onManageTeam={() => openMemberPicker(project)}
+                onUnlockRequest={() => setUpgradeModalOpen(true)}
+                canUpgrade={isAdmin}
                 formatDate={formatDate}
               />
             )
@@ -564,6 +609,13 @@ export function ProjectsDashboard({
           setSelectedProject(null)
         }}
         project={selectedProject}
+      />
+
+      <UpgradePromptModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        currentTier={tier}
+        onSelectTier={(t) => switchPlan(t)}
       />
     </div>
   )

@@ -37,12 +37,21 @@ export default async function DashboardPage() {
   const isOwner = organization?.owner_id === user.id
   const isAdminOrPM = isOwner || active?.role === 'Admin' || active?.role === 'PM'
 
-  // 2️⃣ Fetch all workspace projects
-  const { data: projectsData } = await supabase
+  // 2️⃣ Fetch all workspace projects (with fallback if is_locked migration hasn't run yet)
+  let { data: projectsData, error: projError } = await supabase
     .from('projects')
-    .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, created_by, allow_team_schedule_edits')
+    .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, created_by, allow_team_schedule_edits, is_locked')
     .eq('organization_id', active.organization_id)
     .order('created_at', { ascending: false })
+
+  if (projError || !projectsData) {
+    const fallback = await supabase
+      .from('projects')
+      .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, created_by, allow_team_schedule_edits')
+      .eq('organization_id', active.organization_id)
+      .order('created_at', { ascending: false })
+    projectsData = fallback.data ? fallback.data.map((p) => ({ ...p, is_locked: false })) : null
+  }
 
   // 3️⃣ Fetch project membership assignments
   const projectIds = (projectsData ?? []).map((p) => p.id)
@@ -73,6 +82,7 @@ export default async function DashboardPage() {
     startDate: p.start_date,
     endDate: p.end_date,
     isArchived: p.is_archived === true,
+    isLocked: p.is_locked === true,
     createdBy: p.created_by,
     assignedMembers: assignments[p.id] || [],
     memberPermissions: memberPermissions[p.id] || [],

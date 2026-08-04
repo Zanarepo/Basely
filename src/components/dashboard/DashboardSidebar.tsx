@@ -15,9 +15,11 @@ import {
   X,
   Terminal,
   ChevronUp,
+  Database,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { useWorkspace } from './WorkspaceContext'
+import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createClient } from '@/utils/supabase/client'
 import { NotificationBell } from './notifications/NotificationBell'
@@ -40,6 +42,7 @@ export function DashboardSidebar({
   const pathname = usePathname()
   const router = useRouter()
   const { activeWorkspace } = useWorkspace()
+  const { tier } = useWorkspaceTier(activeWorkspace?.id)
   const [collapsed, setCollapsed] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -88,11 +91,12 @@ export function DashboardSidebar({
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/dashboard/approvals', label: 'Approvals', icon: CheckSquare },
+    // Approvals requires governance.approval_workflows (Enterprise only)
+    ...(tier === 'enterprise' ? [{ href: '/dashboard/approvals', label: 'Approvals', icon: CheckSquare }] : []),
     { href: '/dashboard/team', label: 'Team', icon: Users },
   ]
 
-  if (activeWorkspace.role === 'Admin') {
+  if (activeWorkspace.role === 'Admin' && tier !== 'free') {
     navItems.push({ href: '/dashboard/settings/templates', label: 'Templates', icon: Settings })
   }
 
@@ -217,17 +221,29 @@ export function DashboardSidebar({
           {/* Accordion Content */}
           <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isFooterOpen ? 'max-h-48 opacity-100 mb-2' : 'max-h-0 opacity-0 mb-0'}`}>
             <div className="space-y-1 p-1">
-              {activeWorkspace.role === 'Admin' && (
-                <Link
-                  href="/dashboard/settings/developers"
-                  title={effectivelyCollapsed ? 'Developers' : undefined}
-                  className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 border border-transparent transition-all cursor-pointer ${
-                    effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
-                  }`}
-                >
-                  <Terminal className="h-5 w-5 shrink-0" />
-                  {!effectivelyCollapsed && <span className="text-sm font-medium">Developers</span>}
-                </Link>
+              {(activeWorkspace.role === 'Admin' || activeWorkspace.role === 'Owner') && tier === 'enterprise' && (
+                <>
+                  <Link
+                    href="/dashboard/settings/integrations"
+                    title={effectivelyCollapsed ? 'ERP Connectors' : undefined}
+                    className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 border border-transparent transition-all cursor-pointer ${
+                      effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                    }`}
+                  >
+                    <Database className="h-5 w-5 shrink-0" />
+                    {!effectivelyCollapsed && <span className="text-sm font-medium">ERP Connectors</span>}
+                  </Link>
+                  <Link
+                    href="/dashboard/settings/developers"
+                    title={effectivelyCollapsed ? 'Developers' : undefined}
+                    className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 border border-transparent transition-all cursor-pointer ${
+                      effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                    }`}
+                  >
+                    <Terminal className="h-5 w-5 shrink-0" />
+                    {!effectivelyCollapsed && <span className="text-sm font-medium">Developers</span>}
+                  </Link>
+                </>
               )}
               
               <div className={effectivelyCollapsed ? 'flex justify-center p-1' : 'px-1 py-1'}>

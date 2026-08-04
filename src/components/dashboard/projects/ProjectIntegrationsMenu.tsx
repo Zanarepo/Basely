@@ -1,13 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Blocks, X, ArrowLeft, CheckCircle2, Calendar } from 'lucide-react'
+import { Blocks, X, ArrowLeft, CheckCircle2, Calendar, Database, Lock } from 'lucide-react'
 import ProjectSlackSettings from './ProjectSlackSettings'
 import ProjectTeamsSettings from './ProjectTeamsSettings'
 import ProjectGoogleChatSettings from './ProjectGoogleChatSettings'
 import CalendarSyncSettings from '@/components/dashboard/integrations/CalendarSyncSettings'
+import { ErpIntegrationContainer } from '@/components/dashboard/settings/integrations/ErpIntegrationContainer'
 import { createClient } from '@/utils/supabase/client'
 import { useWorkspace } from '@/components/dashboard/WorkspaceContext'
+import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
+import { FeatureGateScreen } from '@/components/dashboard/billing'
 
 const SlackIcon = ({ className }: { className?: string }) => (
   <svg 
@@ -44,9 +47,12 @@ const GoogleChatIcon = ({ className }: { className?: string }) => (
 
 export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
   const { activeWorkspace } = useWorkspace()
+  const { tier } = useWorkspaceTier(activeWorkspace?.id)
   const isAdminOrOwner = activeWorkspace?.role === 'Admin' || activeWorkspace?.role === 'Owner'
+  const isEnterprise = tier === 'enterprise'
+  const isGated = !isEnterprise  // Enterprise-only per feature schema
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedApp, setSelectedApp] = useState<'slack' | 'teams' | 'google_chat' | 'calendar' | null>(null)
+  const [selectedApp, setSelectedApp] = useState<'slack' | 'teams' | 'google_chat' | 'calendar' | 'erp' | null>(null)
   const [isSlackConfigured, setIsSlackConfigured] = useState(false)
   const [isTeamsConfigured, setIsTeamsConfigured] = useState(false)
   const [isGoogleChatConfigured, setIsGoogleChatConfigured] = useState(false)
@@ -86,16 +92,50 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
     <>
       <button
         onClick={() => setIsOpen(true)}
+        style={{ cursor: 'pointer' }}
         className="flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-app-surface text-app-fg border border-app-border rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-app-hover transition-colors font-medium text-sm cursor-pointer"
       >
-        <Blocks className="h-4 w-4 text-indigo-500" />
+        {isGated ? <Lock className="h-4 w-4 text-purple-500" /> : <Blocks className="h-4 w-4 text-indigo-500" />}
         <span className="hidden sm:inline">Integrations</span>
+        {isGated && (
+          <span className="bg-purple-500/15 text-purple-500 border border-purple-500/30 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider">
+            Enterprise
+          </span>
+        )}
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#1a1b23] rounded-xl shadow-2xl w-full max-w-2xl border border-app-border overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="flex items-center justify-between p-6 border-b border-app-border">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 lg:p-12 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className={`bg-white dark:bg-[#1a1b23] rounded-xl shadow-2xl w-full ${selectedApp === 'erp' ? 'max-w-3xl' : 'max-w-2xl'} border border-app-border overflow-hidden flex flex-col max-h-[88vh] transition-all duration-300`}>
+            {isGated ? (
+              /* Enterprise-only gate: show lock screen inside the modal shell */
+              <>
+                <div className="flex items-center justify-between p-5 border-b border-app-border">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-50 dark:bg-purple-500/10 rounded-lg">
+                      <Lock className="h-5 w-5 text-purple-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-app-fg">Project Integrations</h2>
+                      <p className="text-sm text-app-muted mt-0.5">Enterprise feature — upgrade to connect third-party apps</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsOpen(false)} style={{ cursor: 'pointer' }} className="p-2 text-app-muted hover:text-app-fg hover:bg-app-hover rounded-full transition-colors cursor-pointer">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="overflow-y-auto p-4">
+                  <FeatureGateScreen
+                    featureName="Project Integrations"
+                    requiredTier="enterprise"
+                    description="Connect Slack, MS Teams, Google Chat, Google Calendar, and ERP accounting suites to sync project milestones and notifications. Available on the Enterprise plan."
+                    canUpgrade={isAdminOrOwner}
+                  />
+                </div>
+              </>
+            ) : (
+            <>
+            <div className="flex items-center justify-between p-6 border-b border-app-border flex-shrink-0">
               <div className="flex items-center gap-3">
                 {selectedApp ? (
                   <button
@@ -119,12 +159,16 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                           ? 'Configure Google Chat'
                           : selectedApp === 'calendar'
                             ? 'Google Calendar Sync'
-                            : 'Project Integrations'}
+                            : selectedApp === 'erp'
+                              ? 'ERP & Financial Ledgers'
+                              : 'Project Integrations'}
                   </h2>
                   <p className="text-sm text-app-muted mt-1">
-                    {selectedApp 
-                      ? 'Set up notifications for this project' 
-                      : 'Connect third-party apps to this project'}
+                    {selectedApp === 'erp'
+                      ? 'Connect live enterprise accounting suites or run simulated test audits'
+                      : selectedApp 
+                        ? 'Set up notifications for this project' 
+                        : 'Connect third-party apps to this project'}
                   </p>
                 </div>
               </div>
@@ -241,6 +285,21 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                       {isCalendarConfigured ? 'Configured' : 'Configure'}
                     </div>
                   </div>
+
+                  {/* ERP / Accounting Integration Card */}
+                  <div 
+                    onClick={() => setSelectedApp('erp')}
+                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all"
+                  >
+                    <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Database className="h-6 w-6 text-emerald-500" />
+                    </div>
+                    <h3 className="text-base font-bold text-app-fg mb-1">ERP & Accounting</h3>
+                    <p className="text-xs text-app-muted mb-4">Connect QuickBooks, NetSuite, SAP, and Xero ledgers</p>
+                    <div className="mt-auto px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-400 transition-colors">
+                      Configure
+                    </div>
+                  </div>
                 </div>
               ) : selectedApp === 'slack' ? (
                 <ProjectSlackSettings projectId={projectId} />
@@ -248,10 +307,14 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                 <ProjectTeamsSettings projectId={projectId} />
               ) : selectedApp === 'google_chat' ? (
                 <ProjectGoogleChatSettings projectId={projectId} />
-              ) : (
+              ) : selectedApp === 'calendar' ? (
                 <CalendarSyncSettings projectId={projectId} />
+              ) : (
+                <ErpIntegrationContainer />
               )}
             </div>
+            </>
+            )}
           </div>
         </div>
       )}

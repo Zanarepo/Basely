@@ -44,7 +44,7 @@ export async function promoteRelease(
   if (!project) return { ok: false, error: 'Project not found' }
 
   // 3. Check for Approval Workflows Feature Access
-  const hasApprovalWorkflows = await checkFeatureAccess(project.organization_id, 'approval_workflows')
+  const hasApprovalWorkflows = (await checkFeatureAccess(project.organization_id, 'governance.approval_workflows')).allowed
 
   if (hasApprovalWorkflows) {
     // 4. Enterprise Path: Submit Approval Request

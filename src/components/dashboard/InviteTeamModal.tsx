@@ -132,9 +132,21 @@ export function InviteTeamModal({ open, onClose }: InviteTeamModalProps) {
             </div>
 
             {errorMsg && (
-              <div className="flex items-start gap-3 p-4 mt-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 dark:text-rose-400 text-sm">
-                <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
-                <span>{errorMsg}</span>
+              <div className="flex items-start justify-between gap-3 p-4 mt-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 dark:text-rose-400 text-sm">
+                <div className="flex items-start gap-2">
+                  <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+                  <span>{errorMsg}</span>
+                </div>
+                {(errorMsg.toLowerCase().includes('limit') || errorMsg.toLowerCase().includes('seat') || errorMsg.toLowerCase().includes('plan')) && (
+                  <button
+                    type="button"
+                    onClick={() => window.open('/dashboard', '_self')}
+                    style={{ cursor: 'pointer' }}
+                    className="shrink-0 px-3 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs rounded-lg shadow hover:opacity-95 transition-all"
+                  >
+                    Upgrade Plan ↗
+                  </button>
+                )}
               </div>
             )}
 

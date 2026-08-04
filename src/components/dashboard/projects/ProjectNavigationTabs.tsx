@@ -30,15 +30,17 @@ const ALL_TABS: TabInfo[] = [
 ]
 
 const DEFAULT_VISIBLE: TabKey[] = ['dashboard', 'wbs', 'gantt', 'releases', 'team']
+const FREE_TABS: TabKey[] = ['dashboard', 'wbs', 'gantt', 'team']
 
 interface Props {
   projectId: string
   activeTab: string
   canViewCost: boolean
   canViewTeamAccess?: boolean
+  tier?: string
 }
 
-export default function ProjectNavigationTabs({ projectId, activeTab, canViewCost, canViewTeamAccess = false }: Props) {
+export default function ProjectNavigationTabs({ projectId, activeTab, canViewCost, canViewTeamAccess = false, tier }: Props) {
   const [mounted, setMounted] = useState(false)
   const [visibleTabs, setVisibleTabs] = useState<TabKey[]>(DEFAULT_VISIBLE)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -127,25 +129,32 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
       <nav className="flex items-center gap-4 md:gap-6 pb-1 flex-wrap md:flex-nowrap">
         
         {/* Pinned Tabs */}
-        {pinnedTabs.map((tab) => (
-          <Link
-            key={tab.id}
-            href={`/dashboard/projects/${projectId}?tab=${tab.id}`}
-            className={`pb-3 text-sm transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === tab.id
-                ? 'border-indigo-500 text-indigo-500 font-bold'
-                : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
-            }`}
-          >
-            <span className="hidden sm:inline">{tab.label}</span>
-            <span className="sm:hidden">{tab.shortLabel}</span>
-            {tab.isNew && (
-              <span className="bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider">
-                New
-              </span>
-            )}
-          </Link>
-        ))}
+        {pinnedTabs.map((tab) => {
+          const isGated = tier === 'free' && !FREE_TABS.includes(tab.id)
+          return (
+            <Link
+              key={tab.id}
+              href={`/dashboard/projects/${projectId}?tab=${tab.id}`}
+              className={`pb-3 text-sm transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === tab.id
+                  ? 'border-indigo-500 text-indigo-500 font-bold'
+                  : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
+              }`}
+            >
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.shortLabel}</span>
+              {isGated ? (
+                <span className="bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-500 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider shrink-0 shadow-xs">
+                  ✨ PRO
+                </span>
+              ) : tab.isNew ? (
+                <span className="bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider">
+                  New
+                </span>
+              ) : null}
+            </Link>
+          )
+        })}
 
         {/* More Menu */}
         <div className="relative pb-3 ml-auto sm:ml-0" ref={dropdownRef}>
@@ -167,21 +176,28 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
                       <div className="px-3 py-1.5 text-[11px] font-extrabold text-app-subtle uppercase tracking-wider sticky top-0 bg-app-surface-solid z-10">
                         More Tabs ({unpinnedTabs.length})
                       </div>
-                      {unpinnedTabs.map(tab => (
-                        <Link
-                          key={tab.id}
-                          href={`/dashboard/projects/${projectId}?tab=${tab.id}`}
-                          onClick={() => setIsDropdownOpen(false)}
-                          className="flex items-center justify-between gap-2 px-3 py-2 text-sm font-semibold text-app-fg hover:bg-app-bg hover:text-indigo-400 rounded-lg transition-all group"
-                        >
-                          <span className="truncate">{tab.label}</span>
-                          {tab.isNew && (
-                            <span className="bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider shrink-0 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
-                              New
-                            </span>
-                          )}
-                        </Link>
-                      ))}
+                      {unpinnedTabs.map(tab => {
+                        const isGated = tier === 'free' && !FREE_TABS.includes(tab.id)
+                        return (
+                          <Link
+                            key={tab.id}
+                            href={`/dashboard/projects/${projectId}?tab=${tab.id}`}
+                            onClick={() => setIsDropdownOpen(false)}
+                            className="flex items-center justify-between gap-2 px-3 py-2 text-sm font-semibold text-app-fg hover:bg-app-bg hover:text-indigo-400 rounded-lg transition-all group"
+                          >
+                            <span className="truncate">{tab.label}</span>
+                            {isGated ? (
+                              <span className="bg-amber-500/15 text-amber-500 border border-amber-500/25 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider shrink-0">
+                                ✨ PRO
+                              </span>
+                            ) : tab.isNew ? (
+                              <span className="bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider shrink-0 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                                New
+                              </span>
+                            ) : null}
+                          </Link>
+                        )
+                      })}
                     </div>
                   ) : (
                     <div className="px-3 py-4 text-sm font-medium text-app-muted text-center">

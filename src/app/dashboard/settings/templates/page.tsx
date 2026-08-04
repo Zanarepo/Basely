@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import TemplatesWorkspace from '@/components/dashboard/settings/templates/TemplatesWorkspace'
 import { cookies } from 'next/headers'
 import { ACTIVE_ORG_COOKIE } from '@/lib/workspace/constants'
+import { getOrganizationSubscription } from '@/lib/organizations/tier-logic'
+import { FeatureGateScreen } from '@/components/dashboard/billing'
 
 export default async function TemplatesSettingsPage() {
   const supabase = await createClient()
@@ -33,11 +35,26 @@ export default async function TemplatesSettingsPage() {
     )
   }
 
+  // Gate templates behind Premium tier (documentation.custom_templates)
+  const subscription = await getOrganizationSubscription(active.organization_id)
+  if (subscription.tierId === 'free') {
+    return (
+      <div className="p-4 md:p-8 max-w-3xl mx-auto">
+        <FeatureGateScreen
+          featureName="Document Templates"
+          description="Create and manage reusable project charter templates, status report layouts, and custom document exports across your workspace. Available on the Premium plan."
+          canUpgrade={true}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="p-4 md:p-8">
       <TemplatesWorkspace 
         organizationId={active.organization_id} 
       />
+
     </div>
   )
 }

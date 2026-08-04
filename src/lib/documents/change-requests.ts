@@ -31,7 +31,7 @@ export async function getChangeRequests(projectId: string): Promise<ChangeReques
   const orgId = project.organization_id
 
   // 2. Check feature access (Enterprise Tier check)
-  const hasApprovalWorkflows = await checkFeatureAccess(orgId, 'approval_workflows')
+  const hasApprovalWorkflows = (await checkFeatureAccess(orgId, 'governance.approval_workflows')).allowed
 
   let results: ChangeRequestEntry[] = []
 
@@ -130,7 +130,7 @@ export async function createStandaloneChangeRequest(
     .single()
 
   if (project) {
-    const hasApprovalWorkflows = await checkFeatureAccess(project.organization_id, 'approval_workflows')
+    const hasApprovalWorkflows = (await checkFeatureAccess(project.organization_id, 'governance.approval_workflows')).allowed
     if (hasApprovalWorkflows) {
       return { success: false, error: 'Your organization uses Approval Workflows. Please submit a formal approval request instead of logging a standalone change.' }
     }

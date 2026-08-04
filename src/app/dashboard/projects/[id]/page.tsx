@@ -22,6 +22,8 @@ import { LifecycleStatusBadge } from '@/components/dashboard/projects/lifecycle/
 import RaidWorkspace from '@/components/dashboard/risks/raid/RaidWorkspace'
 import AdrWorkspace from '@/components/dashboard/projects/adr/AdrWorkspace'
 import SkillsMatrixTable from '@/components/dashboard/team/capacity/SkillsMatrixTable'
+import { FeatureGateScreen } from '@/components/dashboard/billing'
+import { getOrganizationSubscription } from '@/lib/organizations/tier-logic'
 
 // Planning components type definition
 type ProjectPageProps = {
@@ -43,12 +45,24 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     redirect('/login')
   }
 
-  // 1. Fetch project with RLS enforcement
-  const { data: project, error: projectError } = await supabase
+  // 1. Fetch project with RLS enforcement (with fallback if is_locked migration hasn't run yet)
+  let { data: project, error: projectError } = await supabase
     .from('projects')
-    .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, organization_id, created_by, allow_team_schedule_edits, lifecycle_status')
+    .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, organization_id, created_by, allow_team_schedule_edits, lifecycle_status, is_locked')
     .eq('id', id)
     .maybeSingle()
+
+  if (projectError && !project) {
+    const fallback = await supabase
+      .from('projects')
+      .select('id, name, client_name, description, methodology, currency, start_date, end_date, calendar_config, is_archived, organization_id, created_by, allow_team_schedule_edits, lifecycle_status')
+      .eq('id', id)
+      .maybeSingle()
+    if (fallback.data) {
+      project = { ...fallback.data, is_locked: false }
+      projectError = null
+    }
+  }
 
   if (projectError || !project) {
     if (projectError) {
@@ -131,29 +145,31 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
   const callerRole = callerMembership?.role ?? 'Viewer'
   const isCreator = project.created_by === user.id
   
+  const isLockedOrArchived = project.is_archived || project.is_locked
+
   // Base edit access (Admins, PMs, Creators, Owners have global access)
   const baseEditAccess =
-    isOrgOwner ||
+    (isOrgOwner ||
     callerRole === 'Admin' ||
     isCreator ||
-    (callerRole === 'PM' && !project.is_archived)
+    callerRole === 'PM') && !isLockedOrArchived
 
   // Specific granular access overrides
   const callerProjectMember = projectMembersData?.find(pm => pm.user_id === user.id)
-  const hasScheduleEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_schedule) && !project.is_archived
-  const hasCostEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_cost) && !project.is_archived
-  const hasRisksEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_risks) && !project.is_archived
-  const hasDocumentsEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_documents) && !project.is_archived
+  const hasScheduleEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_schedule) && !isLockedOrArchived
+  const hasCostEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_cost) && !isLockedOrArchived
+  const hasRisksEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_risks) && !isLockedOrArchived
+  const hasDocumentsEditAccess = (baseEditAccess || !!callerProjectMember?.can_edit_documents) && !isLockedOrArchived
 
   const isManager = baseEditAccess || 
     (callerProjectMember?.project_role_title?.toLowerCase().includes('manager') ?? false) || 
     (callerProjectMember?.project_role_title?.toLowerCase().includes('pm') ?? false)
 
   const canAssignMembers =
-    isOrgOwner ||
+    (isOrgOwner ||
     callerRole === 'Admin' ||
     isCreator ||
-    (callerRole === 'PM' && !project.is_archived)
+    callerRole === 'PM') && !isLockedOrArchived
 
   const canViewCost =
     isOrgOwner ||
@@ -171,6 +187,12 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     })
   }
 
+  // Fetch workspace subscription tier for feature gating
+  const subscription = await getOrganizationSubscription(project.organization_id)
+  const tier = subscription.tierId
+  const isFree = tier === 'free'
+  const canUpgrade = isOrgOwner || callerRole === 'Admin'
+
   return (
     <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-8 py-8">
       {/* Back to dashboard button */}
@@ -184,6 +206,33 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         </Link>
       </div>
 
+      {project.is_locked && (
+        <div className="mb-6 p-4 rounded-xl border border-red-500/50 bg-gradient-to-r from-red-950/80 via-rose-900/70 to-red-900/80 text-white shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl animate-bounce">🔒</span>
+            <div>
+              <h4 className="font-extrabold text-sm sm:text-base text-rose-200">PROJECT LOCKED IN READ-ONLY MODE</h4>
+              <p className="text-xs sm:text-sm text-red-100/90 font-medium">
+                This project exceeds your workspace&apos;s Free plan limit of 2 active projects. All task, team, and WBS editing controls are temporarily disabled in read-only mode.
+              </p>
+            </div>
+          </div>
+          {isOrgOwner || callerRole === 'Admin' ? (
+            <Link
+              href="/dashboard"
+              style={{ cursor: 'pointer' }}
+              className="px-4 py-2 bg-white text-gray-900 hover:bg-gray-100 font-extrabold text-xs rounded-lg shadow whitespace-nowrap transition-transform hover:scale-105 active:scale-95"
+            >
+              Upgrade on Dashboard ↗
+            </Link>
+          ) : (
+            <span className="px-3.5 py-2 bg-red-900/80 text-rose-200 border border-rose-400/40 font-bold text-xs rounded-lg whitespace-nowrap shadow-inner">
+              Contact Admin to Upgrade
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Project Header */}
       <div className="mb-8 flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
@@ -195,7 +244,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           <LifecycleStatusBadge 
             projectId={project.id} 
             initialStatus={project.lifecycle_status || 'Executing'} 
-            canEdit={baseEditAccess && !project.is_archived} 
+            canEdit={baseEditAccess && !isLockedOrArchived} 
             showFullStepper={true} 
           />
           {project.is_archived && (
@@ -229,7 +278,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       })()}
 
       {/* Tabs list */}
-      <ProjectNavigationTabs projectId={project.id} activeTab={activeTab} canViewCost={canViewCost} canViewTeamAccess={canAssignMembers} />
+      <ProjectNavigationTabs projectId={project.id} activeTab={activeTab} canViewCost={canViewCost} canViewTeamAccess={canAssignMembers} tier={tier} />
 
       {/* Conditional tab workspaces */}
       {activeTab === 'dashboard' && (
@@ -259,54 +308,66 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       )}
 
-      {activeTab === 'releases' && (
+      {activeTab === 'releases' && (isFree ? (
+        <FeatureGateScreen featureName="Releases & Iterations" description="Plan and track software iterations, release gates, and version milestones. Available on the Premium plan." canUpgrade={canUpgrade} />
+      ) : (
         <ReleasesWorkspace
           projectId={project.id}
           hasEditAccess={hasScheduleEditAccess}
           methodology={project.methodology}
         />
-      )}
+      ))}
 
-      {activeTab === 'cost' && canViewCost && (
+      {activeTab === 'cost' && canViewCost && (isFree ? (
+        <FeatureGateScreen featureName="Budget & Cost" description="Earned Value Management, resource rate configuration, and actual cost tracking. Available on the Premium plan." canUpgrade={canUpgrade} />
+      ) : (
         <CostWorkspace
           projectId={project.id}
           hasEditAccess={hasCostEditAccess}
         />
-      )}
+      ))}
 
-      {activeTab === 'stakeholders' && (
+      {activeTab === 'stakeholders' && (isFree ? (
+        <FeatureGateScreen featureName="Stakeholders" description="Map stakeholders, their influence, interest and communication plans. Available on the Premium plan." canUpgrade={canUpgrade} />
+      ) : (
         <StakeholderWorkspace
           projectId={project.id}
           hasEditAccess={canAssignMembers}
           workspaceMembers={workspaceMembers}
         />
-      )}
+      ))}
 
-      {activeTab === 'risks' && (
+      {activeTab === 'risks' && (isFree ? (
+        <FeatureGateScreen featureName="Risks & Issues" description="Identify, assess and mitigate project risks and issues with a full risk register. Available on the Premium plan." canUpgrade={canUpgrade} />
+      ) : (
         <RiskRegisterWorkspace
           projectId={project.id}
           hasEditAccess={hasRisksEditAccess}
           workspaceMembers={workspaceMembers}
         />
-      )}
+      ))}
 
-      {activeTab === 'documents' && (
+      {activeTab === 'documents' && (isFree ? (
+        <FeatureGateScreen featureName="Documents" description="Live document engine, project charters, status reports, and custom templates. Available on the Premium plan." canUpgrade={canUpgrade} />
+      ) : (
         <DocumentsWorkspace
           projectId={project.id}
           projectContext={project}
           hasEditAccess={hasDocumentsEditAccess}
           isManager={isManager}
         />
-      )}
+      ))}
 
-      {activeTab === 'action_items' && (
+      {activeTab === 'action_items' && (isFree ? (
+        <FeatureGateScreen featureName="Action Items" description="Track cross-cutting action items, owners and due dates across your project team. Available on the Premium plan." canUpgrade={canUpgrade} />
+      ) : (
         <div className="bg-app-bg border border-app-border rounded-xl shadow-sm h-[calc(100vh-14rem)] min-h-[600px] overflow-hidden mt-6">
           <ActionItemsTracker
             projectId={project.id}
             hasEditAccess={hasDocumentsEditAccess}
           />
         </div>
-      )}
+      ))}
 
       {activeTab === 'team' && (
         <TeamPermissionsWorkspace
@@ -317,30 +378,36 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       )}
 
-      {activeTab === 'raid' && (
+      {activeTab === 'raid' && (isFree ? (
+        <FeatureGateScreen featureName="RAID Command Center" description="Manage Risks, Assumptions, Issues, and Dependencies in a unified command center. Available on the Premium plan." canUpgrade={canUpgrade} />
+      ) : (
         <RaidWorkspace
           projectId={project.id}
           organizationId={project.organization_id || 'default_org'}
           methodology={project.methodology}
         />
-      )}
+      ))}
 
-      {activeTab === 'adr' && (
+      {activeTab === 'adr' && (isFree ? (
+        <FeatureGateScreen featureName="Architecture Decisions (ADR)" description="Document and track Architecture Decision Records to preserve your team's decision-making history. Available on the Premium plan." canUpgrade={canUpgrade} />
+      ) : (
         <AdrWorkspace
           projectId={project.id}
           organizationId={project.organization_id || 'default_org'}
           methodology={project.methodology}
         />
-      )}
+      ))}
 
-      {activeTab === 'capacity' && (
+      {activeTab === 'capacity' && (isFree ? (
+        <FeatureGateScreen featureName="Skills & Capacity Matrix" description="Visualise your team's skills and available capacity across the project lifecycle. Available on the Premium plan." canUpgrade={canUpgrade} />
+      ) : (
         <SkillsMatrixTable
           projectId={project.id}
           organizationId={project.organization_id || 'default_org'}
           methodology={project.methodology}
           workspaceMembers={workspaceMembers}
         />
-      )}
+      ))}
     </div>
   )
 }

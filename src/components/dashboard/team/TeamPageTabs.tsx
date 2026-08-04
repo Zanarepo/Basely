@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, UserPlus, User, ShieldCheck, Settings2, ScrollText } from 'lucide-react'
+import { Users, UserPlus, User, ShieldCheck, Settings2, ScrollText, Lock } from 'lucide-react'
 import {
   WorkspaceMembersPanel,
   type WorkspaceMember,
@@ -12,6 +12,8 @@ import { SsoSettingsPanel } from './SsoSettingsPanel'
 import { ApprovalPoliciesPanel } from './ApprovalPoliciesPanel'
 import { GovernanceAuditLogPanel } from './GovernanceAuditLogPanel'
 import { AiGovernancePanel } from './AiGovernancePanel'
+import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
+import { FeatureGateScreen } from '@/components/dashboard/billing'
 
 type Tab = 'members' | 'invite' | 'governance' | 'profile'
 
@@ -79,6 +81,9 @@ export function TeamPageTabs({
   profileEmail,
 }: TeamPageTabsProps) {
   const [activeTab, setActiveTab] = useState<Tab>('members')
+  const { tier } = useWorkspaceTier(organizationId)
+  const isEnterprise = tier === 'enterprise'
+  const canUpgradeGovernance = isAdmin // only admins can upgrade
 
   const visibleTabs = TABS.filter((t) => {
     if (t.adminOnly && !isAdmin) return false
@@ -96,6 +101,7 @@ export function TeamPageTabs({
           {visibleTabs.map((tab) => {
             const Icon = tab.icon
             const active = tab.id === activeTab
+            const isGovTab = tab.id === 'governance'
             return (
               <button
                 key={tab.id}
@@ -110,12 +116,19 @@ export function TeamPageTabs({
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
-                <Icon
-                  className={`h-4 w-4 shrink-0 transition-colors ${
-                    active ? 'text-indigo-500 dark:text-indigo-400' : 'text-app-subtle group-hover:text-app-muted'
-                  }`}
-                />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <Icon className={`h-5 w-5 shrink-0 ${ active ? 'text-indigo-500 dark:text-indigo-400' : 'text-app-muted group-hover:text-app-fg' }`} />
+                  <div className="hidden sm:block text-left">
+                    <div className="flex items-center gap-1.5">
+                      <p className={`text-sm font-semibold ${active ? 'text-app-fg' : 'text-app-muted group-hover:text-app-fg'}`}>
+                        {tab.label}
+                      </p>
+                      {isGovTab && !isEnterprise && (
+                        <span className="bg-purple-500/15 text-purple-500 border border-purple-500/30 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider">
+                          Enterprise
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
                 {/* Active indicator dot on mobile */}
                 {active && (
@@ -178,21 +191,32 @@ export function TeamPageTabs({
             role="tabpanel"
             className="animate-fade-in space-y-6"
           >
-            <AiGovernancePanel organizationId={organizationId} />
-            <ApprovalPoliciesPanel
-              organizationId={organizationId}
-              members={members}
-              isAdmin={isAdmin}
-            />
-            <SsoSettingsPanel
-              organizationId={organizationId}
-              members={members}
-              isAdmin={isAdmin}
-            />
-            <GovernanceAuditLogPanel
-              organizationId={organizationId}
-              isAdmin={isAdmin}
-            />
+            {isEnterprise ? (
+              <>
+                <AiGovernancePanel organizationId={organizationId} />
+                <ApprovalPoliciesPanel
+                  organizationId={organizationId}
+                  members={members}
+                  isAdmin={isAdmin}
+                />
+                <SsoSettingsPanel
+                  organizationId={organizationId}
+                  members={members}
+                  isAdmin={isAdmin}
+                />
+                <GovernanceAuditLogPanel
+                  organizationId={organizationId}
+                  isAdmin={isAdmin}
+                />
+              </>
+            ) : (
+              <FeatureGateScreen
+                featureName="Workspace Governance"
+                requiredTier="enterprise"
+                description="SSO & identity provider configuration, formal approval workflows, granular RBAC, and compliance-grade audit logs. Available on the Enterprise plan."
+                canUpgrade={canUpgradeGovernance}
+              />
+            )}
           </div>
         )}
 

@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 import type { InviteRole } from './constants'
+import { checkUsageLimit } from '@/lib/organizations/tier-logic'
 
 export type InviteLinkResult =
   | {
@@ -13,7 +14,7 @@ export type InviteLinkResult =
       inviteeEmail?: string
       warning?: string
     }
-  | { ok: false; error: string }
+  | { ok: false; error: string; reason?: string; requiredTier?: string; limitKey?: string; maxLimit?: number }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -97,6 +98,20 @@ export async function generateInviteLink(
 
   if (normalizedEmail && !emailPattern.test(normalizedEmail)) {
     return { ok: false, error: 'Enter a valid invitee email address' }
+  }
+
+  if (role !== 'Viewer') {
+    const limitCheck = await checkUsageLimit(organizationId, 'max_seats')
+    if (!limitCheck.allowed) {
+      return {
+        ok: false,
+        error: `Seat limit reached (${limitCheck.maxLimit} edit-level members). Upgrade your plan to invite more collaborative team members.`,
+        reason: 'USAGE_LIMIT_EXCEEDED',
+        requiredTier: limitCheck.requiredTier,
+        limitKey: 'max_seats',
+        maxLimit: limitCheck.maxLimit,
+      }
+    }
   }
 
   const supabase = await createClient()

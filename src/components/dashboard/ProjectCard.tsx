@@ -24,6 +24,7 @@ type ProjectType = {
   startDate: string | null
   endDate: string | null
   isArchived: boolean
+  isLocked?: boolean
   assignedMembers: string[]
   calendarConfig: {
     working_days: number[]
@@ -50,6 +51,8 @@ type ProjectCardProps = {
   onRestore: () => void
   onDelete: () => void
   onManageTeam: () => void
+  onUnlockRequest?: () => void
+  canUpgrade?: boolean
   formatDate: (dateStr: string | null) => string
 }
 
@@ -79,10 +82,24 @@ export function ProjectCard({
   onRestore,
   onDelete,
   onManageTeam,
+  onUnlockRequest,
+  canUpgrade = true,
   formatDate,
 }: ProjectCardProps) {
   const hasAnyAction = hasEditAccess || hasManageAccess || hasDeleteAccess
-  const showManageTeam = hasManageAccess && !project.isArchived
+  const showManageTeam = hasManageAccess && !project.isArchived && !project.isLocked
+
+  const handleAction = (cb: () => void) => {
+    if (project.isLocked) {
+      if (canUpgrade && onUnlockRequest) {
+        onUnlockRequest()
+      } else {
+        alert('This project is read-only due to Free plan limits. Please contact your Workspace Administrator to upgrade.')
+      }
+    } else {
+      cb()
+    }
+  }
 
   return (
     <article
@@ -110,6 +127,12 @@ export function ProjectCard({
                 Archived
               </span>
             )}
+            {project.isLocked && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md animate-pulse select-none">
+                <span>🔒</span>
+                <span>LOCKED</span>
+              </span>
+            )}
             {isViewer && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-app-surface-solid text-app-muted border border-app-border">
                 View only
@@ -123,9 +146,10 @@ export function ProjectCard({
             {hasEditAccess && !project.isArchived && (
               <button
                 type="button"
-                title="Edit project"
-                onClick={onEdit}
+                title={project.isLocked ? (canUpgrade ? "Upgrade plan to unlock project" : "Locked (Contact Admin to upgrade)") : "Edit project"}
+                onClick={() => handleAction(onEdit)}
                 disabled={isPending}
+                style={{ cursor: 'pointer' }}
                 className="btn-icon"
               >
                 <Edit2 className="h-4 w-4" />
@@ -136,9 +160,10 @@ export function ProjectCard({
               project.isArchived ? (
                 <button
                   type="button"
-                  title="Restore project"
-                  onClick={onRestore}
+                  title={project.isLocked ? (canUpgrade ? "Upgrade plan to restore project" : "Locked (Contact Admin to upgrade)") : "Restore project"}
+                  onClick={() => handleAction(onRestore)}
                   disabled={isPending}
+                  style={{ cursor: 'pointer' }}
                   className="btn-icon-success"
                 >
                   <RotateCcw className="h-4 w-4" />
@@ -146,9 +171,10 @@ export function ProjectCard({
               ) : (
                 <button
                   type="button"
-                  title="Archive project"
-                  onClick={onArchive}
+                  title={project.isLocked ? (canUpgrade ? "Upgrade plan to archive project" : "Locked (Contact Admin to upgrade)") : "Archive project"}
+                  onClick={() => handleAction(onArchive)}
                   disabled={isPending}
+                  style={{ cursor: 'pointer' }}
                   className="btn-icon-warning"
                 >
                   <Archive className="h-4 w-4" />

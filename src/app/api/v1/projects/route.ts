@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateApiRequest, requireEntityScope } from '@/lib/api-auth/middleware'
+import { authenticateApiRequest, requireEntityScope, requireFeatureGate } from '@/lib/api-auth/middleware'
 import { createAdminClient } from '@/utils/supabase/admin'
 
 export async function GET(req: NextRequest) {
@@ -9,6 +9,9 @@ export async function GET(req: NextRequest) {
 
     const scopeCheck = requireEntityScope(auth, 'projects')
     if (scopeCheck) return scopeCheck
+
+    const gateCheck = await requireFeatureGate(auth.organizationId, 'foundation.workspace')
+    if (gateCheck) return gateCheck
 
     const supabase = createAdminClient()
     const { data, error } = await supabase

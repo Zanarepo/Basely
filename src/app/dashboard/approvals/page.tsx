@@ -3,6 +3,8 @@ import { createClient } from '@/utils/supabase/server'
 import { ACTIVE_ORG_COOKIE } from '@/lib/workspace/constants'
 import { CheckSquare } from 'lucide-react'
 import { ApprovalsWorkspace } from '@/components/dashboard/approvals/ApprovalsWorkspace'
+import { getOrganizationSubscription } from '@/lib/organizations/tier-logic'
+import { FeatureGateScreen } from '@/components/dashboard/billing'
 
 export default async function ApprovalsPage() {
   const supabase = await createClient()
@@ -41,6 +43,21 @@ export default async function ApprovalsPage() {
     return (
       <div className="p-10 flex flex-col items-center justify-center h-full text-center">
         <p className="text-app-muted">You do not belong to any active workspace.</p>
+      </div>
+    )
+  }
+
+  // Gate: Approvals requires Enterprise tier (governance.approval_workflows)
+  const subscription = await getOrganizationSubscription(active.organization_id)
+  if (subscription.tierId !== 'enterprise') {
+    return (
+      <div className="relative z-10 max-w-3xl mx-auto px-6 py-10">
+        <FeatureGateScreen
+          featureName="Approval Workflows"
+          requiredTier="enterprise"
+          description="Formal approval and sign-off workflows for change requests, budget overruns, and scope changes. Available on the Enterprise plan."
+          canUpgrade={isAdmin}
+        />
       </div>
     )
   }

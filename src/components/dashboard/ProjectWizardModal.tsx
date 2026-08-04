@@ -91,7 +91,24 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
               </div>
               <button type="button" onClick={handleClose} disabled={isPending} className="btn-icon !border-0 !bg-transparent" aria-label="Close"><X className="h-5 w-5" /></button>
             </div>
-            {errorMsg && <div className="flex items-start gap-3 p-4 mt-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm"><ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" /><span>{errorMsg}</span></div>}
+            {errorMsg && (
+              <div className="flex items-start justify-between gap-3 p-4 mt-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">
+                <div className="flex items-start gap-2">
+                  <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+                  <span>{errorMsg}</span>
+                </div>
+                {(errorMsg.toLowerCase().includes('limit') || errorMsg.toLowerCase().includes('project') || errorMsg.toLowerCase().includes('plan') || errorMsg.toLowerCase().includes('tier')) && (
+                  <button
+                    type="button"
+                    onClick={() => window.open('/dashboard', '_self')}
+                    style={{ cursor: 'pointer' }}
+                    className="shrink-0 px-3 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs rounded-lg shadow hover:opacity-95 transition-all"
+                  >
+                    Upgrade Plan ↗
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">

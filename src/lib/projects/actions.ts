@@ -5,9 +5,10 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { projectSchema } from '@/lib/validations/projects'
 import { logProjectActivity } from './activity-actions'
+import { checkUsageLimit } from '@/lib/organizations/tier-logic'
 
-export type ActionResponse = { ok: true } | { ok: false; error: string }
-export type CreateProjectResult = { ok: true; id: string } | { ok: false; error: string }
+export type ActionResponse = { ok: true } | { ok: false; error: string; reason?: string; requiredTier?: string; limitKey?: string; maxLimit?: number }
+export type CreateProjectResult = { ok: true; id: string } | { ok: false; error: string; reason?: string; requiredTier?: string; limitKey?: string; maxLimit?: number }
 
 // Helper function to check if the user is authorized to manage/edit/delete/archive
 async function getProjectAuthorization(projectId: string, userId: string) {
@@ -102,6 +103,18 @@ export async function createProject(
 
   if (!isAdminOrPM) {
     return { ok: false, error: 'Unauthorized: Only Owners, Admins, and PMs can initiate projects.' }
+  }
+
+  const limitCheck = await checkUsageLimit(organizationId, 'max_active_projects')
+  if (!limitCheck.allowed) {
+    return {
+      ok: false,
+      error: `Active projects limit reached (${limitCheck.maxLimit}). Upgrade your plan to unlock unlimited active projects.`,
+      reason: 'USAGE_LIMIT_EXCEEDED',
+      requiredTier: limitCheck.requiredTier,
+      limitKey: 'max_active_projects',
+      maxLimit: limitCheck.maxLimit,
+    }
   }
 
   const { data: project, error } = await supabase
@@ -242,6 +255,18 @@ export async function restoreProject(projectId: string): Promise<ActionResponse>
 
   if (!canRestore) {
     return { ok: false, error: 'Unauthorized: Only Owners, Admins, or the Project Creator can restore this project.' }
+  }
+
+  const limitCheck = await checkUsageLimit(authState.orgId, 'max_active_projects')
+  if (!limitCheck.allowed) {
+    return {
+      ok: false,
+      error: `Active projects limit reached (${limitCheck.maxLimit}). Upgrade your plan before restoring this project.`,
+      reason: 'USAGE_LIMIT_EXCEEDED',
+      requiredTier: limitCheck.requiredTier,
+      limitKey: 'max_active_projects',
+      maxLimit: limitCheck.maxLimit,
+    }
   }
 
   const { error } = await supabase
