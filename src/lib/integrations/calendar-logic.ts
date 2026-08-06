@@ -25,9 +25,11 @@ export function generateGoogleAuthUrl(state?: string) {
   })
 }
 
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
+
 // Push milestones to Google Calendar
-export async function syncMilestonesToGoogleCalendar(connectionId: string, projectId: string) {
-  const supabase = await createClient()
+export async function syncMilestonesToGoogleCalendar(connectionId: string, projectId: string, supabaseClient?: SupabaseServerClient) {
+  const supabase = supabaseClient || await createClient()
 
   // 1. Get the calendar connection
   const { data: connection, error: connError } = await supabase

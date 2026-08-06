@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { syncMilestonesToGoogleCalendar } from '@/lib/integrations/calendar-logic'
 import { createClient } from '@/utils/supabase/server'
 
+import { createClient as createAdminClient } from '@supabase/supabase-js'
+
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
@@ -18,10 +20,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase = await createClient()
+  // Use Service Role Key to bypass RLS since cron jobs have no user session
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   // Find all active calendar connections
-  const { data: connections, error } = await supabase
+  const { data: connections, error } = await supabaseAdmin
     .from('calendar_connections')
     .select('*')
 
@@ -39,7 +45,7 @@ export async function GET(request: Request) {
 
     if (conn.provider === 'google') {
       for (const projectId of conn.synced_project_ids) {
-        const result = await syncMilestonesToGoogleCalendar(conn.id, projectId)
+        const result = await syncMilestonesToGoogleCalendar(conn.id, projectId, supabaseAdmin)
         results.push({ connectionId: conn.id, projectId, result })
       }
     }
