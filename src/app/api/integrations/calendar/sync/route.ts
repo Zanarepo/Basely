@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   // Use Service Role Key to bypass RLS if it's the automated cron job
   // Otherwise use the regular user client (which safely enforces RLS)
   const activeClient = isAdminCron 
-    ? createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+    ? createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!)
     : supabase
 
   // Find active calendar connections (Cron sees all, User only sees their own)
