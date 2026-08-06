@@ -11,23 +11,30 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
 
+  let isAdminCron = false
+  const supabase = await createClient()
   const cronSecret = process.env.CRON_SECRET
 
-  if (
-    !cronSecret ||
-    (authHeader !== `Bearer ${cronSecret}` && token !== cronSecret)
-  ) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (cronSecret && (authHeader === `Bearer ${cronSecret}` || token === cronSecret)) {
+    isAdminCron = true
   }
 
-  // Use Service Role Key to bypass RLS since cron jobs have no user session
-  const supabaseAdmin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  // If not a cron job, verify they have a valid user session
+  if (!isAdminCron) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+  }
 
-  // Find all active calendar connections
-  const { data: connections, error } = await supabaseAdmin
+  // Use Service Role Key to bypass RLS if it's the automated cron job
+  // Otherwise use the regular user client (which safely enforces RLS)
+  const activeClient = isAdminCron 
+    ? createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+    : supabase
+
+  // Find active calendar connections (Cron sees all, User only sees their own)
+  const { data: connections, error } = await activeClient
     .from('calendar_connections')
     .select('*')
 
@@ -45,7 +52,7 @@ export async function GET(request: Request) {
 
     if (conn.provider === 'google') {
       for (const projectId of conn.synced_project_ids) {
-        const result = await syncMilestonesToGoogleCalendar(conn.id, projectId, supabaseAdmin)
+        const result = await syncMilestonesToGoogleCalendar(conn.id, projectId, activeClient)
         results.push({ connectionId: conn.id, projectId, result })
       }
     }
