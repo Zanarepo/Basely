@@ -108,3 +108,31 @@ export async function toggleProjectArchiveStatus(
   revalidatePath(`/backoffice/tenants/${organizationId}`)
   return { success: true }
 }
+
+export async function getTenantBillingDetailsAction(organizationId: string) {
+  const supabase = createAdminClient()
+
+  // 1. Get Org & Sub
+  const { data: org } = await supabase.from('organizations').select('*').eq('id', organizationId).single()
+  const { data: sub } = await supabase.from('organization_subscriptions').select('*').eq('organization_id', organizationId).single()
+  
+  // 2. Get Members Count
+  const { count: membersCount } = await supabase
+    .from('organization_members')
+    .select('*', { count: 'exact', head: true })
+    .eq('organization_id', organizationId)
+
+  // 3. Get Overrides (Billing history proxy for now)
+  const { data: overrides } = await supabase
+    .from('tenant_overrides_log')
+    .select('*, internal_staff(email)')
+    .eq('organization_id', organizationId)
+    .order('created_at', { ascending: false })
+
+  return {
+    org,
+    sub,
+    membersCount: membersCount || 0,
+    overrides: overrides || []
+  }
+}

@@ -8,6 +8,7 @@ import { GlobalSearchOverlay } from './GlobalSearchOverlay'
 import { Menu, Search, LayoutDashboard } from 'lucide-react'
 import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
 import { DowngradeBanner, UpgradePromptModal } from './billing'
+import { PromoBanner } from './billing/PromoBanner'
 
 type DashboardShellProps = {
   workspaces: Workspace[]
@@ -77,7 +78,8 @@ export function DashboardShell({
             </button>
           </header>
 
-          <main className="relative flex-1 min-w-0 overflow-auto">
+          <main className="relative flex-1 min-w-0 overflow-auto flex flex-col">
+            {activeWorkspace?.id && <PromoBanner organizationId={activeWorkspace.id} />}
             <DowngradeBanner
               isTrialing={isTrialing}
               daysRemaining={daysRemaining}
@@ -86,7 +88,9 @@ export function DashboardShell({
               canUpgrade={activeWorkspace?.isOwner || activeWorkspace?.role === 'Admin'}
               onOpenUpgrade={() => setUpgradeModalOpen(true)}
             />
-            {children}
+            <div className="flex-1 overflow-auto">
+              {children}
+            </div>
           </main>
         </div>
         

@@ -68,8 +68,7 @@ function LoginForm() {
       if (error) {
         setErrorMsg(error.message)
       } else if (data?.user) {
-        router.refresh()
-        router.push(safeNext)
+        window.location.href = safeNext
       }
     } catch {
       setErrorMsg('An unexpected error occurred. Please try again.')

@@ -13,6 +13,7 @@ import { ApprovalPoliciesPanel } from './ApprovalPoliciesPanel'
 import { GovernanceAuditLogPanel } from './GovernanceAuditLogPanel'
 import { AiGovernancePanel } from './AiGovernancePanel'
 import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
+import { useWorkspace } from '@/components/dashboard/WorkspaceContext'
 import { FeatureGateScreen } from '@/components/dashboard/billing'
 
 type Tab = 'members' | 'invite' | 'governance' | 'profile'
@@ -81,8 +82,12 @@ export function TeamPageTabs({
   profileEmail,
 }: TeamPageTabsProps) {
   const [activeTab, setActiveTab] = useState<Tab>('members')
-  const { tier } = useWorkspaceTier(organizationId)
+  const { activeWorkspace } = useWorkspace()
+  const { tier, features } = useWorkspaceTier(activeWorkspace?.id ?? organizationId)
   const isEnterprise = tier === 'enterprise'
+  
+  // Use dynamic feature flag if available, fallback to tier check
+  const isGovernanceEnabled = features['security.governance'] ?? isEnterprise
   const canUpgradeGovernance = isAdmin // only admins can upgrade
 
   const visibleTabs = TABS.filter((t) => {
@@ -191,7 +196,7 @@ export function TeamPageTabs({
             role="tabpanel"
             className="animate-fade-in space-y-6"
           >
-            {isEnterprise ? (
+            {isGovernanceEnabled ? (
               <>
                 <AiGovernancePanel organizationId={organizationId} />
                 <ApprovalPoliciesPanel

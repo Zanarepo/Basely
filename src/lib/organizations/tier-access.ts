@@ -4,6 +4,57 @@ import { FEATURE_TO_MIN_TIER, LEGACY_FEATURE_MAP, TIER_HIERARCHY, USAGE_LIMITS }
 import { getOrganizationSubscription } from './tier-core'
 
 // ============================================================================
+// DYNAMIC TIER SETTINGS CACHE
+// ============================================================================
+let featureMapCache: Record<string, Record<string, boolean>> | null = null
+let limitsCache: Record<string, Record<string, number>> | null = null
+let cacheExpiresAt = 0
+const CACHE_TTL = 60 * 1000 // 60 seconds
+
+export function invalidateTierSettingsCache() {
+  featureMapCache = null
+  limitsCache = null
+  cacheExpiresAt = 0
+}
+
+async function fetchTierSettings() {
+  if (featureMapCache && limitsCache && Date.now() < cacheExpiresAt) {
+    return { features: featureMapCache, limits: limitsCache }
+  }
+
+  const supabase = createAdminClient()
+  const [featuresRes, limitsRes] = await Promise.all([
+    supabase.from('tier_feature_map').select('tier_id, feature_key, enabled'),
+    supabase.from('tier_usage_limits').select('tier_id, max_seats, max_active_projects, max_workspaces')
+  ])
+
+  const newFeatures: Record<string, Record<string, boolean>> = {}
+  if (featuresRes.data) {
+    for (const row of featuresRes.data) {
+      if (!newFeatures[row.tier_id]) newFeatures[row.tier_id] = {}
+      newFeatures[row.tier_id][row.feature_key] = row.enabled
+    }
+  }
+
+  const newLimits: Record<string, Record<string, number>> = {}
+  if (limitsRes.data) {
+    for (const row of limitsRes.data) {
+      newLimits[row.tier_id] = {
+        max_seats: row.max_seats,
+        max_active_projects: row.max_active_projects,
+        max_workspaces: row.max_workspaces
+      }
+    }
+  }
+
+  featureMapCache = newFeatures
+  limitsCache = newLimits
+  cacheExpiresAt = Date.now() + CACHE_TTL
+
+  return { features: newFeatures, limits: newLimits }
+}
+
+// ============================================================================
 // FEATURE-GATE ENFORCEMENT ENGINE
 // ============================================================================
 export async function checkFeatureAccess(
@@ -13,15 +64,15 @@ export async function checkFeatureAccess(
   const featureKey = LEGACY_FEATURE_MAP[rawFeatureKey] || rawFeatureKey
   const sub = await getOrganizationSubscription(organizationId)
   
-  const minRequiredTier = FEATURE_TO_MIN_TIER[featureKey] || 'premium'
+  const { features } = await fetchTierSettings()
   
-  const currentLevel = TIER_HIERARCHY[sub.tierId] || 1
-  const requiredLevel = TIER_HIERARCHY[minRequiredTier] || 2
+  const tierFeatures = features[sub.tierId] || {}
+  const isEnabled = tierFeatures[featureKey] ?? (sub.tierId === 'enterprise' || sub.tierId === 'premium')
   
-  if (currentLevel >= requiredLevel) {
+  if (isEnabled) {
     return {
       allowed: true,
-      requiredTier: minRequiredTier,
+      requiredTier: 'premium',
       featureKey,
       currentTier: sub.tierId,
       isTrialing: sub.status === 'trialing',
@@ -30,12 +81,29 @@ export async function checkFeatureAccess(
 
   return {
     allowed: false,
-    requiredTier: minRequiredTier,
+    requiredTier: 'premium',
     featureKey,
     reason: 'FEATURE_GATED',
     currentTier: sub.tierId,
     isTrialing: sub.status === 'trialing',
   }
+}
+
+export async function getOrganizationFeatures(organizationId: string): Promise<Record<string, boolean>> {
+  const sub = await getOrganizationSubscription(organizationId)
+  const { features } = await fetchTierSettings()
+  const tierFeatures = features[sub.tierId] || {}
+  
+  // Return a proxy or just the object so we can check features easily
+  // If a feature isn't found in the DB, fallback to true if premium/enterprise, false if free
+  return new Proxy(tierFeatures, {
+    get: (target, prop) => {
+      if (typeof prop !== 'string') return target[prop as any]
+      const key = LEGACY_FEATURE_MAP[prop] || prop
+      if (key in target) return target[key]
+      return sub.tierId === 'enterprise' || sub.tierId === 'premium'
+    }
+  })
 }
 
 export async function checkProjectFeatureAccess(
@@ -73,8 +141,10 @@ export async function checkUsageLimit(
   const limitKey = (rawLimitKey === 'seats' ? 'max_seats' : rawLimitKey === 'active_projects' ? 'max_active_projects' : rawLimitKey) as 'max_seats' | 'max_active_projects'
   
   const sub = await getOrganizationSubscription(organizationId)
-  const limits = USAGE_LIMITS[sub.tierId] || USAGE_LIMITS['free']
-  const maxLimit = limits[limitKey] ?? -1
+  const { limits } = await fetchTierSettings()
+  
+  const tierLimits = limits[sub.tierId] || limits['free'] || {}
+  const maxLimit = tierLimits[limitKey] ?? -1
 
   // -1 means unlimited
   if (maxLimit === -1) {

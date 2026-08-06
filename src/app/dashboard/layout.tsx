@@ -19,11 +19,26 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  const cookieStore = await cookies()
+  const impCookie = cookieStore.get('zn_impersonation')
+  let effectiveUserId = user.id
+
+  if (impCookie) {
+    try {
+      const impData = JSON.parse(Buffer.from(impCookie.value, 'base64').toString('utf-8'))
+      if (impData.targetUserId) {
+        effectiveUserId = impData.targetUserId
+      }
+    } catch (e) {
+      console.error('Failed to parse impersonation cookie in layout', e)
+    }
+  }
+
   // Phase 1: base membership query — always works (no new columns)
   const { data: memberships } = await supabase
     .from('organization_members')
     .select('organization_id, role, organizations(id, name, owner_id)')
-    .eq('user_id', user.id)
+    .eq('user_id', effectiveUserId)
 
   if (!memberships?.length) {
     redirect('/onboarding')
@@ -34,7 +49,7 @@ export default async function DashboardLayout({
   const { data: activeFlags } = await supabase
     .from('organization_members')
     .select('organization_id, is_active')
-    .eq('user_id', user.id)
+    .eq('user_id', effectiveUserId)
   // Build a lookup: orgId → isActive (defaults to true if column is missing)
   const activeFlagMap: Record<string, boolean> = {}
   for (const row of (activeFlags ?? [])) {
@@ -53,12 +68,11 @@ export default async function DashboardLayout({
       id: m.organization_id,
       name: org?.name ?? 'Workspace',
       role: m.role,
-      isOwner: org?.owner_id === user.id,
+      isOwner: org?.owner_id === effectiveUserId,
       isActive: activeFlagMap[m.organization_id] ?? true,
     }
   })
 
-  const cookieStore = await cookies()
   const cookieOrgId = cookieStore.get(ACTIVE_ORG_COOKIE)?.value
   const activeWorkspace =
     workspaces.find((w) => w.id === cookieOrgId) ??

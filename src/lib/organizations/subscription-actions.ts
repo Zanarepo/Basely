@@ -11,12 +11,15 @@ import {
   enforceDowngradeLocks,
   checkWorkspaceLockStatus,
 } from './tier-logic'
+import { getOrganizationFeatures } from './tier-access'
 import { PaystackAdapter } from '@/lib/payments/paystack-adapter'
+import { validatePromoCode, applyPromoUsage } from '@/lib/payments/promo-validation'
 
-export async function getWorkspaceSubscriptionAction(organizationId: string): Promise<{ ok: boolean; subscription?: OrgSubscriptionInfo; error?: string }> {
+export async function getWorkspaceSubscriptionAction(organizationId: string): Promise<{ ok: boolean; subscription?: OrgSubscriptionInfo; features?: Record<string, boolean>; error?: string }> {
   try {
     const sub = await getOrganizationSubscription(organizationId)
-    return { ok: true, subscription: sub }
+    const features = await getOrganizationFeatures(organizationId)
+    return { ok: true, subscription: sub, features }
   } catch (err: any) {
     return { ok: false, error: err?.message || 'Failed to fetch subscription' }
   }
@@ -94,7 +97,8 @@ export async function createCheckoutSessionAction(
   tierId: TierId,
   amount: number,
   currency: string,
-  isAutoRenew: boolean
+  isAutoRenew: boolean,
+  promoCode?: string
 ): Promise<{ ok: boolean; url?: string; error?: string }> {
   try {
     const supabase = await createClient()
@@ -108,12 +112,32 @@ export async function createCheckoutSessionAction(
       .eq('id', organizationId)
       .single()
 
+    let finalAmount = amount
+    
+    if (promoCode) {
+      const promoCheck = await validatePromoCode(promoCode, organizationId)
+      if (!promoCheck.valid || !promoCheck.promo) {
+        return { ok: false, error: promoCheck.message || 'Invalid promo code.' }
+      }
+      
+      const promo = promoCheck.promo
+      if (promo.discount_type === 'percentage') {
+        finalAmount = Math.max(0, finalAmount * (1 - promo.discount_value / 100))
+      } else if (promo.discount_type === 'fixed_amount') {
+        finalAmount = Math.max(0, finalAmount - promo.discount_value)
+      }
+      
+      // We asynchronously record the usage. In a highly strict system, we'd only increment after payment succeeds (via webhook).
+      // For this demo, we can just increment it here or leave it for the webhook.
+      await applyPromoUsage(promo.id)
+    }
+
     const adapter = new PaystackAdapter()
     const res = await adapter.initializeTransaction({
       organizationId,
       orgName: org?.name || 'Workspace',
       tierId,
-      amount,
+      amount: finalAmount,
       currency,
       customerEmail: user.email || 'customer@basely.com',
       autoRenew: isAutoRenew

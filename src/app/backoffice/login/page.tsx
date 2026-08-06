@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
@@ -13,37 +13,6 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const nextPath = searchParams.get('next')
-  
-  useEffect(() => {
-    const supabase = createClient()
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        setLoading(true)
-        // Verify they are staff
-        supabase
-          .from('internal_staff')
-          .select('role')
-          .eq('auth_user_id', session.user.id)
-          .single()
-          .then(({ data, error }) => {
-            if (error || !data) {
-              supabase.auth.signOut().then(() => {
-                setError('Access Denied: You do not have platform administration privileges.')
-                setLoading(false)
-              })
-            } else {
-              if (nextPath) {
-                window.location.href = nextPath
-              } else {
-                router.push('/backoffice')
-                router.refresh()
-              }
-            }
-          })
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,8 +50,7 @@ function LoginForm() {
     if (nextPath) {
       window.location.href = nextPath
     } else {
-      router.push('/backoffice')
-      router.refresh()
+      window.location.href = '/backoffice'
     }
   }
 

@@ -5,6 +5,7 @@ import type { TierId } from '@/lib/organizations/tier-logic'
 import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
 import { calculatePppPrice, formatCurrency, RegionalPricing } from '@/lib/pricing/ppp-engine'
 import { createCheckoutSessionAction } from '@/lib/organizations/subscription-actions'
+import { validatePromoCode, type PromoValidationResult } from '@/lib/payments/promo-validation'
 
 interface BillingDashboardProps {
   organizationId: string
@@ -21,6 +22,11 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
   const [countryCode, setCountryCode] = useState('US')
   const [isLoadingPricing, setIsLoadingPricing] = useState(true)
   const [isCheckoutLoading, setIsCheckoutLoading] = useState<TierId | null>(null)
+  
+  // Promo State
+  const [promoInput, setPromoInput] = useState('')
+  const [appliedPromo, setAppliedPromo] = useState<PromoValidationResult | null>(null)
+  const [isVerifyingPromo, setIsVerifyingPromo] = useState(false)
 
   useEffect(() => {
     // Restore billing cycle preference
@@ -62,6 +68,19 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
       .finally(() => setIsLoadingPricing(false))
   }, [])
 
+  const handleApplyPromo = async () => {
+    if (!promoInput.trim()) return
+    setIsVerifyingPromo(true)
+    const result = await validatePromoCode(promoInput.trim(), organizationId)
+    setAppliedPromo(result)
+    setIsVerifyingPromo(false)
+  }
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null)
+    setPromoInput('')
+  }
+
   const handleCheckout = async (targetTier: TierId) => {
     setIsCheckoutLoading(targetTier)
     if (targetTier === 'free') {
@@ -79,7 +98,8 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
       targetTier,
       priceInfo.finalAmount,
       priceInfo.currency,
-      isAutoRenew
+      isAutoRenew,
+      appliedPromo?.valid && appliedPromo.promo ? appliedPromo.promo.code : undefined
     )
     
     if (res.ok && res.url) {
@@ -165,6 +185,51 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
         </div>
       </div>
 
+      {/* Promo Code Section */}
+      <div className="bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/5 rounded-xl p-4 mb-6 relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Promo Code</h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Have a discount code? Apply it here.</p>
+        </div>
+        <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <input
+              type="text"
+              value={promoInput}
+              onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+              disabled={!!appliedPromo?.valid}
+              placeholder="e.g. SUMMER50"
+              className="bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-48"
+            />
+            {appliedPromo?.valid ? (
+              <button
+                onClick={handleRemovePromo}
+                className="px-3 py-1.5 bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm font-bold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              >
+                Remove
+              </button>
+            ) : (
+              <button
+                onClick={handleApplyPromo}
+                disabled={!promoInput.trim() || isVerifyingPromo}
+                className="px-3 py-1.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {isVerifyingPromo ? '...' : 'Apply'}
+              </button>
+            )}
+          </div>
+          {appliedPromo && (
+            <div className={`text-xs font-bold ${appliedPromo.valid ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+              {appliedPromo.valid ? (
+                <>✓ Promo Applied: {appliedPromo.promo?.discount_type === 'percentage' ? `${appliedPromo.promo?.discount_value}%` : `$${appliedPromo.promo?.discount_value}`} OFF</>
+              ) : (
+                <>✕ {appliedPromo.message}</>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
       <hr className="border-gray-200 dark:border-white/10 my-4 relative z-10" />
 
       {/* Interactive controls: hover-revealed action buttons */}
@@ -174,8 +239,18 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
             const isSelected = tier === t.id && (!isExpired || t.id === 'free')
             
             // Calculate localized price
-            const priceInfo = calculatePppPrice(basePrices[t.id], countryCode)
+            const baseInfo = calculatePppPrice(basePrices[t.id], countryCode)
             
+            // Apply Promo if valid
+            let finalPrice = baseInfo.finalAmount
+            if (appliedPromo?.valid && appliedPromo.promo) {
+              if (appliedPromo.promo.discount_type === 'percentage') {
+                finalPrice = Math.max(0, finalPrice * (1 - appliedPromo.promo.discount_value / 100))
+              } else {
+                finalPrice = Math.max(0, finalPrice - appliedPromo.promo.discount_value)
+              }
+            }
+
             return (
               <div
                 key={t.id}
@@ -194,19 +269,31 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
                   {/* Pricing Display */}
                   <div className="mb-3">
                     {t.id === 'free' ? (
-                      <span className="text-2xl font-black text-gray-900 dark:text-white">{formatCurrency(0, priceInfo.currency)}<span className="text-xs text-gray-500 dark:text-gray-400 font-normal">/seat</span></span>
+                      <span className="text-2xl font-black text-gray-900 dark:text-white">{formatCurrency(0, baseInfo.currency)}<span className="text-xs text-gray-500 dark:text-gray-400 font-normal">/seat</span></span>
                     ) : isLoadingPricing ? (
                       <span className="text-sm text-gray-400 animate-pulse">Calculating local price...</span>
                     ) : (
                       <div>
-                        <div className="flex items-end gap-1">
-                          <span className="text-2xl font-black text-gray-900 dark:text-white">{formatCurrency(priceInfo.finalAmount, priceInfo.currency)}</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 font-normal mb-1">/seat</span>
-                        </div>
-                        {priceInfo.discountPercentage > 0 && (
+                        {appliedPromo?.valid ? (
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-sm font-medium text-gray-400 dark:text-gray-500 line-through">
+                              {formatCurrency(baseInfo.finalAmount, baseInfo.currency)}
+                            </span>
+                            <div className="flex items-end gap-1">
+                              <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{formatCurrency(finalPrice, baseInfo.currency)}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400 font-normal mb-1">/seat</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-end gap-1">
+                            <span className="text-2xl font-black text-gray-900 dark:text-white">{formatCurrency(finalPrice, baseInfo.currency)}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 font-normal mb-1">/seat</span>
+                          </div>
+                        )}
+                        {baseInfo.discountPercentage > 0 && (
                           <div className="mt-1">
                             <span className="inline-block bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/30">
-                              {priceInfo.discountPercentage}% Regional Discount applied!
+                              {baseInfo.discountPercentage}% Regional Discount applied!
                             </span>
                           </div>
                         )}

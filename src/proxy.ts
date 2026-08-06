@@ -32,7 +32,15 @@ export async function proxy(request: NextRequest) {
   // or switch accounts). Those pages handle the active-session UI client-side.
 
   // 3. If user is logged in, check organization membership
-  if (isDashboardRoute || isOnboardingRoute) {
+  const isImpersonating = request.cookies.has('zn_impersonation')
+
+  if (isImpersonating) {
+    // If impersonating, bypass membership check and go straight to dashboard
+    if (isOnboardingRoute) {
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+  } else if (isDashboardRoute || isOnboardingRoute) {
     const { data: memberships } = await supabase
       .from('organization_members')
       .select('organization_id, is_active')

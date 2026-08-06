@@ -65,6 +65,7 @@ type ProjectsDashboardProps = {
   callerCanManageAll: boolean
   businessCases: BusinessCase[]
   feasibilityStudies: FeasibilityStudy[]
+  orgFeatures: Record<string, boolean>
 }
 
 let toastCounter = 0
@@ -76,8 +77,10 @@ export function ProjectsDashboard({
   callerUserId,
   isOwner,
   callerRole,
+  callerCanManageAll,
   businessCases,
-  feasibilityStudies
+  feasibilityStudies,
+  orgFeatures,
 }: ProjectsDashboardProps) {
   const { activeWorkspace } = useWorkspace()
   const { tier, subscription, switchPlan } = useWorkspaceTier(organizationId)
@@ -353,7 +356,7 @@ export function ProjectsDashboard({
       </div>
 
       {viewMode === 'initiation' ? (
-        tier === 'free' ? (
+        !orgFeatures['foundation.workspace'] ? (
           <FeatureGateScreen
             featureName="Initiation & Business Cases"
             description="Manage business cases, feasibility studies and project ideation before full project kick-off. Available on the Premium plan."
@@ -371,7 +374,7 @@ export function ProjectsDashboard({
           />
         )
       ) : viewMode === 'portfolio' ? (
-        tier === 'free' ? (
+        !orgFeatures['reporting.analytics'] ? (
           <FeatureGateScreen
             featureName="Portfolio Health"
             description="Aggregate EVM metrics, budget burn, schedule variance and risk heatmaps across all your projects. Available on the Premium plan."

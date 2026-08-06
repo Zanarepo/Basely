@@ -12,6 +12,9 @@ import {
   ChevronUp,
   ArrowLeft,
   X,
+  Layers,
+  Tag,
+  CreditCard,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createClient } from '@/utils/supabase/client'
@@ -49,6 +52,9 @@ export function BackofficeSidebar({ staffEmail, staffRole, mobileOpen = false, o
     { href: '/backoffice', label: 'Platform Metrics', icon: BarChart3, exact: true },
     { href: '/backoffice/tenants', label: 'Tenant Directory', icon: Building2, exact: false },
     { href: '/backoffice/staff', label: 'Staff Directory', icon: Shield, exact: false },
+    { href: '/backoffice/plans', label: 'Plans & Features', icon: Layers, exact: false },
+    { href: '/backoffice/promos', label: 'Promos & Coupons', icon: Tag, exact: false },
+    { href: '/backoffice/subscriptions', label: 'Subscriptions & Payments', icon: CreditCard, exact: false },
   ]
 
   const roleLabel = staffRole.replace(/_/g, ' ')

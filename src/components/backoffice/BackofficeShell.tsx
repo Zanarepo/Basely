@@ -5,6 +5,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { BackofficeSidebar } from './BackofficeSidebar'
 import { Menu, Search, Shield } from 'lucide-react'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
+import { BackofficeNotificationBell } from './BackofficeNotificationBell'
 
 type BackofficeShellProps = {
   staffEmail: string
@@ -50,23 +51,27 @@ export function BackofficeShell({
       />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Mobile Header Bar */}
-        <header className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 border-b border-app-border bg-app-surface-solid/95 backdrop-blur-xl md:hidden">
+        {/* Top Header Bar */}
+        <header className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 border-b border-app-border bg-app-surface-solid/95 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 -ml-2 text-app-muted hover:text-app-fg rounded-xl hover:bg-app-hover transition-colors cursor-pointer"
+              className="p-2 -ml-2 text-app-muted hover:text-app-fg rounded-xl hover:bg-app-hover transition-colors cursor-pointer md:hidden"
               aria-label="Open sidebar navigation"
             >
               <Menu className="w-6 h-6" />
             </button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 md:hidden">
               <div className="p-1.5 rounded-lg bg-linear-to-tr from-amber-600 to-orange-500 shadow-sm">
                 <Shield className="h-4 w-4 text-white" />
               </div>
               <span className="text-sm font-bold tracking-tight text-app-fg">Baseline Backoffice</span>
             </div>
+          </div>
+          
+          <div className="flex items-center gap-3 ml-auto">
+            <BackofficeNotificationBell />
           </div>
         </header>
 

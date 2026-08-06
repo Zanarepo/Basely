@@ -47,10 +47,13 @@ const GoogleChatIcon = ({ className }: { className?: string }) => (
 
 export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
   const { activeWorkspace } = useWorkspace()
-  const { tier } = useWorkspaceTier(activeWorkspace?.id)
+  const { tier, features } = useWorkspaceTier(activeWorkspace?.id)
   const isAdminOrOwner = activeWorkspace?.role === 'Admin' || activeWorkspace?.role === 'Owner'
   const isEnterprise = tier === 'enterprise'
-  const isGated = !isEnterprise  // Enterprise-only per feature schema
+  
+  // Use dynamic feature flag if available, fallback to enterprise-only logic
+  const hasIntegrations = features['integrations.advanced'] ?? isEnterprise
+  const isGated = !hasIntegrations
   const [isOpen, setIsOpen] = useState(false)
   const [selectedApp, setSelectedApp] = useState<'slack' | 'teams' | 'google_chat' | 'calendar' | 'erp' | null>(null)
   const [isSlackConfigured, setIsSlackConfigured] = useState(false)

@@ -24,6 +24,7 @@ import AdrWorkspace from '@/components/dashboard/projects/adr/AdrWorkspace'
 import SkillsMatrixTable from '@/components/dashboard/team/capacity/SkillsMatrixTable'
 import { FeatureGateScreen } from '@/components/dashboard/billing'
 import { getOrganizationSubscription } from '@/lib/organizations/tier-logic'
+import { getOrganizationFeatures } from '@/lib/organizations/tier-access'
 
 // Planning components type definition
 type ProjectPageProps = {
@@ -190,7 +191,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
   // Fetch workspace subscription tier for feature gating
   const subscription = await getOrganizationSubscription(project.organization_id)
   const tier = subscription.tierId
-  const isFree = tier === 'free'
+  const orgFeatures = await getOrganizationFeatures(project.organization_id)
   const canUpgrade = isOrgOwner || callerRole === 'Admin'
 
   return (
@@ -308,7 +309,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       )}
 
-      {activeTab === 'releases' && (isFree ? (
+      {activeTab === 'releases' && (!orgFeatures['releases.management'] ? (
         <FeatureGateScreen featureName="Releases & Iterations" description="Plan and track software iterations, release gates, and version milestones. Available on the Premium plan." canUpgrade={canUpgrade} />
       ) : (
         <ReleasesWorkspace
@@ -318,7 +319,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       ))}
 
-      {activeTab === 'cost' && canViewCost && (isFree ? (
+      {activeTab === 'cost' && canViewCost && (!orgFeatures['cost.actuals_tracking'] ? (
         <FeatureGateScreen featureName="Budget & Cost" description="Earned Value Management, resource rate configuration, and actual cost tracking. Available on the Premium plan." canUpgrade={canUpgrade} />
       ) : (
         <CostWorkspace
@@ -327,7 +328,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       ))}
 
-      {activeTab === 'stakeholders' && (isFree ? (
+      {activeTab === 'stakeholders' && (!orgFeatures['accountability.raci'] ? (
         <FeatureGateScreen featureName="Stakeholders" description="Map stakeholders, their influence, interest and communication plans. Available on the Premium plan." canUpgrade={canUpgrade} />
       ) : (
         <StakeholderWorkspace
@@ -337,7 +338,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       ))}
 
-      {activeTab === 'risks' && (isFree ? (
+      {activeTab === 'risks' && (!orgFeatures['accountability.risks'] ? (
         <FeatureGateScreen featureName="Risks & Issues" description="Identify, assess and mitigate project risks and issues with a full risk register. Available on the Premium plan." canUpgrade={canUpgrade} />
       ) : (
         <RiskRegisterWorkspace
@@ -347,7 +348,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       ))}
 
-      {activeTab === 'documents' && (isFree ? (
+      {activeTab === 'documents' && (!orgFeatures['documentation.engine'] ? (
         <FeatureGateScreen featureName="Documents" description="Live document engine, project charters, status reports, and custom templates. Available on the Premium plan." canUpgrade={canUpgrade} />
       ) : (
         <DocumentsWorkspace
@@ -358,7 +359,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       ))}
 
-      {activeTab === 'action_items' && (isFree ? (
+      {activeTab === 'action_items' && (!orgFeatures['accountability.raci'] ? (
         <FeatureGateScreen featureName="Action Items" description="Track cross-cutting action items, owners and due dates across your project team. Available on the Premium plan." canUpgrade={canUpgrade} />
       ) : (
         <div className="bg-app-bg border border-app-border rounded-xl shadow-sm h-[calc(100vh-14rem)] min-h-[600px] overflow-hidden mt-6">
@@ -378,7 +379,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       )}
 
-      {activeTab === 'raid' && (isFree ? (
+      {activeTab === 'raid' && (!orgFeatures['pm.adr_skills_raid'] ? (
         <FeatureGateScreen featureName="RAID Command Center" description="Manage Risks, Assumptions, Issues, and Dependencies in a unified command center. Available on the Premium plan." canUpgrade={canUpgrade} />
       ) : (
         <RaidWorkspace
@@ -388,7 +389,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       ))}
 
-      {activeTab === 'adr' && (isFree ? (
+      {activeTab === 'adr' && (!orgFeatures['pm.adr_skills_raid'] ? (
         <FeatureGateScreen featureName="Architecture Decisions (ADR)" description="Document and track Architecture Decision Records to preserve your team's decision-making history. Available on the Premium plan." canUpgrade={canUpgrade} />
       ) : (
         <AdrWorkspace
@@ -398,7 +399,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       ))}
 
-      {activeTab === 'capacity' && (isFree ? (
+      {activeTab === 'capacity' && (!orgFeatures['pm.adr_skills_raid'] ? (
         <FeatureGateScreen featureName="Skills & Capacity Matrix" description="Visualise your team's skills and available capacity across the project lifecycle. Available on the Premium plan." canUpgrade={canUpgrade} />
       ) : (
         <SkillsMatrixTable

@@ -8,6 +8,7 @@ export function useWorkspaceTier(organizationId?: string) {
   const [subscription, setSubscription] = useState<OrgSubscriptionInfo | null>(null)
   const [isWorkspaceLocked, setIsWorkspaceLocked] = useState(false)
   const [workspaceLockReason, setWorkspaceLockReason] = useState<string | undefined>(undefined)
+  const [features, setFeatures] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updating, setUpdating] = useState(false)
@@ -24,6 +25,7 @@ export function useWorkspaceTier(organizationId?: string) {
     ])
     if (res.ok && res.subscription) {
       setSubscription(res.subscription)
+      setFeatures(res.features || {})
       setError(null)
     } else {
       setError(res.error || 'Could not load subscription')
@@ -66,6 +68,7 @@ export function useWorkspaceTier(organizationId?: string) {
     isWorkspaceLocked,
     workspaceLockReason,
     daysRemaining,
+    features,
     loading,
     updating,
     error,

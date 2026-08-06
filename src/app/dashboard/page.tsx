@@ -4,6 +4,7 @@ import { ACTIVE_ORG_COOKIE } from '@/lib/workspace/constants'
 import { LayoutDashboard } from 'lucide-react'
 import { ProjectsDashboard } from '@/components/dashboard/ProjectsDashboard'
 import { getBusinessCases, getFeasibilityStudies } from '@/lib/initiation/actions'
+import { getOrganizationFeatures } from '@/lib/organizations/tier-access'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -13,13 +14,27 @@ export default async function DashboardPage() {
 
   if (!user) return null
 
+  const cookieStore = await cookies()
+  const impCookie = cookieStore.get('zn_impersonation')
+  let effectiveUserId = user.id
+
+  if (impCookie) {
+    try {
+      const impData = JSON.parse(Buffer.from(impCookie.value, 'base64').toString('utf-8'))
+      if (impData.targetUserId) {
+        effectiveUserId = impData.targetUserId
+      }
+    } catch (e) {
+      console.error('Failed to parse impersonation cookie in page', e)
+    }
+  }
+
   // 1️⃣ Find the organization the current user belongs to
   const { data: memberships } = await supabase
     .from('organization_members')
     .select('role, organization_id, can_manage_all_members, organizations(name, owner_id)')
-    .eq('user_id', user.id)
+    .eq('user_id', effectiveUserId)
 
-  const cookieStore = await cookies()
   const cookieOrgId = cookieStore.get(ACTIVE_ORG_COOKIE)?.value
   const active =
     memberships?.find((m) => m.organization_id === cookieOrgId) ??
@@ -34,7 +49,7 @@ export default async function DashboardPage() {
       ? (orgObj as { name: string; owner_id: string })
       : null
   const orgName = organization?.name ?? 'Your workspace'
-  const isOwner = organization?.owner_id === user.id
+  const isOwner = organization?.owner_id === effectiveUserId
   const isAdminOrPM = isOwner || active?.role === 'Admin' || active?.role === 'PM'
 
   // 2️⃣ Fetch all workspace projects (with fallback if is_locked migration hasn't run yet)
@@ -115,6 +130,8 @@ export default async function DashboardPage() {
   const businessCases = await getBusinessCases(active.organization_id)
   const feasibilityStudies = await getFeasibilityStudies(active.organization_id)
 
+  const orgFeatures = await getOrganizationFeatures(active.organization_id)
+
   return (
     <div className="relative z-10 max-w-4xl mx-auto px-6 py-10">
       <div className="flex items-center gap-3 mb-8">
@@ -133,12 +150,13 @@ export default async function DashboardPage() {
         organizationId={active.organization_id}
         projects={projects}
         workspaceMembers={workspaceMembers}
-        callerUserId={user.id}
+        callerUserId={effectiveUserId}
         isOwner={isOwner}
         callerRole={active.role}
         callerCanManageAll={active.can_manage_all_members === true}
         businessCases={businessCases}
         feasibilityStudies={feasibilityStudies}
+        orgFeatures={orgFeatures}
       />
     </div>
   )
