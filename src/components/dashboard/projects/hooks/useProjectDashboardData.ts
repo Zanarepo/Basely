@@ -83,9 +83,11 @@ export function useProjectDashboardData(projectId: string) {
         .from('projects')
         .select('id, name, client_name, description, methodology, currency, start_date, end_date')
         .eq('id', projectId)
-        .single()
+        .maybeSingle()
 
       if (projErr) throw projErr
+      if (!projData) throw new Error('Project not found or access denied')
+      
       setProject(projData)
 
       // 2. Fetch all schedule activities & baselines & active release

@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { ACTIVE_ORG_COOKIE } from './constants'
+import { createAdminClient } from '@/utils/supabase/admin'
 
 export async function setActiveWorkspace(organizationId: string) {
   const cookieStore = await cookies()
@@ -61,17 +62,35 @@ export async function deleteWorkspace(organizationId: string): Promise<{ ok: boo
     .eq('user_id', user.id)
     .neq('organization_id', organizationId)
 
-  // 3. Delete the organization (dependent tables will cascade delete)
-  const { error: deleteError } = await supabase
-    .from('organizations')
-    .delete()
-    .eq('id', organizationId)
+  const adminClient = createAdminClient()
+  const gracePeriodEnd = new Date()
+  gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 30)
 
-  if (deleteError) {
-    return { ok: false, error: deleteError.message }
+  // 3. Schedule the deletion (NDPA/GDPR 30-day grace period)
+  const { error: deletionReqError } = await adminClient
+    .from('deletion_requests')
+    .insert({
+      organization_id: organizationId,
+      requested_by: user.id,
+      grace_period_ends_at: gracePeriodEnd.toISOString(),
+      status: 'pending'
+    })
+
+  if (deletionReqError) {
+    return { ok: false, error: deletionReqError.message }
   }
 
-  // 4. Update the active workspace cookie
+  // 4. Soft-delete by removing all members so the workspace is immediately inaccessible
+  const { error: memberDeleteError } = await adminClient
+    .from('organization_members')
+    .delete()
+    .eq('organization_id', organizationId)
+
+  if (memberDeleteError) {
+    return { ok: false, error: memberDeleteError.message }
+  }
+
+  // 5. Update the active workspace cookie
   if (memberships && memberships.length > 0) {
     cookieStore.set(ACTIVE_ORG_COOKIE, memberships[0].organization_id, {
       path: '/',

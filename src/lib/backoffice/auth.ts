@@ -45,3 +45,12 @@ export async function requireStaffWriteAccess(): Promise<StaffSession> {
   }
   return staff
 }
+
+// Announcements check: only superadmin and support_senior
+export async function requireAnnouncementAccess(): Promise<StaffSession> {
+  const staff = await getStaffSession()
+  if (!staff || (staff.role !== 'superadmin' && staff.role !== 'support_senior')) {
+    throw new Error('Unauthorized: You do not have permission to manage global system announcements')
+  }
+  return staff
+}

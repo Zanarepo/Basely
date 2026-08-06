@@ -17,6 +17,7 @@ import {
   ChevronUp,
   Database,
   Shield,
+  LifeBuoy,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { useWorkspace } from './WorkspaceContext'
@@ -97,6 +98,7 @@ export function DashboardSidebar({
     // Approvals requires governance.approval_workflows (Enterprise only)
     ...(tier === 'enterprise' ? [{ href: '/dashboard/approvals', label: 'Approvals', icon: CheckSquare }] : []),
     { href: '/dashboard/team', label: 'Team', icon: Users },
+    { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
   ]
 
   if (activeWorkspace.role === 'Admin' && tier !== 'free') {

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { createOrganizationSchema } from '@/lib/validations/organization'
-import { Building2, Users, ShieldAlert, ArrowRight, Loader2 } from 'lucide-react'
+import { Building2, Users, ShieldAlert, ArrowRight, Loader2, LogIn } from 'lucide-react'
 
 
 
@@ -18,10 +18,12 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
   const [teamSize, setTeamSize] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [hasExistingMemberships, setHasExistingMemberships] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMsg(null)
+    setHasExistingMemberships(false)
 
     const parsed = createOrganizationSchema.safeParse({ name, teamSize })
     if (!parsed.success) {
@@ -37,6 +39,18 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
       const { checkWorkspaceCreationLimitAction } = await import('@/lib/workspace/actions')
       const limitCheck = await checkWorkspaceCreationLimitAction()
       if (!limitCheck.allowed) {
+        // Check if user already has memberships in other orgs they can access
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: memberships } = await supabase
+            .from('organization_members')
+            .select('organization_id')
+            .eq('user_id', user.id)
+            .limit(1)
+          if (memberships && memberships.length > 0) {
+            setHasExistingMemberships(true)
+          }
+        }
         setErrorMsg(limitCheck.reason || 'Workspace creation limit reached.')
         setLoading(false)
         return
@@ -81,9 +95,21 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
       </div>
 
       {errorMsg && (
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 dark:text-rose-400 text-sm">
-          <ShieldAlert className="h-5 w-5 shrink-0" />
-          <span>{errorMsg}</span>
+        <div className="flex flex-col gap-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 dark:text-rose-400 text-sm">
+          <div className="flex items-center gap-3">
+            <ShieldAlert className="h-5 w-5 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+          {hasExistingMemberships && (
+            <button
+              type="button"
+              onClick={() => router.push('/dashboard')}
+              className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-md transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <LogIn className="h-4 w-4" />
+              Go to your existing workspaces
+            </button>
+          )}
         </div>
       )}
 
@@ -150,3 +176,4 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
     </form>
   )
 }
+

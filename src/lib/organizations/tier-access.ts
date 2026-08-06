@@ -215,7 +215,9 @@ export async function checkWorkspaceCreationLimit(userId: string): Promise<{ all
   const maxLimit = USAGE_LIMITS['free'].max_workspaces
 
   const supabase = createAdminClient()
-  const { data: userOrgs } = await supabase
+  
+  // Explicitly count ONLY the organizations where this user is the owner
+  const { data: userOrgs, error } = await supabase
     .from('organizations')
     .select('id')
     .eq('owner_id', userId)

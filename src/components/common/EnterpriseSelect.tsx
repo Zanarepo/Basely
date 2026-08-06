@@ -117,9 +117,8 @@ export default function EnterpriseSelect({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
         className={`w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-slate-800 dark:text-slate-200 hover:border-indigo-500/50 hover:shadow-md transition-all duration-200 ${sizeStyles} ${
-          disabled ? 'opacity-50 border-slate-200 dark:border-slate-800 hover:border-slate-200 hover:shadow-none' : ''
+          disabled ? 'opacity-50 cursor-not-allowed border-slate-200 dark:border-slate-800 hover:border-slate-200 hover:shadow-none' : 'cursor-pointer'
         } ${isOpen ? 'border-indigo-500 ring-2 ring-indigo-500/20 shadow-md' : ''}`}
       >
         <div className="flex items-center gap-2.5 overflow-hidden text-left truncate">
@@ -150,20 +149,20 @@ export default function EnterpriseSelect({
           {normalizedOptions.map((opt, idx) => {
             const isSelected = String(opt.value) === String(value)
             return (
-              <button
-                key={idx}
-                type="button"
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  onChange(opt.value)
-                  setIsOpen(false)
-                }}
-                className={`w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs font-semibold transition-colors text-left ${
-                  isSelected
-                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-slate-200'
-                }`}
-              >
+                <button
+                  key={idx}
+                  type="button"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    onChange(opt.value)
+                    setIsOpen(false)
+                  }}
+                  className={`cursor-pointer w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs font-semibold transition-colors text-left ${
+                    isSelected
+                      ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-slate-200'
+                  }`}
+                >
                 <div className="flex items-center gap-2.5 overflow-hidden">
                   {opt.icon}
                   <div>

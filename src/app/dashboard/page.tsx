@@ -87,7 +87,7 @@ export default async function DashboardPage() {
     })
   }
 
-  const projects = (projectsData ?? []).map((p) => ({
+  const allProjects = (projectsData ?? []).map((p) => ({
     id: p.id,
     name: p.name,
     clientName: p.client_name,
@@ -106,6 +106,11 @@ export default async function DashboardPage() {
       : p.calendar_config ?? { working_days: [1, 2, 3, 4, 5], daily_hours: 8 },
     allow_team_schedule_edits: p.allow_team_schedule_edits ?? false,
   }))
+
+  // Filter projects: Owner and Admin see all; everyone else only sees projects they are explicitly assigned to or created
+  const projects = isAdminOrPM && (isOwner || active?.role === 'Admin')
+    ? allProjects
+    : allProjects.filter((p) => p.createdBy === effectiveUserId || p.assignedMembers.includes(effectiveUserId))
 
   // 4️⃣ Fetch all workspace members for assignment selector
   const { data: orgMembersData } = await supabase

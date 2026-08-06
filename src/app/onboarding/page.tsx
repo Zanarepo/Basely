@@ -3,7 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { SignOutButton } from '@/components/SignOutButton'
 import { CreateOrganizationForm } from '@/components/CreateOrganizationForm'
 import { AuthPageShell } from '@/components/AuthPageShell'
-import { Building2, Mail } from 'lucide-react'
+import { Building2, Mail, LogIn } from 'lucide-react'
 
 export default async function OnboardingPage() {
   const supabase = await createClient()
@@ -15,14 +15,27 @@ export default async function OnboardingPage() {
     redirect('/login')
   }
 
-  const { data: membership } = await supabase
+  // Check if the user is already a member of any org (as owner, admin, or invited member)
+  const { data: memberships } = await supabase
     .from('organization_members')
     .select('organization_id')
     .eq('user_id', user.id)
-    .limit(1)
-    .maybeSingle()
 
-  if (membership) {
+  if (memberships && memberships.length > 0) {
+    redirect('/dashboard')
+  }
+
+  // Also check with admin client in case RLS is blocking the read
+  const { createAdminClient } = await import('@/utils/supabase/admin')
+  const adminSupabase = createAdminClient()
+  const { data: adminMemberships } = await adminSupabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', user.id)
+
+  const hasExistingAccess = adminMemberships && adminMemberships.length > 0
+
+  if (hasExistingAccess) {
     redirect('/dashboard')
   }
 
@@ -77,3 +90,4 @@ export default async function OnboardingPage() {
     </AuthPageShell>
   )
 }
+

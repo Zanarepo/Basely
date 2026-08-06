@@ -3,6 +3,7 @@ import { createAdminClient } from '@/utils/supabase/admin'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
+import * as jose from 'jose'
 
 export async function POST(req: Request) {
   try {
@@ -53,13 +54,38 @@ export async function POST(req: Request) {
     // Base64 encode for cookie safety
     const cookieValue = Buffer.from(impersonationData).toString('base64')
 
-    ;(await cookies()).set('zn_impersonation', cookieValue, {
+    const cookieStore = await cookies()
+    cookieStore.set('zn_impersonation', cookieValue, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
       maxAge: 3600 // 1 hour time-limit for impersonation sessions
     })
+
+    // Sign a custom JWT for Supabase RLS bypass in the browser client
+    if (process.env.SUPABASE_JWT_SECRET) {
+      const secret = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET)
+      const jwt = await new jose.SignJWT({
+        role: 'authenticated',
+        aud: 'authenticated',
+        sub: targetUserId,
+        email: 'impersonated@example.com',
+        app_metadata: { provider: 'email' },
+        user_metadata: {}
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setExpirationTime('1h')
+        .sign(secret)
+
+      cookieStore.set('zn_impersonation_jwt', jwt, {
+        httpOnly: false, // Must be readable by client components!
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 3600
+      })
+    }
 
     // 4. Redirect the superadmin to the main customer dashboard
     return NextResponse.redirect(new URL('/dashboard', req.url), 303)
@@ -81,8 +107,10 @@ export async function DELETE(req: Request) {
       .update({ ended_at: new Date().toISOString() })
       .eq('id', data.sessionId)
 
-    // Clear the cookie
-    ;(await cookies()).delete('zn_impersonation')
+    // Clear the cookies
+    const cookieStore = await cookies()
+    cookieStore.delete('zn_impersonation')
+    cookieStore.delete('zn_impersonation_jwt')
 
     return NextResponse.redirect(new URL('/backoffice', req.url), 303)
   } catch (error) {

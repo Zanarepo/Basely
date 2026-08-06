@@ -4,6 +4,9 @@ import { ManualOverrideModal } from '@/components/backoffice/ManualOverrideModal
 import { toggleProjectArchiveStatus } from '@/lib/backoffice/actions'
 import { AccountAssignmentPanel } from '@/components/backoffice/AccountAssignmentPanel'
 import { AccountHealthPanel } from '@/components/backoffice/AccountHealthPanel'
+import { getChurnRiskScores } from '@/lib/backoffice/analytics'
+import { DataDeletionButton } from '@/components/backoffice/compliance/DataDeletionButton'
+import { SandboxToggleClient } from '@/components/backoffice/SandboxToggleClient'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -26,6 +29,13 @@ export default async function TenantDetailView({ params }: { params: Promise<{ i
     .eq('organization_id', orgId)
     .order('created_at', { ascending: false })
 
+  // Fetch Support Tickets
+  const { data: tickets, error: ticketsError } = await supabase
+    .from('support_tickets')
+    .select('*')
+    .eq('organization_id', orgId)
+    .order('created_at', { ascending: false })
+
   // Fetch Account Assignments
   const { data: assignments } = await supabase
     .from('account_assignments')
@@ -41,6 +51,10 @@ export default async function TenantDetailView({ params }: { params: Promise<{ i
 
   // Fetch all staff for assignment dropdown
   const { data: staffList } = await supabase.from('internal_staff').select('*')
+
+  // Fetch Churn Risk Score
+  const churnScores = await getChurnRiskScores([orgId])
+  const churnScore = churnScores[0]
 
   if (!org) {
     return <div className="text-red-500 font-bold p-8">Organization not found.</div>
@@ -62,16 +76,26 @@ export default async function TenantDetailView({ params }: { params: Promise<{ i
           <p className="text-sm text-app-muted font-mono mt-1">ID: {org.id}</p>
         </div>
         
-        {/* Manual Override (Only Senior/Superadmin) */}
-        {staff && ['superadmin', 'support_senior'].includes(staff.role) && sub && (
-          <ManualOverrideModal 
-            organizationId={orgId}
-            currentTier={sub.tier_id}
-            currentStatus={sub.status}
-            currentSeats={sub.seat_count || 1}
-            staffRole={staff.role}
-          />
-        )}
+        <div className="flex gap-3 items-center">
+          {/* Manual Override (Only Senior/Superadmin) */}
+          {staff && ['superadmin', 'support_senior'].includes(staff.role) && sub && (
+            <ManualOverrideModal 
+              organizationId={orgId}
+              currentTier={sub.tier_id}
+              currentStatus={sub.status}
+              currentSeats={sub.seat_count || 1}
+              staffRole={staff.role}
+            />
+          )}
+
+          {/* GDPR Wipe Data (Only Superadmin) */}
+          {staff && staff.role === 'superadmin' && (
+            <DataDeletionButton 
+              organizationId={orgId}
+              organizationName={org.name}
+            />
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -185,6 +209,62 @@ export default async function TenantDetailView({ params }: { params: Promise<{ i
             </div>
           </div>
 
+          {/* Support Tickets Table */}
+          <div className="bg-app-card rounded-2xl border border-app-border shadow-sm overflow-hidden mt-6">
+            <div className="p-4 border-b border-app-border flex justify-between items-center">
+              <h3 className="font-bold text-app-fg">Support Tickets ({tickets?.length || 0})</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-app-surface border-b border-app-border">
+                    <th className="px-4 py-3 text-xs font-black text-app-muted uppercase">Subject</th>
+                    <th className="px-4 py-3 text-xs font-black text-app-muted uppercase">Status</th>
+                    <th className="px-4 py-3 text-xs font-black text-app-muted uppercase text-right">Priority</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-app-border">
+                  {tickets?.map(t => (
+                    <tr key={t.id} className="group hover:bg-app-hover">
+                      <td className="px-4 py-3">
+                        <div className="font-bold text-app-fg text-sm">{t.subject}</div>
+                        <div className="text-xs text-app-muted">{new Date(t.created_at).toLocaleDateString()}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs font-semibold px-2 py-1 rounded-md ${
+                          t.status === 'resolved' || t.status === 'closed'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
+                        }`}>
+                          {t.status.replace(/_/g, ' ')}
+                        </span>
+                        {t.sla_breach_alerted && (
+                          <span className="ml-2 text-xs font-bold text-red-500">SLA Breach</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className={`text-xs font-bold ${
+                          t.priority === 'urgent' ? 'text-red-500' :
+                          t.priority === 'high' ? 'text-orange-500' :
+                          'text-app-muted'
+                        }`}>
+                          {t.priority.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!tickets || tickets.length === 0) && (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-8 text-center text-sm text-app-muted">
+                        No support tickets found for this organization.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           {/* Audit Log of Overrides */}
           <div className="bg-app-card rounded-2xl border border-app-border shadow-sm overflow-hidden mt-6">
             <div className="p-4 border-b border-app-border">
@@ -233,6 +313,47 @@ export default async function TenantDetailView({ params }: { params: Promise<{ i
             healthNotes={healthNotes} 
             canEdit={staff?.role === 'superadmin' || staff?.role === 'account_manager'}
           />
+
+          {staff?.role === 'superadmin' && (
+            <SandboxToggleClient 
+              orgId={orgId} 
+              initialStatus={org.is_sandbox || false} 
+            />
+          )}
+
+          {churnScore && (
+            <div className="bg-app-card rounded-2xl border border-app-border shadow-sm p-5">
+              <h3 className="font-bold text-app-fg mb-4 flex items-center justify-between">
+                <span>Automated Churn Risk</span>
+                <span className={`text-lg font-black ${churnScore.score > 60 ? 'text-red-500' : churnScore.score > 30 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                  {churnScore.score}%
+                </span>
+              </h3>
+              
+              <div className="w-full bg-app-surface rounded-full h-3 mb-6 overflow-hidden">
+                <div 
+                  className={`h-full ${churnScore.score > 60 ? 'bg-red-500' : churnScore.score > 30 ? 'bg-amber-500' : 'bg-emerald-500'}`} 
+                  style={{ width: `${Math.min(churnScore.score, 100)}%` }}
+                ></div>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-xs font-bold text-app-muted uppercase">Contributing Signals</p>
+                {churnScore.contributing_signals && Object.keys(churnScore.contributing_signals).length > 0 ? (
+                  <div className="space-y-3">
+                    {Object.entries(churnScore.contributing_signals).map(([key, value]) => (
+                      <div key={key} className="flex justify-between items-center bg-app-surface p-3 rounded-lg border border-app-border">
+                        <span className="text-sm font-semibold text-app-fg capitalize">{key.replace(/_/g, ' ')}</span>
+                        <span className="text-xs font-bold text-app-muted">{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-app-muted italic">No contributing signals found.</p>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="bg-app-card rounded-2xl border border-app-border shadow-sm p-5">
             <h3 className="font-bold text-app-fg mb-4">Subscription State</h3>

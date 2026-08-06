@@ -309,13 +309,13 @@ export function ProjectsDashboard({
               label="Active Projects Quota"
               current={projects.filter((p) => !p.isArchived).length}
               max={tier === 'free' ? 2 : -1}
-              onUpgrade={() => setUpgradeModalOpen(true)}
+              onUpgrade={isAdmin ? () => setUpgradeModalOpen(true) : undefined}
             />
             <UsageProgressMeter
               label="Assigned Edit-level Seats"
               current={workspaceMembers.filter((m) => m.role === 'PM' || m.role === 'Admin' || m.isOwner).length}
               max={tier === 'free' ? 3 : -1}
-              onUpgrade={() => setUpgradeModalOpen(true)}
+              onUpgrade={isAdmin ? () => setUpgradeModalOpen(true) : undefined}
             />
           </div>
         )}

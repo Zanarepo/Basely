@@ -1,6 +1,6 @@
 'use server'
 
-import { requireSuperadmin, requireStaffWriteAccess } from './auth'
+import { requireSuperadmin, requireStaffWriteAccess, requireAnnouncementAccess } from './auth'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { sendDirectEmail } from '@/lib/notifications/actions'
@@ -135,4 +135,101 @@ export async function getTenantBillingDetailsAction(organizationId: string) {
     membersCount: membersCount || 0,
     overrides: overrides || []
   }
+}
+
+// Announcements
+export async function createSystemAnnouncement(data: { message: string, type: 'info'|'warning'|'critical', link_url?: string }) {
+  await requireAnnouncementAccess()
+  const supabase = createAdminClient()
+  
+  // Deactivate all others to keep only one active usually, or just insert
+  await supabase.from('system_announcements').update({ is_active: false }).neq('id', '00000000-0000-0000-0000-000000000000')
+
+  const { error } = await supabase.from('system_announcements').insert({
+    message: data.message,
+    type: data.type,
+    link_url: data.link_url || null,
+    is_active: true
+  })
+  if (error) throw new Error(error.message)
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
+
+export async function toggleSystemAnnouncement(id: string, isActive: boolean) {
+  await requireAnnouncementAccess()
+  const supabase = createAdminClient()
+  
+  if (isActive) {
+    // turn others off
+    await supabase.from('system_announcements').update({ is_active: false }).neq('id', id)
+  }
+
+  const { error } = await supabase.from('system_announcements').update({ is_active: isActive }).eq('id', id)
+  if (error) throw new Error(error.message)
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
+
+export async function deleteSystemAnnouncement(id: string) {
+  await requireAnnouncementAccess()
+  const supabase = createAdminClient()
+  const { error } = await supabase.from('system_announcements').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
+
+// Sprint 49: Deletion Cancellation
+export async function cancelDeletionRequestAction(deletionRequestId: string) {
+  await requireSuperadmin()
+  const supabase = createAdminClient()
+
+  // 1. Fetch the deletion request
+  const { data: request, error: fetchError } = await supabase
+    .from('deletion_requests')
+    .select('organization_id')
+    .eq('id', deletionRequestId)
+    .single()
+
+  if (fetchError || !request) {
+    throw new Error('Deletion request not found')
+  }
+
+  // 2. Fetch the organization to get the owner_id
+  const { data: org, error: orgError } = await supabase
+    .from('organizations')
+    .select('owner_id')
+    .eq('id', request.organization_id)
+    .single()
+
+  if (orgError || !org) {
+    throw new Error('Organization not found')
+  }
+
+  // 3. Mark request as cancelled
+  const { error: cancelError } = await supabase
+    .from('deletion_requests')
+    .update({ status: 'cancelled' })
+    .eq('id', deletionRequestId)
+
+  if (cancelError) {
+    throw new Error('Failed to cancel request: ' + cancelError.message)
+  }
+
+  // 4. Restore the owner's access
+  const { error: restoreError } = await supabase
+    .from('organization_members')
+    .upsert({
+      organization_id: request.organization_id,
+      user_id: org.owner_id,
+      role: 'Admin'
+    }, { onConflict: 'organization_id,user_id' })
+
+  if (restoreError) {
+    throw new Error('Failed to restore owner access: ' + restoreError.message)
+  }
+
+  revalidatePath('/backoffice')
+  return { success: true }
 }

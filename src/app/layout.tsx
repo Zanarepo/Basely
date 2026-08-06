@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { Toaster } from 'sonner'
 import { cookies } from 'next/headers'
 import { ImpersonationBanner } from '@/components/backoffice/ImpersonationBanner'
+import { GlobalBanner } from '@/components/common/GlobalBanner'
+import { getActiveAnnouncement } from '@/lib/actions/announcements'
 import './globals.css'
 
 const geistSans = Geist({
@@ -46,6 +49,8 @@ export default async function RootLayout({
     }
   } catch(e) {}
 
+  const announcement = await getActiveAnnouncement()
+
   return (
     <html
       lang="en"
@@ -53,9 +58,10 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-full flex flex-col bg-app-bg text-app-fg">
+        <GlobalBanner announcement={announcement} />
         {impersonationData && (
           <ImpersonationBanner 
             staffRole={impersonationData.staffRole} 

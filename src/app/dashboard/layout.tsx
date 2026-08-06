@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { DashboardShell } from '@/components/dashboard/DashboardShell'
 import { ACTIVE_ORG_COOKIE } from '@/lib/workspace/constants'
 import type { Workspace } from '@/components/dashboard/WorkspaceContext'
+import { GlobalSupportWidget } from '@/components/support/GlobalSupportWidget'
 
 export default async function DashboardLayout({
   children,
@@ -89,6 +90,7 @@ export default async function DashboardLayout({
       userEmail={user.email ?? ''}
     >
       {children}
+      <GlobalSupportWidget mode="tenant" />
     </DashboardShell>
   )
 }

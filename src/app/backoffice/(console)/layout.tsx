@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getStaffSession } from '@/lib/backoffice/auth'
 import Link from 'next/link'
 import { BackofficeShell } from '@/components/backoffice/BackofficeShell'
+import { GlobalSupportWidget } from '@/components/support/GlobalSupportWidget'
 
 export default async function BackofficeLayout({
   children,
@@ -33,6 +34,7 @@ export default async function BackofficeLayout({
   return (
     <BackofficeShell staffEmail={staff.email} staffRole={staff.role}>
       {children}
+      <GlobalSupportWidget mode="admin" />
     </BackofficeShell>
   )
 }

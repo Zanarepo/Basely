@@ -15,6 +15,9 @@ import {
   Layers,
   Tag,
   CreditCard,
+  Megaphone,
+  LifeBuoy,
+  ShieldAlert
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createClient } from '@/utils/supabase/client'
@@ -55,6 +58,9 @@ export function BackofficeSidebar({ staffEmail, staffRole, mobileOpen = false, o
     { href: '/backoffice/plans', label: 'Plans & Features', icon: Layers, exact: false },
     { href: '/backoffice/promos', label: 'Promos & Coupons', icon: Tag, exact: false },
     { href: '/backoffice/subscriptions', label: 'Subscriptions & Payments', icon: CreditCard, exact: false },
+    { href: '/backoffice/support', label: 'Support Inbox', icon: LifeBuoy, exact: false },
+    { href: '/backoffice/abuse', label: 'Abuse & Fraud', icon: ShieldAlert, exact: false },
+    { href: '/backoffice/announcements', label: 'System Announcements', icon: Megaphone, exact: false },
   ]
 
   const roleLabel = staffRole.replace(/_/g, ' ')

@@ -129,7 +129,6 @@ export function useWbsMutations({
           prevList.map((item) => (item.id === tempId ? { ...item, id: result.id } : item))
         )
         showToast('success', 'WBS element created')
-        setActiveElementId(result.id)
         loadElements()
       } else {
         handleErrorToast('Could not create element', result.error)
