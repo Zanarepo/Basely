@@ -74,7 +74,7 @@ export function GtmRolloutPanel({ releaseId }: { releaseId: string }) {
   }
 
   if (isLoading) {
-    return <div className="p-8 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>
+    return <div className="p-8 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-violet-500" /></div>
   }
 
   return (
@@ -85,7 +85,7 @@ export function GtmRolloutPanel({ releaseId }: { releaseId: string }) {
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-lg">
+            <div className="p-2 bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400 rounded-lg">
               <Rocket className="w-5 h-5" />
             </div>
             <div>
@@ -96,7 +96,7 @@ export function GtmRolloutPanel({ releaseId }: { releaseId: string }) {
           <button
             onClick={handleAddPhase}
             disabled={isAddingPhase}
-            className="cursor-pointer text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+            className="cursor-pointer text-sm font-medium text-violet-600 hover:text-violet-700 flex items-center gap-1"
           >
             {isAddingPhase ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Add Phase
@@ -241,8 +241,8 @@ export function GtmRolloutPanel({ releaseId }: { releaseId: string }) {
                       loadData()
                     }
                   }}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                    flag.is_enabled ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 ${
+                    flag.is_enabled ? 'bg-violet-500' : 'bg-slate-200 dark:bg-slate-700'
                   }`}
                 >
                   <span

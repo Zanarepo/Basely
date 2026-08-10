@@ -37,7 +37,7 @@ export function GanttToolbarMoreMenu({
         onClick={() => setIsOpen(!isOpen)}
         className={`p-2 border rounded-2xl transition-all duration-200 ${
           isOpen
-            ? 'bg-app-surface border-indigo-500/50 text-indigo-500 shadow-sm'
+            ? 'bg-app-surface border-violet-500/50 text-violet-500 shadow-sm'
             : 'bg-app-muted-surface border-app-border hover:bg-app-surface text-app-fg'
         }`}
         title="More Actions"
@@ -68,7 +68,7 @@ export function GanttToolbarMoreMenu({
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-app-fg hover:bg-app-hover rounded-xl transition-colors text-left"
             >
-              <Table className="w-4 h-4 text-indigo-500" />
+              <Table className="w-4 h-4 text-violet-500" />
               <span>Schedule Sheet</span>
             </button>
 
@@ -90,7 +90,7 @@ export function GanttToolbarMoreMenu({
                 onExportChart()
                 setIsOpen(false)
               }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-indigo-100 bg-indigo-500 hover:bg-indigo-600 rounded-xl transition-colors text-left group shadow-sm"
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-violet-100 bg-violet-500 hover:bg-violet-600 rounded-xl transition-colors text-left group shadow-sm"
             >
               <Download className="w-4 h-4 text-white" />
               <span className="text-white">Export to PDF/PNG</span>

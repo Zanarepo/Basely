@@ -41,7 +41,7 @@ export function ApprovalPoliciesPanel({ organizationId, members, isAdmin }: Appr
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
       </div>
     )
   }
@@ -51,7 +51,7 @@ export function ApprovalPoliciesPanel({ organizationId, members, isAdmin }: Appr
       <CollapsibleSection
         title="Approval Workflows"
         subtitle="Require admin approval for sensitive actions."
-        icon={<ShieldCheck className="w-5 h-5 text-indigo-500" />}
+        icon={<ShieldCheck className="w-5 h-5 text-violet-500" />}
         isOpen={isOpen}
         onToggle={() => setIsOpen(!isOpen)}
         badge={
@@ -101,7 +101,7 @@ export function ApprovalPoliciesPanel({ organizationId, members, isAdmin }: Appr
                   disabled={isSaving}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500" />
+                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-violet-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500" />
               </label>
             </div>
 
@@ -121,7 +121,7 @@ export function ApprovalPoliciesPanel({ organizationId, members, isAdmin }: Appr
                   disabled={isSaving}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500" />
+                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-violet-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500" />
               </label>
             </div>
           </div>

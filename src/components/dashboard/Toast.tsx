@@ -51,7 +51,7 @@ function ToastItem({
           ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-500 dark:text-emerald-400'
           : toast.type === 'error'
           ? 'bg-rose-500/10 border-rose-500/25 text-rose-500 dark:text-rose-400'
-          : 'bg-indigo-500/10 border-indigo-500/25 text-indigo-500 dark:text-indigo-400'
+          : 'bg-violet-500/10 border-violet-500/25 text-violet-500 dark:text-violet-400'
       }`}
     >
       <div className="flex items-center gap-2.5">

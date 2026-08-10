@@ -66,13 +66,13 @@ export default function StakeholderWorkspace({
           <div className="flex bg-app-bg border border-app-border rounded-lg p-1">
             <button
               onClick={() => setCurrentView('register')}
-              className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentView === 'register' ? 'bg-indigo-600 text-white' : 'text-app-fg hover:bg-app-hover'}`}
+              className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentView === 'register' ? 'bg-violet-600 text-white' : 'text-app-fg hover:bg-app-hover'}`}
             >
               Register
             </button>
             <button
               onClick={() => setCurrentView('workload')}
-              className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentView === 'workload' ? 'bg-indigo-600 text-white' : 'text-app-fg hover:bg-app-hover'}`}
+              className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentView === 'workload' ? 'bg-violet-600 text-white' : 'text-app-fg hover:bg-app-hover'}`}
             >
               Cross-Project Workload
             </button>
@@ -89,7 +89,7 @@ export default function StakeholderWorkspace({
             </button>
             <button
               onClick={() => setIsFormOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
             >
               <Plus className="h-4 w-4" />
               Add Stakeholder

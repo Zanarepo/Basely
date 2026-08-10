@@ -142,7 +142,7 @@ export function ReleasesWorkspace({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-16 space-y-3 min-h-[400px]">
-        <Loader2 className="h-8 w-8 text-indigo-500 animate-spin" />
+        <Loader2 className="h-8 w-8 text-violet-500 animate-spin" />
         <span className="text-sm font-semibold text-app-muted">Loading release architecture & schedule windows...</span>
       </div>
     )
@@ -154,9 +154,9 @@ export function ReleasesWorkspace({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-app-card border border-app-border rounded-2xl p-6 shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Rocket className="h-6 w-6 text-indigo-500" />
+            <Rocket className="h-6 w-6 text-violet-500" />
             <h1 className="text-2xl font-black text-app-fg tracking-tight">{terms.releasePlan} & {terms.iterations}</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wider ml-2">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-violet-500/10 text-violet-400 border border-violet-500/20 uppercase tracking-wider ml-2">
               {methodology || 'Agile'} Unified Engine
             </span>
           </div>
@@ -182,14 +182,14 @@ export function ReleasesWorkspace({
                 onClick={handleOpenNewIteration}
                 className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-app-border bg-app-surface hover:bg-app-card text-app-fg font-extrabold text-xs transition-all cursor-pointer shadow-sm"
               >
-                <Plus className="h-4 w-4 text-indigo-400" />
+                <Plus className="h-4 w-4 text-violet-400" />
                 <span>Add {terms.iteration}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleOpenNewRelease}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs transition-all cursor-pointer shadow-md hover:shadow-lg"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-black text-xs transition-all cursor-pointer shadow-md hover:shadow-lg"
               >
                 <Plus className="h-4 w-4" />
                 <span>New {terms.releasePlan}</span>
@@ -215,7 +215,7 @@ export function ReleasesWorkspace({
               {totalReleases} <span className="text-xs font-extrabold text-emerald-500 font-normal ml-1.5">({releasedCount} Shipped)</span>
             </div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+          <div className="p-3.5 rounded-2xl bg-violet-500/10 text-violet-500 border border-violet-500/20">
             <Rocket className="h-6 w-6" />
           </div>
         </div>
@@ -252,7 +252,7 @@ export function ReleasesWorkspace({
           onClick={() => setActiveTab('releases')}
           className={`py-3 px-2 font-extrabold text-sm border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
             activeTab === 'releases'
-              ? 'border-indigo-500 text-indigo-500'
+              ? 'border-violet-500 text-violet-500'
               : 'border-transparent text-app-muted hover:text-app-fg'
           }`}
         >
@@ -265,7 +265,7 @@ export function ReleasesWorkspace({
           onClick={() => setActiveTab('iterations')}
           className={`py-3 px-2 font-extrabold text-sm border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
             activeTab === 'iterations'
-              ? 'border-indigo-500 text-indigo-500'
+              ? 'border-violet-500 text-violet-500'
               : 'border-transparent text-app-muted hover:text-app-fg'
           }`}
         >
@@ -279,7 +279,7 @@ export function ReleasesWorkspace({
         <div>
           {releases.length === 0 ? (
             <div className="p-16 bg-app-card/60 border border-app-border rounded-2xl text-center space-y-4">
-              <Rocket className="h-12 w-12 text-indigo-500/50 mx-auto" />
+              <Rocket className="h-12 w-12 text-violet-500/50 mx-auto" />
               <div>
                 <h3 className="text-base font-extrabold text-app-fg">No {terms.releases} Configured</h3>
                 <p className="text-xs text-app-muted font-medium max-w-md mx-auto mt-1">
@@ -290,7 +290,7 @@ export function ReleasesWorkspace({
                 <button
                   type="button"
                   onClick={handleOpenNewRelease}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer"
                 >
                   <Plus className="h-4 w-4" />
                   <span>Create {terms.releasePlan}</span>
@@ -330,7 +330,7 @@ export function ReleasesWorkspace({
                 <button
                   type="button"
                   onClick={handleOpenNewIteration}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer"
                 >
                   <Plus className="h-4 w-4" />
                   <span>Establish First {terms.iteration}</span>

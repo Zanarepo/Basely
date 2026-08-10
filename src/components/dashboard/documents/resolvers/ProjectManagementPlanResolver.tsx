@@ -41,7 +41,7 @@ export function ProjectManagementPlanResolver({
     return (
       <div className="flex items-center justify-center p-12 bg-white dark:bg-app-card border border-app-border rounded-xl shadow-sm">
         <div className="flex items-center gap-3 text-app-muted font-medium text-sm">
-          <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+          <Loader2 className="w-5 h-5 animate-spin text-violet-500" />
           <span>Aggregating master project management sub-plans...</span>
         </div>
       </div>
@@ -72,7 +72,7 @@ export function ProjectManagementPlanResolver({
       {/* Master Plan Governance Banner */}
       <div className="bg-white dark:bg-app-card border border-app-border rounded-xl p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="p-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+          <div className="p-3.5 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 text-violet-600 dark:text-violet-400">
             <Layers className="w-7 h-7" />
           </div>
           <div>

@@ -32,13 +32,13 @@ export function CollapsibleSection({
       >
         <div className="flex items-center gap-3 min-w-0">
           {icon && (
-            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500 shrink-0">
+            <div className="p-2 rounded-lg bg-violet-500/10 text-violet-500 shrink-0">
               {icon}
             </div>
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base font-semibold text-app-fg tracking-tight group-hover:text-indigo-400 transition-colors">
+              <h3 className="text-base font-semibold text-app-fg tracking-tight group-hover:text-violet-400 transition-colors">
                 {title}
               </h3>
               {badge}

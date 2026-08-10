@@ -23,7 +23,7 @@ export default async function BackofficeLayout({
           <p className="text-sm text-app-muted mb-6">
             This console is strictly for platform administration. Your account does not have internal staff privileges.
           </p>
-          <Link href="/dashboard" className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors cursor-pointer">
+          <Link href="/dashboard" className="px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-semibold hover:bg-violet-700 transition-colors cursor-pointer">
             Return to Dashboard
           </Link>
         </div>

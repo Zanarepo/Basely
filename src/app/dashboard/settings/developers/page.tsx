@@ -63,7 +63,7 @@ export default async function DevelopersSettingsPage() {
         <h1 className="text-2xl font-bold text-app-fg tracking-tight">Developers & Integrations</h1>
         <p className="text-app-muted mt-2 max-w-2xl">
           Manage API keys and Webhooks to integrate your organization's data with external tools and ERP systems. 
-          Need help? <a href="/dashboard/settings/developers/api-docs" className="text-indigo-500 hover:underline">View the API Documentation &rarr;</a>
+          Need help? <a href="/dashboard/settings/developers/api-docs" className="text-violet-500 hover:underline">View the API Documentation &rarr;</a>
         </p>
       </div>
 

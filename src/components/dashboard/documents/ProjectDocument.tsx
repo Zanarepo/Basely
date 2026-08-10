@@ -107,8 +107,8 @@ export default function ProjectDocument({
   if (needsTemplateSelection) {
     return (
       <div className="flex flex-col h-full min-h-[600px] items-center justify-center bg-app-surface border border-app-border rounded-xl shadow-sm p-8 text-center animate-fade-in">
-        <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center mb-6">
-          <LayoutTemplate className="w-8 h-8 text-indigo-500" />
+        <div className="w-16 h-16 bg-violet-50 dark:bg-violet-500/10 rounded-full flex items-center justify-center mb-6">
+          <LayoutTemplate className="w-8 h-8 text-violet-500" />
         </div>
         <h2 className="text-2xl font-bold text-app-fg mb-2">Select a Template</h2>
         <p className="text-app-muted max-w-md mb-8">
@@ -119,10 +119,10 @@ export default function ProjectDocument({
           {/* Default Template Option */}
           <button
             onClick={() => handleSelectTemplate()}
-            className={`flex flex-col p-5 bg-white dark:bg-app-surface border ${template && !template.is_custom ? 'border-indigo-500 ring-2 ring-indigo-500/20 shadow-md' : 'border-app-border hover:border-indigo-500 hover:shadow-md'} rounded-2xl transition-all group text-left relative overflow-hidden`}
+            className={`flex flex-col p-5 bg-white dark:bg-app-surface border ${template && !template.is_custom ? 'border-violet-500 ring-2 ring-violet-500/20 shadow-md' : 'border-app-border hover:border-violet-500 hover:shadow-md'} rounded-2xl transition-all group text-left relative overflow-hidden`}
           >
             {template && !template.is_custom && (
-              <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
+              <div className="absolute top-0 right-0 bg-violet-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
                 In Use
               </div>
             )}
@@ -130,7 +130,7 @@ export default function ProjectDocument({
               <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <FileText className="w-5 h-5 text-gray-500" />
               </div>
-              <ArrowRight className="w-4 h-4 text-app-muted group-hover:text-indigo-500 opacity-0 group-hover:opacity-100 transition-all transform -translate-x-2 group-hover:translate-x-0" />
+              <ArrowRight className="w-4 h-4 text-app-muted group-hover:text-violet-500 opacity-0 group-hover:opacity-100 transition-all transform -translate-x-2 group-hover:translate-x-0" />
             </div>
             <h3 className="font-semibold text-app-fg mb-1">System Default Template</h3>
             <p className="text-xs text-app-muted">The standard platform structure.</p>
@@ -141,18 +141,18 @@ export default function ProjectDocument({
             <button
               key={t.id}
               onClick={() => handleSelectTemplate(t.id)}
-              className={`flex flex-col p-5 bg-white dark:bg-app-surface border ${template && template.id === t.id ? 'border-indigo-500 ring-2 ring-indigo-500/20 shadow-md' : 'border-app-border hover:border-indigo-500 hover:shadow-md'} rounded-2xl transition-all group text-left relative overflow-hidden`}
+              className={`flex flex-col p-5 bg-white dark:bg-app-surface border ${template && template.id === t.id ? 'border-violet-500 ring-2 ring-violet-500/20 shadow-md' : 'border-app-border hover:border-violet-500 hover:shadow-md'} rounded-2xl transition-all group text-left relative overflow-hidden`}
             >
               {template && template.id === t.id && (
-                <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
+                <div className="absolute top-0 right-0 bg-violet-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
                   In Use
                 </div>
               )}
               <div className="flex justify-between items-start w-full mb-3">
-                <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg">
-                  <LayoutTemplate className="w-5 h-5 text-indigo-500" />
+                <div className="p-2 bg-violet-50 dark:bg-violet-500/10 rounded-lg">
+                  <LayoutTemplate className="w-5 h-5 text-violet-500" />
                 </div>
-                <ArrowRight className="w-4 h-4 text-app-muted group-hover:text-indigo-500 opacity-0 group-hover:opacity-100 transition-all transform -translate-x-2 group-hover:translate-x-0" />
+                <ArrowRight className="w-4 h-4 text-app-muted group-hover:text-violet-500 opacity-0 group-hover:opacity-100 transition-all transform -translate-x-2 group-hover:translate-x-0" />
               </div>
               <h3 className="font-semibold text-app-fg mb-1">{t.name}</h3>
               <p className="text-xs text-app-muted line-clamp-1">{t.description || "Organization custom template"}</p>

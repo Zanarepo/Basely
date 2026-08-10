@@ -194,3 +194,51 @@ export async function archiveAuditLog(logId: string) {
   revalidatePath('/backoffice/plans')
   return { success: true }
 }
+
+export async function getRegionalDiscounts() {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from('regional_discounts')
+    .select('*')
+    .order('country_code', { ascending: true })
+
+  if (error) {
+    console.error('Failed to fetch regional discounts', error)
+    return []
+  }
+
+  return data
+}
+
+export async function updateRegionalDiscount(countryCode: string, updates: { discount_multiplier?: number, exchange_rate_to_usd?: number }) {
+  const staff = await getStaffSession()
+  if (!staff || staff.role !== 'superadmin') {
+    return { success: false, error: 'Unauthorized: Only superadmins can update regional discounts.' }
+  }
+
+  const supabase = createClient()
+  const { data: { user } } = await (await supabase).auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
+    .from('regional_discounts')
+    .update(updates)
+    .eq('country_code', countryCode)
+
+  if (error) {
+    console.error('Failed to update regional discount', error)
+    return { success: false, error: error.message }
+  }
+
+  // Audit log
+  await adminClient.from('backoffice_audit_logs').insert({
+    admin_id: user.id,
+    action_type: 'UPDATE_REGIONAL_DISCOUNT',
+    target_tier: 'N/A',
+    details: { country_code: countryCode, ...updates }
+  })
+
+  revalidatePath('/backoffice/plans')
+  return { success: true }
+}

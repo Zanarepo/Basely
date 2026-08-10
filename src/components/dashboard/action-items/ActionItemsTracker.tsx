@@ -82,7 +82,7 @@ export function ActionItemsTracker({ projectId, hasEditAccess, onShowToast }: Ac
     switch (status) {
       case 'done': return <CheckCircle2 className="w-4 h-4 text-green-500" />
       case 'in_progress': return <Clock className="w-4 h-4 text-amber-500" />
-      default: return <Circle className="w-4 h-4 text-indigo-500" />
+      default: return <Circle className="w-4 h-4 text-violet-500" />
     }
   }
 
@@ -90,7 +90,7 @@ export function ActionItemsTracker({ projectId, hasEditAccess, onShowToast }: Ac
     switch (status) {
       case 'done': return 'bg-green-500/10 text-green-500 border-green-500/20'
       case 'in_progress': return 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-      default: return 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20'
+      default: return 'bg-violet-500/10 text-violet-500 border-violet-500/20'
     }
   }
 
@@ -104,7 +104,7 @@ export function ActionItemsTracker({ projectId, hasEditAccess, onShowToast }: Ac
         {hasEditAccess && (
           <button
             onClick={openNewModal}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors font-medium text-sm shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-violet-500 hover:bg-violet-600 text-white rounded-lg transition-colors font-medium text-sm shadow-sm"
           >
             <Plus className="w-4 h-4" />
             New Action Item
@@ -113,7 +113,7 @@ export function ActionItemsTracker({ projectId, hasEditAccess, onShowToast }: Ac
       </div>
 
       <div className="flex items-center gap-4 p-4 sm:p-6 pb-0 shrink-0 border-b border-transparent">
-        <div className="flex-1 bg-app-card border border-app-border rounded-xl flex items-center px-4 py-2 focus-within:border-indigo-500 transition-colors">
+        <div className="flex-1 bg-app-card border border-app-border rounded-xl flex items-center px-4 py-2 focus-within:border-violet-500 transition-colors">
           <Search className="w-4 h-4 text-app-muted" />
           <input
             type="text"
@@ -144,7 +144,7 @@ export function ActionItemsTracker({ projectId, hasEditAccess, onShowToast }: Ac
       <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center h-48">
-            <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+            <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-app-border rounded-2xl bg-app-card/50">
@@ -158,7 +158,7 @@ export function ActionItemsTracker({ projectId, hasEditAccess, onShowToast }: Ac
                 key={item.id}
                 onClick={() => hasEditAccess && openEditModal(item.id)}
                 className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-app-card border border-app-border rounded-xl transition-all ${
-                  hasEditAccess ? 'cursor-pointer hover:border-indigo-500/50 hover:shadow-md' : ''
+                  hasEditAccess ? 'cursor-pointer hover:border-violet-500/50 hover:shadow-md' : ''
                 } group`}
               >
                 <div className="flex flex-col gap-2 flex-1">

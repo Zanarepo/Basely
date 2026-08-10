@@ -57,7 +57,7 @@ export function WbsImportModal({ projectId, onClose, onSuccess }: Props) {
           {/* Loading Overlay */}
           {isImporting && (
             <div className="absolute inset-0 z-10 bg-app-surface/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-b-2xl">
-              <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-4" />
+              <Loader2 className="w-10 h-10 text-violet-500 animate-spin mb-4" />
               <p className="text-sm font-semibold text-app-fg">Importing Data...</p>
               <p className="text-xs text-app-muted mt-1">Please wait while we process your file.</p>
             </div>
@@ -67,7 +67,7 @@ export function WbsImportModal({ projectId, onClose, onSuccess }: Props) {
               onClick={() => setImportMode('upload')}
               className={`flex-1 py-2 px-4 rounded-xl text-sm font-semibold border transition-all ${
                 importMode === 'upload'
-                  ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400'
+                  ? 'bg-violet-500/10 border-violet-500/30 text-violet-600 dark:text-violet-400'
                   : 'bg-app-muted-surface border-app-border text-app-muted hover:text-app-fg hover:bg-app-hover'
               }`}
             >
@@ -77,7 +77,7 @@ export function WbsImportModal({ projectId, onClose, onSuccess }: Props) {
               onClick={() => setImportMode('paste')}
               className={`flex-1 py-2 px-4 rounded-xl text-sm font-semibold border transition-all ${
                 importMode === 'paste'
-                  ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400'
+                  ? 'bg-violet-500/10 border-violet-500/30 text-violet-600 dark:text-violet-400'
                   : 'bg-app-muted-surface border-app-border text-app-muted hover:text-app-fg hover:bg-app-hover'
               }`}
             >
@@ -87,7 +87,7 @@ export function WbsImportModal({ projectId, onClose, onSuccess }: Props) {
               onClick={() => setImportMode('drive')}
               className={`flex-1 py-2 px-4 rounded-xl text-sm font-semibold border transition-all ${
                 importMode === 'drive'
-                  ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400'
+                  ? 'bg-violet-500/10 border-violet-500/30 text-violet-600 dark:text-violet-400'
                   : 'bg-app-muted-surface border-app-border text-app-muted hover:text-app-fg hover:bg-app-hover'
               }`}
             >
@@ -143,7 +143,7 @@ export function WbsImportModal({ projectId, onClose, onSuccess }: Props) {
             <button
               onClick={handleImport}
               disabled={isImporting || !csvText.trim()}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm"
+              className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm"
             >
               Run Import
             </button>

@@ -47,7 +47,7 @@ export function InitiationDocumentViewer({ entityId, documentType, onClose, onSh
           <div className="flex-1 overflow-y-auto p-4 bg-app-bg">
             {loading ? (
               <div className="flex h-full items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
               </div>
             ) : template ? (
               <DocumentEngine

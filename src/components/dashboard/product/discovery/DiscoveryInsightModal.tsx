@@ -112,8 +112,8 @@ export function DiscoveryInsightModal({
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-t-2xl">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30">
-              <Lightbulb className="w-4 h-4 text-indigo-500" />
+            <div className="p-2 rounded-xl bg-violet-50 dark:bg-violet-900/30">
+              <Lightbulb className="w-4 h-4 text-violet-500" />
             </div>
             <h2 className="text-sm font-bold text-slate-900 dark:text-white">
               {isEditMode ? 'Edit Discovery Insight' : 'Log New Discovery Insight'}
@@ -139,7 +139,7 @@ export function DiscoveryInsightModal({
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="e.g., Users struggle to find the export button"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all"
               required
             />
           </div>
@@ -152,7 +152,7 @@ export function DiscoveryInsightModal({
               onChange={e => setDescription(e.target.value)}
               placeholder="Provide context from the interview, support ticket, or observation..."
               rows={3}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all resize-none"
             />
           </div>
 
@@ -186,7 +186,7 @@ export function DiscoveryInsightModal({
                 min={1}
                 value={frequency}
                 onChange={e => setFrequency(parseInt(e.target.value) || 1)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all"
               />
             </div>
 

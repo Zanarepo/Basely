@@ -178,7 +178,7 @@ export default function RiskForm({
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Supply chain delays"
                 required
-                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50"
               />
             </div>
 
@@ -190,7 +190,7 @@ export default function RiskForm({
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
                 placeholder="Details about the risk..."
-                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 resize-none"
               />
             </div>
 
@@ -217,7 +217,7 @@ export default function RiskForm({
                   max="5"
                   value={probability}
                   onChange={(e) => setProbability(Number(e.target.value))}
-                  className="w-full accent-indigo-500"
+                  className="w-full accent-violet-500"
                 />
               </div>
               
@@ -232,7 +232,7 @@ export default function RiskForm({
                   max="5"
                   value={impact}
                   onChange={(e) => setImpact(Number(e.target.value))}
-                  className="w-full accent-indigo-500"
+                  className="w-full accent-violet-500"
                 />
               </div>
             </div>
@@ -276,7 +276,7 @@ export default function RiskForm({
                 onChange={(e) => setMitigationPlan(e.target.value)}
                 rows={4}
                 placeholder="Describe the actionable steps and strategies planned to mitigate or address this risk..."
-                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 resize-none"
               />
             </div>
 
@@ -342,7 +342,7 @@ export default function RiskForm({
                         {summaryElements.map(summary => (
                           <div key={summary.id}>
                             <div 
-                              className={`px-3 py-2 text-sm hover:bg-app-hover cursor-pointer font-bold text-app-fg ${linkedWbsId === summary.id ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30' : ''}`}
+                              className={`px-3 py-2 text-sm hover:bg-app-hover cursor-pointer font-bold text-app-fg ${linkedWbsId === summary.id ? 'bg-violet-50 text-violet-700 dark:bg-violet-900/30' : ''}`}
                               onClick={() => { setLinkedWbsId(summary.id); setIsWbsDropdownOpen(false); }}
                             >
                               {summary.code} - {summary.name}
@@ -352,7 +352,7 @@ export default function RiskForm({
                               .map(wp => (
                                 <div 
                                   key={wp.id}
-                                  className={`px-3 py-2 pl-8 text-sm hover:bg-app-hover cursor-pointer text-app-fg ${linkedWbsId === wp.id ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30' : ''}`}
+                                  className={`px-3 py-2 pl-8 text-sm hover:bg-app-hover cursor-pointer text-app-fg ${linkedWbsId === wp.id ? 'bg-violet-50 text-violet-700 dark:bg-violet-900/30' : ''}`}
                                   onClick={() => { setLinkedWbsId(wp.id); setIsWbsDropdownOpen(false); }}
                                 >
                                   {wp.code} - {wp.name}
@@ -363,7 +363,7 @@ export default function RiskForm({
                         {standaloneWPs.map(wp => (
                            <div 
                             key={wp.id}
-                            className={`px-3 py-2 text-sm hover:bg-app-hover cursor-pointer text-app-fg ${linkedWbsId === wp.id ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30' : ''}`}
+                            className={`px-3 py-2 text-sm hover:bg-app-hover cursor-pointer text-app-fg ${linkedWbsId === wp.id ? 'bg-violet-50 text-violet-700 dark:bg-violet-900/30' : ''}`}
                             onClick={() => { setLinkedWbsId(wp.id); setIsWbsDropdownOpen(false); }}
                           >
                             {wp.code} - {wp.name}
@@ -392,7 +392,7 @@ export default function RiskForm({
                     value={allocatedAmount}
                     onChange={(e) => setAllocatedAmount(e.target.value)}
                     placeholder="0.00"
-                    className="w-full pl-7 pr-3 py-2 bg-app-surface border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    className="w-full pl-7 pr-3 py-2 bg-app-surface border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                   />
                 </div>
               </div>
@@ -436,7 +436,7 @@ export default function RiskForm({
             type="submit"
             form="risk-form"
             disabled={isSubmitting || !title.trim()}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white text-sm font-semibold rounded-lg hover:bg-indigo-600 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-violet-500 text-white text-sm font-semibold rounded-lg hover:bg-violet-600 transition-colors disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             {isSubmitting ? 'Saving...' : 'Save Risk'}

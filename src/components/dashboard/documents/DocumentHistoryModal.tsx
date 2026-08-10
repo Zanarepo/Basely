@@ -92,7 +92,7 @@ export default function DocumentHistoryModal({
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-app-border bg-app-surface-solid">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500">
+            <div className="p-2 rounded-lg bg-violet-500/10 text-violet-500">
               <History className="w-5 h-5" />
             </div>
             <div>
@@ -116,7 +116,7 @@ export default function DocumentHistoryModal({
         <div className="flex-1 overflow-y-auto p-5 space-y-6">
           {loading ? (
             <div className="flex h-40 items-center justify-center text-app-muted">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500 mr-2" />
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-violet-500 mr-2" />
               Loading history...
             </div>
           ) : (
@@ -136,7 +136,7 @@ export default function DocumentHistoryModal({
                     {exports.map((exp) => (
                       <div
                         key={exp.id}
-                        className="flex items-center justify-between p-3.5 rounded-xl border border-app-border bg-app-bg hover:border-indigo-500/30 transition-all"
+                        className="flex items-center justify-between p-3.5 rounded-xl border border-app-border bg-app-bg hover:border-violet-500/30 transition-all"
                       >
                         <div className="flex items-center gap-3">
                           {getFormatBadge(exp.format)}

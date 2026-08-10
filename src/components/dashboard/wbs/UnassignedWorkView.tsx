@@ -1,12 +1,15 @@
 import { WbsElement } from '@/lib/wbs/constants'
 import { AlertCircle, ArrowRight } from 'lucide-react'
 
+import { TerminologyDict } from '@/utils/terminology'
+
 type UnassignedWorkViewProps = {
   elements: WbsElement[]
   onSelect: (id: string) => void
+  terms: TerminologyDict
 }
 
-export function UnassignedWorkView({ elements, onSelect }: UnassignedWorkViewProps) {
+export function UnassignedWorkView({ elements, onSelect, terms }: UnassignedWorkViewProps) {
   // Find all work packages that lack a Responsible or Accountable assignment
   // Exclude milestones (duration === 0) — they only appear on Gantt and Status Report
   const unassignedElements = elements.filter(t => {
@@ -54,11 +57,11 @@ export function UnassignedWorkView({ elements, onSelect }: UnassignedWorkViewPro
             <div 
               key={element.id}
               onClick={() => onSelect(element.id)}
-              className="flex items-center justify-between p-4 bg-app-surface-solid border border-app-border rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all group"
+              className="flex items-center justify-between p-4 bg-app-surface-solid border border-app-border rounded-xl cursor-pointer hover:border-violet-500 hover:shadow-md transition-all group"
             >
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <span className="text-xs font-mono font-semibold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded">
+                  <span className="text-xs font-mono font-semibold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
                     {element.code}
                   </span>
                   <span className="text-sm font-bold text-app-fg">
@@ -76,7 +79,7 @@ export function UnassignedWorkView({ elements, onSelect }: UnassignedWorkViewPro
                   </span>
                 </div>
               </div>
-              <div className="text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+              <div className="text-violet-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
                 <span className="text-xs font-semibold">Assign Now</span>
                 <ArrowRight className="h-4 w-4" />
               </div>

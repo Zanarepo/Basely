@@ -70,10 +70,8 @@ export function AuditLogsTable({ logs, totalCount, currentPage, pageSize }: { lo
   }
 
   return (
-    <div className="mt-16">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <h2 className="text-2xl font-bold text-app-fg">Audit Log</h2>
-        
+    <div className="">
+      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4 mb-4 p-6 pb-0">
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <form onSubmit={handleSearch} className="relative flex-1 sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
@@ -81,7 +79,7 @@ export function AuditLogsTable({ logs, totalCount, currentPage, pageSize }: { lo
               name="q"
               defaultValue={currentSearch}
               placeholder="Search action or tier..."
-              className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm text-app-fg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+              className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm text-app-fg focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all outline-none"
             />
           </form>
           
@@ -90,7 +88,7 @@ export function AuditLogsTable({ logs, totalCount, currentPage, pageSize }: { lo
             onClick={toggleArchived}
             className={`cursor-pointer px-3 py-2 text-sm font-medium rounded-xl border transition-colors ${
               includeArchived 
-                ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-400 dark:border-indigo-500/30' 
+                ? 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30' 
                 : 'bg-app-surface text-app-muted border-app-border hover:bg-app-hover'
             }`}
           >
@@ -99,7 +97,7 @@ export function AuditLogsTable({ logs, totalCount, currentPage, pageSize }: { lo
         </div>
       </div>
 
-      <div className="bg-app-surface border border-app-border rounded-xl overflow-hidden shadow-sm">
+      <div className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-app-surface-solid border-b border-app-border text-app-muted">
@@ -126,7 +124,7 @@ export function AuditLogsTable({ logs, totalCount, currentPage, pageSize }: { lo
                     <td className="px-6 py-4">
                       {getAdminLabel(log.admin, log.admin_id)}
                     </td>
-                    <td className="px-6 py-4 font-mono text-xs font-semibold text-indigo-400">{log.action_type}</td>
+                    <td className="px-6 py-4 font-mono text-xs font-semibold text-violet-400">{log.action_type}</td>
                     <td className="px-6 py-4 capitalize">{log.target_tier}</td>
                     <td className="px-6 py-4">
                       <pre className="text-[10px] bg-app-surface-solid p-2 rounded-lg border border-app-border overflow-x-auto max-w-xs">

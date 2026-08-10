@@ -111,7 +111,7 @@ export function ReleaseModal({
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-app-border bg-app-surface/50">
           <div className="flex items-center gap-2">
-            <Rocket className="h-5 w-5 text-indigo-500" />
+            <Rocket className="h-5 w-5 text-violet-500" />
             <h2 className="text-lg font-extrabold text-app-fg">
               {releaseToEdit ? 'Edit Release Plan Properties' : 'Create New Release Plan'}
             </h2>
@@ -143,7 +143,7 @@ export function ReleaseModal({
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="e.g. v2.1.0 - Alpha Milestone"
-                className="w-full bg-app-bg border border-app-border rounded-xl px-4 py-2.5 text-sm font-bold text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="w-full bg-app-bg border border-app-border rounded-xl px-4 py-2.5 text-sm font-bold text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
               />
             </div>
 
@@ -174,7 +174,7 @@ export function ReleaseModal({
               value={objective}
               onChange={e => setObjective(e.target.value)}
               placeholder="Describe the key business goals or technical capabilities delivered in this release..."
-              className="w-full bg-app-bg border border-app-border rounded-xl p-3 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
+              className="w-full bg-app-bg border border-app-border rounded-xl p-3 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all font-medium"
             />
           </div>
 
@@ -201,7 +201,7 @@ export function ReleaseModal({
                       onClick={() => handleToggleIteration(iter.id)}
                       className={`flex items-center gap-2.5 p-2 rounded-lg border transition-all cursor-pointer ${
                         isChecked
-                          ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400'
+                          ? 'bg-violet-500/10 border-violet-500/50 text-violet-400'
                           : 'bg-app-card border-app-border/80 text-app-muted hover:border-app-border hover:text-app-fg'
                       }`}
                     >
@@ -209,7 +209,7 @@ export function ReleaseModal({
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => {}} // Handled by div click
-                        className="rounded border-app-border bg-app-bg text-indigo-600 focus:ring-indigo-500 cursor-pointer h-4 w-4"
+                        className="rounded border-app-border bg-app-bg text-violet-600 focus:ring-violet-500 cursor-pointer h-4 w-4"
                       />
                       <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
@@ -245,7 +245,7 @@ export function ReleaseModal({
                 <button
                   type="button"
                   onClick={handleAddCriterionInput}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-indigo-500 hover:text-indigo-600 cursor-pointer transition-colors"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-violet-500 hover:text-violet-600 cursor-pointer transition-colors"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Add Item
@@ -260,7 +260,7 @@ export function ReleaseModal({
                       value={txt}
                       onChange={e => handleCriterionChange(idx, e.target.value)}
                       placeholder={`Exit criterion #${idx + 1} (e.g. UAT testing signed off)`}
-                      className="flex-1 bg-app-bg border border-app-border rounded-xl px-3 py-2 text-xs font-semibold text-app-fg focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="flex-1 bg-app-bg border border-app-border rounded-xl px-3 py-2 text-xs font-semibold text-app-fg focus:outline-none focus:ring-1 focus:ring-violet-500"
                     />
                     {criteriaTexts.length > 1 && (
                       <button
@@ -292,7 +292,7 @@ export function ReleaseModal({
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {releaseToEdit ? 'Save Properties' : 'Create Release Architecture'}

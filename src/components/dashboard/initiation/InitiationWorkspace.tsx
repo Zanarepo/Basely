@@ -105,7 +105,7 @@ export default function InitiationWorkspace({
           onClick={() => setActiveTab('business_cases')}
           className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all cursor-pointer ${
             activeTab === 'business_cases'
-              ? 'border-indigo-500 text-indigo-500'
+              ? 'border-violet-500 text-violet-500'
               : 'border-transparent text-app-muted hover:text-app-fg'
           }`}
         >
@@ -115,7 +115,7 @@ export default function InitiationWorkspace({
           onClick={() => setActiveTab('feasibility_studies')}
           className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all cursor-pointer ${
             activeTab === 'feasibility_studies'
-              ? 'border-indigo-500 text-indigo-500'
+              ? 'border-violet-500 text-violet-500'
               : 'border-transparent text-app-muted hover:text-app-fg'
           }`}
         >
@@ -149,14 +149,14 @@ export default function InitiationWorkspace({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {businessCases.map(bc => (
-                <div key={bc.id} className="bg-app-surface border border-app-border rounded-xl p-5 hover:border-indigo-500/50 transition-colors shadow-sm flex flex-col group">
+                <div key={bc.id} className="bg-app-surface border border-app-border rounded-xl p-5 hover:border-violet-500/50 transition-colors shadow-sm flex flex-col group">
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="font-bold text-app-fg text-lg">{bc.name}</h3>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => { setViewerEntityId(bc.id); setViewerDocType('business_case'); }} className="text-app-muted hover:text-indigo-500 transition-colors p-1 cursor-pointer" title="View Document">
+                      <button onClick={() => { setViewerEntityId(bc.id); setViewerDocType('business_case'); }} className="text-app-muted hover:text-violet-500 transition-colors p-1 cursor-pointer" title="View Document">
                         <FileText className="w-4 h-4" />
                       </button>
-                      <button onClick={() => { setSelectedBc(bc); setBcModalOpen(true); }} className="text-app-muted hover:text-indigo-500 transition-colors p-1 cursor-pointer" title="Edit">
+                      <button onClick={() => { setSelectedBc(bc); setBcModalOpen(true); }} className="text-app-muted hover:text-violet-500 transition-colors p-1 cursor-pointer" title="Edit">
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleDeleteBc(bc.id)} className="text-app-muted hover:text-rose-500 transition-colors p-1 cursor-pointer" disabled={isPending} title="Delete">
@@ -231,14 +231,14 @@ export default function InitiationWorkspace({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {feasibilityStudies.map(fs => (
-                <div key={fs.id} className="bg-app-surface border border-app-border rounded-xl p-5 hover:border-indigo-500/50 transition-colors shadow-sm flex flex-col group">
+                <div key={fs.id} className="bg-app-surface border border-app-border rounded-xl p-5 hover:border-violet-500/50 transition-colors shadow-sm flex flex-col group">
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="font-bold text-app-fg text-lg">{fs.name}</h3>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => { setViewerEntityId(fs.id); setViewerDocType('feasibility_study'); }} className="text-app-muted hover:text-indigo-500 transition-colors p-1 cursor-pointer" title="View Document">
+                      <button onClick={() => { setViewerEntityId(fs.id); setViewerDocType('feasibility_study'); }} className="text-app-muted hover:text-violet-500 transition-colors p-1 cursor-pointer" title="View Document">
                         <FileText className="w-4 h-4" />
                       </button>
-                      <button onClick={() => { setSelectedFs(fs); setFsModalOpen(true); }} className="text-app-muted hover:text-indigo-500 transition-colors p-1 cursor-pointer" title="Edit">
+                      <button onClick={() => { setSelectedFs(fs); setFsModalOpen(true); }} className="text-app-muted hover:text-violet-500 transition-colors p-1 cursor-pointer" title="Edit">
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleDeleteFs(fs.id)} className="text-app-muted hover:text-rose-500 transition-colors p-1 cursor-pointer" disabled={isPending} title="Delete">
@@ -253,7 +253,7 @@ export default function InitiationWorkspace({
                       </span>
                     )}
                     {fs.business_case_id && (
-                      <span className="inline-flex text-[10px] font-bold px-2 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-md border border-indigo-500/20">
+                      <span className="inline-flex text-[10px] font-bold px-2 py-1 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-md border border-violet-500/20">
                         Linked to Business Case
                       </span>
                     )}

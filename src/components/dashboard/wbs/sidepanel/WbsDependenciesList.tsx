@@ -119,7 +119,7 @@ export function WbsDependenciesList({
   if (loadingSchedule) return null
 
   return (
-    <div className="space-y-5 pt-2 border-t border-indigo-500/10">
+    <div className="space-y-5 pt-2 border-t border-violet-500/10">
       {/* 1. Mathematical Schedule Predecessors (Only applicable to atomic Work Packages) */}
       {isWorkPackage && (
         <div className="space-y-2">
@@ -144,7 +144,7 @@ export function WbsDependenciesList({
                         checked={isLinked}
                         disabled={!hasEditAccess || saving}
                         onChange={(e) => handleTogglePredecessor(act.id, e.target.checked)}
-                        className="rounded-xs border-app-border text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 cursor-pointer"
+                        className="rounded-xs border-app-border text-violet-600 focus:ring-violet-500 w-3.5 h-3.5 cursor-pointer"
                       />
                       <span className="truncate flex-1 font-semibold text-app-fg">{act.name}</span>
                     </label>
@@ -197,7 +197,7 @@ export function WbsDependenciesList({
           {projectId && (
             <a
               href={`/dashboard/projects/${projectId}?tab=raid`}
-              className="text-[10px] text-indigo-600 dark:text-indigo-400 font-extrabold hover:underline inline-flex items-center gap-0.5"
+              className="text-[10px] text-violet-600 dark:text-violet-400 font-extrabold hover:underline inline-flex items-center gap-0.5"
             >
               <span>View RAID Log</span>
               <ExternalLink className="w-2.5 h-2.5" />
@@ -243,7 +243,7 @@ export function WbsDependenciesList({
                     {activeDirect.map(({ item }) => (
                       <div key={item.id} className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-2 animate-in fade-in duration-200 shadow-xs">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-violet-500/20 text-violet-700 dark:text-violet-300 border border-violet-500/30">
                             DIRECT LINK
                           </span>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 uppercase">

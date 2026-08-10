@@ -21,7 +21,7 @@ export default function MilestonesWidget({
     <div className="bg-white dark:bg-app-surface border border-app-border rounded-3xl p-6 shadow-sm flex flex-col h-full hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-bold text-app-fg">Upcoming Milestones</h3>
-        <Milestone className="h-5 w-5 text-indigo-500" />
+        <Milestone className="h-5 w-5 text-violet-500" />
       </div>
 
       <div className="flex-1 overflow-y-auto max-h-[220px] pr-1 space-y-3">
@@ -43,7 +43,7 @@ export default function MilestonesWidget({
                   <AlertTriangle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
                 )}
                 {m.status === 'Upcoming' && (
-                  <Clock className="h-5 w-5 text-indigo-500 shrink-0 mt-0.5" />
+                  <Clock className="h-5 w-5 text-violet-500 shrink-0 mt-0.5" />
                 )}
                 <div>
                   <div className="text-sm font-bold text-app-fg leading-tight mb-0.5">{m.name}</div>
@@ -56,7 +56,7 @@ export default function MilestonesWidget({
                   ? 'bg-emerald-50 text-emerald-600 border-emerald-500/25 dark:bg-emerald-500/10'
                   : m.status === 'Missed'
                     ? 'bg-rose-50 text-rose-600 border-rose-500/25 dark:bg-rose-500/10'
-                    : 'bg-indigo-50 text-indigo-600 border-indigo-500/25 dark:bg-indigo-500/10'
+                    : 'bg-violet-50 text-violet-600 border-violet-500/25 dark:bg-violet-500/10'
               }`}>
                 {m.status}
               </span>

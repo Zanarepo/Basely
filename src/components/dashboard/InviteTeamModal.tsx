@@ -108,7 +108,7 @@ export function InviteTeamModal({ open, onClose }: InviteTeamModalProps) {
           <div className="shrink-0 px-6 pt-6 pb-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-500">
+                <div className="p-2.5 rounded-xl bg-violet-500/20 text-violet-500">
                   <UserPlus className="h-5 w-5" />
                 </div>
                 <div>
@@ -142,7 +142,7 @@ export function InviteTeamModal({ open, onClose }: InviteTeamModalProps) {
                     type="button"
                     onClick={() => window.open('/dashboard', '_self')}
                     style={{ cursor: 'pointer' }}
-                    className="shrink-0 px-3 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs rounded-lg shadow hover:opacity-95 transition-all"
+                    className="shrink-0 px-3 py-1 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-bold text-xs rounded-lg shadow hover:opacity-95 transition-all"
                   >
                     Upgrade Plan ↗
                   </button>
@@ -166,7 +166,7 @@ export function InviteTeamModal({ open, onClose }: InviteTeamModalProps) {
                 disabled={isPending}
                 className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-all cursor-pointer disabled:opacity-50 ${
                   mode === 'link'
-                    ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/25'
+                    ? 'bg-violet-500/20 text-violet-600 dark:text-violet-300 border border-violet-500/25'
                     : 'text-slate-600 dark:text-app-muted hover:text-app-fg border border-transparent'
                 }`}
               >
@@ -179,7 +179,7 @@ export function InviteTeamModal({ open, onClose }: InviteTeamModalProps) {
                 disabled={isPending}
                 className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-all cursor-pointer disabled:opacity-50 ${
                   mode === 'email'
-                    ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/25'
+                    ? 'bg-violet-500/20 text-violet-600 dark:text-violet-300 border border-violet-500/25'
                     : 'text-slate-600 dark:text-app-muted hover:text-app-fg border border-transparent'
                 }`}
               >

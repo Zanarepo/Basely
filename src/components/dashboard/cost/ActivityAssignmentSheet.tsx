@@ -98,7 +98,7 @@ export default function ActivityAssignmentSheet({
           </div>
           <div className="pt-3 border-t border-app-border flex justify-between">
             <span className="font-semibold text-app-fg">Total Calculated Cost</span>
-            <span className="font-bold text-indigo-400"><CurrencyDisplay amount={totalCost} currency={projectCurrency} compactThreshold={1000} /></span>
+            <span className="font-bold text-violet-400"><CurrencyDisplay amount={totalCost} currency={projectCurrency} compactThreshold={1000} /></span>
           </div>
         </div>
 
@@ -109,7 +109,7 @@ export default function ActivityAssignmentSheet({
             {!isAdding && (
               <button 
                 onClick={() => setIsAdding(true)}
-                className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+                className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 transition-colors cursor-pointer"
               >
                 <Plus className="w-3 h-3" /> Add
               </button>
@@ -144,7 +144,7 @@ export default function ActivityAssignmentSheet({
 
           {/* Add New Row */}
           {isAdding && (
-            <div className="p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-lg space-y-3">
+            <div className="p-4 bg-violet-500/5 border border-violet-500/20 rounded-lg space-y-3">
               <div>
                 <label className="block text-xs font-medium text-app-muted mb-1">Resource</label>
                 <EnterpriseSelect
@@ -171,11 +171,11 @@ export default function ActivityAssignmentSheet({
                     type="number" 
                     value={quantity}
                     onChange={e => setQuantity(parseFloat(e.target.value))}
-                    className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet-500"
                   />
                 </div>
                 <div className="flex items-center gap-2 pb-0.5">
-                  <button onClick={handleAdd} className="p-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors">
+                  <button onClick={handleAdd} className="p-2 bg-violet-500 hover:bg-violet-600 text-white rounded-lg transition-colors">
                     <Save className="w-4 h-4" />
                   </button>
                   <button onClick={() => { setIsAdding(false); setSelectedRateId(''); setQuantity(0); }} className="p-2 text-app-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">

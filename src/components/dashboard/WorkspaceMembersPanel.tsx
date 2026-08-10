@@ -178,7 +178,7 @@ export function WorkspaceMembersPanel({
                         onChange={(e) => setOwnerNameInput(e.target.value)}
                         placeholder="Full Name"
                         disabled={isPending}
-                        className="bg-app-bg border border-indigo-500 rounded-lg px-2.5 py-1 text-sm font-medium text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="bg-app-bg border border-violet-500 rounded-lg px-2.5 py-1 text-sm font-medium text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') saveOwnerName()
@@ -229,14 +229,14 @@ export function WorkspaceMembersPanel({
                       checked={member.canManageAllMembers}
                       disabled={isPending}
                       onChange={(e) => togglePrivilege(member.userId, e.target.checked)}
-                      className="rounded border-app-border bg-app-surface text-indigo-600 focus:ring-indigo-500 focus:ring-offset-app-bg"
+                      className="rounded border-app-border bg-app-surface text-violet-600 focus:ring-violet-500 focus:ring-offset-app-bg"
                     />
                     <span>Privileged Admin (Can manage Owner&apos;s invites)</span>
                   </label>
                 )}
                 {/* Visual read-only privilege badge for non-owner Admins */}
                 {!isOwner && member.role === 'Admin' && member.canManageAllMembers && (
-                  <span className="inline-flex text-[10px] bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded border border-indigo-500/20 font-medium">
+                  <span className="inline-flex text-[10px] bg-violet-500/10 text-violet-500 px-1.5 py-0.5 rounded border border-violet-500/20 font-medium">
                     Privileged Admin
                   </span>
                 )}
@@ -246,7 +246,7 @@ export function WorkspaceMembersPanel({
                 {/* Role select */}
                 {member.isOwner ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-indigo-500 dark:text-indigo-300 px-3">Owner</span>
+                    <span className="text-sm font-semibold text-violet-500 dark:text-violet-300 px-3">Owner</span>
                     {(isOwner || member.userId === callerUserId) && !isEditingThisProfile && (
                       <button
                         type="button"
@@ -254,7 +254,7 @@ export function WorkspaceMembersPanel({
                           setEditingOwnerId(member.userId)
                           setOwnerNameInput(member.name)
                         }}
-                        className="p-1.5 text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200 cursor-pointer"
+                        className="p-1.5 text-app-muted hover:text-violet-500 hover:bg-violet-500/10 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200 cursor-pointer"
                         title="Edit profile name"
                       >
                         <Pencil className="h-4 w-4" />
@@ -266,7 +266,7 @@ export function WorkspaceMembersPanel({
                     title="Only the workspace Owner can manage Admin roles"
                     className="inline-flex items-center gap-1.5 rounded-lg border border-app-border bg-app-surface px-3 py-1.5 text-sm font-medium text-app-muted cursor-not-allowed select-none"
                   >
-                    <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
+                    <ShieldCheck className="h-3.5 w-3.5 text-violet-400" />
                     Admin
                   </span>
                 ) : (

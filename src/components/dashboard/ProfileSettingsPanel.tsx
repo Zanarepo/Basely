@@ -37,8 +37,8 @@ export function ProfileSettingsPanel({ currentName, email }: Props) {
   return (
     <section className="backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-6 space-y-6">
       <div className="flex items-start gap-3 mb-2">
-        <div className="p-2 rounded-xl bg-indigo-500/15">
-          <User className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
+        <div className="p-2 rounded-xl bg-violet-500/15">
+          <User className="h-5 w-5 text-violet-500 dark:text-violet-400" />
         </div>
         <div>
           <h2 className="font-semibold text-app-fg">Personal Information</h2>
@@ -61,7 +61,7 @@ export function ProfileSettingsPanel({ currentName, email }: Props) {
             onChange={(e) => setName(e.target.value)}
             disabled={isPending}
             placeholder="Your full name"
-            className="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
+            className="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-60"
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleSave()
             }}
@@ -93,7 +93,7 @@ export function ProfileSettingsPanel({ currentName, email }: Props) {
           type="button"
           onClick={handleSave}
           disabled={isPending || !name.trim() || name.trim() === currentName}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
         >
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save Changes

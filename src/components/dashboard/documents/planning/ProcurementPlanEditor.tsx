@@ -68,7 +68,7 @@ export function ProcurementPlanEditor({
           {hasEditAccess && (
             <button
               onClick={startAdd}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium rounded-md transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-500 hover:bg-violet-600 text-white text-xs font-medium rounded-md transition-colors shadow-sm cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               Add Vendor
@@ -117,7 +117,7 @@ export function ProcurementPlanEditor({
                         <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => startEdit(entry)}
-                            className="p-1.5 text-app-muted hover:text-indigo-500 rounded hover:bg-app-hover transition-colors cursor-pointer"
+                            className="p-1.5 text-app-muted hover:text-violet-500 rounded hover:bg-app-hover transition-colors cursor-pointer"
                             title="Edit entry"
                           >
                             <Pencil className="w-4 h-4" />

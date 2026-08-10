@@ -68,6 +68,19 @@
   --color-app-toggle-fg: var(--app-toggle-fg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --animate-fade-in-up: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-float-slow: float-slow 4s ease-in-out infinite;
+
+  @keyframes fade-in-up {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
 }
 
 body {
@@ -79,7 +92,24 @@ body {
 
 @layer components {
   .auth-input {
-    @apply w-full pl-11 pr-4 py-3 bg-app-input border border-app-border rounded-2xl text-app-fg placeholder:text-app-subtle shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 disabled:opacity-50;
+    @apply w-full pl-11 pr-4 py-3 bg-app-input border border-app-border rounded-2xl text-app-fg placeholder:text-app-subtle shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all duration-200 disabled:opacity-50;
+  }
+
+  /* Landing Page Utilities (Linear-inspired + Brand Violet/Indigo) */
+  .landing-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold bg-white text-black hover:bg-slate-200 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .landing-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:text-white bg-transparent hover:bg-white/[0.03] rounded-xl border border-white/10 hover:border-violet-500/30 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .landing-card {
+    @apply rounded-xl bg-[#08090a] border border-white/[0.06] hover:border-violet-500/20 hover:bg-[#0c0d10] transition-all duration-300 p-7 flex flex-col justify-between relative overflow-hidden;
+  }
+
+  .landing-badge {
+    @apply inline-flex items-center gap-2 text-[11px] font-mono text-violet-300/70 border border-violet-500/20 bg-violet-500/[0.06] rounded-full px-3 py-1;
   }
 
   .auth-label {
@@ -91,25 +121,25 @@ body {
   }
 
   .auth-oauth-btn {
-    @apply py-3 px-4 bg-app-input hover:bg-app-hover border border-app-border hover:border-indigo-500/30 text-app-fg font-semibold rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50;
+    @apply py-3 px-4 bg-app-input hover:bg-app-hover border border-app-border hover:border-violet-500/30 text-app-fg font-semibold rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50;
   }
 
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
-    background-image: linear-gradient(to right, #7c3aed, #4f46e5);
-    box-shadow: 0 10px 15px -3px rgb(79 70 229 / 0.2);
+    background-image: linear-gradient(to right, #8b5cf6, #7c3aed);
+    box-shadow: 0 10px 15px -3px rgb(124 58 237 / 0.2);
   }
 
   .btn-primary:hover:not(:disabled) {
-    background-image: linear-gradient(to right, #8b5cf6, #6366f1);
+    background-image: linear-gradient(to right, #a78bfa, #8b5cf6);
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-app-fg bg-app-surface-solid hover:bg-app-hover rounded-xl border border-app-border shadow-sm ring-1 ring-transparent hover:ring-indigo-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-app-fg bg-app-surface-solid hover:bg-app-hover rounded-xl border border-app-border shadow-sm ring-1 ring-transparent hover:ring-violet-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .btn-icon {
-    @apply p-2 rounded-xl border border-app-border bg-app-surface-solid text-app-fg shadow-sm hover:text-indigo-600 hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-all cursor-pointer disabled:opacity-50;
+    @apply p-2 rounded-xl border border-app-border bg-app-surface-solid text-app-fg shadow-sm hover:text-violet-600 hover:bg-violet-500/10 hover:border-violet-500/30 transition-all cursor-pointer disabled:opacity-50;
   }
 
   .btn-icon-warning {
@@ -125,11 +155,11 @@ body {
   }
 
   .btn-ghost-accent {
-    @apply inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 px-2.5 py-1 rounded-lg border border-indigo-500/20 hover:border-indigo-500/35 cursor-pointer transition-all;
+    @apply inline-flex items-center gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 px-2.5 py-1 rounded-lg border border-violet-500/20 hover:border-violet-500/35 cursor-pointer transition-all;
   }
 
   .crud-card {
-    @apply flex flex-col gap-3 rounded-2xl border border-app-border bg-app-surface-solid p-5 shadow-sm transition-colors duration-200;
+    @apply flex flex-col gap-3 rounded-2xl border border-app-border bg-app-surface-solid p-5 shadow-sm transition-all duration-200 hover:border-violet-500/25 hover:shadow-[0_0_0_1px_rgba(124,58,237,0.06),0_4px_12px_rgba(124,58,237,0.04)];
   }
 
   .crud-panel {

@@ -163,7 +163,7 @@ export function DiscoveryInbox({ organizationId, projectId, hasEditAccess = true
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search insights..."
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all"
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
             />
           </div>
 
@@ -176,7 +176,7 @@ export function DiscoveryInbox({ organizationId, projectId, hasEditAccess = true
                 style={{ cursor: 'pointer' }}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
                   statusFilter === sf.value
-                    ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800'
+                    ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent'
                 }`}
               >

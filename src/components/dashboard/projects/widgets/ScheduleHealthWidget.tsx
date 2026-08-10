@@ -24,7 +24,7 @@ export default function ScheduleHealthWidget({
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-app-fg">Schedule Health</h3>
-          <Calendar className="h-5 w-5 text-indigo-500" />
+          <Calendar className="h-5 w-5 text-violet-500" />
         </div>
 
         {/* Circular Progress & Overall Percent */}
@@ -45,7 +45,7 @@ export default function ScheduleHealthWidget({
                 cx="40"
                 cy="40"
                 r="34"
-                className="text-indigo-500 transition-all duration-500 ease-out"
+                className="text-violet-500 transition-all duration-500 ease-out"
                 strokeWidth="6"
                 strokeDasharray={2 * Math.PI * 34}
                 strokeDashoffset={2 * Math.PI * 34 * (1 - pct / 100)}
@@ -94,7 +94,7 @@ export default function ScheduleHealthWidget({
           <div className="text-[10px] text-app-muted font-bold uppercase tracking-wide">Missed</div>
         </div>
         <div className="p-2 bg-gray-50 dark:bg-app-hover rounded-xl">
-          <div className="text-indigo-500 flex justify-center mb-1">
+          <div className="text-violet-500 flex justify-center mb-1">
             <Clock className="h-4 w-4" />
           </div>
           <div className="text-sm font-black text-app-fg">{milestoneUpcoming}</div>

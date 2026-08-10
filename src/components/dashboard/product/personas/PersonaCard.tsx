@@ -56,7 +56,7 @@ export function PersonaCard({ persona, onEdit, onDelete, hasEditAccess = true }:
               >
                 <button
                   onClick={() => onEdit(persona)}
-                  className="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  className="p-1.5 text-slate-500 hover:text-violet-600 dark:hover:text-violet-400 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   style={{ cursor: 'pointer' }}
                   title="Edit Persona"
                   type="button"
@@ -85,8 +85,8 @@ export function PersonaCard({ persona, onEdit, onDelete, hasEditAccess = true }:
 
           {/* Jobs to be Done */}
           {persona.jtbd_statement && (
-            <div className="mt-4 p-3 bg-indigo-50/60 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 rounded-lg">
-              <span className="block text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">
+            <div className="mt-4 p-3 bg-violet-50/60 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800/40 rounded-lg">
+              <span className="block text-[11px] font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1">
                 Jobs To Be Done (JTBD)
               </span>
               <p className="text-sm text-slate-700 dark:text-slate-200 font-medium italic">
@@ -132,8 +132,8 @@ export function PersonaCard({ persona, onEdit, onDelete, hasEditAccess = true }:
           {persona.custom_attributes && Object.keys(persona.custom_attributes).length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-700">
               {Object.entries(persona.custom_attributes).map(([k, v]) => (
-                <span key={k} className="px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40">
-                  <strong className="text-indigo-900 dark:text-indigo-200">{k}:</strong> {v}
+                <span key={k} className="px-2 py-0.5 rounded text-[11px] font-medium bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200/60 dark:border-violet-800/40">
+                  <strong className="text-violet-900 dark:text-violet-200">{k}:</strong> {v}
                 </span>
               ))}
             </div>

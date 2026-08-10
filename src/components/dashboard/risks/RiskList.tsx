@@ -92,7 +92,7 @@ export default function RiskList({
               placeholder="Search risks..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm bg-app-bg border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              className="w-full pl-9 pr-4 py-2 text-sm bg-app-bg border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/50"
             />
           </div>
           <div className="w-40">
@@ -131,7 +131,7 @@ export default function RiskList({
               setScrollToComments(false)
               setIsFormOpen(true)
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white text-sm font-semibold rounded-lg hover:bg-indigo-600 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-violet-500 text-white text-sm font-semibold rounded-lg hover:bg-violet-600 transition-colors shadow-sm"
           >
             <Plus className="h-4 w-4" />
             Log Risk
@@ -177,14 +177,14 @@ export default function RiskList({
                       <p className="text-sm text-app-muted line-clamp-2 mb-2">{risk.description}</p>
                     )}
                     {risk.mitigation_plan && (
-                      <div className="mb-3 p-2.5 bg-indigo-500/5 border border-indigo-500/10 rounded-md">
-                        <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 mb-0.5">Mitigation Plan</p>
+                      <div className="mb-3 p-2.5 bg-violet-500/5 border border-violet-500/10 rounded-md">
+                        <p className="text-xs font-semibold text-violet-700 dark:text-violet-400 mb-0.5">Mitigation Plan</p>
                         <p className="text-sm text-app-muted line-clamp-2">{risk.mitigation_plan}</p>
                       </div>
                     )}
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-app-muted font-medium">
                       <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        <span className="w-2 h-2 rounded-full bg-violet-500"></span>
                         Status: <span className="text-app-fg">{risk.status}</span>
                       </span>
                       {risk.response_strategy && (
@@ -215,7 +215,7 @@ export default function RiskList({
                         setScrollToComments(true)
                         setIsFormOpen(true)
                       }}
-                      className="p-2 text-app-muted hover:text-indigo-400 hover:bg-app-surface border border-transparent hover:border-app-border rounded-lg transition-all"
+                      className="p-2 text-app-muted hover:text-violet-400 hover:bg-app-surface border border-transparent hover:border-app-border rounded-lg transition-all"
                       title="View Comments"
                     >
                       <MessageSquare className="h-4 w-4" />
@@ -230,7 +230,7 @@ export default function RiskList({
                             setScrollToComments(false)
                             setIsFormOpen(true)
                           }}
-                          className="p-2 text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-colors"
+                          className="p-2 text-app-muted hover:text-violet-500 hover:bg-violet-500/10 rounded-lg transition-colors"
                           title="Edit Risk"
                         >
                           <Edit2 className="h-4 w-4" />

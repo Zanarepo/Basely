@@ -158,10 +158,10 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
       {toastNotification && !isOpen && (
         <div 
           onClick={handleToastClick}
-          className="fixed bottom-24 right-6 z-50 max-w-xs bg-app-card border border-indigo-500/30 shadow-2xl rounded-2xl p-4 cursor-pointer hover:border-indigo-500 transition-all animate-in fade-in slide-in-from-bottom-6 duration-300 group"
+          className="fixed bottom-24 right-6 z-50 max-w-xs bg-app-card border border-violet-500/30 shadow-2xl rounded-2xl p-4 cursor-pointer hover:border-violet-500 transition-all animate-in fade-in slide-in-from-bottom-6 duration-300 group"
         >
           <div className="flex items-center justify-between gap-2 mb-1">
-            <div className="flex items-center gap-1.5 text-xs font-black text-indigo-600 dark:text-indigo-400">
+            <div className="flex items-center gap-1.5 text-xs font-black text-violet-600 dark:text-violet-400">
               <Bell className="w-3.5 h-3.5 animate-bounce" />
               <span>{toastNotification.title}</span>
             </div>
@@ -175,7 +175,7 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
           <p className="text-xs text-app-fg line-clamp-2 font-medium bg-app-surface/50 p-2 rounded-lg border border-app-border mt-1">
             {toastNotification.body}
           </p>
-          <div className="text-[10px] font-bold text-indigo-500 mt-2 text-right opacity-80 group-hover:underline">
+          <div className="text-[10px] font-bold text-violet-500 mt-2 text-right opacity-80 group-hover:underline">
             Click to reply in Chat Head &rarr;
           </div>
         </div>
@@ -185,9 +185,9 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-[380px] md:w-[440px] h-[620px] max-h-[82vh] bg-app-card border border-app-border rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}
-          <div className="px-5 py-4 border-b border-app-border bg-gradient-to-r from-indigo-900/40 via-app-surface to-app-surface flex items-center justify-between shrink-0">
+          <div className="px-5 py-4 border-b border-app-border bg-gradient-to-r from-violet-900/40 via-app-surface to-app-surface flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-md font-black text-xs">
+              <div className="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center shadow-md font-black text-xs">
                 <MessageSquare className="w-4 h-4" />
               </div>
               <div>
@@ -226,7 +226,7 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
                 <div className="p-3 border-b border-app-border bg-app-surface/60 flex items-center justify-between text-xs shrink-0">
                   <button
                     onClick={() => setSelectedTicket(null)}
-                    className="inline-flex items-center font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                    className="inline-flex items-center font-bold text-violet-600 dark:text-violet-400 hover:underline"
                   >
                     <ChevronLeft className="w-4 h-4 mr-1" />
                     All Conversations
@@ -309,7 +309,7 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
                     <Link
                       href={mode === 'admin' ? '/backoffice/support' : '/dashboard/support'}
                       onClick={() => setIsOpen(false)}
-                      className="mt-4 inline-block px-4 py-2 bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-xl font-bold text-xs hover:bg-indigo-600/20 transition-all"
+                      className="mt-4 inline-block px-4 py-2 bg-violet-600/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 rounded-xl font-bold text-xs hover:bg-violet-600/20 transition-all"
                     >
                       Open Support Console &rarr;
                     </Link>
@@ -328,7 +328,7 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
                         <div className="flex items-center justify-between text-xs gap-2">
                           <span className="font-black text-app-fg flex items-center gap-1.5 truncate">
                             {mode === 'admin' && (
-                              <span className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-md text-[10px] font-extrabold border border-indigo-500/20 shrink-0 flex items-center gap-1 max-w-[150px] truncate" title={`${t.organizations?.name || 'Tenant'}${t.projects?.name ? ` (${t.projects.name})` : ''}`}>
+                              <span className="bg-violet-500/10 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded-md text-[10px] font-extrabold border border-violet-500/20 shrink-0 flex items-center gap-1 max-w-[150px] truncate" title={`${t.organizations?.name || 'Tenant'}${t.projects?.name ? ` (${t.projects.name})` : ''}`}>
                                 <Building2 className="w-3 h-3 shrink-0" />
                                 <span className="truncate">{t.organizations?.name || 'Tenant'}{t.projects?.name ? ` (${t.projects.name})` : ''}</span>
                               </span>
@@ -346,7 +346,7 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
 
                         {latest && (
                           <div className="bg-app-surface/60 p-2.5 rounded-xl border border-app-border/60 text-xs text-app-muted flex items-start gap-2">
-                            <User className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                            <User className="w-3.5 h-3.5 text-violet-500 shrink-0 mt-0.5" />
                             <div className="flex-1 overflow-hidden">
                               <span className="font-extrabold text-app-fg text-[11px] block truncate">
                                 {latest.sender_name || (latest.is_staff_reply ? 'Account Manager' : 'Customer')}
@@ -365,7 +365,7 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
 
                         <div className="flex items-center justify-between text-[10px] text-app-muted pt-1 border-t border-app-border/30">
                           <span>{t.messageCount || 1} messages in thread</span>
-                          <span className="font-bold text-indigo-600 dark:text-indigo-400 group-hover:underline flex items-center gap-1">
+                          <span className="font-bold text-violet-600 dark:text-violet-400 group-hover:underline flex items-center gap-1">
                             Reply in Chat &rarr;
                           </span>
                         </div>
@@ -383,7 +383,7 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
             <Link
               href={mode === 'admin' ? '/backoffice/support' : '/dashboard/support'}
               onClick={() => setIsOpen(false)}
-              className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1.5"
+              className="font-bold text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1.5"
             >
               <span>Open full {mode === 'admin' ? 'Backoffice' : 'Dashboard'} Support Console</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -399,7 +399,7 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
           if (!isOpen) setUnreadCount(0)
         }}
         title="Support Conversations & Live Chat"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-600 text-white shadow-xl hover:shadow-indigo-500/40 hover:scale-105 active:scale-95 transition-all flex items-center justify-center group border border-white/20 cursor-pointer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-tr from-violet-600 via-violet-500 to-violet-600 text-white shadow-xl hover:shadow-violet-500/40 hover:scale-105 active:scale-95 transition-all flex items-center justify-center group border border-white/20 cursor-pointer"
       >
         <MessageSquare className="w-6 h-6 transform group-hover:rotate-12 transition-transform" />
         

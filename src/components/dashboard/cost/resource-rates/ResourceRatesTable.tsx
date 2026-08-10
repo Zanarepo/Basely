@@ -75,7 +75,7 @@ export function ResourceRatesTable({
               placeholder="Search resources..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-app-fg"
+              className="w-full pl-9 pr-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 text-app-fg"
             />
           </div>
           {hasEditAccess && !isCreating && (
@@ -98,7 +98,7 @@ export function ResourceRatesTable({
               </button>
               <button
                 onClick={startCreate}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium transition-colors shrink-0"
+                className="flex items-center justify-center gap-2 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-medium transition-colors shrink-0"
               >
                 <Plus className="w-4 h-4" />
                 Add Resource
@@ -117,7 +117,7 @@ export function ResourceRatesTable({
                   type="checkbox"
                   checked={selectedIds.length === filteredRates.length && filteredRates.length > 0}
                   onChange={handleSelectAll}
-                  className="w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer"
+                  className="w-3.5 h-3.5 rounded border-app-border text-violet-600 focus:ring-violet-500 bg-app-surface cursor-pointer"
                 />
               </th>
               <th className="px-4 py-3 font-medium">Name</th>
@@ -131,7 +131,7 @@ export function ResourceRatesTable({
 
             {filteredRates.map(r => {
               return (
-                <tr key={r.id} className={`hover:bg-app-hover transition-colors group ${selectedIds.includes(r.id) ? 'bg-indigo-500/5' : ''}`}>
+                <tr key={r.id} className={`hover:bg-app-hover transition-colors group ${selectedIds.includes(r.id) ? 'bg-violet-500/5' : ''}`}>
                   <td className="px-4 py-3">
                     <input
                       type="checkbox"
@@ -143,7 +143,7 @@ export function ResourceRatesTable({
                           setSelectedIds(prev => prev.filter(id => id !== r.id))
                         }
                       }}
-                      className={`w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
+                      className={`w-3.5 h-3.5 rounded border-app-border text-violet-600 focus:ring-violet-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
                     />
                   </td>
                   <td className="px-4 py-3 font-medium text-app-fg">{r.name}</td>
@@ -162,7 +162,7 @@ export function ResourceRatesTable({
                   <td className="px-4 py-3 text-right">
                     {hasEditAccess && (
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => startEdit(r)} className="p-1.5 text-app-muted hover:text-indigo-400 hover:bg-app-bg rounded-lg">
+                        <button onClick={() => startEdit(r)} className="p-1.5 text-app-muted hover:text-violet-400 hover:bg-app-bg rounded-lg">
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button onClick={() => handleDelete(r.id)} className="p-1.5 text-app-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg">
@@ -180,7 +180,7 @@ export function ResourceRatesTable({
                 <td colSpan={5} className="px-4 py-8 text-center text-app-muted">
                   <p>No resource rates defined yet.</p>
                   {hasEditAccess && (
-                    <button onClick={startCreate} className="mt-2 text-indigo-500 hover:text-indigo-400 font-medium text-sm">
+                    <button onClick={startCreate} className="mt-2 text-violet-500 hover:text-violet-400 font-medium text-sm">
                       Create your first resource
                     </button>
                   )}

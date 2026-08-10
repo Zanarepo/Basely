@@ -162,7 +162,7 @@ export function WebhooksPanel() {
                   value={newUrl}
                   onChange={(e) => setNewUrl(e.target.value)}
                   placeholder="https://your-domain.com/webhook"
-                  className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:border-violet-500"
                   required
                 />
               </div>
@@ -181,7 +181,7 @@ export function WebhooksPanel() {
               <button
                 type="submit"
                 disabled={isCreating || !newUrl.trim()}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer"
               >
                 {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 Add Endpoint

@@ -180,11 +180,11 @@ export function TicketThreadClient({
               }`}>
                 {!isRightSide && (
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                    <span className="text-xs font-bold text-violet-600 dark:text-violet-400">
                       {senderInfo.name}
                     </span>
                     {senderInfo.role && (
-                      <span className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-[10px] font-black px-2 py-0.5 rounded-full tracking-wide uppercase">
+                      <span className="bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 text-[10px] font-black px-2 py-0.5 rounded-full tracking-wide uppercase">
                         {senderInfo.role}
                       </span>
                     )}
@@ -222,7 +222,7 @@ export function TicketThreadClient({
             <button 
               type="submit"
               disabled={loading || !message.trim()}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 text-sm"
+              className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-bold transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 text-sm"
             >
               <span>Send</span>
               <Send className="w-4 h-4" />

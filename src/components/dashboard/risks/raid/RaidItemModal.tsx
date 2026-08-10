@@ -6,6 +6,7 @@ import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 import { upsertRaidEntry, type RaidLogEntry, type RaidCategory, type RaidStatus, type RaidPriority } from '@/lib/raid/actions'
 import { getWbsElements } from '@/lib/wbs/actions'
 import type { WbsElement } from '@/lib/wbs/constants'
+import { getTerminology } from '@/utils/terminology'
 
 interface RaidItemModalProps {
   isOpen: boolean
@@ -65,10 +66,12 @@ export default function RaidItemModal({
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Real WBS DB retrieval and multi-select state
   const [wbsElements, setWbsElements] = useState<WbsElement[]>([])
   const [loadingWbs, setLoadingWbs] = useState(false)
   const [wbsSearch, setWbsSearch] = useState('')
+  
+  const terms = getTerminology(methodology)
+
   const [selectedWbsIds, setSelectedWbsIds] = useState<string[]>(() => {
     if (!initialData?.linked_wbs_element_id) return []
     return initialData.linked_wbs_element_id
@@ -203,9 +206,9 @@ export default function RaidItemModal({
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-app-surface border border-app-border rounded-3xl shadow-2xl flex flex-col">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-app-border bg-gradient-to-r from-indigo-600/10 via-purple-600/5 to-transparent sticky top-0 z-10 backdrop-blur-md shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-app-border bg-gradient-to-r from-violet-600/10 via-purple-600/5 to-transparent sticky top-0 z-10 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-400 shadow-inner">
+            <div className="p-2.5 rounded-2xl bg-violet-500/15 border border-violet-500/25 text-violet-400 shadow-inner">
               <GitBranch className="w-5 h-5" />
             </div>
             <div>
@@ -266,7 +269,7 @@ export default function RaidItemModal({
           {/* Title input */}
           <div>
             <label className="text-xs font-bold text-app-fg uppercase tracking-wider block mb-1.5">
-              Item Summary / Headline <span className="text-indigo-500">*</span>
+              Item Summary / Headline <span className="text-violet-500">*</span>
             </label>
             <input
               type="text"
@@ -279,14 +282,14 @@ export default function RaidItemModal({
                   ? "e.g., Dependency: Stripe Beta EU Bank Transfer API Access sign-off from External FinTech Team"
                   : "e.g., Risk: AWS Spot Instance interruption rate might delay background job processing"
               }
-              className="w-full px-3.5 py-2 rounded-xl bg-app-input border border-app-border text-app-fg text-xs font-medium focus:ring-1 focus:ring-indigo-500 outline-none"
+              className="w-full px-3.5 py-2 rounded-xl bg-app-input border border-app-border text-app-fg text-xs font-medium focus:ring-1 focus:ring-violet-500 outline-none"
               required
             />
           </div>
 
           {/* Conditional Category Smart Fields */}
           <div className="p-4 rounded-2xl bg-app-input/50 border border-app-border/80 space-y-4">
-            <span className="text-xs font-black uppercase text-indigo-400 tracking-wider block">
+            <span className="text-xs font-black uppercase text-violet-400 tracking-wider block">
               ⚡ Smart Category Governance Fields ({category.toUpperCase()})
             </span>
 
@@ -323,15 +326,15 @@ export default function RaidItemModal({
             {isDependency && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
                 <div>
-                  <label className="text-xs font-bold text-indigo-300 flex items-center gap-1 mb-1.5">
-                    <User className="w-3.5 h-3.5 text-indigo-400" /> External Owner / Vendor Team *
+                  <label className="text-xs font-bold text-violet-300 flex items-center gap-1 mb-1.5">
+                    <User className="w-3.5 h-3.5 text-violet-400" /> External Owner / Vendor Team *
                   </label>
                   <input
                     type="text"
                     value={externalOwner}
                     onChange={(e) => setExternalOwner(e.target.value)}
                     placeholder="e.g., Legal Team EU, Stripe External Partner, Hardware Ops"
-                    className="w-full px-3.5 py-2 rounded-xl bg-app-surface border border-indigo-500/40 text-app-fg text-xs outline-none"
+                    className="w-full px-3.5 py-2 rounded-xl bg-app-surface border border-violet-500/40 text-app-fg text-xs outline-none"
                     required
                   />
                 </div>
@@ -387,18 +390,18 @@ export default function RaidItemModal({
           </div>
 
           {/* Bidirectional WBS Multi-Select Governance Bridge */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-app-input/50 border border-indigo-500/20 space-y-3">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/5 via-purple-500/5 to-app-input/50 border border-violet-500/20 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-indigo-400 dark:text-indigo-300 tracking-wider flex items-center gap-1.5">
-                <Link2 className="w-4 h-4 text-indigo-400" />
+              <span className="text-xs font-black uppercase text-violet-400 dark:text-violet-300 tracking-wider flex items-center gap-1.5">
+                <Link2 className="w-4 h-4 text-violet-400" />
                 WBS & Deliverable Multi-Linkage ({selectedWbsIds.length} selected)
               </span>
-              <span className="text-[10px] font-bold bg-indigo-500/15 text-indigo-400 px-2 py-0.5 rounded-full border border-indigo-500/25">
+              <span className="text-[10px] font-bold bg-violet-500/15 text-violet-400 px-2 py-0.5 rounded-full border border-violet-500/25">
                 Hierarchical Inheritance
               </span>
             </div>
             <p className="text-xs text-app-muted leading-relaxed">
-              Tagging a <strong>Parent Container</strong> automatically broadcasts this dependency to all child work packages in the WBS side panel. Tagging a <strong>Work Package</strong> isolates the linkage to that specific deliverable.
+              Tagging an <strong>{terms.planTier}</strong> automatically broadcasts this dependency to all child elements in the WBS side panel. Tagging a <strong>{terms.workPackage}</strong> isolates the linkage to that specific deliverable.
             </p>
 
             {selectedWbsIds.length > 0 && (
@@ -406,12 +409,12 @@ export default function RaidItemModal({
                 {selectedWbsIds.map(id => {
                   const el = wbsElements.find(w => w.id === id)
                   return (
-                    <span key={id} className="inline-flex items-center gap-1 text-xs font-bold bg-indigo-600 text-white px-2.5 py-1 rounded-lg shadow-xs animate-in zoom-in-95">
+                    <span key={id} className="inline-flex items-center gap-1 text-xs font-bold bg-violet-600 text-white px-2.5 py-1 rounded-lg shadow-xs animate-in zoom-in-95">
                       <span>{el ? `${el.code} - ${el.name}` : `WBS: ${id}`}</span>
                       <button
                         type="button"
                         onClick={() => handleToggleWbs(id)}
-                        className="hover:bg-indigo-700 rounded-full p-0.5 ml-1 transition-colors cursor-pointer"
+                        className="hover:bg-violet-700 rounded-full p-0.5 ml-1 transition-colors cursor-pointer"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -423,7 +426,7 @@ export default function RaidItemModal({
 
             {loadingWbs ? (
               <div className="flex items-center justify-center gap-2 py-6 text-xs text-app-muted">
-                <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                <Loader2 className="w-4 h-4 animate-spin text-violet-500" />
                 <span>Retrieving project WBS deliverable hierarchy...</span>
               </div>
             ) : wbsElements.length === 0 ? (
@@ -439,7 +442,7 @@ export default function RaidItemModal({
                     value={wbsSearch}
                     onChange={(e) => setWbsSearch(e.target.value)}
                     placeholder="Search WBS hierarchy by code or deliverable name..."
-                    className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-app-surface border border-app-border text-xs text-app-fg outline-none focus:border-indigo-500"
+                    className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-app-surface border border-app-border text-xs text-app-fg outline-none focus:border-violet-500"
                   />
                 </div>
                 <div className="max-h-44 overflow-y-auto border border-app-border/80 rounded-xl bg-app-surface/60 divide-y divide-app-border/40">
@@ -452,26 +455,26 @@ export default function RaidItemModal({
                           key={el.id}
                           onClick={() => handleToggleWbs(el.id)}
                           className={`flex items-center justify-between p-2.5 hover:bg-app-hover/60 transition-colors cursor-pointer ${
-                            isChecked ? 'bg-indigo-500/10' : ''
+                            isChecked ? 'bg-violet-500/10' : ''
                           }`}
                         >
                           <div className="flex items-center gap-2.5 overflow-hidden pr-2">
                             <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
-                              isChecked ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-app-border bg-app-input'
+                              isChecked ? 'bg-violet-600 border-violet-600 text-white' : 'border-app-border bg-app-input'
                             }`}>
                               {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
                             </div>
-                            <span className="text-xs font-extrabold text-indigo-400 shrink-0">{el.code}</span>
+                            <span className="text-xs font-extrabold text-violet-400 shrink-0">{el.code}</span>
                             <span className="text-xs font-medium text-app-fg truncate">{el.name}</span>
                           </div>
                           <div className="shrink-0 pl-2">
                             {!el.isWorkPackage ? (
-                              <span className="text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold px-1.5 py-0.5 rounded flex items-center gap-1" title="Linking here broadcasts to all child work packages under this parent">
-                                <Folder className="w-2.5 h-2.5" /> Parent Container
+                              <span className="text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold px-1.5 py-0.5 rounded flex items-center gap-1" title="Linking here broadcasts to all child elements under this parent">
+                                <Folder className="w-2.5 h-2.5" /> {terms.planTier}
                               </span>
                             ) : (
-                              <span className="text-[10px] bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
-                                <Layers className="w-2.5 h-2.5" /> Work Package
+                              <span className="text-[10px] bg-violet-500/15 text-violet-600 dark:text-violet-400 border border-violet-500/30 font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                                <Layers className="w-2.5 h-2.5" /> {terms.workPackage}
                               </span>
                             )}
                           </div>
@@ -493,7 +496,7 @@ export default function RaidItemModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Provide background analysis, potential impact on budget/schedule, or trigger circumstances..."
-              className="w-full p-3 rounded-xl bg-app-input border border-app-border text-app-fg text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full p-3 rounded-xl bg-app-input border border-app-border text-app-fg text-xs outline-none focus:ring-1 focus:ring-violet-500"
             />
           </div>
 
@@ -511,7 +514,7 @@ export default function RaidItemModal({
                   ? "Describe exact synthetic benchmark load tests or user interview validations planned before deadline..."
                   : "Detail proactive risk containment protocols or fallback architectural approaches..."
               }
-              className="w-full p-3 rounded-xl bg-app-input border border-app-border text-app-fg text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full p-3 rounded-xl bg-app-input border border-app-border text-app-fg text-xs outline-none focus:ring-1 focus:ring-violet-500"
             />
           </div>
 
@@ -527,7 +530,7 @@ export default function RaidItemModal({
             <button
               type="submit"
               disabled={isSaving}
-              className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold shadow-lg shadow-indigo-600/25 transition-all flex items-center gap-2 cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold shadow-lg shadow-violet-600/25 transition-all flex items-center gap-2 cursor-pointer"
             >
               {isSaving ? (
                 <>

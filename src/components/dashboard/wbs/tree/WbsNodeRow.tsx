@@ -40,6 +40,7 @@ export function WbsNodeRow({
   callerRole,
   showFinancials,
   currency = 'USD',
+  terms,
 }: WbsNodeRowProps) {
   const { element, children } = node
   const isExpanded = expandedNodeIds.has(element.id)
@@ -77,11 +78,11 @@ export function WbsNodeRow({
   // Highlight style mapping for drop positions
   let dropBorderClass = 'border-transparent'
   if (dropPosition === 'before') {
-    dropBorderClass = 'border-t-2 border-indigo-500'
+    dropBorderClass = 'border-t-2 border-violet-500'
   } else if (dropPosition === 'after') {
-    dropBorderClass = 'border-b-2 border-indigo-500'
+    dropBorderClass = 'border-b-2 border-violet-500'
   } else if (dropPosition === 'inside') {
-    dropBorderClass = 'border-2 border-indigo-500 bg-indigo-500/5'
+    dropBorderClass = 'border-2 border-violet-500 bg-violet-500/5'
   }
 
   const isActive = activeElementId === element.id
@@ -111,7 +112,7 @@ export function WbsNodeRow({
           isActive || selectedIds.includes(element.id)
             ? isMilestone
               ? 'bg-amber-500/15 border-amber-500/40 dark:border-amber-500/30 shadow-xs'
-              : 'bg-indigo-500/10 border-indigo-500/30 dark:border-indigo-500/25 shadow-xs'
+              : 'bg-violet-500/10 border-violet-500/30 dark:border-violet-500/25 shadow-xs'
             : isMilestone
               ? 'bg-amber-500/5 dark:bg-amber-950/20 border-amber-500/20 hover:bg-amber-500/10'
               : 'bg-app-surface-solid border-app-border hover:bg-app-hover hover:border-app-border'
@@ -124,7 +125,7 @@ export function WbsNodeRow({
               type="checkbox"
               checked={selectedIds.includes(element.id)}
               onChange={() => toggleSelection(element.id)}
-              className={`w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer ml-1 transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover/row:opacity-100 focus:opacity-100'}`}
+              className={`w-3.5 h-3.5 rounded border-app-border text-violet-500 focus:ring-violet-500 bg-app-surface cursor-pointer ml-1 transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover/row:opacity-100 focus:opacity-100'}`}
             />
           </div>
           {/* Collapse/Expand Toggle Arrow */}
@@ -171,7 +172,7 @@ export function WbsNodeRow({
                   onChange={(e) => setEditName(e.target.value)}
                   onKeyDown={handleKeyDown}
                   onBlur={handleSaveRename}
-                  className="px-2.5 py-1 bg-app-input border border-indigo-500 rounded-lg text-sm text-app-fg focus:outline-none focus:ring-1 focus:ring-indigo-500 max-w-sm"
+                  className="px-2.5 py-1 bg-app-input border border-violet-500 rounded-lg text-sm text-app-fg focus:outline-none focus:ring-1 focus:ring-violet-500 max-w-sm"
                 />
                 <button
                   type="button"
@@ -201,7 +202,7 @@ export function WbsNodeRow({
                 ) : element.isWorkPackage ? (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/20">
                     <FileCheck className="h-3 w-3" />
-                    Work Package
+                    {terms.workPackage}
                   </span>
                 ) : null}
               </div>
@@ -269,7 +270,7 @@ export function WbsNodeRow({
                 type="button"
                 title="Rename item"
                 onClick={handleStartRename}
-                className="p-1.5 text-app-muted hover:text-indigo-500 hover:bg-app-hover rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-app-muted hover:text-violet-500 hover:bg-app-hover rounded-lg transition-colors cursor-pointer"
               >
                 <Edit2 className="h-3.5 w-3.5" />
               </button>
@@ -280,7 +281,7 @@ export function WbsNodeRow({
                   e.stopPropagation()
                   onAddSibling(element)
                 }}
-                className="p-1.5 text-app-muted hover:text-indigo-500 hover:bg-app-hover rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-app-muted hover:text-violet-500 hover:bg-app-hover rounded-lg transition-colors cursor-pointer"
               >
                 <Plus className="h-3.5 w-3.5" />
               </button>
@@ -291,7 +292,7 @@ export function WbsNodeRow({
                   e.stopPropagation()
                   onAddChild(element)
                 }}
-                className="p-1.5 text-app-muted hover:text-indigo-500 hover:bg-app-hover rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-app-muted hover:text-violet-500 hover:bg-app-hover rounded-lg transition-colors cursor-pointer"
               >
                 <FolderPlus className="h-3.5 w-3.5" />
               </button>
@@ -341,6 +342,7 @@ export function WbsNodeRow({
               callerRole={callerRole}
               showFinancials={showFinancials}
               currency={currency}
+              terms={terms}
             />
           ))}
         </div>

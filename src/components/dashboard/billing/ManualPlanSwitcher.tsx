@@ -23,6 +23,10 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
   const [isLoadingPricing, setIsLoadingPricing] = useState(true)
   const [isCheckoutLoading, setIsCheckoutLoading] = useState<TierId | null>(null)
   
+  // Dynamic DB state
+  const [basePrices, setBasePrices] = useState<Record<TierId, number>>({ free: 0, premium: 49, enterprise: 199 })
+  const [dynamicRegion, setDynamicRegion] = useState<RegionalPricing | undefined>(undefined)
+  
   // Promo State
   const [promoInput, setPromoInput] = useState('')
   const [appliedPromo, setAppliedPromo] = useState<PromoValidationResult | null>(null)
@@ -48,24 +52,58 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
     localStorage.setItem('zanarepo_billing_cycle', value ? 'auto' : 'manual')
   }
 
-  // Standard USD prices
-  const basePrices: Record<TierId, number> = {
-    free: 0,
-    premium: 25,
-    enterprise: 65
-  }
-
   useEffect(() => {
-    // Detect geo location for PPP pricing
-    fetch('/api/location')
-      .then(res => res.json())
-      .then(data => {
-        if (data.countryCode) {
-          setCountryCode(data.countryCode)
+    // Detect geo location for PPP pricing and fetch dynamic tiers/discounts
+    const initPricing = async () => {
+      try {
+        const { createClient } = await import('@/utils/supabase/client')
+        const supabase = createClient()
+        
+        // Fetch subscription tiers (flat rate)
+        const { data: tiersData } = await supabase
+          .from('subscription_tiers')
+          .select('*')
+          .eq('billing_model', 'flat_rate')
+        
+        if (tiersData && tiersData.length > 0) {
+          const newPrices = { free: 0, premium: 49, enterprise: 199 }
+          tiersData.forEach(t => {
+            if (t.id === 'free') newPrices.free = Number(t.price_per_seat) || 0
+            if (t.id === 'premium') newPrices.premium = Number(t.price_per_seat) || 49
+            if (t.id === 'enterprise') newPrices.enterprise = Number(t.price_per_seat) || 199
+          })
+          setBasePrices(newPrices as Record<TierId, number>)
         }
-      })
-      .catch(console.error)
-      .finally(() => setIsLoadingPricing(false))
+
+        // Fetch location
+        const res = await fetch('/api/location')
+        const locData = await res.json()
+        const code = locData.countryCode || 'US'
+        setCountryCode(code)
+
+        // Fetch regional discount config for this country
+        const { data: regionData } = await supabase
+          .from('regional_discounts')
+          .select('*')
+          .eq('country_code', code)
+          .single()
+        
+        if (regionData) {
+          setDynamicRegion({
+            countryCode: regionData.country_code,
+            currency: regionData.currency as any,
+            discountMultiplier: Number(regionData.discount_multiplier),
+            exchangeRateToUsd: Number(regionData.exchange_rate_to_usd)
+          })
+        }
+      } catch (err) {
+        console.error('Error fetching pricing data:', err)
+      } finally {
+        setIsLoadingPricing(false)
+      }
+    }
+    
+    initPricing()
   }, [])
 
   const handleApplyPromo = async () => {
@@ -90,7 +128,7 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
       return
     }
 
-    const priceInfo = calculatePppPrice(basePrices[targetTier], countryCode)
+    const priceInfo = calculatePppPrice(basePrices[targetTier], countryCode, dynamicRegion)
     
     // Create Paystack checkout session
     const res = await createCheckoutSessionAction(
@@ -115,7 +153,7 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
 
   const tiers: { id: TierId; name: string; badge: string; color: string }[] = [
     { id: 'free', name: 'Free Starter', badge: 'Basic 1 Proj', color: 'from-gray-600 to-slate-700' },
-    { id: 'premium', name: 'Premium', badge: 'Unlimited + Starter + Biz', color: 'from-blue-600 to-indigo-600' },
+    { id: 'premium', name: 'Premium', badge: 'Unlimited + Starter + Biz', color: 'from-blue-600 to-violet-600' },
     { id: 'enterprise', name: 'Enterprise', badge: 'Full Gov & ERP', color: 'from-purple-600 to-fuchsia-600' },
   ]
 
@@ -129,7 +167,7 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-lg">
+          <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center text-violet-600 dark:text-violet-400 font-bold text-lg">
             💳
           </div>
           <div>
@@ -150,7 +188,7 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
               isTrialing
                 ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30'
                 : tier === 'enterprise'
-                ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30'
+                ? 'bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-500/30'
                 : tier === 'premium'
                 ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30'
                 : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
@@ -171,14 +209,14 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
           <button 
             style={{ cursor: 'pointer' }}
             onClick={() => handleSetAutoRenew(true)}
-            className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${isAutoRenew ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+            className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${isAutoRenew ? 'bg-violet-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
           >
             Auto-Renew Monthly
           </button>
           <button 
             style={{ cursor: 'pointer' }}
             onClick={() => handleSetAutoRenew(false)}
-            className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${!isAutoRenew ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+            className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${!isAutoRenew ? 'bg-violet-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
           >
             Manual 1-Month
           </button>
@@ -199,7 +237,7 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
               onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
               disabled={!!appliedPromo?.valid}
               placeholder="e.g. SUMMER50"
-              className="bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-48"
+              className="bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 w-full sm:w-48"
             />
             {appliedPromo?.valid ? (
               <button
@@ -212,7 +250,7 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
               <button
                 onClick={handleApplyPromo}
                 disabled={!promoInput.trim() || isVerifyingPromo}
-                className="px-3 py-1.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 cursor-pointer"
+                className="px-3 py-1.5 bg-violet-600 text-white text-sm font-bold rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {isVerifyingPromo ? '...' : 'Apply'}
               </button>
@@ -239,7 +277,7 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
             const isSelected = tier === t.id && (!isExpired || t.id === 'free')
             
             // Calculate localized price
-            const baseInfo = calculatePppPrice(basePrices[t.id], countryCode)
+            const baseInfo = calculatePppPrice(basePrices[t.id], countryCode, dynamicRegion)
             
             // Apply Promo if valid
             let finalPrice = baseInfo.finalAmount
@@ -256,20 +294,20 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
                 key={t.id}
                 className={`flex flex-col justify-between p-5 rounded-2xl border transition-all duration-300 ${
                   isSelected
-                    ? 'bg-white dark:bg-gray-800 border-indigo-500 ring-1 ring-indigo-500 shadow-sm'
+                    ? 'bg-white dark:bg-gray-800 border-violet-500 ring-1 ring-violet-500 shadow-sm'
                     : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 shadow-sm'
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between gap-1 mb-2">
                     <strong className="text-base text-gray-900 dark:text-white font-extrabold">{t.name}</strong>
-                    {isSelected && <span className="text-sm text-indigo-600 dark:text-indigo-400 font-bold">✓ Active</span>}
+                    {isSelected && <span className="text-sm text-violet-600 dark:text-violet-400 font-bold">✓ Active</span>}
                   </div>
                   
                   {/* Pricing Display */}
                   <div className="mb-3">
                     {t.id === 'free' ? (
-                      <span className="text-2xl font-black text-gray-900 dark:text-white">{formatCurrency(0, baseInfo.currency)}<span className="text-xs text-gray-500 dark:text-gray-400 font-normal">/seat</span></span>
+                      <span className="text-2xl font-black text-gray-900 dark:text-white">{formatCurrency(0, baseInfo.currency)}<span className="text-xs text-gray-500 dark:text-gray-400 font-normal">/month</span></span>
                     ) : isLoadingPricing ? (
                       <span className="text-sm text-gray-400 animate-pulse">Calculating local price...</span>
                     ) : (
@@ -281,13 +319,13 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
                             </span>
                             <div className="flex items-end gap-1">
                               <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{formatCurrency(finalPrice, baseInfo.currency)}</span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400 font-normal mb-1">/seat</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400 font-normal mb-1">/month</span>
                             </div>
                           </div>
                         ) : (
                           <div className="flex items-end gap-1">
                             <span className="text-2xl font-black text-gray-900 dark:text-white">{formatCurrency(finalPrice, baseInfo.currency)}</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 font-normal mb-1">/seat</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 font-normal mb-1">/month</span>
                           </div>
                         )}
                         {baseInfo.discountPercentage > 0 && (
@@ -301,7 +339,7 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
                     )}
                   </div>
                   
-                  <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium block">{t.badge}</span>
+                  <span className="text-xs text-violet-600 dark:text-violet-400 font-medium block">{t.badge}</span>
                 </div>
 
                 {/* Hover-revealed button */}
@@ -316,7 +354,7 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
                   } ${
                     isSelected
                       ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed border border-gray-200 dark:border-white/5'
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
+                      : 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm'
                   }`}
                 >
                   {isCheckoutLoading === t.id ? (

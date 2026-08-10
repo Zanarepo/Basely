@@ -110,7 +110,7 @@ export function ErpIntegrationContainer() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 dark:border-gray-800 pb-5">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white shadow-md shadow-indigo-500/20 flex-shrink-0">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 text-white shadow-md shadow-violet-500/20 flex-shrink-0">
             <Layers className="w-6 h-6 animate-pulse-slow" />
           </div>
           <div>
@@ -130,14 +130,14 @@ export function ErpIntegrationContainer() {
           onClick={() => setActiveTab('connectors')}
           className={`flex items-center gap-2 py-2.5 px-3 rounded-t-xl transition-all relative whitespace-nowrap cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60 ${
             activeTab === 'connectors'
-              ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+              ? 'text-violet-600 dark:text-violet-400 font-bold'
               : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
-          <Plug className={`w-4 h-4 ${activeTab === 'connectors' ? 'text-indigo-600 dark:text-indigo-400' : ''}`} />
+          <Plug className={`w-4 h-4 ${activeTab === 'connectors' ? 'text-violet-600 dark:text-violet-400' : ''}`} />
           <span>Systems & Connectors</span>
           {activeTab === 'connectors' && (
-            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-fadeIn" />
+            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-600 dark:bg-violet-400 rounded-full animate-fadeIn" />
           )}
         </button>
 
@@ -145,17 +145,17 @@ export function ErpIntegrationContainer() {
           onClick={() => setActiveTab('mapping')}
           className={`flex items-center gap-2 py-2.5 px-3 rounded-t-xl transition-all relative whitespace-nowrap cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60 ${
             activeTab === 'mapping'
-              ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+              ? 'text-violet-600 dark:text-violet-400 font-bold'
               : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
-          <Sliders className={`w-4 h-4 ${activeTab === 'mapping' ? 'text-indigo-600 dark:text-indigo-400' : ''}`} />
+          <Sliders className={`w-4 h-4 ${activeTab === 'mapping' ? 'text-violet-600 dark:text-violet-400' : ''}`} />
           <span>Account to WBS Mapping</span>
           <span className="px-1.5 py-0.5 rounded-full text-2xs font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-200/50 dark:border-amber-700/50">
             {mappingState.stats.unmapped}
           </span>
           {activeTab === 'mapping' && (
-            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-fadeIn" />
+            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-600 dark:bg-violet-400 rounded-full animate-fadeIn" />
           )}
         </button>
 
@@ -163,14 +163,14 @@ export function ErpIntegrationContainer() {
           onClick={() => setActiveTab('diagnostics')}
           className={`flex items-center gap-2 py-2.5 px-3 rounded-t-xl transition-all relative whitespace-nowrap cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60 ${
             activeTab === 'diagnostics'
-              ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+              ? 'text-violet-600 dark:text-violet-400 font-bold'
               : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
-          <Activity className={`w-4 h-4 ${activeTab === 'diagnostics' ? 'text-indigo-600 dark:text-indigo-400' : ''}`} />
+          <Activity className={`w-4 h-4 ${activeTab === 'diagnostics' ? 'text-violet-600 dark:text-violet-400' : ''}`} />
           <span>Sync Telemetry & Logs</span>
           {activeTab === 'diagnostics' && (
-            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-fadeIn" />
+            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-600 dark:bg-violet-400 rounded-full animate-fadeIn" />
           )}
         </button>
         
@@ -218,7 +218,7 @@ export function ErpIntegrationContainer() {
               id="netsuite"
               name="NetSuite Cloud ERP"
               description="Connect SuiteScript general ledger and project accounting suites via REST SuiteTalk."
-              iconColor="bg-blue-600"
+              iconColor="bg-violet-600"
               config={connectorState.configs.find(c => c.connector_type === 'netsuite')}
               isPending={connectorState.isPending}
               testingId={connectorState.testingConfigId}
@@ -248,7 +248,7 @@ export function ErpIntegrationContainer() {
               id="sap"
               name="SAP S/4HANA Financials"
               description="Ingest cost centers and WBS internal enterprise accounting orders via OData REST API."
-              iconColor="bg-indigo-700"
+              iconColor="bg-violet-700"
               config={connectorState.configs.find(c => c.connector_type === 'sap')}
               isPending={connectorState.isPending}
               testingId={connectorState.testingConfigId}

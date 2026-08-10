@@ -19,7 +19,7 @@ export function ClosureSidebarSection({ activeTab, onSelect, methodology }: Clos
     { key: 'lessons_learned', label: 'Lessons Learned', icon: <Lightbulb className="w-4 h-4 text-purple-400" /> },
     { key: 'release_notes', label: isWaterfall ? 'Phase Handover Notes' : 'Release Notes', icon: <FileCheck2 className="w-4 h-4 text-emerald-400" /> },
     { key: 'handover_document', label: 'Final Handover', icon: <ArrowRightLeft className="w-4 h-4 text-sky-400" /> },
-    { key: 'post_implementation_review', label: 'PIR & ROI Review', icon: <History className="w-4 h-4 text-indigo-400" /> },
+    { key: 'post_implementation_review', label: 'PIR & ROI Review', icon: <History className="w-4 h-4 text-violet-400" /> },
     { key: 'signoff_board', label: 'Closure Sign-offs', icon: <ShieldCheck className="w-4 h-4 text-emerald-400" /> }
   ]
 
@@ -34,7 +34,7 @@ export function ClosureSidebarSection({ activeTab, onSelect, methodology }: Clos
               onClick={() => onSelect(item.key)}
               className={`cursor-pointer w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-xs sm:text-sm font-semibold ${
                 isActive
-                  ? 'bg-indigo-500/10 text-app-fg shadow-sm border border-indigo-500/20 font-bold'
+                  ? 'bg-violet-500/10 text-app-fg shadow-sm border border-violet-500/20 font-bold'
                   : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
               }`}
             >

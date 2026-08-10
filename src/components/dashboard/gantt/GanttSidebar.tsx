@@ -73,7 +73,7 @@ export function GanttSidebar({
                   ) : (
                     // Tiny task activity indicator badge
                     <div className="w-4 h-4 flex items-center justify-center shrink-0">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/80" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-violet-500/80" />
                     </div>
                   )}
 
@@ -85,7 +85,7 @@ export function GanttSidebar({
                 {/* Assignee initials visual badge */}
                 {member && (
                   <div
-                    className="w-5 h-5 rounded-full bg-indigo-600 border border-indigo-700 flex items-center justify-center shrink-0 text-[10px] font-bold text-white shadow-sm"
+                    className="w-5 h-5 rounded-full bg-violet-600 border border-violet-700 flex items-center justify-center shrink-0 text-[10px] font-bold text-white shadow-sm"
                     title={`Assigned to: ${member.email}`}
                   >
                     {member.email.slice(0, 2).toUpperCase()}

@@ -194,7 +194,7 @@ export function HandoverViewer({
             <div key={idx} className="p-4 bg-app-bg border border-app-border rounded-xl space-y-2.5">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs sm:text-sm font-bold text-app-fg">{owner.role}</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-violet-500/10 text-violet-400 border border-violet-500/20">
                   Active SLA
                 </span>
               </div>

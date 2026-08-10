@@ -46,7 +46,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
       case 'assignment': return <User className="h-4 w-4 text-purple-500" />
       case 'risk_change': return <AlertTriangle className="h-4 w-4 text-amber-500" />
       case 'cost_change': return <DollarSign className="h-4 w-4 text-green-500" />
-      case 'schedule_change': return <Calendar className="h-4 w-4 text-indigo-500" />
+      case 'schedule_change': return <Calendar className="h-4 w-4 text-violet-500" />
       case 'document_change': return <FileText className="h-4 w-4 text-sky-500" />
       case 'status_report': return <Activity className="h-4 w-4 text-emerald-500" />
       case 'approval_request': return <Check className="h-4 w-4 text-amber-500" />
@@ -103,7 +103,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
             )}
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className={`p-1.5 rounded-md hover:bg-app-hover transition-colors ${showSettings ? 'text-indigo-500' : 'text-app-subtle hover:text-app-fg'}`}
+              className={`p-1.5 rounded-md hover:bg-app-hover transition-colors ${showSettings ? 'text-violet-500' : 'text-app-subtle hover:text-app-fg'}`}
               title="Settings"
             >
               <Settings className="h-4 w-4" />
@@ -136,7 +136,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                       if (isUnread) markAsRead(notif.id)
                       onClose()
                     }}
-                    className={`block p-5 hover:bg-app-surface-hover transition-colors ${isUnread ? 'bg-indigo-500/5' : ''}`}
+                    className={`block p-5 hover:bg-app-surface-hover transition-colors ${isUnread ? 'bg-violet-500/5' : ''}`}
                   >
                     <div className="flex gap-4">
                       <div className="shrink-0 mt-1">
@@ -149,7 +149,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                         <p className="text-[10px] text-app-subtle mt-1 flex items-center gap-1.5 font-medium">
                           {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
                           {isUnread && (
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-violet-500" />
                           )}
                         </p>
                       </div>

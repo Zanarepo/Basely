@@ -131,8 +131,8 @@ export function OkrDashboard({
       <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 mb-3">
-              <Layers className="w-3.5 h-3.5 text-indigo-500" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800 mb-3">
+              <Layers className="w-3.5 h-3.5 text-violet-500" />
               <span>HIERARCHICAL OKR PERFORMANCE ENGINE</span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
@@ -154,7 +154,7 @@ export function OkrDashboard({
               style={{ cursor: 'pointer' }}
               className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold inline-flex items-center transition-colors shadow-2xs disabled:opacity-50"
             >
-              <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin text-indigo-500' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin text-violet-500' : ''}`} />
               {refreshing ? 'Syncing...' : 'Sync OKRs'}
             </button>
 
@@ -176,14 +176,14 @@ export function OkrDashboard({
       {/* Content Tree */}
       {loading ? (
         <div className="py-20 flex flex-col items-center justify-center space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
             Loading hierarchical Objectives and Key Results...
           </span>
         </div>
       ) : objectives.length === 0 ? (
         <div className="bg-slate-50 dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center max-w-2xl mx-auto my-10 space-y-4">
-          <div className="w-12 h-12 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto text-indigo-500">
+          <div className="w-12 h-12 bg-violet-500/10 rounded-full flex items-center justify-center mx-auto text-violet-500">
             <Target className="w-6 h-6" />
           </div>
           <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -197,7 +197,7 @@ export function OkrDashboard({
               type="button"
               onClick={handleCreateObjective}
               style={{ cursor: 'pointer' }}
-              className="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold rounded-xl shadow-sm transition-colors inline-flex items-center gap-2"
+              className="px-5 py-2.5 bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold rounded-xl shadow-sm transition-colors inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Register First Objective

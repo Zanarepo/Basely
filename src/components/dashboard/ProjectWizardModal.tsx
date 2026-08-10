@@ -2,8 +2,57 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, Briefcase, Loader2, ShieldAlert } from 'lucide-react'
+import { X, Briefcase, Loader2, ShieldAlert, ChevronDown } from 'lucide-react'
 import { createProject } from '@/lib/projects/actions'
+
+function CustomDropdown({
+  id,
+  value,
+  options,
+  onChange,
+  disabled
+}: {
+  id: string,
+  value: string,
+  options: { label: string, value: string }[],
+  onChange: (val: string) => void,
+  disabled?: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const selectedLabel = options.find(o => o.value === value)?.label || value
+
+  return (
+    <div className="relative">
+      <button 
+        id={id}
+        type="button" 
+        onClick={() => !disabled && setIsOpen(!isOpen)} 
+        disabled={disabled}
+        className="auth-input pl-3 cursor-pointer w-full text-left flex items-center justify-between"
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <ChevronDown className={`h-4 w-4 text-app-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-[90]" onClick={() => setIsOpen(false)} />
+          <div className="absolute z-[100] mt-1 w-full rounded-xl border border-app-border bg-app-surface-solid shadow-lg overflow-hidden py-1 max-h-60 overflow-y-auto animate-fade-in-up" style={{ animationDuration: '0.15s' }}>
+            {options.map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => { onChange(opt.value); setIsOpen(false) }}
+                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-app-surface-muted transition-colors ${value === opt.value ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 font-semibold' : 'text-app-fg'}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 type ProjectWizardModalProps = {
   open: boolean
@@ -86,7 +135,7 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
           <div className="shrink-0 px-6 pt-6 pb-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-500"><Briefcase className="h-5 w-5" /></div>
+                <div className="p-2.5 rounded-xl bg-violet-500/20 text-violet-500"><Briefcase className="h-5 w-5" /></div>
                 <div><h2 className="text-lg font-bold text-app-fg">New Project</h2><p className="text-sm text-app-muted">Set up metadata and calendar configurations.</p></div>
               </div>
               <button type="button" onClick={handleClose} disabled={isPending} className="btn-icon !border-0 !bg-transparent" aria-label="Close"><X className="h-5 w-5" /></button>
@@ -102,7 +151,7 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
                     type="button"
                     onClick={() => window.open('/dashboard', '_self')}
                     style={{ cursor: 'pointer' }}
-                    className="shrink-0 px-3 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs rounded-lg shadow hover:opacity-95 transition-all"
+                    className="shrink-0 px-3 py-1 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-bold text-xs rounded-lg shadow hover:opacity-95 transition-all"
                   >
                     Upgrade Plan ↗
                   </button>
@@ -117,14 +166,32 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
               <div className="space-y-2"><label htmlFor="project-client" className="auth-label">Client Name</label><input id="project-client" value={clientName} onChange={(event) => setClientName(event.target.value)} disabled={isPending} placeholder="e.g. Acme Corp" className="auth-input pl-4" /></div>
               <div className="space-y-2"><label htmlFor="project-description" className="auth-label">Description</label><textarea id="project-description" value={description} onChange={(event) => setDescription(event.target.value)} disabled={isPending} placeholder="Describe the main deliverables and objectives..." className="auth-input pl-4 py-3 min-h-[80px] resize-none" /></div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2"><label htmlFor="project-methodology" className="auth-label">Methodology</label><select id="project-methodology" value={methodology} onChange={(event) => setMethodology(event.target.value as MethodologyType)} disabled={isPending} className="auth-input pl-3 cursor-pointer">{METHODOLOGIES.map((value) => <option key={value} value={value}>{value}</option>)}</select></div>
-                <div className="space-y-2"><label htmlFor="project-currency" className="auth-label">Currency</label><select id="project-currency" value={currency} onChange={(event) => setCurrency(event.target.value)} disabled={isPending} className="auth-input pl-3 cursor-pointer">{CURRENCIES.map((item) => <option key={item.code} value={item.code}>{item.code} ({item.symbol})</option>)}</select></div>
+                <div className="space-y-2">
+                  <label htmlFor="project-methodology" className="auth-label">Methodology</label>
+                  <CustomDropdown
+                    id="project-methodology"
+                    value={methodology}
+                    options={METHODOLOGIES.map(m => ({ label: m, value: m }))}
+                    onChange={(val) => setMethodology(val as MethodologyType)}
+                    disabled={isPending}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="project-currency" className="auth-label">Currency</label>
+                  <CustomDropdown
+                    id="project-currency"
+                    value={currency}
+                    options={CURRENCIES.map(c => ({ label: `${c.code} (${c.symbol})`, value: c.code }))}
+                    onChange={(val) => setCurrency(val)}
+                    disabled={isPending}
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2"><label htmlFor="project-start" className="auth-label">Start Date</label><input id="project-start" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} disabled={isPending} className="auth-input pl-4" /></div>
                 <div className="space-y-2"><label htmlFor="project-end" className="auth-label">End Date</label><input id="project-end" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} disabled={isPending} className="auth-input pl-4" /></div>
               </div>
-              <div className="space-y-2"><span className="auth-label block">Working Days</span><div className="flex flex-wrap gap-2">{DAYS_OF_WEEK.map((day) => { const active = workingDays.includes(day.value); return <button key={day.value} type="button" onClick={() => handleDayToggle(day.value)} disabled={isPending} className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${active ? 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-500/35' : 'bg-app-muted-surface text-app-muted border-app-border hover:bg-app-hover'}`}>{day.name}</button> })}</div></div>
+              <div className="space-y-2"><span className="auth-label block">Working Days</span><div className="flex flex-wrap gap-2">{DAYS_OF_WEEK.map((day) => { const active = workingDays.includes(day.value); return <button key={day.value} type="button" onClick={() => handleDayToggle(day.value)} disabled={isPending} className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${active ? 'bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-500/35' : 'bg-app-muted-surface text-app-muted border-app-border hover:bg-app-hover'}`}>{day.name}</button> })}</div></div>
               <div className="space-y-2"><label htmlFor="project-hours" className="auth-label">Daily Work Hours</label><input id="project-hours" type="number" min="1" max="24" value={dailyHours} onChange={(event) => setDailyHours(parseInt(event.target.value, 10) || 8)} disabled={isPending} className="auth-input pl-4" /></div>
 
               <div className="pt-4 mt-6 border-t border-app-border space-y-4">
@@ -142,7 +209,7 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
                       onChange={(e) => setAllowTeamScheduleEdits(e.target.checked)}
                       disabled={isPending}
                     />
-                    <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                    <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
                   </label>
                 </div>
               </div>

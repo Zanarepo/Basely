@@ -69,7 +69,7 @@ export function ReleaseCard({
   return (
     <div
       onClick={handleCardClick}
-      className="group relative bg-app-card border border-app-border rounded-xl p-5 shadow-sm hover:shadow-md hover:border-indigo-500/50 transition-all duration-200 cursor-pointer flex flex-col justify-between overflow-hidden"
+      className="group relative bg-app-card border border-app-border rounded-xl p-5 shadow-sm hover:shadow-md hover:border-violet-500/50 transition-all duration-200 cursor-pointer flex flex-col justify-between overflow-hidden"
     >
       <div>
         <div className="flex items-center justify-between gap-2 mb-3">
@@ -105,7 +105,7 @@ export function ReleaseCard({
 
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 truncate">
-            <Rocket className="h-5 w-5 text-indigo-500 shrink-0" />
+            <Rocket className="h-5 w-5 text-violet-500 shrink-0" />
             <h3 className="text-lg font-extrabold text-app-fg tracking-tight truncate" title={release.name}>
               {release.name}
             </h3>
@@ -171,14 +171,14 @@ export function ReleaseCard({
               completionPercentage === 100
                 ? 'bg-emerald-500'
                 : completionPercentage > 50
-                ? 'bg-indigo-500'
+                ? 'bg-violet-500'
                 : 'bg-amber-500'
             }`}
             style={{ width: `${completionPercentage}%` }}
           />
         </div>
 
-        <div className="mt-3 flex items-center justify-end text-xs font-semibold text-indigo-500 group-hover:text-indigo-600 transition-colors gap-1">
+        <div className="mt-3 flex items-center justify-end text-xs font-semibold text-violet-500 group-hover:text-violet-600 transition-colors gap-1">
           <span>Inspect Release Architecture</span>
           <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
         </div>

@@ -28,12 +28,12 @@ export function RoadmapCard({ item, onUpdate, showToast, draggedItemId, onDragSt
       draggable
       onDragStart={(e) => onDragStart(e, item.id)}
       className={`group relative bg-app-surface border rounded-xl p-3.5 shadow-xs transition-all duration-200 select-none cursor-grab active:cursor-grabbing
-        ${isDragged ? 'opacity-40 border-dashed scale-95 bg-indigo-500/5' : 'hover:border-slate-300 dark:hover:border-slate-600 border-app-border'}
+        ${isDragged ? 'opacity-40 border-dashed scale-95 bg-violet-500/5' : 'hover:border-slate-300 dark:hover:border-slate-600 border-app-border'}
       `}
     >
       <div className="flex items-center justify-between mb-2 gap-2">
         {item.theme && (
-          <span className="inline-block px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold rounded shrink-0">
+          <span className="inline-block px-1.5 py-0.5 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 text-[10px] font-semibold rounded shrink-0">
             {item.theme}
           </span>
         )}

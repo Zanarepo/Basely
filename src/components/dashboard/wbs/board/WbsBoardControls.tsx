@@ -44,7 +44,7 @@ export function WbsBoardControls({
                   </div>
                   <button
                     onClick={() => toggleColumnVisibility(name)}
-                    className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded transition-all"
+                    className="p-1.5 text-slate-400 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded transition-all"
                     title="Unhide Column"
                   >
                     <Eye className="w-4 h-4" />
@@ -64,7 +64,7 @@ export function WbsBoardControls({
               autoFocus
               type="text"
               placeholder="Column Name"
-              className="w-full mb-2 px-3 py-1.5 text-sm bg-app-input border border-indigo-500 rounded-lg text-app-fg focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full mb-2 px-3 py-1.5 text-sm bg-app-input border border-violet-500 rounded-lg text-app-fg focus:outline-none focus:ring-1 focus:ring-violet-500"
               value={newColName}
               onChange={(e) => setNewColName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSaveNewColumn()}
@@ -72,7 +72,7 @@ export function WbsBoardControls({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="flex-1 flex justify-center items-center py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold cursor-pointer"
+                className="flex-1 flex justify-center items-center py-1.5 bg-violet-500 hover:bg-violet-600 text-white rounded-lg text-xs font-semibold cursor-pointer"
                 onClick={handleSaveNewColumn}
               >
                 <Check className="w-3 h-3 mr-1" /> Save
@@ -89,7 +89,7 @@ export function WbsBoardControls({
         ) : (
           <button
             onClick={() => setIsAddingCol(true)}
-            className="w-full py-3 flex items-center justify-center gap-2 text-sm font-semibold text-app-subtle bg-app-surface border border-dashed border-app-border rounded-2xl hover:bg-app-hover hover:border-indigo-500/50 hover:text-indigo-500 transition-colors cursor-pointer"
+            className="w-full py-3 flex items-center justify-center gap-2 text-sm font-semibold text-app-subtle bg-app-surface border border-dashed border-app-border rounded-2xl hover:bg-app-hover hover:border-violet-500/50 hover:text-violet-500 transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Add Column

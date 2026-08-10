@@ -240,7 +240,7 @@ export function ResourceRatesImportModal({ projectId, projectCurrency, onClose, 
               onClick={() => setImportMode('upload')}
               className={`flex-1 py-2 px-4 rounded-xl text-sm font-semibold border transition-all ${
                 importMode === 'upload'
-                  ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400'
+                  ? 'bg-violet-500/10 border-violet-500/30 text-violet-600 dark:text-violet-400'
                   : 'bg-app-muted-surface border-app-border text-app-muted hover:text-app-fg hover:bg-app-hover'
               }`}
             >
@@ -250,7 +250,7 @@ export function ResourceRatesImportModal({ projectId, projectCurrency, onClose, 
               onClick={() => setImportMode('paste')}
               className={`flex-1 py-2 px-4 rounded-xl text-sm font-semibold border transition-all ${
                 importMode === 'paste'
-                  ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400'
+                  ? 'bg-violet-500/10 border-violet-500/30 text-violet-600 dark:text-violet-400'
                   : 'bg-app-muted-surface border-app-border text-app-muted hover:text-app-fg hover:bg-app-hover'
               }`}
             >
@@ -260,7 +260,7 @@ export function ResourceRatesImportModal({ projectId, projectCurrency, onClose, 
               onClick={() => setImportMode('drive')}
               className={`flex-1 py-2 px-4 rounded-xl text-sm font-semibold border transition-all ${
                 importMode === 'drive'
-                  ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400'
+                  ? 'bg-violet-500/10 border-violet-500/30 text-violet-600 dark:text-violet-400'
                   : 'bg-app-muted-surface border-app-border text-app-muted hover:text-app-fg hover:bg-app-hover'
               }`}
             >
@@ -273,11 +273,11 @@ export function ResourceRatesImportModal({ projectId, projectCurrency, onClose, 
               <Upload className="w-8 h-8 text-app-muted mx-auto mb-3" />
               <p className="text-sm font-medium text-app-fg mb-1">Select a CSV file to upload</p>
               <p className="text-xs text-app-subtle mb-4">Must include headers: Name. Optional: Type, Rate, Unit</p>
-              <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-colors">
+              <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg transition-colors">
                 <span>Browse Files</span>
                 <input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
               </label>
-              {csvText && <p className="mt-3 text-xs text-indigo-500 font-medium">File loaded. Ready to import.</p>}
+              {csvText && <p className="mt-3 text-xs text-violet-500 font-medium">File loaded. Ready to import.</p>}
             </div>
           )}
           
@@ -289,7 +289,7 @@ export function ResourceRatesImportModal({ projectId, projectCurrency, onClose, 
               <textarea
                 value={csvText}
                 onChange={e => setCsvText(e.target.value)}
-                className="w-full h-48 px-3 py-2 bg-app-input border border-app-border rounded-xl text-app-fg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                className="w-full h-48 px-3 py-2 bg-app-input border border-app-border rounded-xl text-app-fg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
                 placeholder="Name, Type, Rate, Unit&#10;Senior Engineer, Labor, 120, hr&#10;Concrete, Material, 800, flat"
               />
             </div>
@@ -297,17 +297,17 @@ export function ResourceRatesImportModal({ projectId, projectCurrency, onClose, 
 
           {importMode === 'drive' && (
             <div className="border border-app-border rounded-xl p-8 text-center bg-app-muted-surface/50 mb-6">
-              <Cloud className="w-8 h-8 text-indigo-500 mx-auto mb-3" />
+              <Cloud className="w-8 h-8 text-violet-500 mx-auto mb-3" />
               <p className="text-sm font-medium text-app-fg mb-1">Select from Google Drive</p>
               <p className="text-xs text-app-subtle mb-4">Securely pick a CSV or Sheet straight from your Drive</p>
               <button 
                 onClick={handleDriveConnect}
                 disabled={isImporting}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm disabled:opacity-50"
+                className="px-6 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm disabled:opacity-50"
               >
                 {isImporting ? 'Loading...' : isConnected ? 'Select File' : 'Connect & Select File'}
               </button>
-              {csvText && <p className="mt-3 text-xs text-indigo-500 font-medium">File loaded. Ready to import.</p>}
+              {csvText && <p className="mt-3 text-xs text-violet-500 font-medium">File loaded. Ready to import.</p>}
             </div>
           )}
           
@@ -340,7 +340,7 @@ export function ResourceRatesImportModal({ projectId, projectCurrency, onClose, 
           <button
             onClick={handleImport}
             disabled={isImporting || !csvText.trim()}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm"
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm"
           >
             {isImporting && importMode !== 'drive' ? 'Importing...' : 'Run Import'}
           </button>

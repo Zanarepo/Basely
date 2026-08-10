@@ -73,7 +73,7 @@ function SignupForm() {
           value={email}
           readOnly={!!prefilledEmail}
           onChange={(e) => setEmail(e.target.value)}
-          className={`w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none ${prefilledEmail ? 'opacity-70 cursor-not-allowed bg-gray-50 dark:bg-[#151515]' : ''}`}
+          className={`w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all outline-none ${prefilledEmail ? 'opacity-70 cursor-not-allowed bg-gray-50 dark:bg-[#151515]' : ''}`}
           placeholder="admin@baseline.com"
         />
       </div>
@@ -88,7 +88,7 @@ function SignupForm() {
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+          className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all outline-none"
           placeholder="••••••••"
         />
       </div>
@@ -97,14 +97,14 @@ function SignupForm() {
         type="submit" 
         disabled={loading}
         style={{ cursor: 'pointer' }}
-        className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+        className="w-full py-3.5 px-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-2"
       >
         {loading ? 'Creating Account...' : 'Set Up Account'}
       </button>
       
       <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         Already have an account?{' '}
-        <Link href={`/backoffice/login${nextPath ? `?next=${encodeURIComponent(nextPath)}` : ''}`} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+        <Link href={`/backoffice/login${nextPath ? `?next=${encodeURIComponent(nextPath)}` : ''}`} className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">
           Sign in here
         </Link>
       </div>
@@ -119,7 +119,7 @@ export default function BackofficeSignup() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] p-4 relative overflow-hidden">
       {/* Background accents */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl mix-blend-multiply filter animate-blob"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl mix-blend-multiply filter animate-blob"></div>
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl mix-blend-multiply filter animate-blob animation-delay-2000"></div>
       </div>
 
@@ -127,11 +127,11 @@ export default function BackofficeSignup() {
         <div className="bg-white dark:bg-[#111] p-8 rounded-3xl shadow-xl border border-gray-200 dark:border-white/5">
           
           <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-indigo-600 dark:text-indigo-400">
+            <div className="w-14 h-14 bg-violet-100 dark:bg-violet-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-violet-600 dark:text-violet-400">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
             </div>
             <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-              Baseline <span className="text-indigo-600">Ops</span>
+              Baseline <span className="text-violet-600">Ops</span>
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               Set up your account to accept the invitation

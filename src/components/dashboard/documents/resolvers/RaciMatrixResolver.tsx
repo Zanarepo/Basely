@@ -54,7 +54,7 @@ export default function RaciMatrixResolver({ projectId }: RaciMatrixResolverProp
     return (
       <div className="flex h-48 items-center justify-center bg-app-surface border border-app-border rounded-xl mt-4">
         <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
           <p className="text-sm text-app-muted font-medium">Loading RACI Matrix data...</p>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function RaciMatrixResolver({ projectId }: RaciMatrixResolverProp
     <div className="mt-4 flex flex-col gap-4">
       {/* Legend / Info */}
       <div className="bg-app-bg border border-app-border rounded-lg p-4 flex gap-4 text-sm text-app-fg">
-        <Info className="w-5 h-5 text-indigo-500 shrink-0" />
+        <Info className="w-5 h-5 text-violet-500 shrink-0" />
         <p>
           This RACI matrix defines clear roles and responsibilities for all Work Packages. 
           Each package must have at least one <strong>Responsible</strong> (who does the work) and exactly one <strong>Accountable</strong> (who signs off).
@@ -112,7 +112,7 @@ export default function RaciMatrixResolver({ projectId }: RaciMatrixResolverProp
                 <tr key={el.id} className="border-b border-app-border last:border-b-0 hover:bg-app-hover transition-colors">
                   <td className="px-6 py-4 font-medium text-app-fg border-r border-app-border">
                     <div className="flex flex-col gap-1">
-                      <span className="text-xs text-indigo-500 font-bold">{el.code}</span>
+                      <span className="text-xs text-violet-500 font-bold">{el.code}</span>
                       <span>{el.name}</span>
                       {isMissingRaci && (
                         <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wide font-bold bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-sm mt-1 w-fit">

@@ -2,6 +2,7 @@ import { Loader2, ChevronRight, ChevronDown } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 import { useWbsGridData } from './workspace/useWbsGridData'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
+import { TerminologyDict } from '@/utils/terminology'
 
 type WbsGridViewProps = {
   projectId: string
@@ -14,15 +15,16 @@ type WbsGridViewProps = {
   clearSelection?: () => void
   expandedNodeIds?: Set<string>
   onToggleExpand?: (id: string, e: React.MouseEvent) => void
+  terms: TerminologyDict
 }
 
-export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, selectedIds = [], toggleSelection, selectAll, clearSelection, expandedNodeIds = new Set(), onToggleExpand }: WbsGridViewProps) {
+export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, selectedIds = [], toggleSelection, selectAll, clearSelection, expandedNodeIds = new Set(), onToggleExpand, terms }: WbsGridViewProps) {
   const { gridData, loading } = useWbsGridData(projectId, elements)
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 min-h-[300px]">
-        <Loader2 className="h-6 w-6 text-indigo-500 animate-spin" />
+        <Loader2 className="h-6 w-6 text-violet-500 animate-spin" />
         <span className="ml-2 text-sm text-app-muted">Loading schedule data...</span>
       </div>
     )
@@ -75,12 +77,12 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                   if (clearSelection) clearSelection()
                 }
               }}
-              className="w-4 h-4 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer"
+              className="w-4 h-4 rounded border-app-border text-violet-500 focus:ring-violet-500 bg-app-surface cursor-pointer"
             />
             Select All ({visibleGridData.length} items)
           </label>
           {selectedIds.length > 0 && (
-            <span className="text-indigo-500 font-bold">{selectedIds.length} selected</span>
+            <span className="text-violet-500 font-bold">{selectedIds.length} selected</span>
           )}
         </div>
       )}
@@ -97,7 +99,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
             const isMissingRaci = !hasR || !hasA
 
             const parentElement = r.parentId ? elements.find(e => e.id === r.parentId) : null
-            const tagText = parentElement ? parentElement.name : 'Work Package'
+            const tagText = parentElement ? parentElement.name : terms.workPackage
 
             return (
               <div
@@ -105,7 +107,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                 onClick={() => onSelect(r.id)}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                   selectedIds.includes(r.id)
-                    ? 'bg-indigo-500/10 border-indigo-500 ring-1 ring-indigo-500'
+                    ? 'bg-violet-500/10 border-violet-500 ring-1 ring-violet-500'
                     : 'bg-app-surface border-app-border hover:border-slate-400 dark:hover:border-slate-600 shadow-xs'
                 }`}
                 style={{ marginLeft: `${Math.min(elementLevels.get(r.id) || 0, 2) * 14}px` }}
@@ -118,7 +120,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                         type="checkbox"
                         checked={selectedIds.includes(r.id)}
                         onChange={() => toggleSelection(r.id)}
-                        className="w-4 h-4 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer"
+                        className="w-4 h-4 rounded border-app-border text-violet-500 focus:ring-violet-500 bg-app-surface cursor-pointer"
                       />
                     )}
                     <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-app-muted-surface text-app-fg">
@@ -135,7 +137,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                         r.status === 'Complete'
                           ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
                           : r.status === 'In Progress'
-                          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-400'
+                          ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400'
                           : r.status === 'On Hold'
                           ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400'
                           : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
@@ -157,14 +159,14 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                       className="p-1 mt-0.5 hover:bg-app-hover rounded text-app-subtle cursor-pointer shrink-0"
                     >
                       {expandedNodeIds.has(r.id) ? (
-                        <ChevronDown className="w-4 h-4 text-indigo-500" />
+                        <ChevronDown className="w-4 h-4 text-violet-500" />
                       ) : (
-                        <ChevronRight className="w-4 h-4 text-indigo-500" />
+                        <ChevronRight className="w-4 h-4 text-violet-500" />
                       )}
                     </button>
                   ) : (
                     <div className="w-4 h-4 mt-1 flex items-center justify-center shrink-0">
-                      <div className="w-2 h-2 rounded-full bg-indigo-500/60" />
+                      <div className="w-2 h-2 rounded-full bg-violet-500/60" />
                     </div>
                   )}
                   <h4 className="text-sm font-bold text-app-fg leading-snug break-words">
@@ -181,7 +183,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                   </div>
                   <div className="text-right">
                     <span className="text-app-subtle block text-[10px] uppercase tracking-wider mb-0.5">Cost & Float</span>
-                    <div className="font-mono font-bold text-[12px] text-indigo-600 dark:text-indigo-400 mb-0.5">
+                    <div className="font-mono font-bold text-[12px] text-violet-600 dark:text-violet-400 mb-0.5">
                       <CurrencyDisplay amount={r.cost} currency={r.currency} compactThreshold={1000} />
                     </div>
                     {r.float !== '—' ? (
@@ -243,7 +245,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                         if (clearSelection) clearSelection()
                       }
                     }}
-                    className="w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer"
+                    className="w-3.5 h-3.5 rounded border-app-border text-violet-500 focus:ring-violet-500 bg-app-surface cursor-pointer"
                   />
                 )}
               </th>
@@ -264,12 +266,12 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
 
               // Get the parent element name for the tag
               const parentElement = r.parentId ? elements.find(e => e.id === r.parentId) : null
-              const tagText = parentElement ? parentElement.name : 'Work Package'
+              const tagText = parentElement ? parentElement.name : terms.workPackage
 
               return (
                 <tr 
                   key={r.id} 
-                  className={`group hover:bg-app-hover cursor-pointer transition-colors ${selectedIds.includes(r.id) ? 'bg-indigo-500/5' : ''}`}
+                  className={`group hover:bg-app-hover cursor-pointer transition-colors ${selectedIds.includes(r.id) ? 'bg-violet-500/5' : ''}`}
                   onClick={() => onSelect(r.id)}
                 >
                   <td className="px-3 py-2.5 border-b border-app-border w-8" onClick={(e) => e.stopPropagation()}>
@@ -278,7 +280,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                         type="checkbox"
                         checked={selectedIds.includes(r.id)}
                         onChange={() => toggleSelection(r.id)}
-                        className={`w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
+                        className={`w-3.5 h-3.5 rounded border-app-border text-violet-500 focus:ring-violet-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
                       />
                     )}
                   </td>
@@ -303,7 +305,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                         </button>
                       ) : (
                         <div className="w-4 h-4 flex items-center justify-center shrink-0">
-                          <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/50" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-violet-500/50" />
                         </div>
                       )}
                       <span className="truncate">{r.name}</span>
@@ -366,7 +368,7 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
                         r.status === 'Complete'
                           ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
                           : r.status === 'In Progress'
-                          ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400'
+                          ? 'bg-violet-100 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400'
                           : r.status === 'On Hold'
                           ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'
                           : 'bg-app-muted-surface text-app-muted'

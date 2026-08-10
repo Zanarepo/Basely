@@ -52,7 +52,7 @@ export function LifecycleGatingBanner({
           {documentTitle} is Gated by Project Lifecycle
         </h3>
         <p className="text-xs sm:text-sm md:text-base text-app-muted leading-relaxed">
-          This document can only be generated or modified once the project enters formal wrap-up. Your project is currently in the <span className="font-bold text-indigo-400 px-2 py-0.5 bg-indigo-500/10 rounded-md border border-indigo-500/20 inline-block">{currentStatus}</span> phase.
+          This document can only be generated or modified once the project enters formal wrap-up. Your project is currently in the <span className="font-bold text-violet-400 px-2 py-0.5 bg-violet-500/10 rounded-md border border-violet-500/20 inline-block">{currentStatus}</span> phase.
         </p>
       </div>
 
@@ -70,7 +70,7 @@ export function LifecycleGatingBanner({
       {canEdit && onOpenLifecycleModal && (
         <button
           onClick={onOpenLifecycleModal}
-          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white font-bold text-xs sm:text-sm transition-all duration-150 shadow-md shadow-indigo-500/20 flex items-center justify-center gap-2 cursor-pointer group"
+          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-violet-500 hover:bg-violet-600 active:scale-95 text-white font-bold text-xs sm:text-sm transition-all duration-150 shadow-md shadow-violet-500/20 flex items-center justify-center gap-2 cursor-pointer group"
         >
           <span>Advance Lifecycle Phase Now</span>
           <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

@@ -28,6 +28,7 @@ export function WbsTree({
   callerRole,
   showFinancials,
   currency,
+  terms,
 }: WbsTreeProps) {
   return (
     <div className="space-y-1 min-w-[800px] pb-4">
@@ -40,7 +41,7 @@ export function WbsTree({
               if (e.target.checked) selectAll()
               else clearSelection()
             }}
-            className="w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer ml-1"
+            className="w-3.5 h-3.5 rounded border-app-border text-violet-500 focus:ring-violet-500 bg-app-surface cursor-pointer ml-1"
           />
           <span className="text-xs font-semibold text-app-muted uppercase tracking-wider">Select All</span>
         </div>
@@ -70,6 +71,7 @@ export function WbsTree({
           callerRole={callerRole}
           showFinancials={showFinancials}
           currency={currency}
+          terms={terms}
         />
       ))}
     </div>

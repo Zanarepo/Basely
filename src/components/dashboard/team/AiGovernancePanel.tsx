@@ -57,7 +57,7 @@ export function AiGovernancePanel({ organizationId }: { organizationId: string }
       <div className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-4">
-            <div className="p-2.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl text-indigo-600 dark:text-indigo-400">
+            <div className="p-2.5 bg-violet-50 dark:bg-violet-500/10 rounded-xl text-violet-600 dark:text-violet-400">
               <BrainCircuit className="w-6 h-6" />
             </div>
             <div>
@@ -87,8 +87,8 @@ export function AiGovernancePanel({ organizationId }: { organizationId: string }
               aria-checked={isEnabled}
               disabled={isSaving}
               onClick={() => toggleSetting(!isEnabled)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
-                isEnabled ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
+                isEnabled ? 'bg-violet-600' : 'bg-slate-200 dark:bg-slate-700'
               } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <span

@@ -19,9 +19,9 @@ export default async function ExternalSignoffPage({ searchParams }: PageProps) {
   const verification = await verifySignoffToken(token)
 
   return (
-    <div className="min-h-screen bg-app-bg text-app-fg py-12 px-4 sm:px-6 md:px-12 flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-app-bg text-app-fg py-12 px-4 sm:px-6 md:px-12 flex flex-col justify-between selection:bg-violet-500 selection:text-white">
       <header className="w-full max-w-4xl mx-auto mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-2 font-black text-lg tracking-wider bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+        <div className="flex items-center gap-2 font-black text-lg tracking-wider bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
           BASELY CONTROLS
         </div>
         <div className="flex items-center gap-1 text-xs text-app-muted font-mono font-bold bg-app-surface px-3 py-1 rounded-full border border-app-border">

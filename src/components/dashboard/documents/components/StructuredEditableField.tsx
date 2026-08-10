@@ -61,7 +61,7 @@ export default function StructuredEditableField({
     ),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     a: ({ node, ...props }: any) => (
-      <a className="text-indigo-500 hover:underline" {...props} />
+      <a className="text-violet-500 hover:underline" {...props} />
     )
   }
 
@@ -79,7 +79,7 @@ export default function StructuredEditableField({
               setIsEditing(!isEditing)
             }}
             style={{ cursor: 'pointer' }}
-            className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-app-surface border border-app-border rounded shadow-sm text-app-muted hover:text-indigo-500 transition-opacity duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100"
+            className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-app-surface border border-app-border rounded shadow-sm text-app-muted hover:text-violet-500 transition-opacity duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100"
             title={isEditing ? "Switch to formatted view" : "Edit raw text"}
           >
             {isEditing ? (
@@ -101,7 +101,7 @@ export default function StructuredEditableField({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder || `Enter ${title.toLowerCase()}... (Markdown tables supported)`}
           rows={Math.max(6, (value?.split('\n').length || 0) + 1)}
-          className="w-full p-3 pt-10 bg-app-bg border border-indigo-500/50 rounded-lg text-sm text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-y font-mono"
+          className="w-full p-3 pt-10 bg-app-bg border border-violet-500/50 rounded-lg text-sm text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all resize-y font-mono"
         />
       ) : (
         <div className="p-4 bg-app-muted-surface/40 border border-app-border rounded-lg text-sm text-app-fg prose prose-sm dark:prose-invert max-w-none">

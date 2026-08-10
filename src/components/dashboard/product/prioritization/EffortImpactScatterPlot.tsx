@@ -22,7 +22,7 @@ export function EffortImpactScatterPlot({ items }: EffortImpactScatterPlotProps)
             <span className="w-3 h-3 rounded-full bg-emerald-500"></span> Quick Wins
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-indigo-500"></span> Major Projects
+            <span className="w-3 h-3 rounded-full bg-violet-500"></span> Major Projects
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-amber-500"></span> Fill-ins
@@ -49,7 +49,7 @@ export function EffortImpactScatterPlot({ items }: EffortImpactScatterPlotProps)
         
         {/* Quadrant Labels */}
         <div className="absolute top-4 left-4 text-xs font-bold text-emerald-500/50 uppercase tracking-widest pointer-events-none">Quick Wins</div>
-        <div className="absolute top-4 right-4 text-xs font-bold text-indigo-500/50 uppercase tracking-widest pointer-events-none">Major Projects</div>
+        <div className="absolute top-4 right-4 text-xs font-bold text-violet-500/50 uppercase tracking-widest pointer-events-none">Major Projects</div>
         <div className="absolute bottom-4 left-4 text-xs font-bold text-amber-500/50 uppercase tracking-widest pointer-events-none">Fill-ins</div>
         <div className="absolute bottom-4 right-4 text-xs font-bold text-rose-500/50 uppercase tracking-widest pointer-events-none">Thankless Tasks</div>
 
@@ -63,7 +63,7 @@ export function EffortImpactScatterPlot({ items }: EffortImpactScatterPlotProps)
           
           let color = 'bg-slate-500'
           if (item.impact >= 5 && item.effort < 5) color = 'bg-emerald-500' // High Impact, Low Effort
-          else if (item.impact >= 5 && item.effort >= 5) color = 'bg-indigo-500' // High Impact, High Effort
+          else if (item.impact >= 5 && item.effort >= 5) color = 'bg-violet-500' // High Impact, High Effort
           else if (item.impact < 5 && item.effort < 5) color = 'bg-amber-500' // Low Impact, Low Effort
           else if (item.impact < 5 && item.effort >= 5) color = 'bg-rose-500' // Low Impact, High Effort
 

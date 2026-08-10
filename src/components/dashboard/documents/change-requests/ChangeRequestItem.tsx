@@ -30,7 +30,7 @@ export function ChangeRequestItem({ entry, onUpdateStatus, isManager, onDelete }
   const isStandalone = entry.source === 'standalone'
 
   return (
-    <div className="bg-app-card rounded-lg shadow-sm border border-app-border p-4 group cursor-pointer transition-colors hover:border-indigo-500/50 hover:shadow-md">
+    <div className="bg-app-card rounded-lg shadow-sm border border-app-border p-4 group cursor-pointer transition-colors hover:border-violet-500/50 hover:shadow-md">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center space-x-2">
           {getStatusIcon()}

@@ -85,7 +85,7 @@ export function ProcurementEntryForm({ entry, costAccounts, onClose, onSave }: P
                 value={vendorName}
                 onChange={e => setVendorName(e.target.value)}
                 required
-                className="w-full bg-app-surface border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-app-surface border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500"
                 placeholder="e.g. Acme Corp"
               />
             </div>
@@ -95,7 +95,7 @@ export function ProcurementEntryForm({ entry, costAccounts, onClose, onSave }: P
               <textarea
                 value={contractScope}
                 onChange={e => setContractScope(e.target.value)}
-                className="w-full bg-app-surface border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[80px] resize-y"
+                className="w-full bg-app-surface border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 min-h-[80px] resize-y"
                 placeholder="Details of what is being procured..."
               />
             </div>
@@ -111,7 +111,7 @@ export function ProcurementEntryForm({ entry, costAccounts, onClose, onSave }: P
                   value={cost}
                   onChange={e => setCost(e.target.value)}
                   disabled={!!linkedCostAccountId}
-                  className="w-full bg-app-surface border border-app-border rounded-lg pl-7 pr-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="w-full bg-app-surface border border-app-border rounded-lg pl-7 pr-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-50"
                   placeholder="0.00"
                 />
               </div>
@@ -152,7 +152,7 @@ export function ProcurementEntryForm({ entry, costAccounts, onClose, onSave }: P
           <button
             onClick={handleSubmit}
             disabled={saving || !vendorName.trim()}
-            className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2 bg-violet-500 hover:bg-violet-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2 cursor-pointer"
           >
             {saving ? (
               <>

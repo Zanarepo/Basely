@@ -117,11 +117,11 @@ export function TeamPageTabs({
                 onClick={() => setActiveTab(tab.id)}
                 className={`group relative flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer flex-1 justify-center sm:flex-initial ${
                   active
-                    ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 border border-indigo-500/25 shadow-sm'
+                    ? 'bg-violet-500/15 text-violet-600 dark:text-violet-300 border border-violet-500/25 shadow-sm'
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
-                <Icon className={`h-5 w-5 shrink-0 ${ active ? 'text-indigo-500 dark:text-indigo-400' : 'text-app-muted group-hover:text-app-fg' }`} />
+                <Icon className={`h-5 w-5 shrink-0 ${ active ? 'text-violet-500 dark:text-violet-400' : 'text-app-muted group-hover:text-app-fg' }`} />
                   <div className="hidden sm:block text-left">
                     <div className="flex items-center gap-1.5">
                       <p className={`text-sm font-semibold ${active ? 'text-app-fg' : 'text-app-muted group-hover:text-app-fg'}`}>
@@ -137,7 +137,7 @@ export function TeamPageTabs({
 
                 {/* Active indicator dot on mobile */}
                 {active && (
-                  <span className="sm:hidden absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-4 rounded-full bg-indigo-500" />
+                  <span className="sm:hidden absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-4 rounded-full bg-violet-500" />
                 )}
               </button>
             )

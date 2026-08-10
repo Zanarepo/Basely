@@ -9,7 +9,7 @@ create extension if not exists pg_cron;
 -- 1. Schedule Calendar Sync (runs every 4 hours)
 select cron.schedule(
   'calendar-sync',
-  '* * * * *',
+  '0 */4 * * *',
   $$
     select net.http_get(
         url:='https://baseproapp.vercel.app/api/integrations/calendar/sync?token=Basely@1234'

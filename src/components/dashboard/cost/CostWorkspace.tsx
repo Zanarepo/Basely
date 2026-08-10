@@ -14,11 +14,14 @@ import { useSearchParams } from 'next/navigation'
 type CostWorkspaceProps = {
   projectId: string
   hasEditAccess: boolean
+  methodology?: import('@/utils/terminology').ProjectMethodology | null
 }
 
 type CostViewType = 'estimation' | 'resources' | 'timephasing' | 'baselines' | 'actuals'
 
-export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspaceProps) {
+import { getTerminology } from '@/utils/terminology'
+
+export default function CostWorkspace({ projectId, hasEditAccess, methodology }: CostWorkspaceProps) {
   const searchParams = useSearchParams()
   const initialView = (searchParams.get('costView') as CostViewType) || 'estimation'
   const [currentView, setCurrentView] = useState<CostViewType>(initialView)
@@ -34,7 +37,7 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-app-subtle">
-        <Loader2 className="w-8 h-8 animate-spin mb-4 text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-violet-500" />
         <p>Loading budget and cost data...</p>
       </div>
     )
@@ -68,6 +71,8 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
     return sum + (item.actualCosts?.reduce((a, c) => a + c.amount, 0) || 0)
   }, 0)
 
+  const terms = getTerminology(methodology)
+
   return (
     <div className="flex flex-col gap-6">
       {/* Project Roll-up Summary */}
@@ -81,7 +86,7 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-semibold text-app-muted uppercase tracking-wider mb-1">Overhead ({globalOverhead}%)</span>
-            <span className="text-2xl font-bold text-indigo-400 dark:text-indigo-300">
+            <span className="text-2xl font-bold text-violet-400 dark:text-violet-300">
               <CurrencyDisplay amount={overheadAmount} currency={projectCurrency} compactThreshold={1000} />
             </span>
           </div>
@@ -111,8 +116,8 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
           </div>
           <div className="w-full h-px md:w-px md:h-16 bg-app-border mx-0 md:mx-2 block"></div>
           <div className="flex flex-col w-full md:w-auto">
-            <span className="text-sm font-bold text-indigo-500 uppercase tracking-wider mb-1">Project Budget</span>
-            <span className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+            <span className="text-sm font-bold text-violet-500 uppercase tracking-wider mb-1">Project Budget</span>
+            <span className="text-3xl font-bold text-violet-600 dark:text-violet-400">
               <CurrencyDisplay amount={totalWithContingency} currency={projectCurrency} compactThreshold={1000} />
             </span>
           </div>
@@ -131,7 +136,7 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
           onClick={() => setCurrentView('estimation')}
           className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             currentView === 'estimation'
-              ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 shadow-sm'
               : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
           }`}
         >
@@ -142,7 +147,7 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
           onClick={() => setCurrentView('resources')}
           className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             currentView === 'resources'
-              ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 shadow-sm'
               : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
           }`}
         >
@@ -153,7 +158,7 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
           onClick={() => setCurrentView('timephasing')}
           className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             currentView === 'timephasing'
-              ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 shadow-sm'
               : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
           }`}
         >
@@ -164,7 +169,7 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
           onClick={() => setCurrentView('baselines')}
           className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             currentView === 'baselines'
-              ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 shadow-sm'
               : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
           }`}
         >
@@ -175,7 +180,7 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
           onClick={() => setCurrentView('actuals')}
           className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             currentView === 'actuals'
-              ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 shadow-sm'
               : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
           }`}
         >
@@ -195,6 +200,7 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
             globalOverhead={globalOverhead}
             hasEditAccess={hasEditAccess}
             onDataChange={refresh}
+            terms={terms}
           />
         )}
         {currentView === 'resources' && (
@@ -214,8 +220,10 @@ export default function CostWorkspace({ projectId, hasEditAccess }: CostWorkspac
             projectId={projectId} 
             wbsCostData={wbsCostData} 
             projectCurrency={projectCurrency}
+            globalOverhead={globalOverhead}
             hasEditAccess={hasEditAccess}
             onDataChange={refresh}
+            terms={terms}
           />
         )}
         {currentView === 'baselines' && (

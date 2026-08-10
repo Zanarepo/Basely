@@ -15,6 +15,7 @@ import { useWbsPlanning } from './workspace/useWbsPlanning'
 import { WbsToolbar, WbsViewType } from './workspace/WbsToolbar'
 import { WbsImportModal } from './WbsImportModal'
 import { RaciMatrixView } from './RaciMatrixView'
+import { getTerminology, TerminologyDict, ProjectMethodology } from '@/utils/terminology'
 
 type WbsPlanningWorkspaceProps = {
   projectId: string
@@ -25,6 +26,7 @@ type WbsPlanningWorkspaceProps = {
   callerRole?: string
   allowTeamScheduleEdits?: boolean
   currency?: string
+  methodology?: ProjectMethodology | null
 }
 
 import { useWbsBoard } from './workspace/useWbsBoard'
@@ -38,11 +40,14 @@ export function WbsPlanningWorkspace({
   callerRole,
   allowTeamScheduleEdits = false,
   currency = 'USD',
+  methodology,
 }: WbsPlanningWorkspaceProps) {
   const searchParams = useSearchParams()
   const initialView = (searchParams.get('wbsView') as WbsViewType) || 'tree'
   const [currentView, setCurrentView] = useState<WbsViewType>(initialView)
   const [isImporting, setIsImporting] = useState(false)
+  
+  const terms = getTerminology(methodology)
   
   const elementIdFromUrl = searchParams.get('element')
   const [processedElementId, setProcessedElementId] = useState<string | null>(null)
@@ -192,7 +197,7 @@ export function WbsPlanningWorkspace({
   if (loading && elements.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 min-h-[350px]">
-        <Loader2 className="h-10 w-10 text-indigo-500 animate-spin mb-4" />
+        <Loader2 className="h-10 w-10 text-violet-500 animate-spin mb-4" />
         <p className="text-sm text-app-muted">Loading WBS planning workspace...</p>
       </div>
     )
@@ -239,7 +244,7 @@ export function WbsPlanningWorkspace({
       {elements.length === 0 ? (
         /* Empty tree state card */
         <div className="backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[350px]">
-          <div className="p-4 rounded-2xl bg-indigo-500/10 text-indigo-500 mb-4">
+          <div className="p-4 rounded-2xl bg-violet-500/10 text-violet-500 mb-4">
             <FileSpreadsheet className="h-10 w-10 animate-pulse" />
           </div>
           <h3 className="text-lg font-bold text-app-fg mb-1">
@@ -270,8 +275,8 @@ export function WbsPlanningWorkspace({
                   onToggleExpand={handleToggleExpand}
                   activeElementId={activeElementId}
                   onSelect={setActiveElementId}
-                  onAddChild={(element) => handleCreateElement(element.parentId, element, 'child')}
-                  onAddSibling={(element) => handleCreateElement(element.parentId, element, 'sibling')}
+                  onAddChild={(element) => handleCreateElement(element.parentId, element, 'child', { isWorkPackage: true })}
+                  onAddSibling={(element) => handleCreateElement(element.parentId, element, 'sibling', { isWorkPackage: element.isWorkPackage })}
                   onDelete={handleDeleteElement}
                   onRename={handleRenameElement}
                   onMove={handleMoveNode}
@@ -288,6 +293,7 @@ export function WbsPlanningWorkspace({
                   callerRole={callerRole}
                   showFinancials={showFinancials}
                   currency={currency}
+                  terms={terms}
                 />
               </div>
             )}
@@ -316,6 +322,7 @@ export function WbsPlanningWorkspace({
                 callerRole={callerRole}
                 callerUserId={callerUserId}
                 onShowToast={showToast}
+                terms={terms}
               />
             )}
 
@@ -331,6 +338,7 @@ export function WbsPlanningWorkspace({
                 clearSelection={clearSelection}
                 expandedNodeIds={expandedNodeIds}
                 onToggleExpand={handleToggleExpand}
+                terms={terms}
               />
             )}
 
@@ -347,6 +355,7 @@ export function WbsPlanningWorkspace({
               <UnassignedWorkView
                 elements={elements}
                 onSelect={setActiveElementId}
+                terms={terms}
               />
             )}
           </div>
@@ -369,6 +378,8 @@ export function WbsPlanningWorkspace({
         callerUserId={callerUserId}
         allowTeamScheduleEdits={allowTeamScheduleEdits}
         currency={currency}
+        terms={terms}
+
       />
     </div>
   )

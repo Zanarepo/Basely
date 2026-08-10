@@ -137,7 +137,7 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
               href={`/dashboard/projects/${projectId}?tab=${tab.id}`}
               className={`pb-3 text-sm transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === tab.id
-                  ? 'border-indigo-500 text-indigo-500 font-bold'
+                  ? 'border-violet-500 text-violet-500 font-bold'
                   : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
               }`}
             >
@@ -148,7 +148,7 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
                   ✨ PRO
                 </span>
               ) : tab.isNew ? (
-                <span className="bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider">
+                <span className="bg-violet-500/10 text-violet-500 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider">
                   New
                 </span>
               ) : null}
@@ -183,7 +183,7 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
                             key={tab.id}
                             href={`/dashboard/projects/${projectId}?tab=${tab.id}`}
                             onClick={() => setIsDropdownOpen(false)}
-                            className="flex items-center justify-between gap-2 px-3 py-2 text-sm font-semibold text-app-fg hover:bg-app-bg hover:text-indigo-400 rounded-lg transition-all group"
+                            className="flex items-center justify-between gap-2 px-3 py-2 text-sm font-semibold text-app-fg hover:bg-app-bg hover:text-violet-400 rounded-lg transition-all group"
                           >
                             <span className="truncate">{tab.label}</span>
                             {isGated ? (
@@ -191,7 +191,7 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
                                 ✨ PRO
                               </span>
                             ) : tab.isNew ? (
-                              <span className="bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider shrink-0 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                              <span className="bg-violet-500/15 text-violet-400 border border-violet-500/25 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider shrink-0 group-hover:bg-violet-500 group-hover:text-white transition-colors">
                                 New
                               </span>
                             ) : null}
@@ -209,7 +209,7 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
                   
                   <button
                     onClick={() => setIsCustomizeMode(true)}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-bold text-indigo-500 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-colors cursor-pointer shrink-0 mt-1"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-bold text-violet-500 hover:text-violet-400 hover:bg-violet-500/10 rounded-lg transition-colors cursor-pointer shrink-0 mt-1"
                   >
                     <Settings2 className="w-4 h-4" />
                     Customize Toolbar
@@ -223,7 +223,7 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
                     </span>
                     <button 
                       onClick={() => setIsCustomizeMode(false)}
-                      className="text-xs text-indigo-400 font-extrabold hover:underline cursor-pointer px-2 py-0.5 bg-indigo-500/10 rounded-md"
+                      className="text-xs text-violet-400 font-extrabold hover:underline cursor-pointer px-2 py-0.5 bg-violet-500/10 rounded-md"
                     >
                       Done
                     </button>
@@ -248,8 +248,8 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
                           </span>
                           <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors shrink-0 ${
                             isVisible 
-                              ? 'bg-indigo-600 border-indigo-500 text-white shadow-xs' 
-                              : 'border-app-border bg-app-surface text-transparent hover:border-indigo-500/50'
+                              ? 'bg-violet-600 border-violet-500 text-white shadow-xs' 
+                              : 'border-app-border bg-app-surface text-transparent hover:border-violet-500/50'
                           }`}>
                             <Check className="w-3.5 h-3.5" />
                           </div>

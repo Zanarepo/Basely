@@ -122,7 +122,7 @@ export function PostImplementationReviewViewer({
       {/* Header Bar */}
       <div className="p-4 sm:p-6 bg-app-surface border border-app-border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
+          <div className="p-3 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 shrink-0">
             <History className="w-6 h-6" />
           </div>
           <div className="min-w-0">
@@ -162,7 +162,7 @@ export function PostImplementationReviewViewer({
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2.5 rounded-xl text-white font-bold text-xs sm:text-sm transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50 bg-indigo-500 hover:bg-indigo-600 shadow-indigo-500/20 active:scale-95"
+                className="px-4 py-2.5 rounded-xl text-white font-bold text-xs sm:text-sm transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50 bg-violet-500 hover:bg-violet-600 shadow-violet-500/20 active:scale-95"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 <span>{lockedDate ? 'Update Schedule' : 'Lock PIR & Schedule Reminder'}</span>
@@ -173,15 +173,15 @@ export function PostImplementationReviewViewer({
       </div>
 
       {/* Delayed Review Scheduling Controls (Responsive) */}
-      <div className="p-4 sm:p-5 bg-indigo-500/5 border border-indigo-500/20 rounded-2xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <div className="p-4 sm:p-5 bg-violet-500/5 border border-violet-500/20 rounded-2xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 shrink-0">
+          <div className="p-2.5 rounded-xl bg-violet-500/10 text-violet-400 shrink-0">
             <CalendarClock className="w-5 h-5" />
           </div>
           <div>
             <div className="text-xs sm:text-sm font-bold text-app-fg flex items-center gap-2">
               <span>Post-Closure Review Timing</span>
-              <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-mono px-2 py-0.5 rounded-full font-bold">
+              <span className="text-[10px] bg-violet-500/20 text-violet-300 font-mono px-2 py-0.5 rounded-full font-bold">
                 Automated Nudge Enabled
               </span>
             </div>
@@ -202,7 +202,7 @@ export function PostImplementationReviewViewer({
               }}
               className={`px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 scheduledDelay === days 
-                  ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/25' 
+                  ? 'bg-violet-500 text-white shadow-md shadow-violet-500/25' 
                   : 'bg-app-surface border border-app-border text-app-muted hover:text-app-fg'
               }`}
             >
@@ -218,8 +218,8 @@ export function PostImplementationReviewViewer({
                 setCustomReviewDate(e.target.value)
                 setScheduledDelay(null)
               }}
-              className={`bg-app-surface border rounded-xl px-2.5 py-1 text-xs text-app-fg focus:outline-none focus:border-indigo-500 ${
-                customReviewDate ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-app-border'
+              className={`bg-app-surface border rounded-xl px-2.5 py-1 text-xs text-app-fg focus:outline-none focus:border-violet-500 ${
+                customReviewDate ? 'border-violet-500 ring-1 ring-violet-500' : 'border-app-border'
               }`}
             />
           </div>
@@ -280,7 +280,7 @@ export function PostImplementationReviewViewer({
             onChange={(e) => setOutcomeText(e.target.value)}
             readOnly={!hasEditAccess}
             placeholder="Provide qualitative analysis of end-user adoption and deliverable resilience post-launch..."
-            className="w-full bg-app-bg border border-app-border rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-app-fg placeholder-app-muted focus:outline-none focus:border-indigo-500 flex-1 leading-relaxed"
+            className="w-full bg-app-bg border border-app-border rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-app-fg placeholder-app-muted focus:outline-none focus:border-violet-500 flex-1 leading-relaxed"
           />
         </div>
 
@@ -295,7 +295,7 @@ export function PostImplementationReviewViewer({
             onChange={(e) => setRoiText(e.target.value)}
             readOnly={!hasEditAccess}
             placeholder="Compare measured business financial gains or operational time saved against original Business Case assumptions..."
-            className="w-full bg-app-bg border border-app-border rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-app-fg placeholder-app-muted focus:outline-none focus:border-indigo-500 flex-1 leading-relaxed"
+            className="w-full bg-app-bg border border-app-border rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-app-fg placeholder-app-muted focus:outline-none focus:border-violet-500 flex-1 leading-relaxed"
           />
         </div>
       </div>

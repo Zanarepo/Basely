@@ -14,7 +14,7 @@ export default function ReleaseChecklistSummaryWidget({
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-app-fg">Checklist Completion</h3>
-          <CheckSquare className="h-5 w-5 text-indigo-500" />
+          <CheckSquare className="h-5 w-5 text-violet-500" />
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-4">

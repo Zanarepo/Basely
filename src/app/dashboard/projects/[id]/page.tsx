@@ -188,10 +188,15 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     })
   }
 
-  // Fetch workspace subscription tier for feature gating
+  // Fetch workspace subscription tier for feature gating.
+  // getOrganizationSubscription has an in-process TTL cache so the second call
+  // inside getOrganizationFeatures is a cache hit — but we pass the result
+  // explicitly to be safe and avoid any future cache invalidation issues.
   const subscription = await getOrganizationSubscription(project.organization_id)
+  const [orgFeatures] = await Promise.all([
+    getOrganizationFeatures(project.organization_id, subscription),
+  ])
   const tier = subscription.tierId
-  const orgFeatures = await getOrganizationFeatures(project.organization_id)
   const canUpgrade = isOrgOwner || callerRole === 'Admin'
 
   return (
@@ -296,6 +301,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           callerRole={callerRole}
           allowTeamScheduleEdits={project.allow_team_schedule_edits}
           currency={project.currency}
+          methodology={project.methodology}
         />
       )}
 
@@ -325,6 +331,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         <CostWorkspace
           projectId={project.id}
           hasEditAccess={hasCostEditAccess}
+          methodology={project.methodology}
         />
       ))}
 

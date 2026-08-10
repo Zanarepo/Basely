@@ -135,7 +135,7 @@ export function LessonsLearnedEditor({
       {/* Project Context Metadata Cards (Responsive Grid) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="p-3.5 bg-app-surface border border-app-border rounded-xl flex items-center gap-3">
-          <Workflow className="w-5 h-5 text-indigo-400 shrink-0" />
+          <Workflow className="w-5 h-5 text-violet-400 shrink-0" />
           <div className="min-w-0">
             <div className="text-[10px] text-app-muted uppercase font-bold">Methodology</div>
             <div className="text-xs sm:text-sm font-bold text-app-fg truncate">{data.projectContext.methodology}</div>
@@ -202,7 +202,7 @@ export function LessonsLearnedEditor({
       {/* Structured Prompted Section 3: Recommendations for Future Projects */}
       <div className="p-4 sm:p-6 bg-app-surface border border-app-border rounded-2xl space-y-3">
         <div className="flex items-center gap-2.5 pb-2 border-b border-app-border">
-          <Compass className="w-5 h-5 text-indigo-400 shrink-0" />
+          <Compass className="w-5 h-5 text-violet-400 shrink-0" />
           <h3 className="text-xs sm:text-sm font-bold text-app-fg uppercase tracking-wider">
             3. Actionable Recommendations for Future Projects
           </h3>

@@ -6,15 +6,19 @@ import type { WbsCostData } from '@/lib/cost/types'
 import { generateLinearTimePhasing } from '@/lib/cost/actions'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
+import { TerminologyDict } from '@/utils/terminology'
+
 type Props = {
   projectId: string
   wbsCostData: WbsCostData[]
   projectCurrency: string
+  globalOverhead: number
   hasEditAccess: boolean
   onDataChange: (silent?: boolean) => void
+  terms: TerminologyDict
 }
 
-export default function TimePhasingView({ projectId, wbsCostData, projectCurrency, hasEditAccess, onDataChange }: Props) {
+export default function TimePhasingView({ projectId, wbsCostData, projectCurrency, globalOverhead, hasEditAccess, onDataChange, terms }: Props) {
   const [selectedWbsId, setSelectedWbsId] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -70,12 +74,12 @@ export default function TimePhasingView({ projectId, wbsCostData, projectCurrenc
       {/* Left List: Estimated Work Packages */}
       <div className="w-full lg:w-1/3 bg-app-surface border border-app-border rounded-3xl overflow-hidden flex flex-col shadow-sm">
         <div className="p-4 border-b border-app-border bg-app-muted-surface">
-          <h3 className="font-bold text-app-fg">Estimated Packages</h3>
+          <h3 className="font-bold text-app-fg">Estimated {terms.workPackages}</h3>
           <p className="text-xs text-app-muted mt-1">Select a package to view its time-phase</p>
         </div>
         <div className="flex-1 overflow-y-auto p-2">
           {workPackages.length === 0 ? (
-            <p className="text-center text-app-muted text-sm mt-8">No estimated work packages. Estimate costs first.</p>
+            <p className="text-center text-app-muted text-sm mt-8">No estimated {terms.workPackages.toLowerCase()}. Estimate costs first.</p>
           ) : (
             workPackages.map(wp => (
               <button
@@ -83,7 +87,7 @@ export default function TimePhasingView({ projectId, wbsCostData, projectCurrenc
                 onClick={() => setSelectedWbsId(wp.wbsId)}
                 className={`w-full text-left p-3 mb-2 rounded-xl transition-all border ${
                   selectedWbsId === wp.wbsId
-                    ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/30'
+                    ? 'bg-violet-50 dark:bg-violet-500/10 border-violet-200 dark:border-violet-500/30'
                     : 'bg-app-surface border-transparent hover:bg-app-hover hover:border-app-border'
                 }`}
               >
@@ -109,14 +113,14 @@ export default function TimePhasingView({ projectId, wbsCostData, projectCurrenc
         {!selectedWp ? (
           <div className="flex-1 flex flex-col items-center justify-center text-app-subtle">
             <Activity className="w-12 h-12 mb-4 opacity-20" />
-            <p>Select a Work Package to view its Time-Phased distribution</p>
+            <p>Select a {terms.workPackage} to view its Time-Phased distribution</p>
           </div>
         ) : (
           <div className="flex-1 flex flex-col">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-xl font-bold text-app-fg">Time-Phasing (S-Curve)</h2>
-                <p className="text-sm text-app-muted mt-1">Distribute budget over the duration of the work package</p>
+                <p className="text-sm text-app-muted mt-1">Distribute budget over the duration of the {terms.workPackage.toLowerCase()}</p>
               </div>
               {hasEditAccess && (
                 <button
@@ -152,12 +156,12 @@ export default function TimePhasingView({ projectId, wbsCostData, projectCurrenc
                       
                       {/* Bar (Cumulative) */}
                       <div 
-                        className="w-full bg-indigo-500/20 rounded-t-sm transition-all relative flex items-end"
+                        className="w-full bg-violet-500/20 rounded-t-sm transition-all relative flex items-end"
                         style={{ height: `${(d.cumulative / maxCumulative) * 100}%` }}
                       >
                         {/* Inner Bar (Period amount) */}
                         <div 
-                          className="w-full bg-indigo-500 rounded-t-sm"
+                          className="w-full bg-violet-500 rounded-t-sm"
                           style={{ height: `${(d.planned_amount / d.cumulative) * 100}%` }}
                         ></div>
                       </div>

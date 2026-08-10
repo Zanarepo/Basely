@@ -79,7 +79,7 @@ export function QualityManagementPlanEditor({
           {hasEditAccess && !editingPlan && (
             <button
               onClick={startEditPlan}
-              className="opacity-0 group-hover:opacity-100 p-1.5 text-app-muted hover:text-indigo-500 rounded-md transition-all cursor-pointer"
+              className="opacity-0 group-hover:opacity-100 p-1.5 text-app-muted hover:text-violet-500 rounded-md transition-all cursor-pointer"
               title="Edit Cadence"
             >
               <Pencil className="w-4 h-4" />
@@ -94,7 +94,7 @@ export function QualityManagementPlanEditor({
                 value={draftCadence}
                 onChange={(e) => setDraftCadence(e.target.value)}
                 placeholder="e.g. Monthly, End of Phase..."
-                className="flex-1 bg-app-bg border border-app-border rounded px-3 py-1.5 text-sm text-app-fg focus:outline-none focus:border-indigo-500"
+                className="flex-1 bg-app-bg border border-app-border rounded px-3 py-1.5 text-sm text-app-fg focus:outline-none focus:border-violet-500"
               />
               <button
                 onClick={handleSavePlan}
@@ -129,7 +129,7 @@ export function QualityManagementPlanEditor({
           {hasEditAccess && (
             <button
               onClick={startAddStandard}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium rounded-md transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-500 hover:bg-violet-600 text-white text-xs font-medium rounded-md transition-colors shadow-sm cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               Add Standard
@@ -164,7 +164,7 @@ export function QualityManagementPlanEditor({
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => startEditStandard(std)}
-                      className="p-1.5 text-app-muted hover:text-indigo-500 rounded transition-colors cursor-pointer"
+                      className="p-1.5 text-app-muted hover:text-violet-500 rounded transition-colors cursor-pointer"
                       title="Edit"
                     >
                       <Pencil className="w-4 h-4" />

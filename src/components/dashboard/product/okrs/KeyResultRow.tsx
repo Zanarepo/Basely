@@ -75,11 +75,11 @@ export function KeyResultRow({
   }
 
   return (
-    <div className="group/kr relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-500/30 transition-all duration-200">
+    <div className="group/kr relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 hover:border-violet-500/30 transition-all duration-200">
       {/* Title & Baseline/Target Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
+          <span className="w-2 h-2 rounded-full bg-violet-500 shrink-0" />
           <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
             {keyResult.title}
           </h4>
@@ -90,7 +90,7 @@ export function KeyResultRow({
 
         <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400 pl-4">
           <span>Baseline: <strong className="text-slate-700 dark:text-slate-300">{keyResult.baseline_value}</strong></span>
-          <span>Target: <strong className="text-indigo-600 dark:text-indigo-400 font-extrabold">{keyResult.target_value}</strong> {keyResult.unit !== 'numeric' ? `(${keyResult.unit})` : ''}</span>
+          <span>Target: <strong className="text-violet-600 dark:text-violet-400 font-extrabold">{keyResult.target_value}</strong> {keyResult.unit !== 'numeric' ? `(${keyResult.unit})` : ''}</span>
           <span>Confidence: <strong className="text-purple-600 dark:text-purple-400 font-bold">{keyResult.confidence_score}%</strong></span>
         </div>
       </div>
@@ -98,18 +98,18 @@ export function KeyResultRow({
       {/* Progress Bar & Interactive Slider */}
       <div className="w-full sm:w-64 flex items-center gap-3 shrink-0">
         {isQuickEditing && hasEditAccess ? (
-          <div className="w-full space-y-2 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-indigo-200 dark:border-indigo-900/60 shadow-sm">
+          <div className="w-full space-y-2 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-violet-200 dark:border-violet-900/60 shadow-sm">
             <div className="flex items-center justify-between gap-2">
               <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Current Val:</label>
               <input
                 type="text"
                 value={currentVal}
                 onChange={(e) => setCurrentVal(e.target.value)}
-                className="w-20 px-2 py-1 text-xs font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-indigo-600 focus:outline-none"
+                className="w-20 px-2 py-1 text-xs font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-violet-600 focus:outline-none"
               />
             </div>
             <div className="space-y-1">
-              <div className="flex items-center justify-between text-[11px] font-bold text-indigo-500">
+              <div className="flex items-center justify-between text-[11px] font-bold text-violet-500">
                 <span>Progress: {progressVal}%</span>
               </div>
               <input
@@ -119,7 +119,7 @@ export function KeyResultRow({
                 value={progressVal}
                 onChange={handleSliderChange}
                 style={{ cursor: 'pointer' }}
-                className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-violet-500"
               />
             </div>
             <div className="flex justify-end gap-1 pt-1">
@@ -136,7 +136,7 @@ export function KeyResultRow({
                 onClick={handleSaveProgress}
                 disabled={isUpdatingProgress}
                 style={{ cursor: 'pointer' }}
-                className="px-2.5 py-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-[11px] font-semibold inline-flex items-center"
+                className="px-2.5 py-1 bg-violet-500 hover:bg-violet-600 text-white rounded-lg text-[11px] font-semibold inline-flex items-center"
               >
                 {isUpdatingProgress ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Check className="w-3 h-3 mr-1" />}
                 Sync
@@ -148,11 +148,11 @@ export function KeyResultRow({
             <div className="flex-1">
               <div className="flex justify-between items-center text-xs mb-1">
                 <span className="font-bold text-slate-700 dark:text-slate-300">{keyResult.current_value} / {keyResult.target_value}</span>
-                <span className="font-extrabold text-indigo-600 dark:text-indigo-400">{keyResult.progress || 0}%</span>
+                <span className="font-extrabold text-violet-600 dark:text-violet-400">{keyResult.progress || 0}%</span>
               </div>
               <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                 <div
-                  className="bg-indigo-500 h-full transition-all duration-300 rounded-full"
+                  className="bg-violet-500 h-full transition-all duration-300 rounded-full"
                   style={{ width: `${keyResult.progress || 0}%` }}
                 />
               </div>
@@ -168,7 +168,7 @@ export function KeyResultRow({
                     setIsQuickEditing(true)
                   }}
                   style={{ cursor: 'pointer' }}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
                   title="Quick update progress & value"
                 >
                   <Sliders className="w-3.5 h-3.5" />
@@ -180,7 +180,7 @@ export function KeyResultRow({
                     onEdit(keyResult)
                   }}
                   style={{ cursor: 'pointer' }}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
                   title="Edit Key Result details"
                 >
                   <Edit3 className="w-3.5 h-3.5" />

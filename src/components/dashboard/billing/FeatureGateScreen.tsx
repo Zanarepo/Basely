@@ -27,13 +27,13 @@ export const FeatureGateScreen: React.FC<FeatureGateScreenProps> = ({
   const { tier, switchPlan } = useWorkspaceTier(activeWorkspace?.id)
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[450px] p-8 md:p-12 my-6 rounded-3xl backdrop-blur-xl bg-app-surface/90 border border-indigo-500/20 shadow-2xl relative overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-[450px] p-8 md:p-12 my-6 rounded-3xl backdrop-blur-xl bg-app-surface/90 border border-violet-500/20 shadow-2xl relative overflow-hidden">
       {/* Decorative background glow */}
-      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-purple-600/20 via-indigo-600/20 to-pink-500/20 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-gradient-to-tr from-indigo-500/20 to-blue-500/20 blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-purple-600/20 via-violet-600/20 to-pink-500/20 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-gradient-to-tr from-violet-500/20 to-blue-500/20 blur-3xl pointer-events-none" />
 
       {/* Badge */}
-      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-indigo-500/15 to-purple-500/15 text-indigo-400 dark:text-indigo-300 border border-indigo-500/30 mb-6 shadow-sm">
+      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-violet-500/15 to-purple-500/15 text-violet-400 dark:text-violet-300 border border-violet-500/30 mb-6 shadow-sm">
         <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
         <span className="uppercase tracking-wider">
           {isEnterprise ? 'Enterprise Module Required' : 'Premium Feature Gate'}
@@ -41,7 +41,7 @@ export const FeatureGateScreen: React.FC<FeatureGateScreenProps> = ({
       </div>
 
       {/* Lock icon container */}
-      <div className="p-4 rounded-3xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white shadow-xl shadow-indigo-500/30 mb-6 transform hover:scale-105 transition-transform duration-300">
+      <div className="p-4 rounded-3xl bg-gradient-to-tr from-violet-600 via-purple-600 to-pink-500 text-white shadow-xl shadow-violet-500/30 mb-6 transform hover:scale-105 transition-transform duration-300">
         <Lock className="h-10 w-10 animate-bounce" />
       </div>
 
@@ -61,8 +61,8 @@ export const FeatureGateScreen: React.FC<FeatureGateScreenProps> = ({
           <Zap className="h-4 w-4 text-amber-400 shrink-0" />
           <span>Free Tier: WBS & Basic Gantt</span>
         </div>
-        <div className="flex items-center gap-2 text-indigo-400 font-bold">
-          <ShieldCheck className="h-4 w-4 text-indigo-500 shrink-0" />
+        <div className="flex items-center gap-2 text-violet-400 font-bold">
+          <ShieldCheck className="h-4 w-4 text-violet-500 shrink-0" />
           <span>{isEnterprise ? 'Enterprise Tier Required' : 'Premium Tier Required'}</span>
         </div>
       </div>
@@ -73,7 +73,7 @@ export const FeatureGateScreen: React.FC<FeatureGateScreenProps> = ({
           type="button"
           onClick={() => setModalOpen(true)}
           style={{ cursor: 'pointer' }}
-          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl font-extrabold text-sm text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-400 shadow-xl shadow-indigo-600/30 transform hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl font-extrabold text-sm text-white bg-gradient-to-r from-violet-600 via-purple-600 to-pink-500 hover:from-violet-500 hover:via-purple-500 hover:to-pink-400 shadow-xl shadow-violet-600/30 transform hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
         >
           <span>Upgrade Workspace Plan</span>
           <ArrowRight className="h-4 w-4" />

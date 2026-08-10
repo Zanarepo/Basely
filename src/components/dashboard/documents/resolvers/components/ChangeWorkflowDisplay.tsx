@@ -51,14 +51,14 @@ export function ChangeWorkflowDisplay({
       {/* Enterprise Tier Governance Status Banner */}
       <div className="bg-app-surface-solid border border-app-border rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm transition-colors">
         <div className="flex items-center gap-4">
-          <div className={`p-3.5 rounded-2xl ${isEnterpriseTier ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'} shadow-xs`}>
+          <div className={`p-3.5 rounded-2xl ${isEnterpriseTier ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'} shadow-xs`}>
             <ShieldCheck className="w-7 h-7" />
           </div>
           <div>
             <div className="flex items-center gap-2.5">
               <h3 className="font-bold text-app-fg text-base sm:text-lg">Change Governance & Gating Rules</h3>
               {isEnterpriseTier ? (
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-2xs">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20 shadow-2xs">
                   Enterprise Workflow Active
                 </span>
               ) : (
@@ -76,7 +76,7 @@ export function ChangeWorkflowDisplay({
         <button
           type="button"
           onClick={handleEditOpen}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs bg-indigo-600 hover:bg-indigo-500 text-white transition-all cursor-pointer shadow-sm hover:shadow-md w-full sm:w-auto justify-center flex-shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs bg-violet-600 hover:bg-violet-500 text-white transition-all cursor-pointer shadow-sm hover:shadow-md w-full sm:w-auto justify-center flex-shrink-0"
           style={{ cursor: 'pointer' }}
         >
           <Edit3 className="w-4 h-4" /> Edit Governance Rules
@@ -92,18 +92,18 @@ export function ChangeWorkflowDisplay({
       {/* Enterprise Configured Automated Policies (if active) */}
       {isEnterpriseTier && approvalPolicies.length > 0 && (
         <div className="bg-app-surface border border-app-border rounded-2xl p-5 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 text-indigo-400 font-bold text-sm">
-            <Layers className="w-4 h-4 text-indigo-400" />
+          <div className="flex items-center gap-2 text-violet-400 font-bold text-sm">
+            <Layers className="w-4 h-4 text-violet-400" />
             <span>Configured Organization Approval Workflows</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {approvalPolicies.map(rule => (
-              <div key={rule.id} className="bg-app-surface-solid border border-app-border rounded-xl p-4 text-xs shadow-sm transition-all hover:border-indigo-500/30">
+              <div key={rule.id} className="bg-app-surface-solid border border-app-border rounded-xl p-4 text-xs shadow-sm transition-all hover:border-violet-500/30">
                 <p className="font-bold text-app-fg truncate text-sm">{rule.policy_name}</p>
-                <p className="text-app-muted mt-1.5 capitalize">Target Entity: <span className="text-indigo-400 font-mono font-semibold">{rule.entity_type}</span></p>
+                <p className="text-app-muted mt-1.5 capitalize">Target Entity: <span className="text-violet-400 font-mono font-semibold">{rule.entity_type}</span></p>
                 <div className="mt-3.5 pt-3 border-t border-app-border flex flex-wrap gap-1.5">
                   {rule.require_manager_approval && (
-                    <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 font-semibold text-[11px] border border-indigo-500/20">PM Sign-Off</span>
+                    <span className="px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-300 font-semibold text-[11px] border border-violet-500/20">PM Sign-Off</span>
                   )}
                   {rule.require_sponsor_approval && (
                     <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 font-semibold text-[11px] border border-amber-500/20">Sponsor Sign-Off</span>
@@ -123,16 +123,16 @@ export function ChangeWorkflowDisplay({
       {/* Main Governance Content Cards - Responsive Grid with Hover Controls */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card 1: Thresholds */}
-        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-indigo-500/40 shadow-sm hover:shadow-lg transition-all relative flex flex-col">
+        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-violet-500/40 shadow-sm hover:shadow-lg transition-all relative flex flex-col">
           <div className="flex items-center justify-between border-b border-app-border pb-4 mb-4">
             <h4 className="font-bold text-app-fg text-sm sm:text-base flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block shadow-2xs shadow-indigo-500/50"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block shadow-2xs shadow-violet-500/50"></span>
               Approval Thresholds
             </h4>
             <button
               type="button"
               onClick={handleEditOpen}
-              className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 font-semibold cursor-pointer border border-indigo-500/20 shadow-2xs"
+              className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 font-semibold cursor-pointer border border-violet-500/20 shadow-2xs"
               style={{ cursor: 'pointer' }}
             >
               <Edit3 className="w-3.5 h-3.5" /> Edit
@@ -144,7 +144,7 @@ export function ChangeWorkflowDisplay({
         </div>
 
         {/* Card 2: Escalation Process */}
-        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-indigo-500/40 shadow-sm hover:shadow-lg transition-all relative flex flex-col">
+        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-violet-500/40 shadow-sm hover:shadow-lg transition-all relative flex flex-col">
           <div className="flex items-center justify-between border-b border-app-border pb-4 mb-4">
             <h4 className="font-bold text-app-fg text-sm sm:text-base flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shadow-2xs shadow-amber-500/50"></span>
@@ -165,7 +165,7 @@ export function ChangeWorkflowDisplay({
         </div>
 
         {/* Card 3: Governance Roles */}
-        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-indigo-500/40 shadow-sm hover:shadow-lg transition-all relative flex flex-col">
+        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-violet-500/40 shadow-sm hover:shadow-lg transition-all relative flex flex-col">
           <div className="flex items-center justify-between border-b border-app-border pb-4 mb-4">
             <h4 className="font-bold text-app-fg text-sm sm:text-base flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-2xs shadow-emerald-500/50"></span>
@@ -196,7 +196,7 @@ export function ChangeWorkflowDisplay({
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-app-border bg-app-surface">
               <div className="flex items-center gap-3.5">
-                <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-xs">
+                <div className="p-3 rounded-2xl bg-violet-500/10 text-violet-400 border border-violet-500/20 shadow-xs">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
@@ -222,7 +222,7 @@ export function ChangeWorkflowDisplay({
               {/* Thresholds Input */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-app-fg flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block shadow-2xs shadow-indigo-500/50"></span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block shadow-2xs shadow-violet-500/50"></span>
                   Approval Thresholds & Variances
                 </label>
                 <textarea
@@ -230,7 +230,7 @@ export function ChangeWorkflowDisplay({
                   onChange={(e) => setThresholdsVal(e.target.value)}
                   disabled={saving}
                   rows={4}
-                  className="w-full bg-app-surface border border-app-border rounded-2xl p-4 text-xs text-app-fg placeholder:text-app-subtle focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono leading-relaxed resize-none shadow-inner disabled:opacity-50"
+                  className="w-full bg-app-surface border border-app-border rounded-2xl p-4 text-xs text-app-fg placeholder:text-app-subtle focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all font-mono leading-relaxed resize-none shadow-inner disabled:opacity-50"
                   placeholder="Specify financial and schedule variance boundaries..."
                 />
                 <p className="text-[11px] text-app-muted">Define when changes can be approved directly by the PM versus escalation to Executive Sponsors.</p>
@@ -247,7 +247,7 @@ export function ChangeWorkflowDisplay({
                   onChange={(e) => setEscalationVal(e.target.value)}
                   disabled={saving}
                   rows={4}
-                  className="w-full bg-app-surface border border-app-border rounded-2xl p-4 text-xs text-app-fg placeholder:text-app-subtle focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono leading-relaxed resize-none shadow-inner disabled:opacity-50"
+                  className="w-full bg-app-surface border border-app-border rounded-2xl p-4 text-xs text-app-fg placeholder:text-app-subtle focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all font-mono leading-relaxed resize-none shadow-inner disabled:opacity-50"
                   placeholder="Detail step-by-step CCB escalation process..."
                 />
                 <p className="text-[11px] text-app-muted">Outline timelines and sequential reviews for elevating baseline variances to formal governing boards.</p>
@@ -264,7 +264,7 @@ export function ChangeWorkflowDisplay({
                   onChange={(e) => setRolesVal(e.target.value)}
                   disabled={saving}
                   rows={4}
-                  className="w-full bg-app-surface border border-app-border rounded-2xl p-4 text-xs text-app-fg placeholder:text-app-subtle focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono leading-relaxed resize-none shadow-inner disabled:opacity-50"
+                  className="w-full bg-app-surface border border-app-border rounded-2xl p-4 text-xs text-app-fg placeholder:text-app-subtle focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all font-mono leading-relaxed resize-none shadow-inner disabled:opacity-50"
                   placeholder="Define responsibilities for PM, CCB, and Executive Sponsor..."
                 />
                 <p className="text-[11px] text-app-muted">Specify stakeholder evaluation criteria and authorization permissions.</p>

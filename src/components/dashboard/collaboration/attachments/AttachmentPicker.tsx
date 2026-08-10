@@ -97,7 +97,7 @@ export function AttachmentPicker({ onAttach }: AttachmentPickerProps) {
         >
           {isConnecting || isPickerOpen || isUploading ? (
             <span className="flex items-center gap-2">
-              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-500"></span>
+              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-violet-500"></span>
               {isUploading ? 'Uploading...' : 'Connecting...'}
             </span>
           ) : (

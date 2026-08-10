@@ -98,7 +98,7 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
         style={{ cursor: 'pointer' }}
         className="flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-app-surface text-app-fg border border-app-border rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-app-hover transition-colors font-medium text-sm cursor-pointer"
       >
-        {isGated ? <Lock className="h-4 w-4 text-purple-500" /> : <Blocks className="h-4 w-4 text-indigo-500" />}
+        {isGated ? <Lock className="h-4 w-4 text-purple-500" /> : <Blocks className="h-4 w-4 text-violet-500" />}
         <span className="hidden sm:inline">Integrations</span>
         {isGated && (
           <span className="bg-purple-500/15 text-purple-500 border border-purple-500/30 px-1.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider">
@@ -148,8 +148,8 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                     <ArrowLeft className="h-5 w-5" />
                   </button>
                 ) : (
-                  <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg">
-                    <Blocks className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  <div className="p-2 bg-violet-50 dark:bg-violet-500/10 rounded-lg">
+                    <Blocks className="h-5 w-5 text-violet-600 dark:text-violet-400" />
                   </div>
                 )}
                 <div>
@@ -194,7 +194,7 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                       {/* Slack Integration Card */}
                       <div 
                         onClick={() => setSelectedApp('slack')}
-                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all"
+                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-violet-500 hover:shadow-md transition-all"
                   >
                     {isSlackConfigured && (
                       <div className="absolute top-3 right-3 text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 p-1 rounded-full" title="Integration Configured">
@@ -209,7 +209,7 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                     <div className={`mt-auto px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
                       isSlackConfigured 
                         ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-                        : 'bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-400'
+                        : 'bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-violet-50 group-hover:text-violet-600 dark:group-hover:bg-violet-500/20 dark:group-hover:text-violet-400'
                     }`}>
                       {isSlackConfigured ? 'Configured' : 'Configure'}
                     </div>
@@ -218,7 +218,7 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                   {/* Microsoft Teams Integration Card */}
                   <div 
                     onClick={() => setSelectedApp('teams')}
-                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all"
+                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-violet-500 hover:shadow-md transition-all"
                   >
                     {isTeamsConfigured && (
                       <div className="absolute top-3 right-3 text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 p-1 rounded-full" title="Integration Configured">
@@ -233,7 +233,7 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                     <div className={`mt-auto px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
                       isTeamsConfigured 
                         ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-                        : 'bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-400'
+                        : 'bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-violet-50 group-hover:text-violet-600 dark:group-hover:bg-violet-500/20 dark:group-hover:text-violet-400'
                     }`}>
                       {isTeamsConfigured ? 'Configured' : 'Configure'}
                     </div>
@@ -242,7 +242,7 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                   {/* Google Chat Integration Card */}
                   <div 
                     onClick={() => setSelectedApp('google_chat')}
-                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all"
+                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-violet-500 hover:shadow-md transition-all"
                   >
                     {isGoogleChatConfigured && (
                       <div className="absolute top-3 right-3 text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 p-1 rounded-full" title="Integration Configured">
@@ -257,7 +257,7 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                     <div className={`mt-auto px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
                       isGoogleChatConfigured 
                         ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-                        : 'bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-400'
+                        : 'bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-violet-50 group-hover:text-violet-600 dark:group-hover:bg-violet-500/20 dark:group-hover:text-violet-400'
                     }`}>
                       {isGoogleChatConfigured ? 'Configured' : 'Configure'}
                     </div>
@@ -268,7 +268,7 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                   {/* Google Calendar Card */}
                   <div 
                     onClick={() => setSelectedApp('calendar')}
-                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all"
+                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-violet-500 hover:shadow-md transition-all"
                   >
                     {isCalendarConfigured && (
                       <div className="absolute top-3 right-3 text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 p-1 rounded-full" title="Integration Configured">
@@ -283,7 +283,7 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                     <div className={`mt-auto px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
                       isCalendarConfigured 
                         ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-                        : 'bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-400'
+                        : 'bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-violet-50 group-hover:text-violet-600 dark:group-hover:bg-violet-500/20 dark:group-hover:text-violet-400'
                     }`}>
                       {isCalendarConfigured ? 'Configured' : 'Configure'}
                     </div>
@@ -292,14 +292,14 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                   {/* ERP / Accounting Integration Card */}
                   <div 
                     onClick={() => setSelectedApp('erp')}
-                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all"
+                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-violet-500 hover:shadow-md transition-all"
                   >
                     <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                       <Database className="h-6 w-6 text-emerald-500" />
                     </div>
                     <h3 className="text-base font-bold text-app-fg mb-1">ERP & Accounting</h3>
                     <p className="text-xs text-app-muted mb-4">Connect QuickBooks, NetSuite, SAP, and Xero ledgers</p>
-                    <div className="mt-auto px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-400 transition-colors">
+                    <div className="mt-auto px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-violet-50 group-hover:text-violet-600 dark:group-hover:bg-violet-500/20 dark:group-hover:text-violet-400 transition-colors">
                       Configure
                     </div>
                   </div>

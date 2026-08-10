@@ -191,7 +191,7 @@ export function OkrBuilderModal({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Accelerate Enterprise Adoption & Expand Core Revenue"
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
                 />
               </div>
 
@@ -204,7 +204,7 @@ export function OkrBuilderModal({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe why this objective is critical for this quarter..."
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
                 />
               </div>
 
@@ -218,7 +218,7 @@ export function OkrBuilderModal({
                     value={owner}
                     onChange={(e) => setOwner(e.target.value)}
                     placeholder="e.g. VP of Product / Team Alpha"
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -230,7 +230,7 @@ export function OkrBuilderModal({
                     value={timeframe}
                     onChange={(e) => setTimeframe(e.target.value)}
                     placeholder="e.g. Q3 2026, FY 2026"
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-indigo-600 dark:text-indigo-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-violet-600 dark:text-violet-400 focus:ring-2 focus:ring-violet-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -262,7 +262,7 @@ export function OkrBuilderModal({
                   value={krTitle}
                   onChange={(e) => setKrTitle(e.target.value)}
                   placeholder="e.g. Achieve 45% Organic Conversion Rate across top tier personas"
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
                 />
               </div>
 
@@ -286,7 +286,7 @@ export function OkrBuilderModal({
                     type="text"
                     value={currentValue}
                     onChange={(e) => setCurrentValue(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded-xl border border-indigo-500 bg-white dark:bg-slate-800 text-xs font-extrabold text-indigo-600 dark:text-indigo-400 focus:outline-none"
+                    className="w-full px-3 py-1.5 rounded-xl border border-violet-500 bg-white dark:bg-slate-800 text-xs font-extrabold text-violet-600 dark:text-violet-400 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -331,7 +331,7 @@ export function OkrBuilderModal({
                     value={confidenceScore}
                     onChange={(e) => setConfidenceScore(parseInt(e.target.value, 10))}
                     style={{ cursor: 'pointer' }}
-                    className="w-full mt-2 bg-slate-200 dark:bg-slate-700 h-1.5 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    className="w-full mt-2 bg-slate-200 dark:bg-slate-700 h-1.5 rounded-lg appearance-none cursor-pointer accent-violet-500"
                   />
                 </div>
               </div>
@@ -367,7 +367,7 @@ export function OkrBuilderModal({
               type="submit"
               disabled={loading}
               style={{ cursor: 'pointer' }}
-              className="inline-flex items-center px-5 py-2 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 rounded-xl shadow-sm transition-all disabled:opacity-50"
+              className="inline-flex items-center px-5 py-2 text-sm font-semibold text-white bg-violet-500 hover:bg-violet-600 active:bg-violet-700 rounded-xl shadow-sm transition-all disabled:opacity-50"
             >
               {loading ? (
                 <>

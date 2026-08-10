@@ -100,7 +100,7 @@ export default function TemplatesWorkspace({ organizationId }: TemplatesWorkspac
                 type="text"
                 value={editingTemplate.name || ''}
                 onChange={(e) => setEditingTemplate(prev => ({ ...prev!, name: e.target.value }))}
-                className="w-full px-4 py-2 bg-gray-50 dark:bg-app-surface-alt border border-app-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-app-fg transition-all"
+                className="w-full px-4 py-2 bg-gray-50 dark:bg-app-surface-alt border border-app-border rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-app-fg transition-all"
               />
             </div>
             <div>
@@ -120,7 +120,7 @@ export default function TemplatesWorkspace({ organizationId }: TemplatesWorkspac
                 type="text"
                 value={editingTemplate.description || ''}
                 onChange={(e) => setEditingTemplate(prev => ({ ...prev!, description: e.target.value }))}
-                className="w-full px-4 py-2 bg-gray-50 dark:bg-app-surface-alt border border-app-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-app-fg transition-all"
+                className="w-full px-4 py-2 bg-gray-50 dark:bg-app-surface-alt border border-app-border rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-app-fg transition-all"
                 placeholder="Brief description of when to use this template..."
               />
             </div>
@@ -142,14 +142,14 @@ export default function TemplatesWorkspace({ organizationId }: TemplatesWorkspac
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-app-fg flex items-center gap-2">
-            <Settings className="w-5 h-5 text-indigo-500" />
+            <Settings className="w-5 h-5 text-violet-500" />
             Custom Document Templates
           </h2>
           <p className="text-sm text-app-muted mt-1">Define organization-wide structures for generating Charters and Status Reports.</p>
         </div>
         <button
           onClick={handleCreateNew}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-medium transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" />
           Create Template
@@ -158,7 +158,7 @@ export default function TemplatesWorkspace({ organizationId }: TemplatesWorkspac
 
       {loading ? (
         <div className="flex justify-center p-12">
-          <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
         </div>
       ) : templates.length === 0 ? (
         <div className="bg-white dark:bg-app-surface border border-dashed border-app-border rounded-2xl p-12 text-center flex flex-col items-center">
@@ -171,7 +171,7 @@ export default function TemplatesWorkspace({ organizationId }: TemplatesWorkspac
           </p>
           <button
             onClick={handleCreateNew}
-            className="text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors"
+            className="text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1 transition-colors"
           >
             Create your first template <span aria-hidden="true">&rarr;</span>
           </button>
@@ -181,13 +181,13 @@ export default function TemplatesWorkspace({ organizationId }: TemplatesWorkspac
           {templates.map(template => (
             <div key={template.id} className="bg-white dark:bg-app-surface border border-app-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow group relative">
               <div className="flex justify-between items-start mb-4">
-                <div className="p-2.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                <div className="p-2.5 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button 
                     onClick={() => setEditingTemplate(template)}
-                    className="p-1.5 text-app-muted hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-md transition-colors"
+                    className="p-1.5 text-app-muted hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded-md transition-colors"
                     title="Edit Template"
                   >
                     <Edit3 className="w-4 h-4" />
@@ -203,7 +203,7 @@ export default function TemplatesWorkspace({ organizationId }: TemplatesWorkspac
               </div>
               
               <h3 className="font-semibold text-app-fg text-lg mb-1">{template.name}</h3>
-              <p className="text-xs font-medium text-indigo-500 uppercase tracking-wider mb-3">
+              <p className="text-xs font-medium text-violet-500 uppercase tracking-wider mb-3">
                 {template.document_type.replace('_', ' ')}
               </p>
               

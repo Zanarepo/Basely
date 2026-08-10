@@ -266,7 +266,7 @@ export function ProjectsDashboard({
                 onClick={() => setActiveTab('active')}
                 className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                   activeTab === 'active'
-                    ? 'bg-app-surface-solid text-app-fg border border-app-border shadow-sm'
+                    ? 'bg-violet-500/15 text-violet-500 dark:text-violet-300 border border-violet-500/25 shadow-sm'
                     : 'text-slate-600 dark:text-app-muted hover:text-app-fg'
                 }`}
               >
@@ -277,7 +277,7 @@ export function ProjectsDashboard({
                 onClick={() => setActiveTab('archived')}
                 className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                   activeTab === 'archived'
-                    ? 'bg-app-surface-solid text-app-fg border border-app-border shadow-sm'
+                    ? 'bg-violet-500/15 text-violet-500 dark:text-violet-300 border border-violet-500/25 shadow-sm'
                     : 'text-slate-600 dark:text-app-muted hover:text-app-fg'
                 }`}
               >
@@ -308,7 +308,7 @@ export function ProjectsDashboard({
             <UsageProgressMeter
               label="Active Projects Quota"
               current={projects.filter((p) => !p.isArchived).length}
-              max={tier === 'free' ? 2 : -1}
+              max={tier === 'free' ? 3 : -1}
               onUpgrade={isAdmin ? () => setUpgradeModalOpen(true) : undefined}
             />
             <UsageProgressMeter
@@ -327,7 +327,7 @@ export function ProjectsDashboard({
           onClick={() => setViewMode('list')}
           className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
             viewMode === 'list'
-              ? 'border-indigo-500 text-indigo-500 font-bold'
+              ? 'border-violet-500 text-violet-500 font-bold'
               : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
           }`}
         >
@@ -337,7 +337,7 @@ export function ProjectsDashboard({
           onClick={() => setViewMode('portfolio')}
           className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
             viewMode === 'portfolio'
-              ? 'border-indigo-500 text-indigo-500 font-bold'
+              ? 'border-violet-500 text-violet-500 font-bold'
               : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
           }`}
         >
@@ -347,7 +347,7 @@ export function ProjectsDashboard({
           onClick={() => setViewMode('initiation')}
           className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
             viewMode === 'initiation'
-              ? 'border-indigo-500 text-indigo-500 font-bold'
+              ? 'border-violet-500 text-violet-500 font-bold'
               : 'border-transparent text-app-muted hover:text-app-fg font-semibold'
           }`}
         >
@@ -394,7 +394,7 @@ export function ProjectsDashboard({
                 placeholder="Search projects by name or description..."
                 value={projectSearchQuery}
                 onChange={(e) => setProjectSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-app-fg"
+                className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 text-app-fg"
               />
             </div>
           </div>
@@ -402,7 +402,7 @@ export function ProjectsDashboard({
       {filteredProjects.length === 0 ? (
         /* Empty State Card */
         <div className="backdrop-blur-md bg-app-surface border border-app-border rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[350px]">
-          <div className="p-4 rounded-2xl bg-indigo-500/10 text-indigo-500 mb-4">
+          <div className="p-4 rounded-2xl bg-violet-500/10 text-violet-500 mb-4">
             <FolderOpen className="h-10 w-10 animate-pulse" />
           </div>
           <h3 className="text-lg font-bold text-app-fg mb-1">
@@ -483,7 +483,7 @@ export function ProjectsDashboard({
                 <div className="shrink-0 px-6 pt-6 pb-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-500">
+                      <div className="p-2.5 rounded-xl bg-violet-500/20 text-violet-500">
                         <Users className="h-5 w-5" />
                       </div>
                       <div>
@@ -529,7 +529,7 @@ export function ProjectsDashboard({
                             onClick={() => handleTogglePickerMember(m.userId)}
                             className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-app-muted hover:text-app-fg hover:bg-app-hover rounded-xl text-left cursor-pointer transition-all disabled:opacity-50"
                           >
-                            <span className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold border border-indigo-500/20 shrink-0">
+                            <span className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-violet-500/15 text-violet-600 dark:text-violet-400 text-[10px] font-bold border border-violet-500/20 shrink-0">
                               {initials}
                             </span>
                             <div className="flex-1 min-w-0">
@@ -559,7 +559,7 @@ export function ProjectsDashboard({
                             <label key={userId} className="flex items-center justify-between gap-3 rounded-xl border border-app-border bg-app-muted-surface px-3 py-2.5 cursor-pointer">
                               <span className="min-w-0 text-sm font-medium text-app-fg truncate">{member.name}</span>
                               <span className="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-app-muted">
-                                <input type="checkbox" checked={deletePermissionUserIds.includes(userId)} onChange={() => toggleDeletePermission(userId)} disabled={isPending} className="h-4 w-4 accent-indigo-600" />
+                                <input type="checkbox" checked={deletePermissionUserIds.includes(userId)} onChange={() => toggleDeletePermission(userId)} disabled={isPending} className="h-4 w-4 accent-violet-600" />
                                 Can delete
                               </span>
                             </label>

@@ -32,11 +32,11 @@ export function GovernanceAuditLogPanel({ organizationId, isAdmin }: GovernanceA
       <CollapsibleSection
         title="Governance Audit Log"
         subtitle="Compliance-grade, immutable record of sensitive governance actions."
-        icon={<Shield className="w-5 h-5 text-indigo-500" />}
+        icon={<Shield className="w-5 h-5 text-violet-500" />}
         isOpen={isOpen}
         onToggle={() => setIsOpen(!isOpen)}
         badge={
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-violet-500/10 text-violet-500 border border-violet-500/20">
             Secure Log
           </span>
         }
@@ -64,7 +64,7 @@ export function GovernanceAuditLogPanel({ organizationId, isAdmin }: GovernanceA
             <button
               onClick={downloadCsv}
               disabled={isLoading || logs.length === 0}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors w-full sm:w-auto"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors w-full sm:w-auto"
             >
               <Download className="w-4 h-4" /> Export CSV
             </button>
@@ -73,7 +73,7 @@ export function GovernanceAuditLogPanel({ organizationId, isAdmin }: GovernanceA
           <div className="bg-app-surface-solid border border-app-border rounded-xl overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center h-40">
-                <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+                <Loader2 className="w-6 h-6 text-violet-500 animate-spin" />
               </div>
             ) : logs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-app-muted">

@@ -126,7 +126,7 @@ export default function DocumentsWorkspace({
         >
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="p-2.5 text-indigo-500 bg-indigo-500/10 hover:bg-indigo-500 hover:text-white border border-l-0 border-indigo-500/20 rounded-r-2xl shadow-sm hover:shadow-md hover:shadow-indigo-500/20 transition-all hover:pl-4 cursor-pointer group"
+            className="p-2.5 text-violet-500 bg-violet-500/10 hover:bg-violet-500 hover:text-white border border-l-0 border-violet-500/20 rounded-r-2xl shadow-sm hover:shadow-md hover:shadow-violet-500/20 transition-all hover:pl-4 cursor-pointer group"
             title="Expand sidebar"
           >
             <PanelLeftOpen className="w-5 h-5 transition-transform group-hover:scale-110" />
@@ -149,10 +149,10 @@ export default function DocumentsWorkspace({
           <div className="relative flex-1 mr-3">
             <button 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:border-indigo-500/50 hover:shadow-md transition-all duration-200"
+              className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:border-violet-500/50 hover:shadow-md transition-all duration-200"
             >
               <div className="flex items-center gap-2">
-                 {documentDomain === 'project' ? <FolderKanban className="w-4 h-4 text-indigo-500"/> : <Box className="w-4 h-4 text-emerald-500"/>}
+                 {documentDomain === 'project' ? <FolderKanban className="w-4 h-4 text-violet-500"/> : <Box className="w-4 h-4 text-emerald-500"/>}
                  <span>{documentDomain === 'project' ? 'Project Documents' : 'Product Suite'}</span>
               </div>
               <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
@@ -162,14 +162,14 @@ export default function DocumentsWorkspace({
               <div className="absolute z-50 top-full mt-1.5 left-0 w-[240px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl rounded-xl py-1 overflow-hidden animate-fade-in-up">
                  <button 
                    onClick={() => { setDocumentDomain('project'); setIsDropdownOpen(false) }}
-                   className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-colors ${documentDomain === 'project' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                   className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-colors ${documentDomain === 'project' ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                  >
                    <FolderKanban className="w-4 h-4" />
                    Project Documents
                  </button>
                  <button 
                    onClick={() => { setDocumentDomain('product'); setIsDropdownOpen(false) }}
-                   className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-colors ${documentDomain === 'product' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                   className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-colors ${documentDomain === 'product' ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                  >
                    <Box className="w-4 h-4" />
                    Product Suite
@@ -179,7 +179,7 @@ export default function DocumentsWorkspace({
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="p-1.5 text-app-muted hover:text-indigo-400 hover:bg-indigo-500/10 border border-transparent hover:border-indigo-500/20 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-app-muted hover:text-violet-400 hover:bg-violet-500/10 border border-transparent hover:border-violet-500/20 rounded-lg transition-colors cursor-pointer"
             title="Collapse sidebar"
           >
             <PanelLeftClose className="w-5 h-5" />
@@ -195,7 +195,7 @@ export default function DocumentsWorkspace({
                 onClick={() => { setActiveTab('charter'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                 className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
                   activeTab === 'charter'
-                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
@@ -207,11 +207,11 @@ export default function DocumentsWorkspace({
                 onClick={() => { setActiveTab('wbs_dictionary'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                 className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
                   activeTab === 'wbs_dictionary'
-                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
-                <Layers className="w-4 h-4 text-indigo-500" />
+                <Layers className="w-4 h-4 text-violet-500" />
                 WBS Dictionary
               </button>
 
@@ -219,7 +219,7 @@ export default function DocumentsWorkspace({
                 onClick={() => { setActiveTab('raci'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                 className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
                   activeTab === 'raci'
-                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
@@ -232,7 +232,7 @@ export default function DocumentsWorkspace({
                 style={{ cursor: 'pointer' }}
                 className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
                   activeTab === 'project_management_plan'
-                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
@@ -246,7 +246,7 @@ export default function DocumentsWorkspace({
                 onClick={() => { setActiveTab('stakeholder_register'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                 className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
                   activeTab === 'stakeholder_register'
-                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
@@ -258,7 +258,7 @@ export default function DocumentsWorkspace({
                 onClick={() => { setActiveTab('risk_register'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                 className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
                   activeTab === 'risk_register'
-                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
@@ -271,7 +271,7 @@ export default function DocumentsWorkspace({
                 style={{ cursor: 'pointer' }}
                 className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
                   activeTab === 'issue_log'
-                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
@@ -285,7 +285,7 @@ export default function DocumentsWorkspace({
                 onClick={() => { setActiveTab('status_report'); setActiveSnapshotId(null); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                 className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
                   activeTab === 'status_report' && !activeSnapshotId
-                    ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+                    ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
@@ -304,7 +304,7 @@ export default function DocumentsWorkspace({
                       onClick={() => { setActiveTab('status_report'); setActiveSnapshotId(snap.id); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                       className={`text-left text-xs py-2 px-3 rounded-lg transition-colors flex items-center gap-2 ${
                         activeSnapshotId === snap.id
-                          ? 'bg-indigo-500/10 text-indigo-500 font-bold'
+                          ? 'bg-violet-500/10 text-violet-500 font-bold'
                           : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
                       }`}
                     >

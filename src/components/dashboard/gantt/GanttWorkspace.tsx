@@ -91,7 +91,7 @@ export default function GanttWorkspace({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
         <span className="text-sm text-app-subtle mt-4">Loading Gantt schedule timeline...</span>
       </div>
     )
@@ -112,7 +112,7 @@ export default function GanttWorkspace({
       {/* HUD Message Notifications overlay */}
       {hudMessage && (
         <div className="fixed top-4 right-4 z-50 shadow-lg flex items-center gap-3 px-4 py-3 rounded-2xl animate-fade-in border bg-app-surface-solid border-app-border">
-          {hudMessage.type === 'info' && <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />}
+          {hudMessage.type === 'info' && <Loader2 className="w-4 h-4 animate-spin text-violet-500" />}
           {hudMessage.type === 'success' && <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />}
           {hudMessage.type === 'error' && <span className="w-2.5 h-2.5 rounded-full bg-red-500" />}
           <span className="text-xs font-bold text-app-fg">{hudMessage.text}</span>

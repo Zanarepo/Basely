@@ -64,7 +64,7 @@ export function CpmNetworkTable({ activities, dependencies, elLookup }: CpmNetwo
                 <td className="p-3 text-center font-medium">{fmt(act.ef)}</td>
                 <td className="p-3 text-center font-medium">{fmt(act.ls)}</td>
                 <td className="p-3 text-center font-medium">{fmt(act.lf)}</td>
-                <td className={`p-3 text-center font-bold ${act.isCritical ? 'text-rose-500' : 'text-indigo-500'}`}>
+                <td className={`p-3 text-center font-bold ${act.isCritical ? 'text-rose-500' : 'text-violet-500'}`}>
                   {act.totalFloat !== null ? `${act.totalFloat}d` : '—'}
                 </td>
                 <td className="p-3 text-center">

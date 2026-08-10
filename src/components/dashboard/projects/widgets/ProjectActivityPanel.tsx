@@ -66,7 +66,7 @@ export default function ProjectActivityPanel({
 
   const getEntityIcon = (entityType: string) => {
     switch (entityType) {
-      case 'project': return <Briefcase className="w-4 h-4 text-indigo-500" />
+      case 'project': return <Briefcase className="w-4 h-4 text-violet-500" />
       case 'wbs_element': return <ListTodo className="w-4 h-4 text-emerald-500" />
       case 'activity': return <CheckSquare className="w-4 h-4 text-blue-500" />
       case 'cost_account': 
@@ -89,7 +89,7 @@ export default function ProjectActivityPanel({
       case 'created': return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"><PlusCircle className="w-3 h-3" /> CREATED</span>
       case 'updated': return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"><Edit3 className="w-3 h-3" /> UPDATED</span>
       case 'deleted': return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400"><Trash2 className="w-3 h-3" /> DELETED</span>
-      case 'uploaded': return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400"><UploadCloud className="w-3 h-3" /> UPLOADED</span>
+      case 'uploaded': return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400"><UploadCloud className="w-3 h-3" /> UPLOADED</span>
       case 'approved': return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-100 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400"><CheckCircle className="w-3 h-3" /> APPROVED</span>
       case 'rejected': return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400"><XCircle className="w-3 h-3" /> REJECTED</span>
       case 'published': return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400"><Send className="w-3 h-3" /> PUBLISHED</span>
@@ -130,7 +130,7 @@ export default function ProjectActivityPanel({
         {/* Header */}
         <div className="px-6 py-4 border-b border-app-border flex items-center justify-between bg-gray-50/50 dark:bg-app-surface-alt/30 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 rounded-xl">
+            <div className="p-2 bg-violet-50 dark:bg-violet-500/10 text-violet-500 rounded-xl">
               <Activity className="w-5 h-5" />
             </div>
             <div>
@@ -172,7 +172,7 @@ export default function ProjectActivityPanel({
                 setSearchQuery(e.target.value)
                 setPage(1)
               }}
-              className="block w-full pl-9 pr-3 py-2 border border-app-border rounded-lg bg-app-surface text-sm text-app-fg focus:ring-indigo-500 focus:border-indigo-500"
+              className="block w-full pl-9 pr-3 py-2 border border-app-border rounded-lg bg-app-surface text-sm text-app-fg focus:ring-violet-500 focus:border-violet-500"
             />
           </div>
           
@@ -184,7 +184,7 @@ export default function ProjectActivityPanel({
                   setEntityFilter(e.target.value as any)
                   setPage(1)
                 }}
-                className="w-full bg-app-surface border border-app-border rounded-lg pl-3 pr-8 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+                className="w-full bg-app-surface border border-app-border rounded-lg pl-3 pr-8 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 appearance-none"
               >
                 <option value="all">All Modules</option>
                 <option value="wbs_element">WBS Element</option>
@@ -206,7 +206,7 @@ export default function ProjectActivityPanel({
                   setActionFilter(e.target.value as any)
                   setPage(1)
                 }}
-                className="w-full bg-app-surface border border-app-border rounded-lg pl-3 pr-8 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+                className="w-full bg-app-surface border border-app-border rounded-lg pl-3 pr-8 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 appearance-none"
               >
                 <option value="all">All Actions</option>
                 <option value="created">Created</option>
@@ -228,7 +228,7 @@ export default function ProjectActivityPanel({
             </div>
           ) : loading && logs.length === 0 ? (
             <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+              <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
             </div>
           ) : logs.length === 0 ? (
             <div className="text-center py-10">
@@ -250,8 +250,8 @@ export default function ProjectActivityPanel({
                 return (
                   <div key={log.id} className="relative z-10 flex gap-4 items-start group">
                     <div className="w-8 h-8 rounded-full bg-white dark:bg-app-surface border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0 shadow-sm relative">
-                      <div className={`absolute inset-0 rounded-full flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/20 transition-opacity cursor-pointer ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} onClick={() => toggleSelection(log.id)}>
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-app-surface'}`}>
+                      <div className={`absolute inset-0 rounded-full flex items-center justify-center bg-violet-50 dark:bg-violet-500/20 transition-opacity cursor-pointer ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} onClick={() => toggleSelection(log.id)}>
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-violet-500 border-violet-500 text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-app-surface'}`}>
                           {isSelected && <CheckCircle className="w-3 h-3" />}
                         </div>
                       </div>
@@ -260,7 +260,7 @@ export default function ProjectActivityPanel({
                       </div>
                     </div>
                     <div 
-                      className={`flex-1 bg-white dark:bg-gray-800/20 hover:bg-gray-50 dark:hover:bg-gray-800/40 border rounded-2xl p-3 shadow-sm transition-colors cursor-pointer ${isSelected ? 'border-indigo-500 dark:border-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-gray-100 dark:border-gray-800/50'}`}
+                      className={`flex-1 bg-white dark:bg-gray-800/20 hover:bg-gray-50 dark:hover:bg-gray-800/40 border rounded-2xl p-3 shadow-sm transition-colors cursor-pointer ${isSelected ? 'border-violet-500 dark:border-violet-400 bg-violet-50/50 dark:bg-violet-500/10' : 'border-gray-100 dark:border-gray-800/50'}`}
                       onClick={() => toggleSelection(log.id)}
                     >
                       <div className="flex items-center justify-between gap-4 mb-1">

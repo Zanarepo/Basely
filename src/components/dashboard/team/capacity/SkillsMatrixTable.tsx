@@ -265,7 +265,7 @@ export default function SkillsMatrixTable({
         )
       case 'advanced':
         return (
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 uppercase tracking-wide">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-violet-500/15 text-violet-300 border border-violet-500/30 uppercase tracking-wide">
             ◆ Advanced
           </span>
         )
@@ -290,7 +290,7 @@ export default function SkillsMatrixTable({
       backend: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5',
       devops: 'text-amber-400 border-amber-500/20 bg-amber-500/5',
       data_science: 'text-pink-400 border-pink-500/20 bg-pink-500/5',
-      design: 'text-indigo-400 border-indigo-500/20 bg-indigo-500/5',
+      design: 'text-violet-400 border-violet-500/20 bg-violet-500/5',
       management: 'text-purple-400 border-purple-500/20 bg-purple-500/5'
     }
     return map[category] || 'text-app-muted'
@@ -314,7 +314,7 @@ export default function SkillsMatrixTable({
             <h1 className="text-2xl font-black text-app-fg tracking-tight">
               Team Competency & Capacity Matrix
             </h1>
-            <span className="text-xs uppercase px-2.5 py-0.5 rounded-full font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <span className="text-xs uppercase px-2.5 py-0.5 rounded-full font-bold bg-violet-500/10 text-violet-400 border border-violet-500/20">
               {methodology} resource engine
             </span>
           </div>
@@ -326,7 +326,7 @@ export default function SkillsMatrixTable({
         <button
           type="button"
           onClick={() => setIsAddMemberOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/35 transition-all cursor-pointer shrink-0"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg shadow-violet-500/25 hover:shadow-violet-500/35 transition-all cursor-pointer shrink-0"
         >
           <UserPlus className="w-4 h-4" />
           <span>+ Add Specialist / Team Member</span>
@@ -342,7 +342,7 @@ export default function SkillsMatrixTable({
             placeholder="Search specialist by name, title, or specific technical competency..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-app-input border border-app-border text-app-fg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-app-input border border-app-border text-app-fg text-sm focus:ring-2 focus:ring-violet-500 outline-none transition-all"
           />
         </div>
 
@@ -405,11 +405,11 @@ export default function SkillsMatrixTable({
                   {/* Member Profile */}
                   <td className="p-4 pl-6 align-top">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center font-black text-indigo-400 shrink-0 shadow-inner">
+                      <div className="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center font-black text-violet-400 shrink-0 shadow-inner">
                         {member.avatar}
                       </div>
                       <div>
-                        <h4 className="font-bold text-app-fg text-base tracking-tight group-hover:text-indigo-300 transition-colors">
+                        <h4 className="font-bold text-app-fg text-base tracking-tight group-hover:text-violet-300 transition-colors">
                           {member.name}
                         </h4>
                         <span className="text-xs font-semibold text-app-subtle">
@@ -428,7 +428,7 @@ export default function SkillsMatrixTable({
                         member.skills.map((skill, i) => (
                           <div
                             key={skill.id || i}
-                            className={`group/skill relative flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium shadow-2xs transition-all ${getCategoryColor(skill.category)} hover:border-indigo-500/50`}
+                            className={`group/skill relative flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium shadow-2xs transition-all ${getCategoryColor(skill.category)} hover:border-violet-500/50`}
                           >
                             <span className="font-bold text-app-fg">{skill.name}</span>
                             <span className="text-[10px] text-app-subtle">({skill.years}y)</span>
@@ -444,7 +444,7 @@ export default function SkillsMatrixTable({
                                   skill: skill
                                 })}
                                 title="Edit competency"
-                                className="p-1 hover:bg-indigo-500/20 rounded text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors"
+                                className="p-1 hover:bg-violet-500/20 rounded text-violet-400 hover:text-violet-300 cursor-pointer transition-colors"
                               >
                                 <Edit2 className="w-3 h-3" />
                               </button>
@@ -470,7 +470,7 @@ export default function SkillsMatrixTable({
                       <button
                         type="button"
                         onClick={() => setActiveSkillModal({ userId: member.userId, name: member.name, skill: null })}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-app-muted-surface border border-dashed border-app-border text-xs font-bold text-indigo-500 hover:text-indigo-400 hover:bg-indigo-500/10 hover:border-indigo-500/40 transition-all cursor-pointer shadow-sm"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-app-muted-surface border border-dashed border-app-border text-xs font-bold text-violet-500 hover:text-violet-400 hover:bg-violet-500/10 hover:border-violet-500/40 transition-all cursor-pointer shadow-sm"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>+ Add Competency</span>
@@ -491,7 +491,7 @@ export default function SkillsMatrixTable({
                       </div>
                       <div className="flex items-center gap-3 text-xs text-app-muted">
                         {methodology !== 'agile' && (
-                          <span title="Weekly available man-hours" className="flex items-center gap-1 font-semibold text-indigo-400">
+                          <span title="Weekly available man-hours" className="flex items-center gap-1 font-semibold text-violet-400">
                             <Clock className="w-3.5 h-3.5" /> {member.capacityHours} h/wk
                           </span>
                         )}
@@ -508,9 +508,9 @@ export default function SkillsMatrixTable({
                   <td className="p-4 pr-6 align-middle text-right">
                     <button
                       onClick={() => setActiveCapacityMember({ userId: member.userId, name: member.name })}
-                      className="px-3.5 py-2 rounded-xl border border-app-border bg-app-muted-surface hover:bg-indigo-500/10 hover:border-indigo-500/40 text-app-fg text-xs font-bold shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+                      className="px-3.5 py-2 rounded-xl border border-app-border bg-app-muted-surface hover:bg-violet-500/10 hover:border-violet-500/40 text-app-fg text-xs font-bold shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
                     >
-                      <Sliders className="w-3.5 h-3.5 text-indigo-500" />
+                      <Sliders className="w-3.5 h-3.5 text-violet-500" />
                       <span>Configure Bandwidth</span>
                       <ChevronRight className="w-3.5 h-3.5 text-app-muted" />
                     </button>

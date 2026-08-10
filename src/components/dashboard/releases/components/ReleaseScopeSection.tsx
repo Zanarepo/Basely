@@ -99,9 +99,9 @@ export function ReleaseScopeSection({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 bg-indigo-500/5 dark:bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 bg-violet-500/5 dark:bg-violet-500/10 border border-violet-500/20 rounded-xl">
         <div className="flex items-center gap-3">
-          <Sparkles className="h-5 w-5 text-indigo-500 shrink-0" />
+          <Sparkles className="h-5 w-5 text-violet-500 shrink-0" />
           <div>
             <h4 className="text-sm font-bold text-app-fg">Unified Scope Derivation</h4>
             <p className="text-xs text-app-muted font-normal">
@@ -114,7 +114,7 @@ export function ReleaseScopeSection({
           <button
             type="button"
             onClick={() => setShowAddForm(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-sm transition-all cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold shadow-sm transition-all cursor-pointer shrink-0"
           >
             <Plus className="h-4 w-4" />
             <span>Add Scope Override</span>
@@ -131,7 +131,7 @@ export function ReleaseScopeSection({
                 type="button"
                 onClick={() => setAddMode('existing')}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                  addMode === 'existing' ? 'bg-indigo-500/20 text-indigo-500 border border-indigo-500/30' : 'text-app-muted hover:bg-app-surface'
+                  addMode === 'existing' ? 'bg-violet-500/20 text-violet-500 border border-violet-500/30' : 'text-app-muted hover:bg-app-surface'
                 }`}
               >
                 Link WBS / Activity
@@ -140,7 +140,7 @@ export function ReleaseScopeSection({
                 type="button"
                 onClick={() => setAddMode('custom')}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                  addMode === 'custom' ? 'bg-indigo-500/20 text-indigo-500 border border-indigo-500/30' : 'text-app-muted hover:bg-app-surface'
+                  addMode === 'custom' ? 'bg-violet-500/20 text-violet-500 border border-violet-500/30' : 'text-app-muted hover:bg-app-surface'
                 }`}
               >
                 Custom Deliverable
@@ -176,7 +176,7 @@ export function ReleaseScopeSection({
                 onChange={e => setCustomTitle(e.target.value)}
                 placeholder="e.g. Third-party security penetration testing report"
                 required
-                className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-xs font-semibold text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-xs font-semibold text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500"
               />
             </div>
           )}
@@ -204,7 +204,7 @@ export function ReleaseScopeSection({
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               <span>Commit Scope Override</span>
@@ -234,7 +234,7 @@ export function ReleaseScopeSection({
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="p-2 rounded-lg bg-app-surface text-app-muted shrink-0">
-                    {item.entityType === 'wbs_element' && <Layers className="h-4 w-4 text-indigo-400" />}
+                    {item.entityType === 'wbs_element' && <Layers className="h-4 w-4 text-violet-400" />}
                     {item.entityType === 'activity' && <ListTodo className="h-4 w-4 text-emerald-400" />}
                     {item.entityType === 'custom_item' && <FileText className="h-4 w-4 text-purple-400" />}
                   </div>
@@ -242,7 +242,7 @@ export function ReleaseScopeSection({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       {item.code && (
-                        <span className="text-xs font-mono font-bold text-indigo-400 shrink-0">
+                        <span className="text-xs font-mono font-bold text-violet-400 shrink-0">
                           {item.code}
                         </span>
                       )}

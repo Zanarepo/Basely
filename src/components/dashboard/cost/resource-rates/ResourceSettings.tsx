@@ -50,13 +50,13 @@ export function ResourceSettings({
       <div className="flex items-center gap-6 border-b border-app-border px-6 pt-4 bg-app-bg/50">
         <button 
           onClick={() => setActiveSettingsTab('overhead')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeSettingsTab === 'overhead' ? 'border-indigo-500 text-indigo-500' : 'border-transparent text-app-muted hover:text-app-fg'}`}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeSettingsTab === 'overhead' ? 'border-violet-500 text-violet-500' : 'border-transparent text-app-muted hover:text-app-fg'}`}
         >
           Global Overhead
         </button>
         <button 
           onClick={() => setActiveSettingsTab('contingency')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeSettingsTab === 'contingency' ? 'border-indigo-500 text-indigo-500' : 'border-transparent text-app-muted hover:text-app-fg'}`}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeSettingsTab === 'contingency' ? 'border-violet-500 text-violet-500' : 'border-transparent text-app-muted hover:text-app-fg'}`}
         >
           Project Contingency
         </button>
@@ -79,7 +79,7 @@ export function ResourceSettings({
                         type="number"
                         value={overheadVal}
                         onChange={e => setOverheadVal(e.target.value)}
-                        className="w-24 px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 pr-8 text-app-fg"
+                        className="w-24 px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 pr-8 text-app-fg"
                       />
                       <Percent className="w-3 h-3 text-app-muted absolute right-3 top-2.5" />
                     </div>
@@ -93,7 +93,7 @@ export function ResourceSettings({
                 ) : (
                   <div className="flex items-center gap-3">
                     <span className="text-xl font-bold text-app-fg">{globalOverhead}%</span>
-                    <button onClick={() => setIsEditingOverhead(true)} className="p-1.5 text-app-muted hover:text-indigo-400 hover:bg-app-hover rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <button onClick={() => setIsEditingOverhead(true)} className="p-1.5 text-app-muted hover:text-violet-400 hover:bg-app-hover rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                       <Edit2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -137,7 +137,7 @@ export function ResourceSettings({
                         type="number"
                         value={contingencyVal}
                         onChange={e => setContingencyVal(e.target.value)}
-                        className={`w-32 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-app-fg ${selectedContingencyType === 'flat' ? 'pl-8 pr-3' : 'pl-3 pr-8'}`}
+                        className={`w-32 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 text-app-fg ${selectedContingencyType === 'flat' ? 'pl-8 pr-3' : 'pl-3 pr-8'}`}
                       />
                     </div>
                     <button onClick={handleSaveContingency} className="p-1.5 text-green-500 hover:bg-green-500/10 rounded-lg">
@@ -154,7 +154,7 @@ export function ResourceSettings({
                         ? `${contingencyAmount}%` 
                         : <CurrencyDisplay amount={contingencyAmount || 0} currency={projectCurrency} compactThreshold={1000} />}
                     </span>
-                    <button onClick={() => setIsEditingContingency(true)} className="p-1.5 text-app-muted hover:text-indigo-400 hover:bg-app-hover rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <button onClick={() => setIsEditingContingency(true)} className="p-1.5 text-app-muted hover:text-violet-400 hover:bg-app-hover rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                       <Edit2 className="w-4 h-4" />
                     </button>
                   </div>

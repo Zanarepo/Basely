@@ -318,7 +318,7 @@ export function ApproverQueue({ requests }: { requests: ApprovalRequest[] }) {
             <button
               onClick={() => handleApprove(r.id)}
               disabled={processingId === r.id}
-              className="flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 transition-colors disabled:opacity-50"
             >
               {processingId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               Approve

@@ -196,7 +196,7 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
               placeholder="Search name, email, role..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="text-sm bg-app-surface border border-app-border rounded-lg pl-9 pr-3 py-1.5 text-app-fg focus:outline-none focus:ring-1 focus:ring-indigo-500 w-64"
+              className="text-sm bg-app-surface border border-app-border rounded-lg pl-9 pr-3 py-1.5 text-app-fg focus:outline-none focus:ring-1 focus:ring-violet-500 w-64"
             />
           </div>
         </div>
@@ -222,7 +222,7 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
                   type="checkbox"
                   checked={selectedIds.size === filteredStakeholders.length && filteredStakeholders.length > 0}
                   onChange={toggleSelectAll}
-                  className="w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer"
+                  className="w-3.5 h-3.5 rounded border-app-border text-violet-500 focus:ring-violet-500 bg-app-surface cursor-pointer"
                 />
               </th>
               <th className="p-4 text-xs font-semibold text-app-subtle uppercase tracking-wider">Name & Role</th>
@@ -253,12 +253,12 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
                         type="checkbox"
                         checked={selectedIds.has(s.id)}
                         onChange={() => toggleSelect(s.id)}
-                        className={`w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.size > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
+                        className={`w-3.5 h-3.5 rounded border-app-border text-violet-500 focus:ring-violet-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.size > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
                       />
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${s.organization_type === 'internal' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                        <div className={`p-2 rounded-full ${s.organization_type === 'internal' ? 'bg-violet-500/10 text-violet-500' : 'bg-amber-500/10 text-amber-500'}`}>
                           {s.organization_type === 'internal' ? <User className="h-4 w-4" /> : <Building className="h-4 w-4" />}
                         </div>
                         <div>
@@ -281,7 +281,7 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
                     <td className="p-4">
                       <div className="flex flex-col gap-1">
                         {displayEmail && (
-                          <a href={`mailto:${displayEmail}`} className="flex items-center gap-1.5 text-xs text-app-subtle hover:text-indigo-500">
+                          <a href={`mailto:${displayEmail}`} className="flex items-center gap-1.5 text-xs text-app-subtle hover:text-violet-500">
                             <Mail className="h-3 w-3" /> {displayEmail}
                           </a>
                         )}
@@ -302,7 +302,7 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
                       {hasEditAccess && (
                         <button
                           onClick={() => onEdit(s.id)}
-                          className="p-2 text-app-muted hover:text-indigo-500 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-indigo-500/10"
+                          className="p-2 text-app-muted hover:text-violet-500 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-violet-500/10"
                         >
                           <ExternalLink className="h-4 w-4" />
                         </button>

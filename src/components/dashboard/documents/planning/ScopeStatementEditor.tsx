@@ -109,7 +109,7 @@ export function ScopeStatementEditor({
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-2 bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             Save Changes
@@ -127,7 +127,7 @@ export function ScopeStatementEditor({
             onChange={handleChange}
             readOnly={!hasEditAccess}
             placeholder="Describe what is explicitly included in the project scope..."
-            className="w-full bg-app-surface border border-app-border rounded-lg p-3 text-app-fg placeholder-app-muted text-sm min-h-[120px] focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-y"
+            className="w-full bg-app-surface border border-app-border rounded-lg p-3 text-app-fg placeholder-app-muted text-sm min-h-[120px] focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all resize-y"
           />
         </div>
 
@@ -137,7 +137,7 @@ export function ScopeStatementEditor({
             <p className="text-xs text-app-muted mb-2">Select top-level WBS elements that represent the in-scope deliverables.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {wbsElements.map(wbs => (
-                <label key={wbs.id} className="flex items-start gap-3 p-3 rounded-lg border border-app-border bg-app-bg hover:border-indigo-500/30 transition-colors cursor-pointer group">
+                <label key={wbs.id} className="flex items-start gap-3 p-3 rounded-lg border border-app-border bg-app-bg hover:border-violet-500/30 transition-colors cursor-pointer group">
                   <input
                     type="checkbox"
                     checked={formData.anchored_wbs_element_ids.includes(wbs.id)}
@@ -146,7 +146,7 @@ export function ScopeStatementEditor({
                     className="mt-1 cursor-pointer"
                   />
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-app-fg group-hover:text-indigo-500 transition-colors">{wbs.code} {wbs.name}</span>
+                    <span className="text-sm font-semibold text-app-fg group-hover:text-violet-500 transition-colors">{wbs.code} {wbs.name}</span>
                   </div>
                 </label>
               ))}

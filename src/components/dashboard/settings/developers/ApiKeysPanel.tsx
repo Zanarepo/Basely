@@ -124,7 +124,7 @@ export function ApiKeysPanel() {
         className="w-full flex items-center justify-between px-5 py-4 bg-app-surface hover:bg-app-hover transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-3 text-base font-bold text-app-fg">
-          <div className="p-2 bg-indigo-500/10 text-indigo-500 rounded-lg border border-indigo-500/20">
+          <div className="p-2 bg-violet-500/10 text-violet-500 rounded-lg border border-violet-500/20">
             <Key className="w-5 h-5" />
           </div>
           <div className="text-left">
@@ -156,7 +156,7 @@ export function ApiKeysPanel() {
                     </code>
                     <button
                       onClick={copyToClipboard}
-                      className="shrink-0 p-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors flex items-center justify-center cursor-pointer"
+                      className="shrink-0 p-2.5 bg-violet-500 hover:bg-violet-600 text-white rounded-lg transition-colors flex items-center justify-center cursor-pointer"
                     >
                       {copied ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                     </button>
@@ -182,7 +182,7 @@ export function ApiKeysPanel() {
                   value={newKeyName}
                   onChange={(e) => setNewKeyName(e.target.value)}
                   placeholder="e.g., ERP Connector"
-                  className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-app-bg border border-app-border rounded-lg px-3 py-2 text-sm text-app-fg focus:outline-none focus:border-violet-500"
                   required
                 />
               </div>
@@ -200,7 +200,7 @@ export function ApiKeysPanel() {
               <button
                 type="submit"
                 disabled={isCreating || !newKeyName.trim()}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer"
               >
                 {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 Generate

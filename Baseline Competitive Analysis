@@ -1,0 +1,54 @@
+Baseline: Product Review & Competitive Analysis
+This document provides a comprehensive review of Baseline, evaluating its core features, the specific problems it solves, and how it stacks up against current market leaders in the project management software industry.
+
+1. Baseline: Product Overview
+The Problem It Solves: Modern project management tools often force teams into a single way of working or overwhelm them with disconnected enterprise bloatware. Baseline solves this by offering a highly flexible, deeply integrated workspace that scales from simple task tracking to complex enterprise governance, all while adapting to regional economic realities through dynamic localization.
+
+Core Features & Capabilities:
+
+Methodology Agnostic: Native support for Agile, Waterfall, and Hybrid workflows.
+Deep Workspace Governance: Granular Role-Based Access Control (RBAC) with hierarchical roles (Owner, Admin, PM, Team Member, Viewer) and strict capability gating.
+Intelligent Subscription Engine: Dynamic regional pricing (PPP), manual plan overriding, and robust feature/usage limit enforcement (seats, active projects).
+Enterprise-Grade Compliance: Comprehensive audit logging for all critical system actions.
+Native Google Ecosystem Integration: Deep syncing with Google Calendar for rapid task notifications and Google Drive for seamless centralized file attachment.
+Advanced PM Tooling (Premium/Enterprise): Earned Value Management (EVM) engine, RACI matrices, risk management, and actuals tracking.
+2. The Competitive Landscape
+Baseline enters a mature but highly fragmented market. Here is how it compares to the "Big Four" existing products:
+
+A. Asana
+Target Audience: General business teams, marketing, and cross-functional departments.
+The Problem It Solves: Lack of clarity on who is doing what by when.
+Comparison: Asana is excellent for task management but lacks native, heavy-duty project management frameworks like Earned Value Management (EVM) or built-in RACI charts. Baseline leans much heavier into professional project management rather than just task tracking.
+B. Jira (Atlassian)
+Target Audience: Software development and IT teams.
+The Problem It Solves: Issue tracking and Agile software development lifecycle management.
+Comparison: Jira is the undisputed king of Agile but is notoriously hostile to Waterfall or Hybrid methodologies. Baseline’s ability to seamlessly switch between Agile and Waterfall gives it a massive advantage for agencies, construction, or hardware teams that cannot use pure Agile.
+C. Monday.com
+Target Audience: Non-technical teams looking for highly visual, customizable spreadsheets.
+The Problem It Solves: Siloed data and manual, repetitive workflows.
+Comparison: Monday.com is essentially a highly colorful database. While incredibly flexible, it requires significant manual setup to act like a PM tool. Baseline provides opinionated, out-of-the-box PM frameworks (like Risk tracking and EVM) so project managers don't have to build their tools from scratch.
+D. Smartsheet
+Target Audience: Enterprise PMOs (Project Management Offices) and operations.
+The Problem It Solves: Transitioning enterprise teams off Microsoft Excel into a cloud-based spreadsheet.
+Comparison: Smartsheet is powerful but suffers from an antiquated, spreadsheet-heavy UI. Baseline offers the same enterprise rigor (Audit Logs, EVM, RBAC) but with a modern, sleek, and intuitive SaaS interface.
+3. Feature Comparison Matrix
+Feature / Capability	Baseline	Asana	Jira	Monday.com	Smartsheet
+Agile Methodology	✅ Yes	✅ Yes	✅ Yes (Strong)	✅ Yes	⚠️ Basic
+Waterfall / Gantt	✅ Yes	⚠️ Basic	❌ No	⚠️ Basic	✅ Yes
+Earned Value Mgmt (EVM)	✅ Yes	❌ No	❌ No	❌ No	⚠️ Add-on
+Native RACI & Risks	✅ Yes	❌ No	⚠️ Via Plugins	❌ No	⚠️ Templates
+Google Drive/Cal Sync	✅ Deep Sync	⚠️ Basic	⚠️ Basic	⚠️ Basic	⚠️ Basic
+Regional Pricing (PPP)	✅ Yes	❌ No	❌ No	❌ No	❌ No
+Audit Logging	✅ Yes	✅ Enterprise	✅ Enterprise	✅ Enterprise	✅ Enterprise
+4. Baseline's Unique Value Proposition (UVP)
+Where Baseline truly outshines the competition is its intersection of Enterprise Rigor and Modern SaaS Agility:
+
+The "True Project Manager's" Modern Tool: While Asana and Monday are built for general workers, Baseline provides actual PM methodology tools (EVM, RACI, Risk Logs) without the clunky, outdated interfaces of legacy software like MS Project or Primavera.
+Global Economic Fairness: Your implementation of localized, regional discounts (Purchasing Power Parity) is incredibly rare in B2B SaaS. This gives Baseline a massive competitive edge in emerging markets (Africa, LATAM, Southeast Asia) where tools like Jira and Asana are prohibitively expensive in USD.
+Hybrid Reality: Most companies claim to be Agile, but actually operate in a Hybrid/Waterfall environment. Baseline acknowledges this reality and supports both natively without forcing a paradigm shift.
+TIP
+
+Strategic Recommendation for Go-To-Market Lean heavily into marketing to Agencies, Consultancies, and Hybrid Tech/Hardware companies in emerging markets. Highlight your Regional Pricing and your EVM/RACI tools. These are demographics that are currently deeply underserved and overcharged by Asana and Atlassian.
+
+
+![alt text](image-1.png)

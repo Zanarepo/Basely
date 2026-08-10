@@ -45,7 +45,7 @@ const sourceConfig: Record<string, { label: string; icon: React.ReactNode }> = {
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
   new: { label: 'New', color: 'text-sky-600 dark:text-sky-400', bgColor: 'bg-sky-50 dark:bg-sky-900/30' },
-  triaged: { label: 'Triaged', color: 'text-indigo-600 dark:text-indigo-400', bgColor: 'bg-indigo-50 dark:bg-indigo-900/30' },
+  triaged: { label: 'Triaged', color: 'text-violet-600 dark:text-violet-400', bgColor: 'bg-violet-50 dark:bg-violet-900/30' },
   in_review: { label: 'In Review', color: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-50 dark:bg-amber-900/30' },
   converted: { label: 'Converted', color: 'text-emerald-600 dark:text-emerald-400', bgColor: 'bg-emerald-50 dark:bg-emerald-900/30' },
   archived: { label: 'Archived', color: 'text-slate-500 dark:text-slate-400', bgColor: 'bg-slate-100 dark:bg-slate-800' }
@@ -74,7 +74,7 @@ export function DiscoveryInsightCard({ insight, onEdit, onDelete, onConvertToCR,
 
   return (
     <div
-      className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 transition-all hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800"
+      className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 transition-all hover:shadow-md hover:border-violet-200 dark:hover:border-violet-800"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -94,7 +94,7 @@ export function DiscoveryInsightCard({ insight, onEdit, onDelete, onConvertToCR,
               type="button"
               onClick={() => onEdit(insight)}
               style={{ cursor: 'pointer' }}
-              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-indigo-500 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-violet-500 transition-colors"
               title="Edit Insight"
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -106,11 +106,11 @@ export function DiscoveryInsightCard({ insight, onEdit, onDelete, onConvertToCR,
                 onClick={handleConvert}
                 disabled={saving}
                 style={{ cursor: 'pointer' }}
-                className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-400 hover:text-indigo-500 transition-colors disabled:opacity-50"
+                className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-slate-400 hover:text-violet-500 transition-colors disabled:opacity-50"
                 title="Convert to Change Request"
               >
                 {convertingId === insight.id ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-500" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-500" />
                 ) : (
                   <ArrowRightLeft className="w-3.5 h-3.5" />
                 )}
@@ -164,7 +164,7 @@ export function DiscoveryInsightCard({ insight, onEdit, onDelete, onConvertToCR,
 
         {/* Linked Persona */}
         {insight.persona && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
             <User className="w-2.5 h-2.5" />
             {insight.persona.name}
           </span>

@@ -122,7 +122,7 @@ export default function IssueForm({
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Supplier bankruptcy"
                 required
-                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50"
               />
             </div>
 
@@ -134,7 +134,7 @@ export default function IssueForm({
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
                 placeholder="Details about the issue and current impact..."
-                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+                className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 resize-none"
               />
             </div>
 

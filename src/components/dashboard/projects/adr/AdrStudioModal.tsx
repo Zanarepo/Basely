@@ -104,13 +104,13 @@ export default function AdrStudioModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-app-border bg-app-surface-solid/80 sticky top-0 z-10 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500">
+            <div className="p-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-500">
               <Cpu className="w-6 h-6" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-app-fg flex items-center gap-2">
                 {initialData ? 'Edit Architecture Decision Record (ADR)' : 'Author Architecture Decision Record (ADR)'}
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
                   Engineering Governance
                 </span>
               </h2>
@@ -148,7 +148,7 @@ export default function AdrStudioModal({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., ADR-012: Adoption of Redis for Distinguishing Real-time Session Cache"
-                className="w-full px-4 py-3 rounded-xl bg-app-input border border-app-border text-app-fg text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                className="w-full px-4 py-3 rounded-xl bg-app-input border border-app-border text-app-fg text-sm font-medium focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all outline-none"
                 required
               />
             </div>
@@ -186,7 +186,7 @@ export default function AdrStudioModal({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-bold text-app-muted uppercase tracking-wider flex items-center gap-1.5">
-                  <HelpCircle className="w-4 h-4 text-indigo-400" />
+                  <HelpCircle className="w-4 h-4 text-violet-400" />
                   1. Context & Problem Statement
                 </label>
                 <span className="text-[11px] text-app-subtle">Why is this decision necessary right now?</span>
@@ -196,7 +196,7 @@ export default function AdrStudioModal({
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 placeholder="Describe the technical background, architectural constraints, business scalability requirements, or performance bottlenecks triggering this decision..."
-                className="w-full p-4 rounded-xl bg-app-input border border-app-border text-app-fg text-sm leading-relaxed focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-y"
+                className="w-full p-4 rounded-xl bg-app-input border border-app-border text-app-fg text-sm leading-relaxed focus:ring-2 focus:ring-violet-500 outline-none transition-all resize-y"
                 required
               />
             </div>
@@ -251,7 +251,7 @@ export default function AdrStudioModal({
             <button
               type="submit"
               disabled={isSaving}
-              className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2 cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-semibold shadow-lg shadow-violet-600/20 transition-all flex items-center gap-2 cursor-pointer"
             >
               {isSaving ? (
                 <>

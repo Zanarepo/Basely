@@ -121,7 +121,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
                 setSelectedBaselineId(null)
                 setIsCreating(true)
               }}
-              className="p-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
+              className="p-2 bg-violet-500 hover:bg-violet-600 text-white rounded-lg transition-colors"
               title="Create new baseline"
             >
               <Plus className="w-4 h-4" />
@@ -198,7 +198,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
                         autoFocus
                         value={editingBaselineName} 
                         onChange={e => setEditingBaselineName(e.target.value)} 
-                        className="flex-1 px-2 py-1 bg-app-input border border-app-border rounded text-sm text-app-fg focus:outline-none focus:border-indigo-500"
+                        className="flex-1 px-2 py-1 bg-app-input border border-app-border rounded text-sm text-app-fg focus:outline-none focus:border-violet-500"
                         onKeyDown={e => {
                           if (e.key === 'Enter') handleUpdateBaseline(baseline.id)
                           if (e.key === 'Escape') setEditingBaselineId(null)
@@ -224,7 +224,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
                               setEditingBaselineId(baseline.id)
                               setEditingBaselineName(baseline.name)
                             }}
-                            className="p-1.5 text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-colors cursor-pointer"
+                            className="p-1.5 text-app-muted hover:text-violet-500 hover:bg-violet-500/10 rounded-lg transition-colors cursor-pointer"
                             title="Rename Baseline"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -246,7 +246,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
                   <span>Saved: {new Date(baseline.saved_at).toLocaleDateString()}</span>
                   <button 
                     onClick={() => handleViewData(baseline.id)}
-                    className="text-indigo-500 hover:text-indigo-600 hover:underline font-semibold cursor-pointer"
+                    className="text-violet-500 hover:text-violet-600 hover:underline font-semibold cursor-pointer"
                   >
                     View Data
                   </button>
@@ -262,7 +262,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
         {isCreating ? (
           <div className="flex-1 flex flex-col max-w-md mx-auto justify-center w-full">
             <div className="text-center mb-6">
-              <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 text-violet-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Camera className="w-6 h-6" />
               </div>
               <h2 className="text-xl font-bold text-app-fg">Snapshot Current Budget</h2>
@@ -279,7 +279,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
                   autoFocus
                   value={newBaselineName}
                   onChange={e => setNewBaselineName(e.target.value)}
-                  className="w-full px-4 py-3 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-3 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500"
                   placeholder="e.g. Initial Approved Budget v1.0"
                 />
               </div>
@@ -296,7 +296,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
                 <button
                   onClick={handleCreate}
                   disabled={!newBaselineName.trim() || isSaving}
-                  className="flex-1 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-semibold shadow-sm transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
+                  className="flex-1 px-4 py-2.5 bg-violet-500 hover:bg-violet-600 text-white rounded-xl font-semibold shadow-sm transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
                 >
                   {isSaving ? 'Snapshotting...' : 'Create Snapshot'}
                 </button>
@@ -323,7 +323,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
             <div className="flex-1 overflow-y-auto pr-2 space-y-4">
               {isLoadingSnapshots ? (
                 <div className="flex flex-col items-center justify-center h-full text-app-subtle">
-                  <Loader2 className="w-8 h-8 animate-spin mb-4 text-indigo-500" />
+                  <Loader2 className="w-8 h-8 animate-spin mb-4 text-violet-500" />
                   <p>Loading snapshot data...</p>
                 </div>
               ) : snapshots.length === 0 ? (
@@ -350,7 +350,7 @@ export default function BaselineManager({ projectId, baselines, projectCurrency,
                   
                   <div className="mt-6 pt-4 border-t border-app-border flex justify-between items-center">
                     <span className="font-bold text-app-fg">Total Baseline Budget</span>
-                    <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
+                    <span className="text-xl font-black text-violet-600 dark:text-violet-400">
                       <CurrencyDisplay amount={snapshots.reduce((acc, curr) => acc + curr.baseline_total, 0)} currency={projectCurrency} compactThreshold={1000} />
                     </span>
                   </div>

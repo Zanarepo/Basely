@@ -104,12 +104,12 @@ export function ReleaseDetailModal({
         <div className="flex flex-col border-b border-app-border bg-app-surface/50">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 shrink-0">
+              <div className="p-2.5 rounded-xl bg-violet-500/10 text-violet-500 border border-violet-500/20 shrink-0">
                 <Rocket className="h-6 w-6" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-full border border-indigo-500/25 uppercase tracking-wider shrink-0">
+                  <span className="text-xs font-bold text-violet-400 bg-violet-500/10 px-2.5 py-0.5 rounded-full border border-violet-500/25 uppercase tracking-wider shrink-0">
                     {terms.release} #{release.sequenceNumber}
                   </span>
                   <div className="flex items-center gap-1 text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-app-surface border border-app-border/80">
@@ -134,7 +134,7 @@ export function ReleaseDetailModal({
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-app-border bg-app-card hover:bg-app-surface text-app-fg text-xs font-bold transition-all cursor-pointer shadow-sm"
                   title="Edit release parameters and linked iterations"
                 >
-                  <Edit className="h-3.5 w-3.5 text-indigo-400" />
+                  <Edit className="h-3.5 w-3.5 text-violet-400" />
                   <span>Configure {terms.release}</span>
                 </button>
               )}
@@ -155,7 +155,7 @@ export function ReleaseDetailModal({
               onClick={() => setActiveTab('overview')}
               className={`py-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
                 activeTab === 'overview'
-                  ? 'border-indigo-500 text-indigo-500 font-extrabold'
+                  ? 'border-violet-500 text-violet-500 font-extrabold'
                   : 'border-transparent text-app-muted hover:text-app-fg'
               }`}
             >
@@ -168,7 +168,7 @@ export function ReleaseDetailModal({
               onClick={() => setActiveTab('metrics')}
               className={`py-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
                 activeTab === 'metrics'
-                  ? 'border-indigo-500 text-indigo-500 font-extrabold'
+                  ? 'border-violet-500 text-violet-500 font-extrabold'
                   : 'border-transparent text-app-muted hover:text-app-fg'
               }`}
             >
@@ -181,11 +181,11 @@ export function ReleaseDetailModal({
               onClick={() => setActiveTab('gtm_rollouts')}
               className={`py-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
                 activeTab === 'gtm_rollouts'
-                  ? 'border-indigo-500 text-indigo-500 font-extrabold'
+                  ? 'border-violet-500 text-violet-500 font-extrabold'
                   : 'border-transparent text-app-muted hover:text-app-fg'
               }`}
             >
-              <Rocket className="h-4 w-4 text-indigo-500" />
+              <Rocket className="h-4 w-4 text-violet-500" />
               <span>GTM Rollouts</span>
             </button>
 
@@ -194,7 +194,7 @@ export function ReleaseDetailModal({
               onClick={() => setActiveTab('scope')}
               className={`py-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
                 activeTab === 'scope'
-                  ? 'border-indigo-500 text-indigo-500 font-extrabold'
+                  ? 'border-violet-500 text-violet-500 font-extrabold'
                   : 'border-transparent text-app-muted hover:text-app-fg'
               }`}
             >
@@ -210,7 +210,7 @@ export function ReleaseDetailModal({
               onClick={() => setActiveTab('criteria')}
               className={`py-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
                 activeTab === 'criteria'
-                  ? 'border-indigo-500 text-indigo-500 font-extrabold'
+                  ? 'border-violet-500 text-violet-500 font-extrabold'
                   : 'border-transparent text-app-muted hover:text-app-fg'
               }`}
             >
@@ -230,7 +230,7 @@ export function ReleaseDetailModal({
               onClick={() => setActiveTab('readiness')}
               className={`py-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
                 activeTab === 'readiness'
-                  ? 'border-indigo-500 text-indigo-500 font-extrabold'
+                  ? 'border-violet-500 text-violet-500 font-extrabold'
                   : 'border-transparent text-app-muted hover:text-app-fg'
               }`}
             >
@@ -243,7 +243,7 @@ export function ReleaseDetailModal({
               onClick={() => setActiveTab('deployment')}
               className={`py-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
                 activeTab === 'deployment'
-                  ? 'border-indigo-500 text-indigo-500 font-extrabold'
+                  ? 'border-violet-500 text-violet-500 font-extrabold'
                   : 'border-transparent text-app-muted hover:text-app-fg'
               }`}
             >
@@ -256,7 +256,7 @@ export function ReleaseDetailModal({
               onClick={() => setActiveTab('rollback')}
               className={`py-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
                 activeTab === 'rollback'
-                  ? 'border-indigo-500 text-indigo-500 font-extrabold'
+                  ? 'border-violet-500 text-violet-500 font-extrabold'
                   : 'border-transparent text-app-muted hover:text-app-fg'
               }`}
             >
@@ -300,7 +300,7 @@ export function ReleaseDetailModal({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {(release.iterations || []).map(iter => {
                       return (
-                        <div key={iter.id} className="p-4 bg-app-card border border-app-border rounded-2xl shadow-sm hover:border-indigo-500/40 transition-all flex flex-col justify-between">
+                        <div key={iter.id} className="p-4 bg-app-card border border-app-border rounded-2xl shadow-sm hover:border-violet-500/40 transition-all flex flex-col justify-between">
                           <div className="flex items-center justify-between gap-2 mb-2">
                             <IterationBadge
                               methodology={methodology}
@@ -322,7 +322,7 @@ export function ReleaseDetailModal({
               </div>
 
               {/* Governance Gate Snapshot */}
-              <div className="p-5 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 border border-app-border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-5 bg-gradient-to-r from-violet-500/5 to-purple-500/5 border border-app-border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h4 className="text-sm font-bold text-app-fg flex items-center gap-2">
                     <ShieldCheck className="h-5 w-5 text-emerald-500" />
@@ -429,7 +429,7 @@ export function ReleaseDetailModal({
             {hasEditAccess && release.status !== 'released' && release.status !== 'rolled_back' && release.status !== 'canceled' && (
               <button
                 onClick={() => setGateOpen(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-md transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-black shadow-md transition-all cursor-pointer"
               >
                 <Rocket className="h-4 w-4" />
                 Promote {terms.release}

@@ -92,7 +92,7 @@ export function ReleasePromotionGate({
       <div className="bg-app-card border border-app-border rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-app-border bg-app-surface/50">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500">
+            <div className="p-2 rounded-xl bg-violet-500/10 text-violet-500">
               <Rocket className="h-5 w-5" />
             </div>
             <h3 className="text-lg font-black text-app-fg">Promote Release</h3>
@@ -164,7 +164,7 @@ export function ReleasePromotionGate({
                 value={rationale}
                 onChange={(e) => setRationale(e.target.value)}
                 placeholder="Briefly describe what is being promoted, any known issues, or notes for approvers..."
-                className="w-full bg-app-surface border border-app-border rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 min-h-[100px] resize-y"
+                className="w-full bg-app-surface border border-app-border rounded-xl p-3 text-sm focus:outline-none focus:border-violet-500 min-h-[100px] resize-y"
               />
             </div>
             
@@ -188,7 +188,7 @@ export function ReleasePromotionGate({
             type="button"
             onClick={handlePromote}
             disabled={loading || isBlocked || !rationale.trim()}
-            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
             Promote to {targetStatus === 'released' ? 'Released' : 'In Progress'}

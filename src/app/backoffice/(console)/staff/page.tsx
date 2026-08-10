@@ -56,9 +56,9 @@ export default async function StaffPage() {
                     <tr key={staff.id} className="hover:bg-app-hover/30 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-indigo-500/10 flex items-center justify-center shrink-0">
+                          <div className="h-8 w-8 rounded-full bg-violet-500/10 flex items-center justify-center shrink-0">
                             {staff.role === 'superadmin' ? (
-                              <Shield className="h-4 w-4 text-indigo-500" />
+                              <Shield className="h-4 w-4 text-violet-500" />
                             ) : (
                               <User className="h-4 w-4 text-app-muted" />
                             )}

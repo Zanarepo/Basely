@@ -49,7 +49,7 @@ export function ActualsTable({
               setSearchTerm(e.target.value)
               setCurrentPage(1)
             }}
-            className="w-full pl-9 pr-4 py-2 bg-app-input border border-app-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-app-fg"
+            className="w-full pl-9 pr-4 py-2 bg-app-input border border-app-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 text-app-fg"
           />
         </div>
       </div>
@@ -62,7 +62,7 @@ export function ActualsTable({
                   type="checkbox"
                   checked={selectedIds.length === paginatedActuals.length && paginatedActuals.length > 0}
                   onChange={handleSelectAll}
-                  className="w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer"
+                  className="w-3.5 h-3.5 rounded border-app-border text-violet-500 focus:ring-violet-500 bg-app-surface cursor-pointer"
                 />
               </th>
               <th className="px-6 py-3 text-xs font-semibold text-app-muted uppercase tracking-wider">Date</th>
@@ -83,7 +83,7 @@ export function ActualsTable({
               </tr>
             ) : (
               paginatedActuals.map((actual) => (
-                <tr key={actual.id} className={`hover:bg-app-hover group ${selectedIds.includes(actual.id) ? 'bg-indigo-500/5' : ''}`}>
+                <tr key={actual.id} className={`hover:bg-app-hover group ${selectedIds.includes(actual.id) ? 'bg-violet-500/5' : ''}`}>
                   <td className="px-6 py-4">
                     <input
                       type="checkbox"
@@ -95,7 +95,7 @@ export function ActualsTable({
                           setSelectedIds((prev) => prev.filter((id) => id !== actual.id))
                         }
                       }}
-                      className={`w-3.5 h-3.5 rounded border-app-border text-indigo-500 focus:ring-indigo-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
+                      className={`w-3.5 h-3.5 rounded border-app-border text-violet-500 focus:ring-violet-500 bg-app-surface cursor-pointer transition-opacity duration-200 ${selectedIds.length > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-app-fg whitespace-nowrap">
@@ -121,7 +121,7 @@ export function ActualsTable({
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => openEditForm(actual)}
-                          className="p-1.5 text-app-muted hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg"
+                          className="p-1.5 text-app-muted hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded-lg"
                           title="Edit"
                         >
                           <Pencil className="w-4 h-4" />

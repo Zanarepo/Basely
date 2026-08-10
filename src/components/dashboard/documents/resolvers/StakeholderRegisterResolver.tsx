@@ -47,7 +47,7 @@ export default function StakeholderRegisterResolver({ projectId, periodEnd, froz
   if (loading) {
     return (
       <div className="flex h-32 items-center justify-center bg-app-surface border border-app-border rounded-xl">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
       </div>
     )
   }

@@ -10,7 +10,7 @@ export function SlaPolicyGuide() {
     return (
       <button 
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline bg-indigo-500/10 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline bg-violet-500/10 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
       >
         <Info className="w-3.5 h-3.5" />
         View SLA Guidelines
@@ -20,7 +20,7 @@ export function SlaPolicyGuide() {
   }
 
   return (
-    <div className="bg-app-card border border-indigo-500/30 rounded-2xl p-5 mb-6 relative shadow-sm">
+    <div className="bg-app-card border border-violet-500/30 rounded-2xl p-5 mb-6 relative shadow-sm">
       <button 
         onClick={() => setIsOpen(false)}
         className="absolute top-4 right-4 text-app-muted hover:text-app-fg p-1 rounded-md hover:bg-app-hover"
@@ -29,7 +29,7 @@ export function SlaPolicyGuide() {
       </button>
       
       <div className="flex items-center gap-2 mb-3">
-        <ShieldCheck className="w-5 h-5 text-indigo-500" />
+        <ShieldCheck className="w-5 h-5 text-violet-500" />
         <h3 className="font-black text-app-fg text-sm">Service Level Agreement (SLA) Policy</h3>
       </div>
       

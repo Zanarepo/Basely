@@ -49,7 +49,7 @@ export const TIER_HIERARCHY: Record<TierId, number> = {
 }
 
 export const USAGE_LIMITS: Record<TierId, Record<string, number>> = {
-  'free': { max_seats: 3, max_active_projects: 2, max_workspaces: 1 },
+  'free': { max_seats: 3, max_active_projects: 3, max_workspaces: 1 },
   'premium': { max_seats: -1, max_active_projects: -1, max_workspaces: -1 },
   'enterprise': { max_seats: -1, max_active_projects: -1, max_workspaces: -1 },
 }

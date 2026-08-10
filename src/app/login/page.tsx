@@ -67,12 +67,12 @@ function LoginForm() {
 
       if (error) {
         setErrorMsg(error.message)
+        setLoading(false)
       } else if (data?.user) {
         window.location.href = safeNext
       }
     } catch {
       setErrorMsg('An unexpected error occurred. Please try again.')
-    } finally {
       setLoading(false)
     }
   }
@@ -100,28 +100,17 @@ function LoginForm() {
 
   return (
     <AuthPageShell>
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-linear-to-tr from-violet-600 to-indigo-600 shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)] mb-4 animate-pulse">
-            <LogIn className="h-7 w-7 text-white" />
-          </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-app-fg">
-            Baseline
-          </h1>
-          <p className="mt-2 text-sm text-app-muted font-medium">
-            Sign in to accept your workspace invitation.
-          </p>
-        </div>
-
-        <div className="auth-card">
-          <h2 className="text-xl font-semibold text-app-fg mb-2">
-            {isInviteFlow ? 'Sign in to join workspace' : 'Welcome back'}
-          </h2>
-
-          {isInviteFlow && (
-            <p className="mb-6 text-sm text-app-muted">
-              Use your existing account to accept this invitation. If the invited email matches, the workspace will be added to your switcher.
+        <div className="w-full">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold tracking-tight text-app-fg mb-2">
+              {isInviteFlow ? 'Join your workspace' : 'Welcome back'}
+            </h2>
+            <p className="text-sm text-app-muted font-medium">
+              {isInviteFlow 
+                ? 'Use your existing account to accept this invitation.'
+                : 'Enter your credentials to access your account.'}
             </p>
-          )}
+          </div>
 
           <ActiveSessionBanner continueHref={safeNext} inviteMode={isInviteFlow} />
 
@@ -147,7 +136,7 @@ function LoginForm() {
                 Email Address
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-indigo-500 transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-violet-500 transition-colors">
                   <Mail className="h-5 w-5" />
                 </div>
                 <input
@@ -171,13 +160,13 @@ function LoginForm() {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors"
+                  className="text-xs font-semibold text-violet-500 dark:text-violet-400 hover:text-violet-600 dark:hover:text-violet-300 transition-colors"
                 >
                   Forgot?
                 </Link>
               </div>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-indigo-500 transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-violet-500 transition-colors">
                   <Lock className="h-5 w-5" />
                 </div>
                 <input
@@ -196,12 +185,12 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading || isCheckingSso}
-              className="relative w-full py-3.5 px-4 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+              className="relative w-full py-3.5 px-4 bg-linear-to-r from-violet-600 to-violet-600 hover:from-violet-500 hover:to-violet-500 text-white font-semibold rounded-2xl shadow-lg shadow-violet-600/30 hover:shadow-violet-500/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
             >
               {loading || isCheckingSso ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>{isCheckingSso ? 'Checking security policies...' : 'Signing in...'}</span>
+                  <span>{isCheckingSso ? 'Checking policies...' : 'Signing in...'}</span>
                 </>
               ) : (
                 <>
@@ -217,7 +206,7 @@ function LoginForm() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-app-border" />
             </div>
-            <span className="relative px-3 bg-app-surface text-xs font-semibold text-app-subtle uppercase tracking-wider">
+            <span className="relative px-3 bg-app-bg lg:bg-transparent text-xs font-semibold text-app-subtle uppercase tracking-wider backdrop-blur-sm">
               Or continue with
             </span>
           </div>
@@ -250,15 +239,15 @@ function LoginForm() {
             </button>
           </div>
 
-          <div className="text-center mt-6 text-sm text-app-muted">
-            {isInviteFlow ? 'New to Baseline?' : 'Don&apos;t have an account?'}{' '}
+          <div className="text-center mt-8 text-sm text-app-muted">
+            {isInviteFlow ? 'New to Baseline?' : 'Don\'t have an account?'}{' '}
             <Link
               href={
                 safeNext !== '/dashboard'
                   ? `/register?next=${encodeURIComponent(safeNext)}`
                   : '/register'
               }
-              className="font-semibold text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors"
+              className="font-semibold text-violet-500 dark:text-violet-400 hover:text-violet-600 dark:hover:text-violet-300 transition-colors"
             >
               Sign up
             </Link>

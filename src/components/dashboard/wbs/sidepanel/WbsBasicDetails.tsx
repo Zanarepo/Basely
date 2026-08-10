@@ -3,6 +3,7 @@ import { useState } from 'react'
 import type { WbsStatus, ChecklistItem } from '@/lib/wbs/constants'
 import { WbsChecklist } from './WbsChecklist'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import { TerminologyDict } from '@/utils/terminology'
 
 type WbsBasicDetailsProps = {
   name: string
@@ -29,6 +30,7 @@ type WbsBasicDetailsProps = {
   callerUserId?: string
   onAutoSaveDeliverables?: (items: ChecklistItem[]) => void
   onAutoSaveCriteria?: (items: ChecklistItem[]) => void
+  terms: TerminologyDict
 }
 
 export function WbsBasicDetails({
@@ -45,7 +47,8 @@ export function WbsBasicDetails({
   customStatuses,
   onAddCustomStatus,
   onAutoSaveDeliverables,
-  onAutoSaveCriteria
+  onAutoSaveCriteria,
+  terms
 }: WbsBasicDetailsProps) {
   const [isAddingStatus, setIsAddingStatus] = useState(false)
   const [newStatusName, setNewStatusName] = useState('')
@@ -79,13 +82,13 @@ export function WbsBasicDetails({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Requirements Gathering"
-          className="w-full px-4 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm disabled:opacity-50"
+          className="w-full px-4 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all text-sm disabled:opacity-50"
         />
       </div>
 
       {/* Owner Removed - Handled by RACI */}
 
-      {/* Status & Work Package Toggle */}
+      {/* Status & Terminology Toggle */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="auth-label">Status</label>
@@ -95,7 +98,7 @@ export function WbsBasicDetails({
                  autoFocus
                  type="text"
                  placeholder="New Status"
-                 className="w-full px-3 py-1.5 text-sm bg-app-input border border-indigo-500 rounded-lg text-app-fg focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                 className="w-full px-3 py-1.5 text-sm bg-app-input border border-violet-500 rounded-lg text-app-fg focus:outline-none focus:ring-1 focus:ring-violet-500"
                  value={newStatusName}
                  onChange={(e) => setNewStatusName(e.target.value)}
                  onKeyDown={(e) => e.key === 'Enter' && handleSaveNewStatus()}
@@ -103,7 +106,7 @@ export function WbsBasicDetails({
                <div className="flex items-center gap-2">
                  <button
                    type="button"
-                   className="flex-1 flex justify-center items-center py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold cursor-pointer"
+                   className="flex-1 flex justify-center items-center py-1.5 bg-violet-500 hover:bg-violet-600 text-white rounded-lg text-xs font-semibold cursor-pointer"
                    onClick={handleSaveNewStatus}
                  >
                    <Check className="w-3 h-3 mr-1" /> Add
@@ -131,7 +134,7 @@ export function WbsBasicDetails({
                 <button
                   type="button"
                   onClick={() => setIsAddingStatus(true)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-indigo-500 hover:text-indigo-600 transition-colors w-max cursor-pointer"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-violet-500 hover:text-violet-600 transition-colors w-max cursor-pointer"
                 >
                   <Plus className="w-3 h-3" />
                   New Status
@@ -148,7 +151,7 @@ export function WbsBasicDetails({
             disabled={!hasEditAccess || saving}
             onClick={() => {
               if (isWorkPackage) {
-                const confirmed = window.confirm("Warning: Changing this Work Package to a Summary Element will delete any budget estimates associated with it. This action cannot be undone. Are you sure you want to proceed?");
+                const confirmed = window.confirm(`Warning: Changing this ${terms.workPackage} to a ${terms.planTier} will delete any budget estimates associated with it. This action cannot be undone. Are you sure you want to proceed?`);
                 if (confirmed) {
                   setIsWorkPackage(false);
                 }
@@ -158,14 +161,14 @@ export function WbsBasicDetails({
             }}
             className={`w-full py-2.5 px-3 rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
               isWorkPackage
-                ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/35 shadow-xs'
+                ? 'bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/35 shadow-xs'
                 : 'bg-app-input text-app-muted border-app-border hover:bg-app-hover'
             }`}
           >
-            {isWorkPackage ? 'Work Package (Leaf)' : 'Summary Element'}
+            {isWorkPackage ? `${terms.workPackage} (Leaf)` : terms.planTier}
           </button>
           <p className="text-xs text-app-subtle leading-relaxed">
-            Summary elements break down into smaller tasks. Only <b>Work Packages</b> can be scheduled, assigned to people, and have budget estimates.
+            {terms.planTiers} break down into smaller tasks. Only <b>{terms.workPackages}</b> can be scheduled, assigned to people, and have budget estimates.
           </p>
         </div>
       </div>
@@ -202,7 +205,7 @@ export function WbsBasicDetails({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Describe scope boundaries, key steps, and what this element covers..."
-                className="w-full px-4 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 min-h-[90px] resize-none text-xs disabled:opacity-50"
+                className="w-full px-4 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 min-h-[90px] resize-none text-xs disabled:opacity-50"
               />
             </div>
 

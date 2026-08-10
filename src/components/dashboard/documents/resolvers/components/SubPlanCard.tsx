@@ -33,14 +33,14 @@ export function SubPlanCard({ plan, onNavigateToTab }: SubPlanCardProps) {
 
   return (
     <div 
-      className="group bg-app-card border border-app-border hover:border-indigo-500/50 rounded-xl p-5 transition-all duration-200 flex flex-col justify-between relative shadow-sm hover:shadow-md cursor-pointer"
+      className="group bg-app-card border border-app-border hover:border-violet-500/50 rounded-xl p-5 transition-all duration-200 flex flex-col justify-between relative shadow-sm hover:shadow-md cursor-pointer"
       onClick={handleActionClick}
     >
       <div>
         {/* Header and Status Badge */}
         <div className="flex items-start justify-between gap-3 mb-3.5">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
+            <div className="p-2.5 rounded-xl bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20">
               <FileText className="w-5 h-5" />
             </div>
             <div>
@@ -71,7 +71,7 @@ export function SubPlanCard({ plan, onNavigateToTab }: SubPlanCardProps) {
           <p className="text-[11px] font-bold uppercase tracking-wide text-app-muted">Integrated Baseline Reference</p>
           {plan.keyHighlights.map((hl, idx) => (
             <p key={idx} className="text-xs text-app-fg font-medium truncate flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0"></span>
               <span className="truncate">{hl}</span>
             </p>
           ))}
@@ -100,7 +100,7 @@ export function SubPlanCard({ plan, onNavigateToTab }: SubPlanCardProps) {
           <button
             type="button"
             onClick={handleActionClick}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg shadow-sm transition-colors cursor-pointer"
             style={{ cursor: 'pointer' }}
           >
             <span>Open Sub-Plan</span>

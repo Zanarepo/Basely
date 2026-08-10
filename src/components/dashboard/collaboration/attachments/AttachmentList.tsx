@@ -65,7 +65,7 @@ export function AttachmentList({ attachments, isLoading, onDelete, currentUserIs
                   onClick={(e) => handleOpenAttachment(att, e)}
                   target={att.external_url ? "_blank" : undefined}
                   rel={att.external_url ? "noopener noreferrer" : undefined}
-                  className="text-sm font-medium text-app-fg hover:text-indigo-500 hover:underline truncate"
+                  className="text-sm font-medium text-app-fg hover:text-violet-500 hover:underline truncate"
                 >
                   {att.file_name}
                 </a>

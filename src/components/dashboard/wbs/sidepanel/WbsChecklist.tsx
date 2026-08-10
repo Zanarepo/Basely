@@ -62,8 +62,8 @@ export function WbsChecklist({
                 isCheckboxEnabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
               } ${
                 item.completed
-                  ? 'bg-indigo-500 border-indigo-500 text-white'
-                  : 'border-app-border hover:border-indigo-400'
+                  ? 'bg-violet-500 border-violet-500 text-white'
+                  : 'border-app-border hover:border-violet-400'
               }`}
             >
               {item.completed && <Check className="w-3 h-3" />}
@@ -82,7 +82,7 @@ export function WbsChecklist({
                 onAutoSave?.(items)
               }}
               placeholder={placeholder}
-              className={`flex-1 bg-transparent border-b border-transparent hover:border-app-border focus:border-indigo-500 focus:outline-none text-sm transition-colors ${
+              className={`flex-1 bg-transparent border-b border-transparent hover:border-app-border focus:border-violet-500 focus:outline-none text-sm transition-colors ${
                 item.completed ? 'text-app-muted line-through' : 'text-app-fg'
               } disabled:opacity-50`}
             />
@@ -115,7 +115,7 @@ export function WbsChecklist({
               setItems(updated)
               onAutoSave?.(updated)
             }}
-            className="flex items-center gap-1 text-xs font-medium text-indigo-500 hover:text-indigo-600 transition-colors mt-2 cursor-pointer"
+            className="flex items-center gap-1 text-xs font-medium text-violet-500 hover:text-violet-600 transition-colors mt-2 cursor-pointer"
           >
             <Plus className="w-3 h-3" />
             Add Item

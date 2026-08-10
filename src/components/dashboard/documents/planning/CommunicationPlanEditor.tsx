@@ -143,7 +143,7 @@ export function CommunicationPlanEditor({
             <button
               onClick={() => handleOpenForm()}
               disabled={isSaving}
-              className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-2 bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">New Entry</span>
@@ -190,7 +190,7 @@ export function CommunicationPlanEditor({
                   value={formData.cadence}
                   onChange={(e) => setFormData({...formData, cadence: e.target.value})}
                   placeholder="e.g. Weekly, Monthly"
-                  className="w-full bg-app-bg border border-app-border rounded-lg p-2 text-sm text-app-fg outline-none focus:border-indigo-500"
+                  className="w-full bg-app-bg border border-app-border rounded-lg p-2 text-sm text-app-fg outline-none focus:border-violet-500"
                 />
               </div>
 
@@ -201,7 +201,7 @@ export function CommunicationPlanEditor({
                   value={formData.channel}
                   onChange={(e) => setFormData({...formData, channel: e.target.value})}
                   placeholder="e.g. Email, Slack"
-                  className="w-full bg-app-bg border border-app-border rounded-lg p-2 text-sm text-app-fg outline-none focus:border-indigo-500"
+                  className="w-full bg-app-bg border border-app-border rounded-lg p-2 text-sm text-app-fg outline-none focus:border-violet-500"
                 />
               </div>
             </div>
@@ -216,7 +216,7 @@ export function CommunicationPlanEditor({
               <button 
                 onClick={handleSave}
                 disabled={isSaving}
-                className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
+                className="px-4 py-2 bg-violet-500 hover:bg-violet-600 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
               >
                 {isSaving ? 'Saving...' : 'Save Mapping'}
               </button>
@@ -250,7 +250,7 @@ export function CommunicationPlanEditor({
                       <div className="text-xs text-app-muted">{entry.stakeholders?.role_title || ''}</div>
                     </td>
                     <td className="px-6 py-4 text-sm text-app-fg">
-                      <span className="inline-flex items-center px-2 py-1 rounded bg-indigo-500/10 text-indigo-500 font-medium">
+                      <span className="inline-flex items-center px-2 py-1 rounded bg-violet-500/10 text-violet-500 font-medium">
                         {availableDocs.find(d => d.id === entry.document_type)?.name || entry.document_type}
                       </span>
                     </td>
@@ -261,7 +261,7 @@ export function CommunicationPlanEditor({
                         <div className="flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => handleOpenForm(entry)}
-                            className="p-1.5 text-app-muted hover:text-indigo-500 transition-colors cursor-pointer"
+                            className="p-1.5 text-app-muted hover:text-violet-500 transition-colors cursor-pointer"
                             title="Edit"
                           >
                             <Pencil className="w-4 h-4" />

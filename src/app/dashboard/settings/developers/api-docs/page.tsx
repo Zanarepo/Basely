@@ -6,11 +6,11 @@ export default function ApiDocsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-10 py-6 pb-20">
       <div>
-        <Link href="/dashboard/settings/developers" className="flex items-center gap-2 text-sm text-indigo-500 hover:underline mb-4 font-medium">
+        <Link href="/dashboard/settings/developers" className="flex items-center gap-2 text-sm text-violet-500 hover:underline mb-4 font-medium">
           <ArrowLeft className="w-4 h-4" /> Back to Developers
         </Link>
         <h1 className="text-3xl font-bold text-app-fg tracking-tight flex items-center gap-3">
-          <BookOpen className="w-8 h-8 text-indigo-500" /> API Documentation
+          <BookOpen className="w-8 h-8 text-violet-500" /> API Documentation
         </h1>
         <p className="text-app-muted mt-3 text-lg leading-relaxed">
           The public REST API and Webhook system allows you to build custom integrations against the platform. Read and write data securely using scoped API keys.
@@ -27,7 +27,7 @@ export default function ApiDocsPage() {
         </p>
         <div className="bg-app-bg border border-app-border rounded-lg p-4 font-mono text-sm">
           <p className="text-emerald-500 mb-2"># Include the API key in the Authorization header</p>
-          <span className="text-indigo-400">Authorization:</span> Bearer base_live_your_api_key_here
+          <span className="text-violet-400">Authorization:</span> Bearer base_live_your_api_key_here
         </div>
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 flex gap-3 text-amber-600 dark:text-amber-400">
           <ShieldAlert className="w-5 h-5 shrink-0" />
@@ -97,7 +97,7 @@ export default function ApiDocsPage() {
           We sign all webhook payloads so you can verify they originated from us. The signature is included in the <code>X-Webhook-Signature</code> header.
         </p>
         <div className="bg-app-bg border border-app-border rounded-lg p-4 font-mono text-sm">
-          <span className="text-indigo-400">X-Webhook-Signature:</span> sha256=d3a2b4...
+          <span className="text-violet-400">X-Webhook-Signature:</span> sha256=d3a2b4...
         </div>
         <p className="text-sm text-app-muted mt-2">
           To verify, compute the SHA-256 HMAC of the raw request body using your webhook's signing secret as the key, and compare it to the signature in the header.

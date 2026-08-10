@@ -66,14 +66,14 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
                   <button 
                     onClick={() => index > 0 && moveSection(index, index - 1)}
                     disabled={index === 0}
-                    className="hover:text-indigo-500 disabled:opacity-30 disabled:hover:text-app-muted transition-colors"
+                    className="hover:text-violet-500 disabled:opacity-30 disabled:hover:text-app-muted transition-colors"
                   >
                     <ChevronUp className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={() => index < sections.length - 1 && moveSection(index, index + 1)}
                     disabled={index === sections.length - 1}
-                    className="hover:text-indigo-500 disabled:opacity-30 disabled:hover:text-app-muted transition-colors"
+                    className="hover:text-violet-500 disabled:opacity-30 disabled:hover:text-app-muted transition-colors"
                   >
                     <ChevronDown className="w-4 h-4" />
                   </button>
@@ -86,7 +86,7 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
                       type="text"
                       value={section.title}
                       onChange={(e) => updateSection(index, { title: e.target.value })}
-                      className="w-full text-sm px-3 py-1.5 border border-app-border rounded-lg bg-app-surface text-app-fg focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full text-sm px-3 py-1.5 border border-app-border rounded-lg bg-app-surface text-app-fg focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
                     />
                   </div>
                   <div>
@@ -95,7 +95,7 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
                       type="text"
                       value={section.key}
                       onChange={(e) => updateSection(index, { key: e.target.value })}
-                      className="w-full text-sm px-3 py-1.5 border border-app-border rounded-lg bg-gray-50 dark:bg-app-surface-alt text-app-muted focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-mono"
+                      className="w-full text-sm px-3 py-1.5 border border-app-border rounded-lg bg-gray-50 dark:bg-app-surface-alt text-app-muted focus:ring-1 focus:ring-violet-500 focus:border-violet-500 font-mono"
                     />
                   </div>
                   
@@ -132,14 +132,14 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
                     <button 
                       onClick={() => index > 0 && moveSection(index, index - 1)}
                       disabled={index === 0}
-                      className="p-1 hover:text-indigo-500 disabled:opacity-30 disabled:hover:text-app-muted transition-colors rounded bg-gray-100 dark:bg-gray-800"
+                      className="p-1 hover:text-violet-500 disabled:opacity-30 disabled:hover:text-app-muted transition-colors rounded bg-gray-100 dark:bg-gray-800"
                     >
                       <ChevronUp className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => index < sections.length - 1 && moveSection(index, index + 1)}
                       disabled={index === sections.length - 1}
-                      className="p-1 hover:text-indigo-500 disabled:opacity-30 disabled:hover:text-app-muted transition-colors rounded bg-gray-100 dark:bg-gray-800"
+                      className="p-1 hover:text-violet-500 disabled:opacity-30 disabled:hover:text-app-muted transition-colors rounded bg-gray-100 dark:bg-gray-800"
                     >
                       <ChevronDown className="w-4 h-4" />
                     </button>
@@ -174,7 +174,7 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
                   }
                 }}
                 placeholder="e.g. Executive Summary"
-                className="w-full text-sm px-3 py-2 border border-app-border rounded-lg bg-white dark:bg-app-surface text-app-fg focus:ring-1 focus:ring-indigo-500"
+                className="w-full text-sm px-3 py-2 border border-app-border rounded-lg bg-white dark:bg-app-surface text-app-fg focus:ring-1 focus:ring-violet-500"
               />
             </div>
             <div className={newSectionType === 'data_bound' ? "md:col-span-2" : "md:col-span-3"}>
@@ -184,7 +184,7 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
                 value={newSectionKey}
                 onChange={(e) => setNewSectionKey(e.target.value)}
                 placeholder="executive_summary"
-                className="w-full text-sm px-3 py-2 border border-app-border rounded-lg bg-white dark:bg-app-surface text-app-fg focus:ring-1 focus:ring-indigo-500 font-mono"
+                className="w-full text-sm px-3 py-2 border border-app-border rounded-lg bg-white dark:bg-app-surface text-app-fg focus:ring-1 focus:ring-violet-500 font-mono"
               />
             </div>
             <div className={newSectionType === 'data_bound' ? "md:col-span-2" : "md:col-span-3"}>
@@ -218,7 +218,7 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
               <button
                 onClick={handleAdd}
                 disabled={!newSectionKey || !newSectionTitle}
-                className="w-full md:w-auto p-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50"
+                className="w-full md:w-auto p-2 bg-violet-50 text-violet-600 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 dark:hover:bg-violet-500/20 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50"
               >
                 <Plus className="w-5 h-5" />
               </button>
@@ -231,7 +231,7 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
         <button
           onClick={() => onSave(sections)}
           disabled={isSaving || sections.length === 0}
-          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm shadow-indigo-500/20 hover:shadow-md disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm shadow-violet-500/20 hover:shadow-md disabled:opacity-50"
         >
           {isSaving ? (
             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

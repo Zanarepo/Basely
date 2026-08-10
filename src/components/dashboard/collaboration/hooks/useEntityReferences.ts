@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 
+import { productSuiteDocs } from '../productDocReferences'
+
 export type ProjectEntity = {
   id: string
   title: string
-  type: 'wbs' | 'risk' | 'issue' | 'raci' | 'charter' | 'stakeholders' | 'cost_estimation' | 'cost_resources' | 'cost_timephasing' | 'cost_baselines' | 'cost_actuals' | 'gantt' | 'wbs_board' | 'wbs_grid' | 'wbs_unassigned'
+  type: 'wbs' | 'risk' | 'issue' | 'raci' | 'charter' | 'stakeholders' | 'cost_estimation' | 'cost_resources' | 'cost_timephasing' | 'cost_baselines' | 'cost_actuals' | 'gantt' | 'wbs_board' | 'wbs_grid' | 'wbs_unassigned' | 'product_doc'
 }
 
 export function useEntityReferences(projectId: string) {
@@ -46,6 +48,7 @@ export function useEntityReferences(projectId: string) {
       fetched.push({ id: 'timephasing', title: 'Time-Phased (S-Curve)', type: 'cost_timephasing' })
       fetched.push({ id: 'baselines', title: 'Cost Baselines', type: 'cost_baselines' })
       fetched.push({ id: 'actuals', title: 'Cost Actuals', type: 'cost_actuals' })
+      fetched.push(...productSuiteDocs)
 
       setEntities(fetched)
       setLoading(false)

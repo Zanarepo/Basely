@@ -131,7 +131,7 @@ export function CrossProjectWorkloadView({ projectId }: CrossProjectWorkloadView
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 min-h-[300px]">
-        <Loader2 className="h-6 w-6 text-indigo-500 animate-spin" />
+        <Loader2 className="h-6 w-6 text-violet-500 animate-spin" />
         <span className="ml-2 text-sm text-app-muted">Analyzing cross-project workloads...</span>
       </div>
     )
@@ -140,7 +140,7 @@ export function CrossProjectWorkloadView({ projectId }: CrossProjectWorkloadView
   if (workloads.length === 0) {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
-        <div className="p-4 rounded-2xl bg-indigo-500/10 text-indigo-500 mb-4">
+        <div className="p-4 rounded-2xl bg-violet-500/10 text-violet-500 mb-4">
           <Briefcase className="h-8 w-8" />
         </div>
         <h3 className="text-lg font-bold text-app-fg mb-1">No Workload Data</h3>
@@ -161,11 +161,11 @@ export function CrossProjectWorkloadView({ projectId }: CrossProjectWorkloadView
             placeholder="Search team member or project..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-app-bg border border-app-border rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+            className="w-full pl-9 pr-4 py-2 bg-app-bg border border-app-border rounded-xl text-sm focus:outline-none focus:border-violet-500"
           />
         </div>
         <div className="text-sm text-app-muted flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-indigo-500" />
+          <AlertCircle className="w-4 h-4 text-violet-500" />
           Showing assignments across all workspaces
         </div>
       </div>

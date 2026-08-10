@@ -93,7 +93,7 @@ function RegisterForm() {
   return (
     <AuthPageShell>
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-linear-to-tr from-violet-600 to-indigo-600 shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)] mb-4 animate-pulse">
+          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-linear-to-tr from-violet-600 to-violet-600 shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)] mb-4 animate-pulse">
             <UserPlus className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-app-fg">
@@ -132,7 +132,7 @@ function RegisterForm() {
                 Full Name
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-indigo-500 transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-violet-500 transition-colors">
                   <User className="h-5 w-5" />
                 </div>
                 <input
@@ -154,7 +154,7 @@ function RegisterForm() {
                 Email Address
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-indigo-500 transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-violet-500 transition-colors">
                   <Mail className="h-5 w-5" />
                 </div>
                 <input
@@ -176,7 +176,7 @@ function RegisterForm() {
                 Password
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-indigo-500 transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-violet-500 transition-colors">
                   <Lock className="h-5 w-5" />
                 </div>
                 <input
@@ -198,7 +198,7 @@ function RegisterForm() {
                 Confirm Password
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-indigo-500 transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-violet-500 transition-colors">
                   <Lock className="h-5 w-5" />
                 </div>
                 <input
@@ -218,7 +218,7 @@ function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="relative w-full py-3.5 px-4 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+              className="relative w-full py-3.5 px-4 bg-linear-to-r from-violet-600 to-violet-600 hover:from-violet-500 hover:to-violet-500 text-white font-semibold rounded-2xl shadow-lg shadow-violet-600/30 hover:shadow-violet-500/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
             >
               {loading ? (
                 <>
@@ -280,7 +280,7 @@ function RegisterForm() {
                   ? `/login?next=${encodeURIComponent(safeNext)}`
                   : '/login'
               }
-              className="font-semibold text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors"
+              className="font-semibold text-violet-500 dark:text-violet-400 hover:text-violet-600 dark:hover:text-violet-300 transition-colors"
             >
               Sign in
             </Link>

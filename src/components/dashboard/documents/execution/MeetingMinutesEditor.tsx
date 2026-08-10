@@ -143,7 +143,7 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
       </div>
     )
   }
@@ -183,7 +183,7 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-semibold text-sm shadow-md disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-semibold text-sm shadow-md disabled:opacity-50"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Record
@@ -199,7 +199,7 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
           <section className="bg-white dark:bg-app-card border border-app-border rounded-xl shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-app-border bg-gray-50/50 dark:bg-app-bg/50">
               <h3 className="font-bold text-sm text-app-fg flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4 text-indigo-500" /> General Details
+                <CalendarIcon className="w-4 h-4 text-violet-500" /> General Details
               </h3>
             </div>
             <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -214,7 +214,7 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
                   value={meetingDate}
                   onChange={(e) => setMeetingDate(e.target.value)}
                   disabled={!hasEditAccess}
-                  className="bg-app-bg border border-app-border rounded-lg px-4 py-2.5 text-sm font-medium text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all shadow-inner"
+                  className="bg-app-bg border border-app-border rounded-lg px-4 py-2.5 text-sm font-medium text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all shadow-inner"
                 />
               </div>
 
@@ -222,7 +222,7 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-app-muted flex items-center justify-between">
                   <span>Attendees</span>
-                  <span className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full">
+                  <span className="bg-violet-500/10 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded-full">
                     {attendees.length} selected
                   </span>
                 </label>
@@ -243,17 +243,17 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
                             onClick={() => toggleAttendee(s.id)}
                             className={`flex items-center gap-4 px-4 py-3 border-b last:border-0 border-app-border transition-colors ${
                               hasEditAccess ? 'cursor-pointer hover:bg-app-hover' : ''
-                            } ${isSelected ? 'bg-indigo-500/5 dark:bg-indigo-500/10' : ''}`}
+                            } ${isSelected ? 'bg-violet-500/5 dark:bg-violet-500/10' : ''}`}
                           >
                             <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors shrink-0 ${
                               isSelected 
-                                ? 'bg-indigo-500 border-indigo-500 text-white' 
+                                ? 'bg-violet-500 border-violet-500 text-white' 
                                 : 'bg-white dark:bg-app-card border-app-border'
                             }`}>
                               {isSelected && <Check className="w-3.5 h-3.5" />}
                             </div>
                             <div className="flex flex-col min-w-0">
-                              <span className={`text-sm font-semibold truncate ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-app-fg'}`}>
+                              <span className={`text-sm font-semibold truncate ${isSelected ? 'text-violet-600 dark:text-violet-400' : 'text-app-fg'}`}>
                                 {s.name}
                               </span>
                               <span className="text-xs text-app-muted truncate font-medium">
@@ -275,7 +275,7 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
           <section className="bg-white dark:bg-app-card border border-app-border rounded-xl shadow-sm overflow-hidden flex flex-col">
             <div className="px-6 py-4 border-b border-app-border bg-gray-50/50 dark:bg-app-bg/50">
               <h3 className="font-bold text-sm text-app-fg flex items-center gap-2">
-                <AlignLeft className="w-4 h-4 text-indigo-500" /> Discussion Notes & Agenda
+                <AlignLeft className="w-4 h-4 text-violet-500" /> Discussion Notes & Agenda
               </h3>
             </div>
             <textarea
@@ -315,7 +315,7 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
                       <div className="mt-2.5">
                         <CheckCircle2 className="w-4 h-4 text-green-500/80" />
                       </div>
-                      <div className="flex-1 bg-app-bg border border-app-border rounded-lg overflow-hidden flex items-center focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-all shadow-inner">
+                      <div className="flex-1 bg-app-bg border border-app-border rounded-lg overflow-hidden flex items-center focus-within:border-violet-500 focus-within:ring-1 focus-within:ring-violet-500 transition-all shadow-inner">
                         <input
                           type="text"
                           value={d.text}
@@ -342,20 +342,20 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
           
           {/* Action Items / Follow-up Section */}
           {minuteId && (
-            <section className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl shadow-sm overflow-hidden mb-12">
-              <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-indigo-200/50 dark:border-indigo-500/20">
+            <section className="bg-violet-50 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-500/20 rounded-xl shadow-sm overflow-hidden mb-12">
+              <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-violet-200/50 dark:border-violet-500/20">
                 <div>
-                  <h3 className="font-bold text-sm text-indigo-900 dark:text-indigo-300 flex items-center gap-2 mb-1">
+                  <h3 className="font-bold text-sm text-violet-900 dark:text-violet-300 flex items-center gap-2 mb-1">
                     <ListTodo className="w-4 h-4" /> Action Items & Follow-ups
                   </h3>
-                  <p className="text-xs text-indigo-700/70 dark:text-indigo-300/70 font-medium">
+                  <p className="text-xs text-violet-700/70 dark:text-violet-300/70 font-medium">
                     Create tasks directly linked to this meeting to ensure follow-through.
                   </p>
                 </div>
                 {hasEditAccess && (
                   <button
                     onClick={() => setIsSpawnModalOpen(true)}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors text-sm font-bold shadow-md shrink-0 whitespace-nowrap"
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors text-sm font-bold shadow-md shrink-0 whitespace-nowrap"
                   >
                     <Plus className="w-4 h-4" /> New Action Item
                   </button>
@@ -365,7 +365,7 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
               {/* Render existing action items for this meeting */}
               <div className="p-6 flex flex-col gap-3">
                 {actionItems.length === 0 ? (
-                  <div className="py-6 text-center text-sm font-medium text-indigo-900/50 dark:text-indigo-300/50">
+                  <div className="py-6 text-center text-sm font-medium text-violet-900/50 dark:text-violet-300/50">
                     No action items have been created for this meeting yet.
                   </div>
                 ) : (

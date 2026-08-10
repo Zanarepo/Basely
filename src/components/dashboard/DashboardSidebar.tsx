@@ -134,8 +134,8 @@ export function DashboardSidebar({
             effectivelyCollapsed ? 'md:justify-center md:px-2 py-5' : 'gap-3 px-4 py-5'
           }`}
         >
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="shrink-0 p-2 rounded-xl bg-linear-to-tr from-violet-600 to-indigo-600 shadow-lg shadow-indigo-600/20">
+          <Link href="/" className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity">
+            <div className="shrink-0 p-2 rounded-xl bg-linear-to-tr from-violet-600 to-violet-600 shadow-lg shadow-violet-600/20">
               <LayoutDashboard className="h-5 w-5 text-white" />
             </div>
             {!effectivelyCollapsed && (
@@ -148,7 +148,7 @@ export function DashboardSidebar({
                 </p>
               </div>
             )}
-          </div>
+          </Link>
 
           {/* Close button on mobile */}
           <button
@@ -199,12 +199,12 @@ export function DashboardSidebar({
                   effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
                 } ${
                   active
-                    ? 'bg-indigo-500/15 text-indigo-500 dark:text-indigo-300 border border-indigo-500/25'
+                    ? 'bg-violet-500/15 text-violet-500 dark:text-violet-300 border border-violet-500/25'
                     : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
                 }`}
               >
                 <Icon
-                  className={`h-5 w-5 shrink-0 ${active ? 'text-indigo-500 dark:text-indigo-400' : ''}`}
+                  className={`h-5 w-5 shrink-0 ${active ? 'text-violet-500 dark:text-violet-400' : ''}`}
                 />
                 {!effectivelyCollapsed && (
                   <span className="text-sm font-medium">{label}</span>
@@ -249,7 +249,7 @@ export function DashboardSidebar({
                   <Link
                     href="/dashboard/settings/integrations"
                     title={effectivelyCollapsed ? 'ERP Connectors' : undefined}
-                    className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 border border-transparent transition-all cursor-pointer ${
+                    className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-violet-500 hover:bg-violet-500/10 border border-transparent transition-all cursor-pointer ${
                       effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
                     }`}
                   >
@@ -259,7 +259,7 @@ export function DashboardSidebar({
                   <Link
                     href="/dashboard/settings/developers"
                     title={effectivelyCollapsed ? 'Developers' : undefined}
-                    className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 border border-transparent transition-all cursor-pointer ${
+                    className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-violet-500 hover:bg-violet-500/10 border border-transparent transition-all cursor-pointer ${
                       effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
                     }`}
                   >
@@ -301,7 +301,7 @@ export function DashboardSidebar({
             }`}
           >
             <div className="flex items-center gap-3 truncate">
-               <div className="w-8 h-8 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 flex items-center justify-center shrink-0">
+               <div className="w-8 h-8 rounded-full bg-violet-500/10 text-violet-500 border border-violet-500/20 flex items-center justify-center shrink-0">
                   <span className="font-semibold text-sm uppercase">{userEmail ? userEmail[0] : 'U'}</span>
                </div>
                {!effectivelyCollapsed && (
@@ -319,7 +319,7 @@ export function DashboardSidebar({
           type="button"
           onClick={toggleCollapsed}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-[10000] h-6 w-6 items-center justify-center rounded-full bg-app-toggle-bg border border-app-toggle-border text-app-toggle-fg hover:text-app-fg hover:border-indigo-500/50 shadow-lg transition-all cursor-pointer"
+          className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-[10000] h-6 w-6 items-center justify-center rounded-full bg-app-toggle-bg border border-app-toggle-border text-app-toggle-fg hover:text-app-fg hover:border-violet-500/50 shadow-lg transition-all cursor-pointer"
         >
           <ArrowRight
             className={`h-3.5 w-3.5 transition-transform duration-300 ${

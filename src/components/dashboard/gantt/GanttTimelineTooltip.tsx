@@ -53,7 +53,7 @@ export function GanttTimelineTooltip({ hoveredItem }: GanttTimelineTooltipProps)
             <span className="font-mono text-right">{hoveredItem.es || '-'}</span>
 
             <span className="text-amber-400/70">Float:</span>
-            <span className="font-mono text-right text-indigo-300">{hoveredItem.totalFloat !== null ? `${hoveredItem.totalFloat}d` : '-'}</span>
+            <span className="font-mono text-right text-violet-300">{hoveredItem.totalFloat !== null ? `${hoveredItem.totalFloat}d` : '-'}</span>
 
             <span className="text-amber-400/70">Status:</span>
             <span className="font-mono text-right">{hoveredItem.status}</span>
@@ -73,7 +73,7 @@ export function GanttTimelineTooltip({ hoveredItem }: GanttTimelineTooltipProps)
             <span className="font-mono text-right">{hoveredItem.ef || '-'}</span>
 
             <span className="text-slate-400">Float:</span>
-            <span className="font-mono text-right text-indigo-300">{hoveredItem.totalFloat !== null ? `${hoveredItem.totalFloat}d` : '-'}</span>
+            <span className="font-mono text-right text-violet-300">{hoveredItem.totalFloat !== null ? `${hoveredItem.totalFloat}d` : '-'}</span>
 
             <span className="text-slate-400">Status:</span>
             <span className="font-mono text-right">{hoveredItem.status}</span>

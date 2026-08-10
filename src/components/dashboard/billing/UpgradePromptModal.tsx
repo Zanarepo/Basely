@@ -158,7 +158,7 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
             ✕
           </button>
 
-          <span className="inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-widest bg-indigo-600 text-white mb-3">
+          <span className="inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-widest bg-violet-600 text-white mb-3">
             Unlock Advanced Features
           </span>
           
@@ -192,13 +192,13 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
                 key={card.id}
                 className={`flex flex-col justify-between rounded-xl p-6 border ${
                   card.popular
-                    ? 'bg-white dark:bg-gray-800 border-indigo-500 ring-1 ring-indigo-500 shadow-sm'
+                    ? 'bg-white dark:bg-gray-800 border-violet-500 ring-1 ring-violet-500 shadow-sm'
                     : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-white/10 shadow-sm'
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                    <span className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">
                       {card.badge}
                     </span>
                     {isCurrent && (
@@ -239,7 +239,7 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
                   <ul className="space-y-2.5 text-xs text-gray-300">
                     {card.features.map((ft, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
-                        <span className="text-indigo-600 dark:text-indigo-400 mt-0.5 text-xs">✓</span>
+                        <span className="text-violet-600 dark:text-violet-400 mt-0.5 text-xs">✓</span>
                         <span>{ft}</span>
                       </li>
                     ))}
@@ -254,7 +254,7 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
                     className={`w-full py-2.5 px-4 rounded-md font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
                       isCurrent
                         ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed border border-gray-200 dark:border-white/5'
-                        : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
+                        : 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm'
                     }`}
                   >
                     {isLoading ? (

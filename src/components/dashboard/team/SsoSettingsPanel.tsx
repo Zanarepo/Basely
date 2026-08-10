@@ -82,7 +82,7 @@ export function SsoSettingsPanel({ organizationId, members, isAdmin }: SsoSettin
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
       </div>
     )
   }
@@ -92,7 +92,7 @@ export function SsoSettingsPanel({ organizationId, members, isAdmin }: SsoSettin
       <CollapsibleSection
         title="Single Sign-On (SSO)"
         subtitle="Configure enterprise authentication for your organization."
-        icon={<ShieldCheck className="w-5 h-5 text-indigo-500" />}
+        icon={<ShieldCheck className="w-5 h-5 text-violet-500" />}
         isOpen={isOpen}
         onToggle={() => setIsOpen(!isOpen)}
         badge={
@@ -134,11 +134,11 @@ export function SsoSettingsPanel({ organizationId, members, isAdmin }: SsoSettin
               <button
                 type="button"
                 onClick={() => setProtocol('saml')}
-                className={`p-4 rounded-xl border text-left transition-all ${protocol === 'saml' ? 'bg-indigo-500/5 border-indigo-500/50 ring-1 ring-indigo-500' : 'bg-app-surface-solid border-app-border hover:border-app-border-hover'}`}
+                className={`p-4 rounded-xl border text-left transition-all ${protocol === 'saml' ? 'bg-violet-500/5 border-violet-500/50 ring-1 ring-violet-500' : 'bg-app-surface-solid border-app-border hover:border-app-border-hover'}`}
               >
                 <div className="flex items-center justify-between">
                   <div className="font-medium text-app-fg">SAML 2.0</div>
-                  {protocol === 'saml' && <div className="w-2 h-2 rounded-full bg-indigo-500" />}
+                  {protocol === 'saml' && <div className="w-2 h-2 rounded-full bg-violet-500" />}
                 </div>
                 <div className="text-xs text-app-muted mt-1">Standard enterprise identity provider integration.</div>
               </button>
@@ -146,11 +146,11 @@ export function SsoSettingsPanel({ organizationId, members, isAdmin }: SsoSettin
               <button
                 type="button"
                 onClick={() => setProtocol('oauth')}
-                className={`p-4 rounded-xl border text-left transition-all ${protocol === 'oauth' ? 'bg-indigo-500/5 border-indigo-500/50 ring-1 ring-indigo-500' : 'bg-app-surface-solid border-app-border hover:border-app-border-hover'}`}
+                className={`p-4 rounded-xl border text-left transition-all ${protocol === 'oauth' ? 'bg-violet-500/5 border-violet-500/50 ring-1 ring-violet-500' : 'bg-app-surface-solid border-app-border hover:border-app-border-hover'}`}
               >
                 <div className="flex items-center justify-between">
                   <div className="font-medium text-app-fg">OAuth 2.0</div>
-                  {protocol === 'oauth' && <div className="w-2 h-2 rounded-full bg-indigo-500" />}
+                  {protocol === 'oauth' && <div className="w-2 h-2 rounded-full bg-violet-500" />}
                 </div>
                 <div className="text-xs text-app-muted mt-1">Modern secure authorization protocol.</div>
               </button>
@@ -173,7 +173,7 @@ export function SsoSettingsPanel({ organizationId, members, isAdmin }: SsoSettin
                     value={metadataUrl}
                     onChange={(e) => setMetadataUrl(e.target.value)}
                     placeholder="https://idp.example.com/metadata"
-                    className="w-full pl-9 pr-3 py-2 rounded-lg bg-app-surface-solid border border-app-border text-sm text-app-fg placeholder:text-app-muted focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                    className="w-full pl-9 pr-3 py-2 rounded-lg bg-app-surface-solid border border-app-border text-sm text-app-fg placeholder:text-app-muted focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
                   />
                 </div>
               </div>
@@ -187,7 +187,7 @@ export function SsoSettingsPanel({ organizationId, members, isAdmin }: SsoSettin
                       value={certificate}
                       onChange={(e) => setCertificate(e.target.value)}
                       placeholder="-----BEGIN CERTIFICATE-----\n..."
-                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-app-surface-solid border border-app-border text-sm text-app-fg placeholder:text-app-muted focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all min-h-[100px] font-mono"
+                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-app-surface-solid border border-app-border text-sm text-app-fg placeholder:text-app-muted focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all min-h-[100px] font-mono"
                     />
                   </div>
                 </div>
@@ -210,7 +210,7 @@ export function SsoSettingsPanel({ organizationId, members, isAdmin }: SsoSettin
                     onChange={(e) => setEnforced(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500" />
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-violet-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500" />
                 </div>
                 <div>
                   <div className="text-sm font-medium text-app-fg">Enforce SSO for all users</div>
@@ -261,7 +261,7 @@ export function SsoSettingsPanel({ organizationId, members, isAdmin }: SsoSettin
             type="button"
             onClick={handleSave}
             disabled={isSaving || (enforced && (!breakGlassAdminId || !metadataUrl.trim()))}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors shadow-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-violet-500 text-white hover:bg-violet-600 transition-colors shadow-sm disabled:opacity-50"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             Save Settings

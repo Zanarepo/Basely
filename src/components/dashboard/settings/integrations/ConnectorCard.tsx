@@ -180,7 +180,7 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = ({
                 className="px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/80 text-gray-700 dark:text-gray-300 text-xs font-semibold transition flex items-center gap-1 shadow-2xs disabled:opacity-50 whitespace-nowrap cursor-pointer hover:scale-[1.02]"
                 title="Verify connection credentials"
               >
-                <Activity className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin text-indigo-500' : 'text-emerald-600'}`} />
+                <Activity className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin text-violet-500' : 'text-emerald-600'}`} />
                 <span>{isTesting ? 'Testing...' : 'Test'}</span>
               </button>
 
@@ -188,7 +188,7 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = ({
               <button
                 onClick={() => onOpenSyncModal(config)}
                 disabled={isSyncing || isPending}
-                className="px-3 py-1 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold shadow-2xs transition-all flex items-center gap-1 disabled:opacity-50 whitespace-nowrap cursor-pointer hover:scale-[1.02]"
+                className="px-3 py-1 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold shadow-2xs transition-all flex items-center gap-1 disabled:opacity-50 whitespace-nowrap cursor-pointer hover:scale-[1.02]"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
                 <span>{isSyncing ? 'Syncing...' : 'Sync Now'}</span>
@@ -199,7 +199,7 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = ({
                 onClick={() => setShowConfigDrawer(!showConfigDrawer)}
                 className={`p-1.5 rounded-lg border transition-all cursor-pointer hover:scale-[1.05] ${
                   showConfigDrawer 
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400' 
+                    ? 'bg-violet-50 dark:bg-violet-950/60 border-violet-300 dark:border-violet-700 text-violet-600 dark:text-violet-400' 
                     : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 shadow-2xs'
                 }`}
                 title="Configure API Credentials & Modes"
@@ -236,7 +236,7 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = ({
         <div className="bg-gray-50 dark:bg-gray-800/60 border-t border-gray-200 dark:border-gray-800 p-4 sm:px-5 animate-fadeIn space-y-4 text-xs">
           <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700/60 pb-2.5">
             <div className="flex items-center gap-2 font-bold text-gray-800 dark:text-gray-200 text-xs sm:text-sm">
-              <Key className="w-4 h-4 text-indigo-500" />
+              <Key className="w-4 h-4 text-violet-500" />
               <span>{name} — Connectivity Setup</span>
             </div>
             <div className="flex items-center gap-4">
@@ -248,7 +248,7 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = ({
                   checked={!!config.enabled}
                   disabled={isPending}
                   onChange={(e) => onToggleConnect(e.target.checked)}
-                  className="h-4 w-4 text-indigo-500 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+                  className="h-4 w-4 text-violet-500 focus:ring-violet-500 border-gray-300 rounded cursor-pointer"
                 />
               </label>
 
@@ -319,7 +319,7 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = ({
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
                   placeholder={id === 'quickbooks' ? 'e.g. 9130353457198270' : 'Enter account identifier'}
-                  className="w-full px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs font-mono focus:ring-1 focus:ring-indigo-500"
+                  className="w-full px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs font-mono focus:ring-1 focus:ring-violet-500"
                 />
               </div>
 
@@ -332,21 +332,21 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = ({
                   value={clientSecret}
                   onChange={(e) => setClientSecret(e.target.value)}
                   placeholder="eyJhbGciOiJSUzI1NiIs..."
-                  className="w-full px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs font-mono focus:ring-1 focus:ring-indigo-500"
+                  className="w-full px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs font-mono focus:ring-1 focus:ring-violet-500"
                 />
               </div>
 
               {(id === 'netsuite' || id === 'sap') && (
                 <div className="sm:col-span-2">
                   <label className="block text-2xs font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider flex items-center gap-1">
-                    <Server className="w-3 h-3 text-indigo-500" /> Custom Gateway URL / API Endpoint Host
+                    <Server className="w-3 h-3 text-violet-500" /> Custom Gateway URL / API Endpoint Host
                   </label>
                   <input
                     type="text"
                     value={apiEndpoint}
                     onChange={(e) => setApiEndpoint(e.target.value)}
                     placeholder={id === 'sap' ? 'https://gateway.sap-s4hana.com' : 'https://12345.suitetalk.api.netsuite.com'}
-                    className="w-full px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs font-mono focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs font-mono focus:ring-1 focus:ring-violet-500"
                   />
                 </div>
               )}
@@ -391,7 +391,7 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = ({
                 type="button"
                 onClick={handleSaveAuth}
                 disabled={isSavingAuth || isPending}
-                className="px-4 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white font-bold shadow-2xs text-xs transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer hover:scale-[1.02]"
+                className="px-4 py-1.5 rounded-lg bg-violet-500 hover:bg-violet-600 text-white font-bold shadow-2xs text-xs transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer hover:scale-[1.02]"
               >
                 {isSavingAuth && <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />}
                 <span>Save Configuration</span>

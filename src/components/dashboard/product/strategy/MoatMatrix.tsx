@@ -181,7 +181,7 @@ export function MoatMatrix({ moats = [], onChange, hasEditAccess = true }: MoatM
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
-                      <Award className="w-3.5 h-3.5 mr-1 text-indigo-500" />
+                      <Award className="w-3.5 h-3.5 mr-1 text-violet-500" />
                       {CATEGORY_LABELS[moat.category] || moat.category}
                     </span>
 

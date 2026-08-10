@@ -80,7 +80,7 @@ export default function CostHealthWidget({
           </div>
           <div className="flex justify-between items-center text-xs">
             <span className="text-app-muted font-semibold">Estimate at Completion (EAC):</span>
-            <span className="font-extrabold text-indigo-500">
+            <span className="font-extrabold text-violet-500">
               <CurrencyDisplay amount={eac} currency={currency} compactThreshold={10000} />
             </span>
           </div>
@@ -103,7 +103,7 @@ export default function CostHealthWidget({
         </div>
         <div className="border-l border-r border-app-border">
           <div className="text-[10px] text-app-muted font-bold uppercase tracking-wide">Earned (EV)</div>
-          <div className="font-bold text-indigo-500 mt-1">
+          <div className="font-bold text-violet-500 mt-1">
             <CurrencyDisplay amount={ev} currency={currency} compactThreshold={1000} />
           </div>
         </div>

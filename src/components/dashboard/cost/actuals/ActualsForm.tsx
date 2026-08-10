@@ -84,7 +84,7 @@ export function ActualsForm({
               type="date"
               value={formDate}
               onChange={(e) => setFormDate(e.target.value)}
-              className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
 
@@ -96,7 +96,7 @@ export function ActualsForm({
               value={formAmount}
               onChange={(e) => setFormAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
 
@@ -108,7 +108,7 @@ export function ActualsForm({
               value={formDesc}
               onChange={(e) => setFormDesc(e.target.value)}
               placeholder="Optional description"
-              className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
         </div>
@@ -124,7 +124,7 @@ export function ActualsForm({
           <button
             onClick={handleSave}
             disabled={isSaving || !formWbsId || !formAmount || !formDate}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : editingId ? 'Update Actual Cost' : 'Save Actual Cost'}
           </button>

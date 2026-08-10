@@ -83,7 +83,7 @@ export default function ProjectGoogleChatSettings({
         <input
           id={`google-chat-webhook-url-${projectId}`}
           placeholder="https://chat.googleapis.com/v1/spaces/.../webhooks?key=...&token=..."
-          className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-md text-app-fg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+          className="w-full px-3 py-2 bg-app-bg border border-app-border rounded-md text-app-fg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50"
           value={webhookUrl}
           onChange={(e) => setWebhookUrl(e.target.value)}
         />
@@ -98,7 +98,7 @@ export default function ProjectGoogleChatSettings({
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors cursor-pointer"
           >
             {isSaving ? (
               <Loader2 className="h-4 w-4 animate-spin" />

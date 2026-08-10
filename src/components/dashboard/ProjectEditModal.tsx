@@ -12,6 +12,7 @@ import {
   ShieldAlert,
 } from 'lucide-react'
 import { updateProject } from '@/lib/projects/actions'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 type ProjectType = {
   id: string
@@ -186,7 +187,7 @@ export function ProjectEditModal({
           <div className="shrink-0 px-6 pt-6 pb-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-500">
+                <div className="p-2.5 rounded-xl bg-violet-500/20 text-violet-500">
                   <Briefcase className="h-5 w-5" />
                 </div>
                 <div>
@@ -260,34 +261,26 @@ export function ProjectEditModal({
               <label htmlFor="edit-methodology" className="auth-label">
                 Methodology
               </label>
-              <select
-                id="edit-methodology"
+              <EnterpriseSelect
                 value={methodology}
-                onChange={(e) => setMethodology(e.target.value as any)}
+                onChange={(val) => setMethodology(val as any)}
                 disabled={isPending}
-                className="auth-input pl-3 cursor-pointer"
-              >
-                {METHODOLOGIES.map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
+                options={[...METHODOLOGIES]}
+                className="w-full"
+              />
             </div>
 
             <div className="space-y-2">
               <label htmlFor="edit-currency" className="auth-label">
                 Currency
               </label>
-              <select
-                id="edit-currency"
+              <EnterpriseSelect
                 value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
+                onChange={(val) => setCurrency(val as string)}
                 disabled={isPending}
-                className="auth-input pl-3 cursor-pointer"
-              >
-                {CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>{c.code} ({c.symbol})</option>
-                ))}
-              </select>
+                options={CURRENCIES.map((c) => ({ value: c.code, label: `${c.code} (${c.symbol})` }))}
+                className="w-full"
+              />
             </div>
           </div>
 
@@ -333,7 +326,7 @@ export function ProjectEditModal({
                     disabled={isPending}
                     className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                       active
-                        ? 'bg-indigo-500/20 text-indigo-500 border-indigo-500/35'
+                        ? 'bg-violet-500/20 text-violet-500 border-violet-500/35'
                         : 'bg-app-muted-surface text-app-muted border-app-border hover:bg-app-hover'
                     }`}
                   >
@@ -375,7 +368,7 @@ export function ProjectEditModal({
                   onChange={(e) => handleToggleAutoSave(e.target.checked)}
                   disabled={isPending}
                 />
-                <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
               </label>
             </div>
           </div>

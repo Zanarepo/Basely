@@ -35,7 +35,7 @@ export default function ProjectDashboardWorkspace({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-app-subtle">
-        <Loader2 className="w-8 h-8 animate-spin mb-4 text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-violet-500" />
         <p>Loading project dashboard metrics...</p>
       </div>
     )
@@ -105,7 +105,7 @@ export default function ProjectDashboardWorkspace({
         <div className="self-start sm:self-center flex flex-wrap items-center gap-2">
           <button
             onClick={() => setIsActivityPanelOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-sm font-semibold shadow-sm transition-all cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 rounded-xl hover:bg-violet-100 dark:hover:bg-violet-500/20 text-sm font-semibold shadow-sm transition-all cursor-pointer"
           >
             <Activity className="h-4 w-4" />
             Activity Log

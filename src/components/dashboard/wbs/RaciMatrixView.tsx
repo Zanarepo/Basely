@@ -97,7 +97,7 @@ export function RaciMatrixView({ projectId, elements, expandedNodeIds = new Set(
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 min-h-[300px]">
-        <Loader2 className="h-6 w-6 text-indigo-500 animate-spin" />
+        <Loader2 className="h-6 w-6 text-violet-500 animate-spin" />
         <span className="ml-2 text-sm text-app-muted">Loading matrix data...</span>
       </div>
     )
@@ -111,7 +111,7 @@ export function RaciMatrixView({ projectId, elements, expandedNodeIds = new Set(
           onClick={() => setShowWbsColumn(!showWbsColumn)}
           className={`p-2 rounded-xl transition-all flex items-center justify-center ${
             showWbsColumn
-              ? 'bg-indigo-500/10 text-indigo-600'
+              ? 'bg-violet-500/10 text-violet-600'
               : 'hover:bg-app-surface border border-transparent hover:border-app-border text-app-subtle hover:text-app-fg'
           }`}
           title={showWbsColumn ? "Hide WBS details column" : "Show WBS details column"}
@@ -125,7 +125,7 @@ export function RaciMatrixView({ projectId, elements, expandedNodeIds = new Set(
             placeholder="Search stakeholders..."
             value={searchStakeholder}
             onChange={(e) => setSearchStakeholder(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm focus:outline-none focus:border-violet-500 transition-colors"
           />
         </div>
       </div>

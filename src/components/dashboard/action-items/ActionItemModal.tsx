@@ -98,7 +98,7 @@ export function ActionItemModal({ projectId, itemId, sourceMeetingId, onClose, o
 
         {isLoading ? (
           <div className="flex items-center justify-center h-48">
-            <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+            <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
           </div>
         ) : (
           <div className="p-5 flex flex-col gap-5 overflow-y-auto max-h-[70vh]">
@@ -110,7 +110,7 @@ export function ActionItemModal({ projectId, itemId, sourceMeetingId, onClose, o
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="What needs to be done?"
-                className="bg-app-card border border-app-border rounded-xl px-3 py-2.5 text-sm text-app-fg focus:outline-none focus:border-indigo-500 transition-colors min-h-[80px] resize-y"
+                className="bg-app-card border border-app-border rounded-xl px-3 py-2.5 text-sm text-app-fg focus:outline-none focus:border-violet-500 transition-colors min-h-[80px] resize-y"
               />
             </div>
 
@@ -142,7 +142,7 @@ export function ActionItemModal({ projectId, itemId, sourceMeetingId, onClose, o
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="bg-app-card border border-app-border rounded-xl px-3 py-2 text-sm text-app-fg focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="bg-app-card border border-app-border rounded-xl px-3 py-2 text-sm text-app-fg focus:outline-none focus:border-violet-500 transition-colors"
                 />
               </div>
             </div>
@@ -156,7 +156,7 @@ export function ActionItemModal({ projectId, itemId, sourceMeetingId, onClose, o
                     onClick={() => setStatus(s)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-colors ${
                       status === s
-                        ? s === 'done' ? 'bg-green-500/10 text-green-500' : s === 'in_progress' ? 'bg-amber-500/10 text-amber-500' : 'bg-indigo-500/10 text-indigo-500'
+                        ? s === 'done' ? 'bg-green-500/10 text-green-500' : s === 'in_progress' ? 'bg-amber-500/10 text-amber-500' : 'bg-violet-500/10 text-violet-500'
                         : 'text-app-muted hover:text-app-fg'
                     }`}
                   >
@@ -178,7 +178,7 @@ export function ActionItemModal({ projectId, itemId, sourceMeetingId, onClose, o
           <button
             onClick={handleSave}
             disabled={isSaving || !description.trim() || isLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors font-semibold text-sm shadow-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-violet-500 hover:bg-violet-600 text-white rounded-lg transition-colors font-semibold text-sm shadow-sm disabled:opacity-50"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             Save Action Item

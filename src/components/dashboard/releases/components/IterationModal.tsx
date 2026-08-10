@@ -128,14 +128,14 @@ export function IterationModal({
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Sprint 1 - Core Foundation"
-              className="w-full bg-app-bg border border-app-border rounded-xl px-4 py-2.5 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
+              className="w-full bg-app-bg border border-app-border rounded-xl px-4 py-2.5 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all font-medium"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-app-muted flex items-center gap-1.5 uppercase tracking-wider">
-                <Hash className="h-3.5 w-3.5 text-indigo-500" />
+                <Hash className="h-3.5 w-3.5 text-violet-500" />
                 Sequence Order
               </label>
               <input
@@ -144,7 +144,7 @@ export function IterationModal({
                 required
                 value={sequenceNumber}
                 onChange={e => setSequenceNumber(parseInt(e.target.value) || 1)}
-                className="w-full bg-app-bg border border-app-border rounded-xl px-4 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
+                className="w-full bg-app-bg border border-app-border rounded-xl px-4 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 font-semibold"
               />
             </div>
 
@@ -176,13 +176,13 @@ export function IterationModal({
                 required
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-app-muted flex items-center gap-1.5 uppercase tracking-wider">
-                <Calendar className="h-3.5 w-3.5 text-indigo-500" />
+                <Calendar className="h-3.5 w-3.5 text-violet-500" />
                 End Date
               </label>
               <input
@@ -190,7 +190,7 @@ export function IterationModal({
                 required
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
-                className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
               />
             </div>
           </div>
@@ -213,7 +213,7 @@ export function IterationModal({
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-50"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {iterationToEdit ? 'Save Changes' : `Create ${defaultLabel}`}

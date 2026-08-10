@@ -104,12 +104,12 @@ export function ReleaseRollbackPlanSection({
               type="button"
               onClick={() => handleToggle(step)}
               disabled={togglingItemId === step.id || loading || !hasEditAccess}
-              className="mt-0.5 shrink-0 text-app-muted hover:text-indigo-500 cursor-pointer disabled:opacity-50 transition-colors"
+              className="mt-0.5 shrink-0 text-app-muted hover:text-violet-500 cursor-pointer disabled:opacity-50 transition-colors"
             >
               {togglingItemId === step.id ? (
-                <Loader2 className="h-5 w-5 text-indigo-500 animate-spin" />
+                <Loader2 className="h-5 w-5 text-violet-500 animate-spin" />
               ) : step.isCompleted ? (
-                <CheckSquare className="h-5 w-5 text-indigo-500" />
+                <CheckSquare className="h-5 w-5 text-violet-500" />
               ) : (
                 <Square className="h-5 w-5" />
               )}

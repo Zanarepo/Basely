@@ -96,7 +96,7 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24 text-slate-400">
-        <Loader2 className="w-8 h-8 animate-spin mr-3 text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin mr-3 text-violet-500" />
         <span className="text-sm font-medium">Loading Product Strategy & Vision Canvas...</span>
       </div>
     )
@@ -115,7 +115,7 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
       {/* Top Banner & Action Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800">
         <div className="flex items-start space-x-4">
-          <div className="p-3 bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-2xl shrink-0">
+          <div className="p-3 bg-violet-50 dark:bg-violet-900/40 border border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400 rounded-2xl shrink-0">
             <Compass className="w-7 h-7" />
           </div>
           <div>
@@ -123,7 +123,7 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
               <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Product Strategy & Vision Canvas
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
                 Live Strategic Record
               </span>
             </div>
@@ -182,7 +182,7 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
         {/* North Star Vision (Full or 2 Col) */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-3 flex flex-col justify-between">
           <div>
-            <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm uppercase tracking-wider">
+            <div className="flex items-center space-x-2 text-violet-600 dark:text-violet-400 font-bold text-sm uppercase tracking-wider">
               <Sparkles className="w-4 h-4" />
               <span>North Star Vision Statement</span>
             </div>
@@ -195,7 +195,7 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
               value={strategy.vision_statement || ''}
               onChange={(e) => handleFieldChange('vision_statement', e.target.value)}
               placeholder="e.g. To revolutionize Enterprise delivery by creating an AI-agentic ecosystem where product strategy and engineering execution merge effortlessly..."
-              className="w-full mt-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white font-serif text-base leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all resize-y"
+              className="w-full mt-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white font-serif text-base leading-relaxed focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all resize-y"
             />
           </div>
         </div>
@@ -203,7 +203,7 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
         {/* Target Market Segmentation */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-3 flex flex-col justify-between">
           <div>
-            <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm uppercase tracking-wider">
+            <div className="flex items-center space-x-2 text-violet-600 dark:text-violet-400 font-bold text-sm uppercase tracking-wider">
               <Globe className="w-4 h-4" />
               <span>Target Market Segmentation</span>
             </div>
@@ -216,16 +216,16 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
               value={strategy.target_market || ''}
               onChange={(e) => handleFieldChange('target_market', e.target.value)}
               placeholder="e.g. Enterprise PMOs and SaaS technology firms managing cross-functional technical teams..."
-              className="w-full mt-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white text-sm leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all resize-y"
+              className="w-full mt-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white text-sm leading-relaxed focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all resize-y"
             />
           </div>
         </div>
       </div>
 
       {/* Value Proposition Band */}
-      <div className="bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-2xl border border-indigo-200 dark:border-indigo-900/40 p-6 shadow-sm">
-        <div className="flex items-center space-x-2 text-indigo-700 dark:text-indigo-300 font-bold text-sm uppercase tracking-wider">
-          <Zap className="w-4 h-4 fill-indigo-600 text-indigo-600 dark:fill-indigo-400 dark:text-indigo-400" />
+      <div className="bg-gradient-to-r from-violet-50/50 to-purple-50/50 dark:from-violet-950/20 dark:to-purple-950/20 rounded-2xl border border-violet-200 dark:border-violet-900/40 p-6 shadow-sm">
+        <div className="flex items-center space-x-2 text-violet-700 dark:text-violet-300 font-bold text-sm uppercase tracking-wider">
+          <Zap className="w-4 h-4 fill-violet-600 text-violet-600 dark:fill-violet-400 dark:text-violet-400" />
           <span>Core Value Proposition & Differentiating Advantage</span>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -237,7 +237,7 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
           value={strategy.value_proposition || ''}
           onChange={(e) => handleFieldChange('value_proposition', e.target.value)}
           placeholder="e.g. Traditional project software separates product strategy from engineering tasks. Our solution unifies discovery and execution into a live relational database with real-time generative documentation."
-          className="w-full mt-3 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800/40 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium text-sm leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all resize-y shadow-inner"
+          className="w-full mt-3 p-4 rounded-xl border border-violet-200 dark:border-violet-800/40 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium text-sm leading-relaxed focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all resize-y shadow-inner"
         />
       </div>
 
@@ -341,7 +341,7 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
                   setNewDimDesc('')
                 }}
                 style={{ cursor: 'pointer' }}
-                className="inline-flex items-center px-4 py-2 text-xs font-semibold text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg shadow-sm transition-colors shrink-0"
+                className="inline-flex items-center px-4 py-2 text-xs font-semibold text-white bg-violet-500 hover:bg-violet-600 rounded-lg shadow-sm transition-colors shrink-0"
               >
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 Add Dimension

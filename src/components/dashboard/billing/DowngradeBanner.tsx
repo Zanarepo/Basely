@@ -32,7 +32,7 @@ export const DowngradeBanner: React.FC<DowngradeBannerProps> = ({
     ? 'from-red-950 via-rose-900 to-red-900 border-red-500/70 shadow-red-500/20'
     : isLockedWarning
     ? 'from-amber-600/90 via-orange-600/90 to-red-600/90 border-amber-400/50 shadow-red-500/10'
-    : 'from-purple-900/90 via-indigo-900/90 to-blue-900/90 border-indigo-500/40 shadow-indigo-500/10'
+    : 'from-purple-900/90 via-violet-900/90 to-blue-900/90 border-violet-500/40 shadow-violet-500/10'
 
   return (
     <div
@@ -72,7 +72,7 @@ export const DowngradeBanner: React.FC<DowngradeBannerProps> = ({
               } inline-flex items-center gap-1.5 px-3 py-1 bg-white text-gray-900 font-extrabold text-xs rounded-lg shadow hover:bg-gray-100 hover:scale-105 active:scale-95`}
             >
               <span>{isWorkspaceLocked ? 'Upgrade Workspace' : isLockedWarning ? 'Upgrade to Unlock All' : 'Lock in Plan & Save'}</span>
-              <span className="text-[10px] bg-indigo-100 text-indigo-800 px-1 rounded font-black">↗</span>
+              <span className="text-[10px] bg-violet-100 text-violet-800 px-1 rounded font-black">↗</span>
             </button>
           ) : isLockedWarning ? (
             <span className="px-2.5 py-1 bg-black/30 text-rose-200 border border-white/20 font-bold text-xs rounded-lg whitespace-nowrap shadow">

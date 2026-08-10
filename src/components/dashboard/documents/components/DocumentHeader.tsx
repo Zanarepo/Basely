@@ -65,7 +65,7 @@ export default function DocumentHeader({
   return (
     <div className="p-4 border-b border-app-border flex items-center justify-between bg-app-surface">
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500">
+        <div className="p-2 rounded-lg bg-violet-500/10 text-violet-500">
           <FileText className="w-5 h-5" />
         </div>
         <div>
@@ -125,7 +125,7 @@ export default function DocumentHeader({
             className="btn-secondary text-xs px-3 py-1.5 inline-flex items-center"
           >
             {isPending ? (
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin text-indigo-500" />
+              <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin text-violet-500" />
             ) : (
               <Save className="w-3.5 h-3.5 mr-1.5" />
             )}

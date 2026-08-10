@@ -128,7 +128,7 @@ export default function ScheduleStatusResolver({ projectId, periodEnd, frozenDat
   if (loading) {
     return (
       <div className="flex h-32 items-center justify-center bg-app-surface border border-app-border rounded-xl">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
       </div>
     )
   }
@@ -142,8 +142,8 @@ export default function ScheduleStatusResolver({ projectId, periodEnd, frozenDat
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Overall Completion */}
         <div className="bg-app-surface border border-app-border rounded-xl p-5 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-indigo-500/10 flex items-center justify-center shrink-0">
-            <CheckCircle className="w-6 h-6 text-indigo-500" />
+          <div className="h-12 w-12 rounded-full bg-violet-500/10 flex items-center justify-center shrink-0">
+            <CheckCircle className="w-6 h-6 text-violet-500" />
           </div>
           <div>
             <div className="text-sm text-app-muted font-medium mb-1">Schedule Completion (vs Baseline)</div>

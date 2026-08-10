@@ -152,9 +152,9 @@ export default function AddMatrixMemberModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-xl max-h-[90vh] flex flex-col bg-app-surface border border-app-border rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-indigo-600/10 via-purple-600/5 to-transparent border-b border-app-border flex items-center justify-between shrink-0">
+        <div className="px-6 py-4 bg-gradient-to-r from-violet-600/10 via-purple-600/5 to-transparent border-b border-app-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-500 flex items-center justify-center shadow-inner">
+            <div className="w-10 h-10 rounded-2xl bg-violet-500/15 border border-violet-500/25 text-violet-500 flex items-center justify-center shadow-inner">
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
@@ -179,7 +179,7 @@ export default function AddMatrixMemberModal({
               onClick={() => setMode('workspace')}
               className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                 mode === 'workspace'
-                  ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                  ? 'border-violet-600 text-violet-600 dark:text-violet-400'
                   : 'border-transparent text-app-muted hover:text-app-fg'
               }`}
             >
@@ -192,7 +192,7 @@ export default function AddMatrixMemberModal({
             onClick={() => setMode('custom')}
             className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
               mode === 'custom' || unaddedWorkspaceMembers.length === 0
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                ? 'border-violet-600 text-violet-600 dark:text-violet-400'
                 : 'border-transparent text-app-muted hover:text-app-fg'
             }`}
           >
@@ -212,7 +212,7 @@ export default function AddMatrixMemberModal({
           {mode === 'workspace' && unaddedWorkspaceMembers.length > 0 ? (
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-app-muted block mb-1.5">
-                Select from Workspace Team Database <span className="text-indigo-500">*</span>
+                Select from Workspace Team Database <span className="text-violet-500">*</span>
               </label>
               <EnterpriseSelect
                 value={selectedUserId || (unaddedWorkspaceMembers[0]?.userId || '')}
@@ -232,14 +232,14 @@ export default function AddMatrixMemberModal({
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-app-muted block mb-1.5">
-                  Specialist / Contractor Full Name <span className="text-indigo-500">*</span>
+                  Specialist / Contractor Full Name <span className="text-violet-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="e.g. Dr. Julian Vance, Sarah Lin (Consultant)..."
-                  className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-medium text-app-fg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-medium text-app-fg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
                   required
                 />
               </div>
@@ -253,7 +253,7 @@ export default function AddMatrixMemberModal({
                     value={customRole}
                     onChange={(e) => setCustomRole(e.target.value)}
                     placeholder="e.g. Lead Security Architect"
-                    className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-medium text-app-fg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-medium text-app-fg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
                   />
                 </div>
                 <div>
@@ -265,7 +265,7 @@ export default function AddMatrixMemberModal({
                     value={customEmail}
                     onChange={(e) => setCustomEmail(e.target.value)}
                     placeholder="e.g. consult@partner.com"
-                    className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-medium text-app-fg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-medium text-app-fg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
                   />
                 </div>
               </div>
@@ -274,7 +274,7 @@ export default function AddMatrixMemberModal({
 
           <div className="pt-2 border-t border-app-border">
             <h4 className="text-xs font-bold uppercase tracking-wider text-app-fg mb-3 flex items-center gap-1.5">
-              <Briefcase className="w-3.5 h-3.5 text-indigo-500" /> Initial Capacity Allocation Baseline
+              <Briefcase className="w-3.5 h-3.5 text-violet-500" /> Initial Capacity Allocation Baseline
             </h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -288,7 +288,7 @@ export default function AddMatrixMemberModal({
                   max="168"
                   value={hours}
                   onChange={(e) => setHours(e.target.value)}
-                  className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-bold text-app-fg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-bold text-app-fg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
                 />
               </div>
               <div>
@@ -302,7 +302,7 @@ export default function AddMatrixMemberModal({
                   max="200"
                   value={velocity}
                   onChange={(e) => setVelocity(e.target.value)}
-                  className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-bold text-app-fg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-bold text-app-fg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
                 />
               </div>
             </div>
@@ -320,7 +320,7 @@ export default function AddMatrixMemberModal({
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/35 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+              className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 shadow-lg shadow-violet-500/25 hover:shadow-violet-500/35 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
             >
               {isSaving ? (
                 <>

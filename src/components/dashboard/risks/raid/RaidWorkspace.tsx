@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Plus, Search, Filter, ShieldAlert, AlertTriangle, HelpCircle, GitBranch, CheckCircle2, Clock, Calendar, ExternalLink, Trash2, Edit3, Layers, Sparkles } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 import RaidItemModal from './RaidItemModal'
@@ -9,6 +10,7 @@ import { getWbsElements } from '@/lib/wbs/actions'
 import type { WbsElement } from '@/lib/wbs/constants'
 import { ToastContainer } from '@/components/dashboard/Toast'
 import { useWbsToasts } from '@/components/dashboard/wbs/workspace/hooks/useWbsToasts'
+import { getTerminology } from '@/utils/terminology'
 
 interface RaidWorkspaceProps {
   projectId: string
@@ -32,6 +34,8 @@ export default function RaidWorkspace({
   const [selectedItem, setSelectedItem] = useState<RaidLogEntry | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const { toasts, showToast, dismissToast } = useWbsToasts()
+
+  const terms = getTerminology(methodology)
 
   const fetchRaidItems = async () => {
     setLoading(true)
@@ -152,7 +156,7 @@ export default function RaidWorkspace({
   const getCategoryBadge = (cat: RaidCategory) => {
     switch (cat) {
       case 'risk':
-        return <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">🛡️ Risk</span>
+        return <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg bg-violet-500/10 text-violet-400 border border-violet-500/20">🛡️ Risk</span>
       case 'assumption':
         return <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20">💡 Assumption</span>
       case 'issue':
@@ -166,7 +170,7 @@ export default function RaidWorkspace({
     switch (prio) {
       case 'critical': return 'text-red-400 font-black'
       case 'high': return 'text-amber-400 font-bold'
-      case 'medium': return 'text-indigo-400 font-semibold'
+      case 'medium': return 'text-violet-400 font-semibold'
       case 'low': return 'text-slate-400 font-normal'
     }
   }
@@ -180,7 +184,7 @@ export default function RaidWorkspace({
             <h1 className="text-2xl font-black text-app-fg tracking-tight">
               Enterprise RAID Command Center
             </h1>
-            <span className="text-xs uppercase px-2.5 py-0.5 rounded-full font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <span className="text-xs uppercase px-2.5 py-0.5 rounded-full font-bold bg-violet-500/10 text-violet-400 border border-violet-500/20">
               {methodology} ready
             </span>
           </div>
@@ -216,7 +220,7 @@ export default function RaidWorkspace({
               setModalCategory('risk')
               setIsModalOpen(true)
             }}
-            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-lg shadow-indigo-600/25 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-lg shadow-violet-600/25 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" /> New RAID Entry
           </button>
@@ -235,7 +239,7 @@ export default function RaidWorkspace({
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
+                    ? 'bg-violet-600 text-white shadow-md shadow-violet-600/25'
                     : 'bg-app-surface text-app-muted hover:text-app-fg hover:bg-app-input border border-app-border/70'
                 }`}
               >
@@ -284,7 +288,7 @@ export default function RaidWorkspace({
             placeholder="Search RAID log by title, description, or external owner..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-app-input border border-app-border text-app-fg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-app-input border border-app-border text-app-fg text-sm focus:ring-2 focus:ring-violet-500 outline-none"
           />
         </div>
 
@@ -340,7 +344,7 @@ export default function RaidWorkspace({
                   )}
                 </div>
 
-                <h3 className="text-base font-bold text-app-fg tracking-tight group-hover:text-indigo-300 transition-colors">
+                <h3 className="text-base font-bold text-app-fg tracking-tight group-hover:text-violet-300 transition-colors">
                   {item.title}
                 </h3>
                 <p className="text-xs text-app-muted leading-relaxed max-w-3xl">
@@ -348,7 +352,7 @@ export default function RaidWorkspace({
                 </p>
 
                 {(item.external_owner_name || item.linked_wbs_element_id) && (
-                  <div className="p-3 rounded-xl bg-indigo-500/5 border border-indigo-500/15 flex flex-wrap items-center justify-between gap-3 text-xs max-w-3xl">
+                  <div className="p-3 rounded-xl bg-violet-500/5 border border-violet-500/15 flex flex-wrap items-center justify-between gap-3 text-xs max-w-3xl">
                     {item.external_owner_name ? (
                       <span className="font-semibold text-app-fg">
                         External Owner / Vendor: <strong className="text-emerald-300">{item.external_owner_name}</strong>
@@ -356,13 +360,17 @@ export default function RaidWorkspace({
                     ) : <span className="font-semibold text-app-muted">Governance Scope:</span>}
                     {item.linked_wbs_element_id && (
                       <div className="flex items-center flex-wrap gap-1.5 ml-auto">
-                        <span className="text-[11px] font-bold text-indigo-400 dark:text-indigo-300">🔗 Linked WBS:</span>
+                        <span className="text-[11px] font-bold text-violet-400 dark:text-violet-300">🔗 Linked WBS:</span>
                         {item.linked_wbs_element_id.split(',').map(id => id.trim()).filter(Boolean).map(id => {
                           const el = wbsElements.find(w => w.id === id)
                           return (
-                            <span key={id} className="bg-indigo-500/15 text-indigo-400 dark:text-indigo-300 border border-indigo-500/25 px-2 py-0.5 rounded-lg font-extrabold text-[10px] uppercase shadow-xs">
-                              {el ? `${el.code} (${!el.isWorkPackage ? 'Parent' : 'WP'})` : id.startsWith('wbs') || id.startsWith('epic') ? id : 'Deliv.'}
-                            </span>
+                            <Link 
+                              key={id} 
+                              href={`/dashboard/projects/${projectId}?tab=wbs&elementId=${id}`}
+                              className="bg-violet-500/15 hover:bg-violet-500/25 text-violet-400 dark:text-violet-300 border border-violet-500/25 hover:border-violet-400/50 px-2 py-0.5 rounded-lg font-extrabold text-[10px] uppercase shadow-xs transition-colors cursor-pointer"
+                            >
+                              {el ? `${el.code} (${!el.isWorkPackage ? terms.planTier : terms.workPackage})` : id.startsWith('wbs') || id.startsWith('epic') ? id : 'Deliv.'}
+                            </Link>
                           )
                         })}
                       </div>

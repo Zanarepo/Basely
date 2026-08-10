@@ -49,9 +49,9 @@ export function GanttToolbar({
           className="p-2 bg-app-muted-surface hover:bg-app-surface border border-app-border rounded-2xl transition-colors"
           title={showSidebar ? "Hide details sidebar" : "Show details sidebar"}
         >
-          {showSidebar ? <PanelLeftClose className="w-5 h-5 text-indigo-500" /> : <PanelLeftOpen className="w-5 h-5 text-indigo-500" />}
+          {showSidebar ? <PanelLeftClose className="w-5 h-5 text-violet-500" /> : <PanelLeftOpen className="w-5 h-5 text-violet-500" />}
         </button>
-        <Calendar className="w-6 h-6 text-indigo-500 hidden sm:block" />
+        <Calendar className="w-6 h-6 text-violet-500 hidden sm:block" />
         <div>
           <h2 className="text-base font-bold">Interactive Gantt Timeline</h2>
           <p className="text-[11px] text-app-subtle">
@@ -91,14 +91,14 @@ export function GanttToolbar({
                 type="checkbox"
                 checked={showBaseline}
                 onChange={(e) => setShowBaseline(e.target.checked)}
-                className="rounded text-indigo-500 focus:ring-indigo-500/50 cursor-pointer border-app-border bg-app-surface"
+                className="rounded text-violet-500 focus:ring-violet-500/50 cursor-pointer border-app-border bg-app-surface"
               />
               Baseline:
             </label>
             <select
               value={selectedBaselineId}
               onChange={(e) => setSelectedBaselineId(e.target.value)}
-              className="bg-transparent border-0 py-0 pl-2 pr-6 text-xs font-bold text-indigo-500 focus:ring-0 cursor-pointer disabled:opacity-50"
+              className="bg-transparent border-0 py-0 pl-2 pr-6 text-xs font-bold text-violet-500 focus:ring-0 cursor-pointer disabled:opacity-50"
               disabled={!showBaseline}
             >
               {baselines.map((b) => (
@@ -119,7 +119,7 @@ export function GanttToolbar({
                     const b = baselines.find(b => b.id === selectedBaselineId)
                     if (b) onRenameBaseline(b.id, b.name)
                   }}
-                  className="p-1 text-app-muted hover:text-indigo-500 hover:bg-app-surface transition-colors rounded"
+                  className="p-1 text-app-muted hover:text-violet-500 hover:bg-app-surface transition-colors rounded"
                   title="Rename Baseline"
                 >
                   <Edit3 className="w-3.5 h-3.5" />

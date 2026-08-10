@@ -57,7 +57,7 @@ export function BudgetBaselineTable({
         </div>
 
         <div className="bg-white dark:bg-app-card border border-app-border rounded-xl p-4 flex items-center gap-4 shadow-sm sm:col-span-2 lg:col-span-1">
-          <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg text-indigo-600 dark:text-indigo-400">
+          <div className="p-3 bg-violet-50 dark:bg-violet-500/10 rounded-lg text-violet-600 dark:text-violet-400">
             <FileText className="w-6 h-6" />
           </div>
           <div>
@@ -96,7 +96,7 @@ export function BudgetBaselineTable({
                   return (
                     <React.Fragment key={pkg.id}>
                       <tr className="group hover:bg-slate-50 dark:hover:bg-app-hover/50 transition-colors duration-150">
-                        <td className="py-3 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                        <td className="py-3 px-4 font-mono font-bold text-violet-600 dark:text-violet-400 whitespace-nowrap">
                           {pkg.wbs_code}
                         </td>
                         <td className="py-3 px-4 font-semibold text-app-fg max-w-xs truncate">
@@ -129,7 +129,7 @@ export function BudgetBaselineTable({
                                 type="button"
                                 onClick={() => toggleExpand(pkg.id)}
                                 title={isExpanded ? 'Hide Time Phases' : 'View Time Phases'}
-                                className="p-1.5 text-indigo-600 dark:text-indigo-300 hover:text-indigo-700 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 border border-indigo-200 dark:border-indigo-500/20 rounded-lg transition-colors cursor-pointer text-xs flex items-center gap-1 font-semibold px-2.5"
+                                className="p-1.5 text-violet-600 dark:text-violet-300 hover:text-violet-700 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 border border-violet-200 dark:border-violet-500/20 rounded-lg transition-colors cursor-pointer text-xs flex items-center gap-1 font-semibold px-2.5"
                                 style={{ cursor: 'pointer' }}
                               >
                                 <span>Phases</span>
@@ -177,10 +177,10 @@ export function BudgetBaselineTable({
               const hasPhases = (pkg.time_phases || []).length > 0
 
               return (
-                <div key={pkg.id} className="group bg-white dark:bg-app-card border border-app-border rounded-xl p-4 transition-all hover:border-indigo-500/50 shadow-sm relative">
+                <div key={pkg.id} className="group bg-white dark:bg-app-card border border-app-border rounded-xl p-4 transition-all hover:border-violet-500/50 shadow-sm relative">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="inline-block px-2 py-0.5 rounded text-xs font-mono font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 mb-1.5">
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-mono font-bold bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 mb-1.5">
                         WBS {pkg.wbs_code}
                       </span>
                       <h4 className="font-semibold text-app-fg text-base">{pkg.name}</h4>
@@ -210,7 +210,7 @@ export function BudgetBaselineTable({
                       <button
                         type="button"
                         onClick={() => toggleExpand(pkg.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 border border-indigo-200 dark:border-indigo-500/20 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-violet-600 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 border border-violet-200 dark:border-violet-500/20 rounded-lg transition-colors cursor-pointer shadow-2xs"
                         style={{ cursor: 'pointer' }}
                       >
                         <span>{isExpanded ? 'Hide Phases' : 'Show Phases'}</span>

@@ -74,7 +74,7 @@ export default function IssueList({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Open': return 'bg-red-500/10 text-red-700 border-red-500/20'
-      case 'In Progress': return 'bg-indigo-500/10 text-indigo-700 border-indigo-500/20'
+      case 'In Progress': return 'bg-violet-500/10 text-violet-700 border-violet-500/20'
       case 'Resolved': return 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
       case 'Closed': return 'bg-slate-500/10 text-slate-700 border-slate-500/20'
       default: return 'bg-gray-500/10 text-gray-700 border-gray-500/20'
@@ -93,7 +93,7 @@ export default function IssueList({
               placeholder="Search issues..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm bg-app-bg border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              className="w-full pl-9 pr-4 py-2 text-sm bg-app-bg border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/50"
             />
           </div>
           <div className="w-44">
@@ -167,7 +167,7 @@ export default function IssueList({
                         Owner: <span className="text-app-fg">{owner?.name || 'Unassigned'}</span>
                       </span>
                       {risk && (
-                        <span className="flex items-center gap-1 bg-indigo-500/10 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-500/20">
+                        <span className="flex items-center gap-1 bg-violet-500/10 text-violet-700 px-2 py-0.5 rounded-full border border-violet-500/20">
                           Risk: {risk.title}
                         </span>
                       )}
@@ -184,7 +184,7 @@ export default function IssueList({
                         setScrollToComments(true)
                         setIsFormOpen(true)
                       }}
-                      className="p-2 text-app-muted hover:text-indigo-400 hover:bg-app-surface border border-transparent hover:border-app-border rounded-lg transition-all"
+                      className="p-2 text-app-muted hover:text-violet-400 hover:bg-app-surface border border-transparent hover:border-app-border rounded-lg transition-all"
                       title="View Comments"
                     >
                       <MessageSquare className="h-4 w-4" />
@@ -199,7 +199,7 @@ export default function IssueList({
                             setScrollToComments(false)
                             setIsFormOpen(true)
                           }}
-                          className="p-2 text-app-muted hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-colors"
+                          className="p-2 text-app-muted hover:text-violet-500 hover:bg-violet-500/10 rounded-lg transition-colors"
                           title="Edit Issue"
                         >
                           <Edit2 className="h-4 w-4" />

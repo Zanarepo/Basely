@@ -15,7 +15,7 @@ export function SidebarAccordion({ title, children, defaultOpen = false }: Sideb
     <div className="mb-3">
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className="w-full flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-4 mb-2 pl-3 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer group"
+        className="w-full flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-4 mb-2 pl-3 hover:text-violet-600 dark:hover:text-violet-400 transition-colors cursor-pointer group"
       >
         <span>{title}</span>
         <div className="p-1 rounded-md bg-slate-100 dark:bg-slate-800 opacity-0 group-hover:opacity-100 transition-all duration-200 mr-2">

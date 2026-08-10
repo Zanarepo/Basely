@@ -74,7 +74,7 @@ export function PrioritizationDashboard({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
       </div>
     )
   }
@@ -94,7 +94,7 @@ export function PrioritizationDashboard({
             onClick={() => setActiveTab('matrix')}
             className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               activeTab === 'matrix' 
-                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                ? 'bg-white dark:bg-slate-900 text-violet-600 dark:text-violet-400 shadow-sm' 
                 : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -105,7 +105,7 @@ export function PrioritizationDashboard({
             onClick={() => setActiveTab('plot')}
             className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               activeTab === 'plot' 
-                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                ? 'bg-white dark:bg-slate-900 text-violet-600 dark:text-violet-400 shadow-sm' 
                 : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -117,7 +117,7 @@ export function PrioritizationDashboard({
         <button
           onClick={handleCreateNew}
           disabled={isCreating}
-          className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-violet-500 hover:bg-violet-600 text-white rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
           Add Item

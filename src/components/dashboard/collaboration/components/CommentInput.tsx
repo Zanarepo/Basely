@@ -119,7 +119,8 @@ export function CommentInput({ onPost, mentionOptions, entityOptions = [], place
       charter: 'Charter', raci: 'RACI', gantt: 'Gantt',
       cost_estimation: 'Estimations', cost_resources: 'Resources',
       cost_timephasing: 'S-Curve', cost_baselines: 'Baselines', cost_actuals: 'Actuals',
-      wbs_board: 'Board', wbs_grid: 'Grid', wbs_unassigned: 'Unassigned'
+      wbs_board: 'Board', wbs_grid: 'Grid', wbs_unassigned: 'Unassigned',
+      product_doc: 'Document'
     }
     const typeLabel = typeLabels[option.type] || option.type
     chip.dataset.entityLabel = typeLabel
@@ -134,7 +135,7 @@ export function CommentInput({ onPost, mentionOptions, entityOptions = [], place
     if (option.type === 'risk') { bg = 'rgba(249,115,22,0.15)'; color = 'rgb(251,146,60)'; border = 'rgba(249,115,22,0.3)' }
     else if (option.type === 'issue') { bg = 'rgba(239,68,68,0.15)'; color = 'rgb(248,113,113)'; border = 'rgba(239,68,68,0.3)' }
     // Using the 'documents' blue design for cost and gantt
-    else if (option.type === 'charter' || option.type === 'raci' || option.type.startsWith('cost_') || option.type === 'gantt') { 
+    else if (option.type === 'charter' || option.type === 'raci' || option.type.startsWith('cost_') || option.type === 'gantt' || option.type === 'product_doc') { 
       bg = 'rgba(59,130,246,0.15)'; color = 'rgb(96,165,250)'; border = 'rgba(59,130,246,0.3)' 
     }
     else if (option.type === 'stakeholders') { bg = 'rgba(16,185,129,0.15)'; color = 'rgb(52,211,153)'; border = 'rgba(16,185,129,0.3)' }
@@ -311,7 +312,7 @@ export function CommentInput({ onPost, mentionOptions, entityOptions = [], place
       case 'cost_timephasing':
       case 'cost_baselines':
       case 'cost_actuals': return <FileText className="w-3 h-3 text-blue-500" />
-      default: return <CheckSquare className="w-3 h-3 text-indigo-500" />
+      default: return <CheckSquare className="w-3 h-3 text-violet-500" />
     }
   }
 
@@ -329,7 +330,7 @@ export function CommentInput({ onPost, mentionOptions, entityOptions = [], place
                 type="button"
                 key={`${option.type}-${option.id}`}
                 onClick={() => insertMention(option)}
-                className="w-full text-left px-3 py-2 text-sm text-app-fg hover:bg-indigo-500/10 hover:text-indigo-400 transition-colors flex flex-col"
+                className="w-full text-left px-3 py-2 text-sm text-app-fg hover:bg-violet-500/10 hover:text-violet-400 transition-colors flex flex-col"
               >
                 <span className="font-medium">{option.name}</span>
                 <span className="text-[10px] text-app-muted uppercase">{option.type}</span>
@@ -351,7 +352,7 @@ export function CommentInput({ onPost, mentionOptions, entityOptions = [], place
                 type="button"
                 key={option.id}
                 onClick={() => insertEntity(option)}
-                className="w-full text-left px-3 py-2 text-sm text-app-fg hover:bg-indigo-500/10 hover:text-indigo-400 transition-colors flex items-center gap-2"
+                className="w-full text-left px-3 py-2 text-sm text-app-fg hover:bg-violet-500/10 hover:text-violet-400 transition-colors flex items-center gap-2"
               >
                 <div className="flex-shrink-0 mt-0.5 self-start">
                   {getEntityIcon(option.type)}
@@ -383,14 +384,14 @@ export function CommentInput({ onPost, mentionOptions, entityOptions = [], place
           onFocus={checkEmpty}
           onBlur={checkEmpty}
           onClick={handleEditorClick}
-          className="w-full bg-app-surface border border-app-border rounded-lg py-3 px-4 pr-12 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 min-h-[60px] max-h-[200px] overflow-y-auto"
+          className="w-full bg-app-surface border border-app-border rounded-lg py-3 px-4 pr-12 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 min-h-[60px] max-h-[200px] overflow-y-auto"
           style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
         />
         <button
           type="button"
           onClick={handleSubmit}
           disabled={isEmpty || isSubmitting}
-          className="absolute right-3 bottom-3 p-1.5 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-10"
+          className="absolute right-3 bottom-3 p-1.5 bg-violet-500 text-white rounded-md hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-10"
         >
           <Send className="w-4 h-4" />
         </button>

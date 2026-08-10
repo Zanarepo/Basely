@@ -130,7 +130,7 @@ export function GanttTimelineBars({
                 // --- Milestone Diamond ---
                 <div className="w-full h-full flex items-center justify-center relative z-10">
                   <div
-                    className={`w-5 h-5 rotate-45 transform origin-center border-2 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-indigo-400 group-hover:brightness-110 ${
+                    className={`w-5 h-5 rotate-45 transform origin-center border-2 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-violet-400 group-hover:brightness-110 ${
                       isCritical
                         ? 'bg-red-500 border-red-700'
                         : 'bg-emerald-400 border-emerald-600'
@@ -146,14 +146,14 @@ export function GanttTimelineBars({
               ) : (
                 // --- Standard Task Bar ---
                 <div
-                  className={`w-full h-full rounded-md shadow-sm border overflow-hidden relative z-10 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-indigo-400 group-hover:brightness-110 ${
+                  className={`w-full h-full rounded-md shadow-sm border overflow-hidden relative z-10 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-violet-400 group-hover:brightness-110 ${
                     row.element.status === 'Complete'
                       ? 'bg-emerald-500 border-emerald-600'
                       : isCritical
                       ? 'bg-red-500 border-red-600'
                       : row.element.status === 'In Progress'
                       ? 'bg-blue-500 border-blue-600'
-                      : 'bg-indigo-500 border-indigo-600'
+                      : 'bg-violet-500 border-violet-600'
                   }`}
                 >
                   <div className="w-full h-full bg-gradient-to-b from-white/20 to-transparent" />
@@ -177,20 +177,20 @@ export function GanttTimelineBars({
               {/* Float Indicator */}
               {!isSummary && !isMilestone && row.activity?.totalFloat > 0 && (
                 <div 
-                  className="absolute top-1/2 -translate-y-1/2 h-1.5 bg-indigo-200 dark:bg-indigo-900/50 rounded-r-sm z-0 pointer-events-none border border-l-0 border-indigo-300 dark:border-indigo-800"
+                  className="absolute top-1/2 -translate-y-1/2 h-1.5 bg-violet-200 dark:bg-violet-900/50 rounded-r-sm z-0 pointer-events-none border border-l-0 border-violet-300 dark:border-violet-800"
                   style={{ 
                     left: `100%`, 
                     width: `${row.activity.totalFloat * dayWidth}px` 
                   }}
                   title={`Float: ${row.activity.totalFloat} days`}
                 >
-                  <div className="absolute right-0 -top-1 bottom-0 w-[2px] h-[10px] bg-indigo-400 dark:bg-indigo-600" />
+                  <div className="absolute right-0 -top-1 bottom-0 w-[2px] h-[10px] bg-violet-400 dark:bg-violet-600" />
                 </div>
               )}
               {/* Float Days Label */}
               {!isSummary && !isMilestone && row.activity?.totalFloat > 0 && (
                 <span
-                  className="absolute pointer-events-none select-none text-[8px] text-indigo-400 dark:text-indigo-500 font-medium whitespace-nowrap leading-none"
+                  className="absolute pointer-events-none select-none text-[8px] text-violet-400 dark:text-violet-500 font-medium whitespace-nowrap leading-none"
                   style={{
                     left: `calc(100% + 4px)`,
                     top: '-2px',
@@ -220,7 +220,7 @@ export function GanttTimelineBars({
               {!isSummary && hasEditAccess && (
                 <>
                   <div
-                    className="absolute -left-7 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border border-slate-300 shadow-sm opacity-0 group-hover:opacity-100 hover:scale-125 hover:border-indigo-500 hover:text-indigo-500 flex items-center justify-center cursor-crosshair transition-all z-30"
+                    className="absolute -left-7 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border border-slate-300 shadow-sm opacity-0 group-hover:opacity-100 hover:scale-125 hover:border-violet-500 hover:text-violet-500 flex items-center justify-center cursor-crosshair transition-all z-30"
                     onPointerDown={(e) => onStartDrawLink(e, row, rowHeight, headerHeight, 'start')}
                     style={{ touchAction: 'none' }}
                     title="Drag to create dependency link from start"
@@ -228,7 +228,7 @@ export function GanttTimelineBars({
                     <Link2 className="w-3 h-3" />
                   </div>
                   <div
-                    className="absolute -right-7 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border border-slate-300 shadow-sm opacity-0 group-hover:opacity-100 hover:scale-125 hover:border-indigo-500 hover:text-indigo-500 flex items-center justify-center cursor-crosshair transition-all z-30"
+                    className="absolute -right-7 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border border-slate-300 shadow-sm opacity-0 group-hover:opacity-100 hover:scale-125 hover:border-violet-500 hover:text-violet-500 flex items-center justify-center cursor-crosshair transition-all z-30"
                     onPointerDown={(e) => onStartDrawLink(e, row, rowHeight, headerHeight, 'end')}
                     style={{ touchAction: 'none' }}
                     title="Drag to create dependency link from finish"

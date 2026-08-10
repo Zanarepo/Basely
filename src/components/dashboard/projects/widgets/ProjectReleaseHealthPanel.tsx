@@ -26,7 +26,7 @@ export default function ProjectReleaseHealthPanel({
         <div className="flex items-center justify-between p-6 border-b border-app-border shrink-0 bg-app-surface/40">
           <div>
             <h2 className="text-xl font-black text-app-fg tracking-tight flex items-center gap-2">
-              <Activity className="h-6 w-6 text-indigo-500" />
+              <Activity className="h-6 w-6 text-violet-500" />
               Active Release Health
             </h2>
             <p className="text-sm text-app-muted mt-1 font-medium">

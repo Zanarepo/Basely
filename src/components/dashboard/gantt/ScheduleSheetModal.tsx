@@ -144,7 +144,7 @@ export function ScheduleSheetModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-app-border bg-app-surface print:hidden">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl">
+            <div className="p-2.5 bg-violet-500/10 text-violet-500 rounded-xl">
               <FileSpreadsheet className="w-6 h-6" />
             </div>
             <div>
@@ -164,7 +164,7 @@ export function ScheduleSheetModal({
             </button>
             <button
               onClick={printSheet}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl transition-colors shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-violet-500 hover:bg-violet-600 text-white rounded-xl transition-colors shadow-sm"
               title="Print or Save as PDF"
             >
               <Download className="w-4 h-4" />
@@ -273,7 +273,7 @@ export function ScheduleSheetModal({
                       <td className="px-4 py-3 text-app-subtle max-w-[150px] truncate" title={predsStr}>
                         {predsStr}
                       </td>
-                      <td className={`px-4 py-3 text-center font-bold ${isCritical ? 'text-rose-500' : 'text-indigo-500'}`}>
+                      <td className={`px-4 py-3 text-center font-bold ${isCritical ? 'text-rose-500' : 'text-violet-500'}`}>
                         {float}
                       </td>
                       <td className="px-4 py-3 text-center">

@@ -17,7 +17,7 @@ export default function ReleaseMetricsTab({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[300px] text-app-subtle">
-        <Loader2 className="w-8 h-8 animate-spin mb-4 text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-violet-500" />
         <p>Calculating release health & metrics...</p>
       </div>
     )
@@ -28,7 +28,7 @@ export default function ReleaseMetricsTab({
       <div className="flex flex-col items-center justify-center min-h-[300px] text-app-subtle">
         <AlertCircle className="w-8 h-8 mb-4 text-amber-500" />
         <p>No metrics available for this release.</p>
-        <button onClick={refresh} className="mt-4 px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors">
+        <button onClick={refresh} className="mt-4 px-4 py-2 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-lg text-sm font-semibold hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-colors">
           Retry
         </button>
       </div>

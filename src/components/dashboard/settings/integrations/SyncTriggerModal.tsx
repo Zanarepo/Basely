@@ -47,7 +47,7 @@ export const SyncTriggerModal: React.FC<SyncTriggerModalProps> = ({
         {/* Modal Header */}
         <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/80">
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+            <div className="p-2 rounded-lg bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400">
               <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin' : ''}`} />
             </div>
             <div>
@@ -72,9 +72,9 @@ export const SyncTriggerModal: React.FC<SyncTriggerModalProps> = ({
         <div className="p-5 sm:p-6 space-y-5 text-sm">
           {!syncResult ? (
             <form id="sync-form" onSubmit={handleSyncSubmit} className="space-y-5">
-              <div className="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-xs sm:text-sm text-blue-900 dark:text-blue-200">
+              <div className="bg-violet-50/70 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-xl p-4 text-xs sm:text-sm text-violet-900 dark:text-violet-200">
                 <p className="font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <CheckCircle2 className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                   Automated Financial Ledger Ingestion
                 </p>
                 <p className="mt-1 text-gray-600 dark:text-gray-300 leading-relaxed">
@@ -89,7 +89,7 @@ export const SyncTriggerModal: React.FC<SyncTriggerModalProps> = ({
                     type="checkbox"
                     checked={enableBackfill}
                     onChange={(e) => setEnableBackfill(e.target.checked)}
-                    className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                    className="mt-1 h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded cursor-pointer"
                   />
                   <div>
                     <span className="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
@@ -113,7 +113,7 @@ export const SyncTriggerModal: React.FC<SyncTriggerModalProps> = ({
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                       max={new Date().toISOString().split('T')[0]}
-                      className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                     />
                   </div>
                 )}
@@ -190,7 +190,7 @@ export const SyncTriggerModal: React.FC<SyncTriggerModalProps> = ({
                 type="submit"
                 form="sync-form"
                 disabled={isSyncing}
-                className="w-full sm:w-auto px-5 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer hover:scale-[1.02]"
+                className="w-full sm:w-auto px-5 py-2 rounded-xl bg-violet-500 hover:bg-violet-600 text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer hover:scale-[1.02]"
               >
                 {isSyncing ? (
                   <>
@@ -219,7 +219,7 @@ export const SyncTriggerModal: React.FC<SyncTriggerModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full sm:w-auto px-5 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs sm:text-sm transition cursor-pointer hover:scale-[1.02]"
+                className="w-full sm:w-auto px-5 py-2 rounded-xl bg-violet-500 hover:bg-violet-600 text-white font-bold text-xs sm:text-sm transition cursor-pointer hover:scale-[1.02]"
               >
                 Done
               </button>

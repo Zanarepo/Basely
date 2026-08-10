@@ -140,7 +140,7 @@ export default async function DashboardPage() {
   return (
     <div className="relative z-10 max-w-4xl mx-auto px-6 py-10">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2.5 rounded-xl bg-linear-to-tr from-violet-600 to-indigo-600">
+        <div className="p-2.5 rounded-xl bg-linear-to-tr from-violet-600 to-violet-600">
           <LayoutDashboard className="h-6 w-6 text-white" />
         </div>
 

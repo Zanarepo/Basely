@@ -65,7 +65,7 @@ export function MeetingMinutesList({ projectId, hasEditAccess, onShowToast }: Me
         {hasEditAccess && (
           <button
             onClick={() => setIsCreating(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors font-medium text-sm shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-violet-500 hover:bg-violet-600 text-white rounded-lg transition-colors font-medium text-sm shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Record Meeting
@@ -85,7 +85,7 @@ export function MeetingMinutesList({ projectId, hasEditAccess, onShowToast }: Me
             {hasEditAccess && (
               <button
                 onClick={() => setIsCreating(true)}
-                className="mt-4 text-indigo-500 hover:text-indigo-400 font-semibold text-sm transition-colors"
+                className="mt-4 text-violet-500 hover:text-violet-400 font-semibold text-sm transition-colors"
               >
                 Record your first meeting
               </button>
@@ -97,11 +97,11 @@ export function MeetingMinutesList({ projectId, hasEditAccess, onShowToast }: Me
               <button
                 key={m.id}
                 onClick={() => setActiveMinuteId(m.id)}
-                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-app-card border border-app-border rounded-xl hover:border-indigo-500/50 hover:shadow-md transition-all text-left group"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-app-card border border-app-border rounded-xl hover:border-violet-500/50 hover:shadow-md transition-all text-left group"
               >
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
-                    <CalendarIcon className="w-4 h-4 text-indigo-500" />
+                    <CalendarIcon className="w-4 h-4 text-violet-500" />
                     {new Date(m.meeting_date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                   </div>
                   <p className="text-sm text-app-muted line-clamp-1 mt-1 max-w-xl">
@@ -109,7 +109,7 @@ export function MeetingMinutesList({ projectId, hasEditAccess, onShowToast }: Me
                   </p>
                 </div>
                 <div className="mt-4 sm:mt-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ChevronRight className="w-5 h-5 text-indigo-500" />
+                  <ChevronRight className="w-5 h-5 text-violet-500" />
                 </div>
               </button>
             ))}

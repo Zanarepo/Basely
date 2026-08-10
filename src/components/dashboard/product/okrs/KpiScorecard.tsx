@@ -107,7 +107,7 @@ export function KpiScorecard({
       {/* Top Banner & Category */}
       <div>
         <div className="flex items-center justify-between gap-2 mb-3">
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800/60">
             {categoryLabels[kpi.category] || kpi.category}
           </span>
           
@@ -127,7 +127,7 @@ export function KpiScorecard({
                   }}
                   style={{ cursor: 'pointer' }}
                   title="Edit KPI Parameters"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
@@ -161,14 +161,14 @@ export function KpiScorecard({
                   type="text"
                   value={inlineValue}
                   onChange={(e) => setInlineValue(e.target.value)}
-                  className="w-24 px-2 py-1 text-sm font-bold bg-white dark:bg-slate-700 border border-indigo-500 rounded text-slate-900 dark:text-white focus:outline-none"
+                  className="w-24 px-2 py-1 text-sm font-bold bg-white dark:bg-slate-700 border border-violet-500 rounded text-slate-900 dark:text-white focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleSaveValue}
                   disabled={isUpdatingValue}
                   style={{ cursor: 'pointer' }}
-                  className="p-1 text-white bg-indigo-500 hover:bg-indigo-600 rounded"
+                  className="p-1 text-white bg-violet-500 hover:bg-violet-600 rounded"
                 >
                   {isUpdatingValue ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                 </button>
@@ -180,11 +180,11 @@ export function KpiScorecard({
                 className="flex items-baseline gap-1.5 group/value"
                 title={hasEditAccess ? "Click to quick-update value without reload" : undefined}
               >
-                <span className="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">
+                <span className="text-2xl font-extrabold text-violet-600 dark:text-violet-400">
                   {kpi.current_value}
                 </span>
                 <span className="text-xs text-slate-500 uppercase">{kpi.unit === 'percentage' ? '%' : kpi.unit === 'currency' ? '$' : ''}</span>
-                {isUpdatingValue && <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-500 ml-1" />}
+                {isUpdatingValue && <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-500 ml-1" />}
               </div>
             )}
           </div>
@@ -200,7 +200,7 @@ export function KpiScorecard({
         {/* Frequency & Trend */}
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 mb-4">
           <div className="flex items-center gap-1.5 font-medium">
-            <Activity className="w-3.5 h-3.5 text-indigo-500" />
+            <Activity className="w-3.5 h-3.5 text-violet-500" />
             Measured {kpi.frequency}
           </div>
           <div className="flex items-center gap-1 font-semibold">
@@ -224,8 +224,8 @@ export function KpiScorecard({
         {kpi.custom_attributes && Object.keys(kpi.custom_attributes).length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4 pt-3 border-t border-slate-100 dark:border-slate-800">
             {Object.entries(kpi.custom_attributes).map(([key, val]) => (
-              <span key={key} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-indigo-200/60 dark:border-indigo-900/40 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-2xs group/tag relative">
-                <strong className="text-indigo-600 dark:text-indigo-400">{key}:</strong> {val}
+              <span key={key} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-violet-200/60 dark:border-violet-900/40 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-2xs group/tag relative">
+                <strong className="text-violet-600 dark:text-violet-400">{key}:</strong> {val}
                 {hasEditAccess && (
                   <button
                     type="button"
@@ -251,21 +251,21 @@ export function KpiScorecard({
             value={newAttrKey}
             onChange={(e) => setNewAttrKey(e.target.value)}
             placeholder="New Column (e.g. Source)"
-            className="w-1/2 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+            className="w-1/2 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] focus:ring-1 focus:ring-violet-500 focus:outline-none"
           />
           <input
             type="text"
             value={newAttrVal}
             onChange={(e) => setNewAttrVal(e.target.value)}
             placeholder="Value (e.g. Snowflake)"
-            className="w-1/2 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+            className="w-1/2 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] focus:ring-1 focus:ring-violet-500 focus:outline-none"
           />
           <button
             type="button"
             onClick={handleAddAttribute}
             disabled={isAddingAttr || !newAttrKey.trim() || !newAttrVal.trim()}
             style={{ cursor: 'pointer' }}
-            className="px-2 py-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold shrink-0 transition-colors disabled:opacity-40 inline-flex items-center"
+            className="px-2 py-1 bg-violet-500 hover:bg-violet-600 text-white rounded-lg text-xs font-semibold shrink-0 transition-colors disabled:opacity-40 inline-flex items-center"
           >
             {isAddingAttr ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
           </button>

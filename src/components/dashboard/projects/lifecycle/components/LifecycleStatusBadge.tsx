@@ -29,7 +29,7 @@ export interface LifecycleStatusBadgeProps {
 
 const STAGE_CONFIG: Record<ProjectLifecycleStatus, { icon: React.ElementType; color: string; bg: string; border: string; step: number }> = {
   'Initiating': { icon: PlayCircle, color: 'text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/30', step: 1 },
-  'Planning': { icon: Layers, color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', step: 2 },
+  'Planning': { icon: Layers, color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30', step: 2 },
   'Executing': { icon: Activity, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', step: 3 },
   'Monitoring & Controlling': { icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30', step: 4 },
   'Closing': { icon: Flag, color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30', step: 5 },

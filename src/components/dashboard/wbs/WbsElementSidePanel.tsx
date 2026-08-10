@@ -34,6 +34,7 @@ type WbsElementSidePanelProps = {
   callerUserId?: string
   allowTeamScheduleEdits?: boolean
   currency?: string
+  terms: import('@/utils/terminology').TerminologyDict
 }
 
 export function WbsElementSidePanel({
@@ -51,6 +52,7 @@ export function WbsElementSidePanel({
   callerUserId,
   allowTeamScheduleEdits = false,
   currency = 'USD',
+  terms,
 }: WbsElementSidePanelProps) {
   const elementState = useWbsElementState(element)
   const schedulingState = useWbsScheduling(element, elementState.isWorkPackage)
@@ -101,7 +103,7 @@ export function WbsElementSidePanel({
         
           <div className="flex items-center justify-between p-6 pb-4 border-b border-app-border shrink-0">
             <div className="flex items-center gap-2">
-              <Settings2 className="h-5 w-5 text-indigo-500" />
+              <Settings2 className="h-5 w-5 text-violet-500" />
               <h3 className="text-lg font-bold text-app-fg">
                 WBS Element Details <span className="text-sm font-normal text-app-muted">({element?.code})</span>
               </h3>
@@ -157,6 +159,7 @@ export function WbsElementSidePanel({
                 canAssignMembers={canAssignMembers}
                 callerRole={callerRole}
                 callerUserId={callerUserId}
+                terms={terms}
               />
 
               {element?.projectId && element?.id && (
@@ -260,25 +263,25 @@ export function WbsElementSidePanel({
                 </div>
               )}
 
-                <div className="border border-indigo-500/25 rounded-xl overflow-hidden bg-indigo-500/5 dark:bg-indigo-950/20 shadow-xs">
+                <div className="border border-violet-500/25 rounded-xl overflow-hidden bg-violet-500/5 dark:bg-violet-950/20 shadow-xs">
                   <button
                     type="button"
                     onClick={() => setIsScheduleOpen(!isScheduleOpen)}
-                    className="w-full flex items-center justify-between px-4 py-3 bg-transparent hover:bg-indigo-500/10 transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-between px-4 py-3 bg-transparent hover:bg-violet-500/10 transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-indigo-700 dark:text-indigo-400">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-violet-700 dark:text-violet-400">
                       <CalIcon className="w-4 h-4" />
                       {elementState.isWorkPackage ? 'Scheduling & Dependencies' : 'External RAID Governance & Dependencies'}
                     </div>
                     {isScheduleOpen ? (
-                      <ChevronDown className="w-4 h-4 text-indigo-500/70" />
+                      <ChevronDown className="w-4 h-4 text-violet-500/70" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-indigo-500/70" />
+                      <ChevronRight className="w-4 h-4 text-violet-500/70" />
                     )}
                   </button>
 
                   {isScheduleOpen && (
-                    <div className="p-4 border-t border-indigo-500/25 space-y-4">
+                    <div className="p-4 border-t border-violet-500/25 space-y-4">
                       <WbsSchedulingFields
                         isWorkPackage={elementState.isWorkPackage}
                         autoSchedule={schedulingState.autoSchedule}

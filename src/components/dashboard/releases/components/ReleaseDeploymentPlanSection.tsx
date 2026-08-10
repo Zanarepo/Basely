@@ -87,8 +87,8 @@ export function ReleaseDeploymentPlanSection({
                   key={step.id} 
                   className={`group flex items-start gap-3 p-3 rounded-xl border transition-all ${
                     step.isCompleted 
-                      ? 'bg-indigo-500/5 border-indigo-500/20' 
-                      : 'bg-app-card border-app-border hover:border-indigo-500/30'
+                      ? 'bg-violet-500/5 border-violet-500/20' 
+                      : 'bg-app-card border-app-border hover:border-violet-500/30'
                   }`}
                 >
                   <div className="mt-1 cursor-move text-app-border group-hover:text-app-muted transition-colors">
@@ -98,12 +98,12 @@ export function ReleaseDeploymentPlanSection({
                     type="button"
                     onClick={() => handleToggle(step)}
                     disabled={togglingItemId === step.id || loading || !hasEditAccess}
-                    className="mt-0.5 shrink-0 text-app-muted hover:text-indigo-500 cursor-pointer disabled:opacity-50 transition-colors"
+                    className="mt-0.5 shrink-0 text-app-muted hover:text-violet-500 cursor-pointer disabled:opacity-50 transition-colors"
                   >
                     {togglingItemId === step.id ? (
-                      <Loader2 className="h-5 w-5 text-indigo-500 animate-spin" />
+                      <Loader2 className="h-5 w-5 text-violet-500 animate-spin" />
                     ) : step.isCompleted ? (
-                      <CheckSquare className="h-5 w-5 text-indigo-500" />
+                      <CheckSquare className="h-5 w-5 text-violet-500" />
                     ) : (
                       <Square className="h-5 w-5" />
                     )}
@@ -113,7 +113,7 @@ export function ReleaseDeploymentPlanSection({
                       {step.stepText}
                     </p>
                     {step.isCompleted && step.completedAt && (
-                      <p className="text-[10px] text-indigo-500/70 font-bold mt-1 flex items-center gap-1">
+                      <p className="text-[10px] text-violet-500/70 font-bold mt-1 flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3" />
                         Completed {formatDistanceToNow(new Date(step.completedAt), { addSuffix: true })}
                       </p>
@@ -144,12 +144,12 @@ export function ReleaseDeploymentPlanSection({
                     value={newStepTexts[phase]}
                     onChange={e => setNewStepTexts(prev => ({ ...prev, [phase]: e.target.value }))}
                     onKeyDown={e => e.key === 'Enter' && handleAdd(phase)}
-                    className="flex-1 px-4 py-2 text-sm bg-app-surface border border-app-border rounded-xl focus:outline-none focus:border-indigo-500"
+                    className="flex-1 px-4 py-2 text-sm bg-app-surface border border-app-border rounded-xl focus:outline-none focus:border-violet-500"
                   />
                   <button
                     onClick={() => handleAdd(phase)}
                     disabled={!newStepTexts[phase]?.trim() || loading}
-                    className="px-4 py-2 bg-app-surface hover:bg-indigo-500/10 text-app-muted hover:text-indigo-500 border border-app-border hover:border-indigo-500/30 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-2"
+                    className="px-4 py-2 bg-app-surface hover:bg-violet-500/10 text-app-muted hover:text-violet-500 border border-app-border hover:border-violet-500/30 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-2"
                   >
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add Step
                   </button>

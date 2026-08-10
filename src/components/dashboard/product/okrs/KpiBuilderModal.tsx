@@ -141,7 +141,7 @@ export function KpiBuilderModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Weekly Active Executives, Net Dollar Retention, CAC Payback"
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
               />
             </div>
 
@@ -188,7 +188,7 @@ export function KpiBuilderModal({
                 value={currentValue}
                 onChange={(e) => setCurrentValue(e.target.value)}
                 placeholder="e.g. 24.5, $120k, 1400"
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-indigo-600 dark:text-indigo-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-violet-600 dark:text-violet-400 focus:ring-2 focus:ring-violet-500 focus:outline-none"
               />
             </div>
 
@@ -201,7 +201,7 @@ export function KpiBuilderModal({
                 value={targetValue}
                 onChange={(e) => setTargetValue(e.target.value)}
                 placeholder="e.g. 50.0, $500k, 5000"
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none"
               />
             </div>
 
@@ -257,8 +257,8 @@ export function KpiBuilderModal({
             {Object.keys(customAttributes).length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3">
                 {Object.entries(customAttributes).map(([k, v]) => (
-                  <span key={k} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 text-xs font-medium text-slate-800 dark:text-slate-200 group relative">
-                    <strong className="text-indigo-600 dark:text-indigo-400">{k}:</strong> {v}
+                  <span key={k} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-violet-50 dark:bg-violet-950/40 border border-violet-200 text-xs font-medium text-slate-800 dark:text-slate-200 group relative">
+                    <strong className="text-violet-600 dark:text-violet-400">{k}:</strong> {v}
                     <button
                       type="button"
                       onClick={() => handleRemoveAttribute(k)}
@@ -279,21 +279,21 @@ export function KpiBuilderModal({
                 value={newAttrKey}
                 onChange={(e) => setNewAttrKey(e.target.value)}
                 placeholder="Column Name (e.g. Data Owner, Target Persona)"
-                className="w-1/2 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-1/2 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none"
               />
               <input
                 type="text"
                 value={newAttrVal}
                 onChange={(e) => setNewAttrVal(e.target.value)}
                 placeholder="Value (e.g. Growth Marketing Squad)"
-                className="w-1/2 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-1/2 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={handleAddAttribute}
                 disabled={!newAttrKey.trim() || !newAttrVal.trim()}
                 style={{ cursor: 'pointer' }}
-                className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold text-xs rounded-xl shrink-0 transition-all disabled:opacity-50"
+                className="px-4 py-2 bg-violet-500 hover:bg-violet-600 text-white font-semibold text-xs rounded-xl shrink-0 transition-all disabled:opacity-50"
               >
                 + Add Column
               </button>
@@ -315,7 +315,7 @@ export function KpiBuilderModal({
               type="submit"
               disabled={loading}
               style={{ cursor: 'pointer' }}
-              className="inline-flex items-center px-5 py-2 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 rounded-xl shadow-sm transition-all disabled:opacity-50"
+              className="inline-flex items-center px-5 py-2 text-sm font-semibold text-white bg-violet-500 hover:bg-violet-600 active:bg-violet-700 rounded-xl shadow-sm transition-all disabled:opacity-50"
             >
               {loading ? (
                 <>

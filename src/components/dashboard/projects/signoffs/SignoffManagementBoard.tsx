@@ -158,7 +158,7 @@ export function SignoffManagementBoard({
       {/* Header and Summary Bar */}
       <div className="p-4 sm:p-6 bg-app-surface border border-app-border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
+          <div className="p-3 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 shrink-0">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div className="min-w-0">
@@ -179,7 +179,7 @@ export function SignoffManagementBoard({
               placeholder="Search signers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-2 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 w-full sm:w-48 transition-all"
+              className="pl-9 pr-3 py-2 bg-app-bg border border-app-border rounded-xl text-sm text-app-fg focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-full sm:w-48 transition-all"
             />
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -190,7 +190,7 @@ export function SignoffManagementBoard({
           {hasEditAccess && (
             <button
               onClick={() => setIsInviteModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+              className="px-4 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md shadow-violet-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
             >
               <UserPlus className="w-4 h-4" />
               <span className="hidden sm:inline">Invite Signer</span>
@@ -230,7 +230,7 @@ export function SignoffManagementBoard({
       {/* Sign-off Records Grid (Responsive: Mobile 1 column, Tablet 2 col, Desktop 3 col) */}
       {loading ? (
         <div className="min-h-[200px] flex flex-col items-center justify-center p-8 text-app-muted space-y-3">
-          <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+          <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
           <p className="text-xs sm:text-sm font-bold animate-pulse">Loading compliance sign-off records...</p>
         </div>
       ) : signoffs.length === 0 ? (
@@ -245,7 +245,7 @@ export function SignoffManagementBoard({
           {hasEditAccess && (
             <button
               onClick={() => setIsInviteModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-indigo-500 text-white font-bold text-xs sm:text-sm inline-flex items-center gap-2 cursor-pointer hover:bg-indigo-600 shadow-md shadow-indigo-500/20 transition-all"
+              className="px-5 py-2.5 rounded-xl bg-violet-500 text-white font-bold text-xs sm:text-sm inline-flex items-center gap-2 cursor-pointer hover:bg-violet-600 shadow-md shadow-violet-500/20 transition-all"
             >
               <UserPlus className="w-4 h-4" />
               <span>Invite First Signer</span>
@@ -314,7 +314,7 @@ export function SignoffManagementBoard({
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border ${
                         item.signer_type === 'external_stakeholder'
                           ? 'bg-purple-500/10 text-purple-300 border-purple-500/20'
-                          : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20'
+                          : 'bg-violet-500/10 text-violet-300 border-violet-500/20'
                       }`}>
                         {item.signer_type === 'external_stakeholder' ? 'External' : 'Internal'}
                       </span>
@@ -372,7 +372,7 @@ export function SignoffManagementBoard({
                         onClick={() => handleCopyTokenUrl(item.token, item.id)}
                         className="w-full px-3 py-2 rounded-xl bg-app-bg hover:bg-app-hover border border-app-border text-app-fg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        {copiedId === item.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-indigo-400" />}
+                        {copiedId === item.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-violet-400" />}
                         <span>{copiedId === item.id ? 'URL Copied!' : 'Copy Client URL'}</span>
                       </button>
                     ) : signingId === item.id ? (
@@ -382,7 +382,7 @@ export function SignoffManagementBoard({
                           value={typedSignature}
                           onChange={(e) => setTypedSignature(e.target.value)}
                           placeholder="Type Full Legal Name..."
-                          className="w-full px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-xs text-app-fg focus:outline-none focus:border-indigo-500"
+                          className="w-full px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-xs text-app-fg focus:outline-none focus:border-violet-500"
                         />
                         <div className="flex items-center justify-end gap-1.5">
                           <button
@@ -404,7 +404,7 @@ export function SignoffManagementBoard({
                     ) : (
                       <button
                         onClick={() => { setSigningId(item.id); setTypedSignature(item.signer_name); }}
-                        className="w-full px-3 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full px-3 py-2 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <PenTool className="w-3.5 h-3.5" />
                         <span>Sign as Internal Member</span>

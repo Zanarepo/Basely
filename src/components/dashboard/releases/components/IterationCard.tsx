@@ -71,7 +71,7 @@ export function IterationCard({
         </h3>
 
         <div className="flex items-center gap-2 text-xs font-semibold text-app-muted mb-4">
-          <Calendar className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+          <Calendar className="h-3.5 w-3.5 text-violet-500 shrink-0" />
           <span>
             {formatDate(iteration.startDate)} &rarr; {formatDate(iteration.endDate)}
           </span>
@@ -82,7 +82,7 @@ export function IterationCard({
       <div className="pt-3 border-t border-app-border/60 flex items-center justify-between text-xs text-app-muted">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1" title="Tagged WBS Elements">
-            <Layers className="h-3.5 w-3.5 text-indigo-400" />
+            <Layers className="h-3.5 w-3.5 text-violet-400" />
             <span className="font-semibold text-app-fg">{iteration.taggedWbsCount || 0}</span> WBS
           </div>
           <div className="flex items-center gap-1" title="Tagged Schedule Activities">

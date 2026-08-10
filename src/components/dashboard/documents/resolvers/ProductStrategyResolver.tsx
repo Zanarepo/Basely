@@ -43,7 +43,7 @@ export function ProductStrategyResolver({ projectId, source }: ProductStrategyRe
   if (loading) {
     return (
       <div className="flex items-center py-4 text-slate-400 text-xs">
-        <Loader2 className="w-4 h-4 animate-spin mr-2 text-indigo-500" />
+        <Loader2 className="w-4 h-4 animate-spin mr-2 text-violet-500" />
         Resolving live product strategy records...
       </div>
     )
@@ -93,7 +93,7 @@ export function ProductStrategyResolver({ projectId, source }: ProductStrategyRe
               {persona.custom_attributes && Object.keys(persona.custom_attributes).length > 0 && (
                 <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 flex flex-wrap gap-1.5">
                   {Object.entries(persona.custom_attributes).map(([k, v]) => (
-                    <span key={k} className="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40">
+                    <span key={k} className="px-2 py-0.5 rounded text-[10px] font-semibold bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800/40">
                       <strong>{k}:</strong> {v}
                     </span>
                   ))}
@@ -146,7 +146,7 @@ export function ProductStrategyResolver({ projectId, source }: ProductStrategyRe
   // Fallback / Main canvas resolution for product.strategy_canvas
   return (
     <div className="space-y-6 pt-2">
-      <div className="p-5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-indigo-950/30 border border-blue-100 dark:border-blue-900/40 space-y-2">
+      <div className="p-5 rounded-xl bg-gradient-to-r from-blue-50 to-violet-50 dark:from-slate-800 dark:to-violet-950/30 border border-blue-100 dark:border-blue-900/40 space-y-2">
         <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center">
           <Sparkles className="w-3.5 h-3.5 mr-1.5" />
           North Star Vision
@@ -189,11 +189,11 @@ export function ProductStrategyResolver({ projectId, source }: ProductStrategyRe
       {/* Dynamic Custom Strategy Dimensions */}
       {strategy.custom_attributes && Object.keys(strategy.custom_attributes).length > 0 && (
         <div className="space-y-2 pt-2">
-          <h4 className="text-xs font-bold uppercase text-indigo-600 dark:text-indigo-400 tracking-wider">Additional Custom Dimensions & Columns</h4>
+          <h4 className="text-xs font-bold uppercase text-violet-600 dark:text-violet-400 tracking-wider">Additional Custom Dimensions & Columns</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {Object.entries(strategy.custom_attributes).map(([k, v]) => (
               <div key={k} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
-                <h5 className="font-bold text-xs text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">{k}</h5>
+                <h5 className="font-bold text-xs text-violet-700 dark:text-violet-300 uppercase tracking-wide">{k}</h5>
                 <p className="text-sm text-slate-800 dark:text-slate-200 mt-1 whitespace-pre-wrap">{v}</p>
               </div>
             ))}

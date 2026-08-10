@@ -84,7 +84,7 @@ export function ReleaseReadinessSection({
           <button
             onClick={handleLoadDefaults}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl cursor-pointer disabled:opacity-50 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold rounded-xl cursor-pointer disabled:opacity-50 transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Load Organizational Defaults</span>
@@ -111,17 +111,17 @@ export function ReleaseReadinessSection({
                 className={`group flex items-start gap-3 p-3 rounded-xl border transition-all ${
                   item.isChecked 
                     ? 'bg-emerald-500/5 border-emerald-500/20' 
-                    : 'bg-app-card border-app-border hover:border-indigo-500/30'
+                    : 'bg-app-card border-app-border hover:border-violet-500/30'
                 }`}
               >
                 <button
                   type="button"
                   onClick={() => handleToggle(item)}
                   disabled={togglingItemId === item.id || loading || !hasEditAccess}
-                  className="mt-0.5 shrink-0 text-app-muted hover:text-indigo-500 cursor-pointer disabled:opacity-50 transition-colors"
+                  className="mt-0.5 shrink-0 text-app-muted hover:text-violet-500 cursor-pointer disabled:opacity-50 transition-colors"
                 >
                   {togglingItemId === item.id ? (
-                    <Loader2 className="h-5 w-5 text-indigo-500 animate-spin" />
+                    <Loader2 className="h-5 w-5 text-violet-500 animate-spin" />
                   ) : item.isChecked ? (
                     <CheckSquare className="h-5 w-5 text-emerald-500" />
                   ) : (
@@ -176,12 +176,12 @@ export function ReleaseReadinessSection({
             value={newItemText}
             onChange={e => setNewItemText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            className="flex-1 px-4 py-2 text-sm bg-app-surface border border-app-border rounded-xl focus:outline-none focus:border-indigo-500"
+            className="flex-1 px-4 py-2 text-sm bg-app-surface border border-app-border rounded-xl focus:outline-none focus:border-violet-500"
           />
           <button
             onClick={handleAdd}
             disabled={!newItemText.trim() || loading}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-sm disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-2"
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold text-sm disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-2"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add
           </button>

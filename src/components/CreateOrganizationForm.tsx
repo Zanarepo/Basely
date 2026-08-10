@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { createOrganizationSchema } from '@/lib/validations/organization'
-import { Building2, Users, ShieldAlert, ArrowRight, Loader2, LogIn } from 'lucide-react'
-
+import { Building2, ShieldAlert, ArrowRight, Loader2, LogIn } from 'lucide-react'
+import { seedWelcomeProject } from '@/lib/workspace/actions'
 
 
 interface CreateOrganizationFormProps {
@@ -15,7 +15,6 @@ interface CreateOrganizationFormProps {
 export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProps) {
   const router = useRouter()
   const [name, setName] = useState('')
-  const [teamSize, setTeamSize] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [hasExistingMemberships, setHasExistingMemberships] = useState(false)
@@ -25,9 +24,9 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
     setErrorMsg(null)
     setHasExistingMemberships(false)
 
-    const parsed = createOrganizationSchema.safeParse({ name, teamSize })
-    if (!parsed.success) {
-      setErrorMsg(parsed.error.issues[0]?.message ?? 'Invalid input')
+    // Validate only name
+    if (!name.trim()) {
+      setErrorMsg('Workspace name is required')
       return
     }
 
@@ -57,26 +56,34 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
       }
 
       const { data, error } = await supabase.rpc('create_organization_with_admin', {
-        p_name: parsed.data.name,
-        p_team_size: parsed.data.teamSize ?? null,
+        p_name: name.trim(),
+        p_team_size: null,
       })
 
       if (error) {
         setErrorMsg(error.message)
+        setLoading(false)
         return
       }
 
       if (data) {
+        // Seed the welcome project automatically to avoid empty states
+        const seedResult = await seedWelcomeProject(data, name.trim())
+
         if (onSuccess) {
           onSuccess(data)
         } else {
           router.refresh()
-          router.push('/dashboard')
+          if (seedResult.ok && seedResult.projectId) {
+            // Drop them straight into the new welcome project (Time-to-Value)
+            router.push(`/dashboard/projects/${seedResult.projectId}`)
+          } else {
+            router.push('/dashboard')
+          }
         }
       }
     } catch {
       setErrorMsg('Could not create organization. Please try again.')
-    } finally {
       setLoading(false)
     }
   }
@@ -89,8 +96,7 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
           Create your workspace
         </h2>
         <p className="text-sm text-app-muted">
-          Set up an organization to start managing projects. You&apos;ll be
-          assigned as Admin.
+          Give your team a home to manage projects and tasks.
         </p>
       </div>
 
@@ -125,31 +131,9 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
             id="orgName"
             type="text"
             required
-            placeholder="Acme Project Controls Ltd"
+            placeholder="e.g. Acme Corp"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            disabled={loading}
-            className="auth-input"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="teamSize" className="auth-label">
-          Team size{' '}
-          <span className="text-app-subtle normal-case">(optional)</span>
-        </label>
-        <div className="relative group">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-indigo-500 transition-colors">
-            <Users className="h-5 w-5" />
-          </div>
-          <input
-            id="teamSize"
-            type="number"
-            min={1}
-            placeholder="e.g. 25"
-            value={teamSize}
-            onChange={(e) => setTeamSize(e.target.value)}
             disabled={loading}
             className="auth-input"
           />
@@ -164,11 +148,11 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
         {loading ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Creating workspace...</span>
+            <span>Setting up your workspace...</span>
           </>
         ) : (
           <>
-            <span>Create organization</span>
+            <span>Get Started</span>
             <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
           </>
         )}
@@ -176,4 +160,5 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
     </form>
   )
 }
+
 

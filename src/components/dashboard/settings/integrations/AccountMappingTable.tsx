@@ -62,7 +62,7 @@ export const AccountMappingTable: React.FC<AccountMappingTableProps> = ({
   if (loading) {
     return (
       <div className="p-12 text-center text-app-muted animate-pulse flex flex-col items-center justify-center space-y-3 bg-app-surface rounded-2xl border border-app-border">
-        <Layers className="h-8 w-8 text-indigo-500 animate-bounce" />
+        <Layers className="h-8 w-8 text-violet-500 animate-bounce" />
         <p className="text-sm font-bold text-app-fg">Loading General Ledger Account Schemas & WBS Packages...</p>
       </div>
     )
@@ -81,7 +81,7 @@ export const AccountMappingTable: React.FC<AccountMappingTableProps> = ({
                 onClick={() => onSelectConnectorType(conn.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   active
-                    ? 'bg-indigo-500 text-white shadow-sm'
+                    ? 'bg-violet-500 text-white shadow-sm'
                     : 'bg-app-surface text-app-muted hover:bg-app-hover hover:text-app-fg border border-app-border'
                 }`}
               >
@@ -107,11 +107,11 @@ export const AccountMappingTable: React.FC<AccountMappingTableProps> = ({
           <span className="text-2xl font-extrabold text-amber-500 dark:text-amber-400 mt-2">{stats.unmapped}</span>
         </div>
         <div className="bg-app-surface p-4 rounded-xl border border-app-border shadow-xs flex flex-col justify-between">
-          <span className="text-xs font-bold text-indigo-500 dark:text-indigo-400">Mapping Ratio</span>
+          <span className="text-xs font-bold text-violet-500 dark:text-violet-400">Mapping Ratio</span>
           <div className="flex items-center gap-3 mt-2">
-            <span className="text-2xl font-extrabold text-indigo-500 dark:text-indigo-400">{stats.completionRatio}%</span>
+            <span className="text-2xl font-extrabold text-violet-500 dark:text-violet-400">{stats.completionRatio}%</span>
             <div className="flex-1 h-2 bg-app-bg rounded-full overflow-hidden border border-app-border">
-              <div className="h-full bg-indigo-500 rounded-full transition-all duration-300" style={{ width: `${stats.completionRatio}%` }} />
+              <div className="h-full bg-violet-500 rounded-full transition-all duration-300" style={{ width: `${stats.completionRatio}%` }} />
             </div>
           </div>
         </div>
@@ -127,14 +127,14 @@ export const AccountMappingTable: React.FC<AccountMappingTableProps> = ({
               placeholder="Search accounts..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm border border-app-border rounded-lg bg-app-bg text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm border border-app-border rounded-lg bg-app-bg text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
           
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-3 py-2 text-xs sm:text-sm border border-app-border rounded-lg bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer max-w-xs hover:border-indigo-500/50 transition-colors"
+            className="px-3 py-2 text-xs sm:text-sm border border-app-border rounded-lg bg-app-surface text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer max-w-xs hover:border-violet-500/50 transition-colors"
           >
             <option value="ALL">All Categories</option>
             <option value="Cost of Goods Sold">Cost of Goods Sold (COGS)</option>
@@ -156,7 +156,7 @@ export const AccountMappingTable: React.FC<AccountMappingTableProps> = ({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-5 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50 whitespace-nowrap cursor-pointer hover:scale-[1.02]"
+            className="px-5 py-2 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50 whitespace-nowrap cursor-pointer hover:scale-[1.02]"
           >
             <Save className={`w-3.5 h-3.5 ${saving ? 'animate-spin' : ''}`} />
             {saving ? 'Saving...' : 'Save Mappings'}
@@ -199,7 +199,7 @@ export const AccountMappingTable: React.FC<AccountMappingTableProps> = ({
                     <td className="py-3.5 px-4">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-bold ${
                         acc.type === 'Cost of Goods Sold' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20' :
-                        acc.type === 'Expense' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20' :
+                        acc.type === 'Expense' ? 'bg-violet-500/10 text-violet-600 dark:text-violet-300 border border-violet-500/20' :
                         'bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/20'
                       }`}>
                         <Tag className="w-2.5 h-2.5 mr-1" />
@@ -210,7 +210,7 @@ export const AccountMappingTable: React.FC<AccountMappingTableProps> = ({
                       <select
                         value={mapItem?.wbsElementId || ''}
                         onChange={(e) => updateMapping(acc.id, e.target.value || null)}
-                        className="w-full px-3 py-2 border border-app-border rounded-lg bg-app-bg text-app-fg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer font-medium hover:border-indigo-500/50 transition-colors"
+                        className="w-full px-3 py-2 border border-app-border rounded-lg bg-app-bg text-app-fg text-xs focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer font-medium hover:border-violet-500/50 transition-colors"
                       >
                         <option value="">-- Unassigned (Select WBS Work Package) --</option>
                         {wbsElements.map((wbs) => (
@@ -287,7 +287,7 @@ export const AccountMappingTable: React.FC<AccountMappingTableProps> = ({
                   <select
                     value={mapItem?.wbsElementId || ''}
                     onChange={(e) => updateMapping(acc.id, e.target.value || null)}
-                    className="w-full px-3 py-2 border border-app-border rounded-lg bg-app-bg text-app-fg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium cursor-pointer"
+                    className="w-full px-3 py-2 border border-app-border rounded-lg bg-app-bg text-app-fg text-xs focus:outline-none focus:ring-2 focus:ring-violet-500 font-medium cursor-pointer"
                   >
                     <option value="">-- Unassigned (Select WBS Work Package) --</option>
                     {wbsElements.map((wbs) => (

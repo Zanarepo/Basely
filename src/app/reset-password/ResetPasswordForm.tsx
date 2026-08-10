@@ -79,7 +79,7 @@ export function ResetPasswordForm() {
   return (
     <AuthPageShell>
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-linear-to-tr from-violet-600 to-indigo-600 shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)] mb-4 animate-pulse">
+        <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-linear-to-tr from-violet-600 to-violet-600 shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)] mb-4 animate-pulse">
           <Lock className="h-7 w-7 text-white" />
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-app-fg" id="reset-password-title">
@@ -112,7 +112,7 @@ export function ResetPasswordForm() {
           <div className="text-center mt-4">
             <Link
               href="/forgot-password"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-violet-500 dark:text-violet-400 hover:text-violet-600 dark:hover:text-violet-300 transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Request new reset link</span>
@@ -126,7 +126,7 @@ export function ResetPasswordForm() {
                 New Password
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-indigo-500 transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-violet-500 transition-colors">
                   <Lock className="h-5 w-5" />
                 </div>
                 <input
@@ -148,7 +148,7 @@ export function ResetPasswordForm() {
                 Confirm Password
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-indigo-500 transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-app-subtle group-focus-within:text-violet-500 transition-colors">
                   <Lock className="h-5 w-5" />
                 </div>
                 <input
@@ -169,7 +169,7 @@ export function ResetPasswordForm() {
               type="submit"
               disabled={loading}
               id="btn-reset-password-submit"
-              className="relative w-full py-3.5 px-4 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+              className="relative w-full py-3.5 px-4 bg-linear-to-r from-violet-600 to-violet-600 hover:from-violet-500 hover:to-violet-500 text-white font-semibold rounded-2xl shadow-lg shadow-violet-600/30 hover:shadow-violet-500/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
             >
               {loading ? (
                 <>
@@ -191,7 +191,7 @@ export function ResetPasswordForm() {
             </p>
             <Link
               href="/dashboard"
-              className="relative w-full py-3.5 px-4 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
+              className="relative w-full py-3.5 px-4 bg-linear-to-r from-violet-600 to-violet-600 hover:from-violet-500 hover:to-violet-500 text-white font-semibold rounded-2xl shadow-lg shadow-violet-600/30 hover:shadow-violet-500/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
             >
               <span>Go to Dashboard</span>
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -199,7 +199,7 @@ export function ResetPasswordForm() {
             <div className="mt-4 pt-2">
               <Link
                 href="/auth/signout"
-                className="text-xs font-semibold text-app-subtle hover:text-indigo-500 transition-colors"
+                className="text-xs font-semibold text-app-subtle hover:text-violet-500 transition-colors"
               >
                 Sign out and login again
               </Link>

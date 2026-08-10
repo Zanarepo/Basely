@@ -76,7 +76,7 @@ export function SupportDashboardClient({ initialTickets, organizationId, project
                   {new Date(t.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <Link href={`/dashboard/support/${t.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 font-bold rounded-lg hover:bg-indigo-600/20 transition-colors text-xs cursor-pointer">
+                  <Link href={`/dashboard/support/${t.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600/10 text-violet-600 dark:text-violet-400 font-bold rounded-lg hover:bg-violet-600/20 transition-colors text-xs cursor-pointer">
                     Open Chat
                   </Link>
                 </td>
@@ -165,7 +165,7 @@ function CreateTicketModal({ organizationId, projects, onClose, onTicketCreated 
           <div className="shrink-0 px-6 pt-6 pb-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-500">
+                <div className="p-2.5 rounded-xl bg-violet-500/20 text-violet-500">
                   <LifeBuoy className="h-5 w-5" />
                 </div>
                 <div>

@@ -12,11 +12,11 @@ export function WbsImportUploadView({ csvText, fileInputRef, handleFileUpload }:
       <Upload className="w-8 h-8 text-app-muted mx-auto mb-3" />
       <p className="text-sm font-medium text-app-fg mb-1">Select a CSV file to upload</p>
       <p className="text-xs text-app-subtle mb-4">Must include headers: Task Name. Optional: WBS Code, Type (Summary/Task)</p>
-      <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-colors">
+      <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg transition-colors">
         <span>Browse Files</span>
         <input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
       </label>
-      {csvText && <p className="mt-3 text-xs text-indigo-500 font-medium">File loaded. Ready to import.</p>}
+      {csvText && <p className="mt-3 text-xs text-violet-500 font-medium">File loaded. Ready to import.</p>}
     </div>
   )
 }

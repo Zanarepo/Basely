@@ -83,7 +83,7 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
   if (isLoading) {
     return (
       <div className="flex justify-center p-12">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
       </div>
     )
   }
@@ -105,7 +105,7 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
         {/* Backlog Column */}
         <div 
           className={`bg-app-surface-solid border border-app-border rounded-2xl flex flex-col h-[calc(100vh-250px)] shadow-sm transition-all duration-300
-            ${dragOverHorizon === 'Backlog' ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-lg ring-2 ring-indigo-500/30' : ''}
+            ${dragOverHorizon === 'Backlog' ? 'border-violet-500 bg-violet-50/50 dark:bg-violet-900/10 shadow-lg ring-2 ring-violet-500/30' : ''}
           `}
           onDragOver={(e) => handleDragOver(e, 'Backlog')}
           onDragLeave={handleDragLeave}
@@ -147,7 +147,7 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
             <div 
               key={horizon} 
               className={`bg-app-surface-solid border border-app-border rounded-2xl flex flex-col h-[calc(100vh-250px)] shadow-sm transition-all duration-300
-                ${dragOverHorizon === horizon ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-lg ring-2 ring-indigo-500/30' : ''}
+                ${dragOverHorizon === horizon ? 'border-violet-500 bg-violet-50/50 dark:bg-violet-900/10 shadow-lg ring-2 ring-violet-500/30' : ''}
               `}
               onDragOver={(e) => handleDragOver(e, horizon)}
               onDragLeave={handleDragLeave}

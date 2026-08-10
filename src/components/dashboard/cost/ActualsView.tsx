@@ -110,7 +110,7 @@ export default function ActualsView({
               </button>
               <button
                 onClick={openAddForm}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Add Actual
@@ -123,7 +123,7 @@ export default function ActualsView({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-app-surface border border-app-border rounded-2xl p-6 flex flex-col justify-center">
           <p className="text-sm font-medium text-app-muted uppercase tracking-wider mb-2">Total Actual Cost</p>
-          <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+          <div className="text-3xl font-bold text-violet-600 dark:text-violet-400">
             <CurrencyDisplay amount={totalActual} currency={projectCurrency} compactThreshold={1000} />
           </div>
         </div>

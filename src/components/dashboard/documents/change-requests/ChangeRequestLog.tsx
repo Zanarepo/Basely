@@ -25,7 +25,7 @@ export function ChangeRequestLog({ projectId, hasEditAccess, isManager, onShowTo
       <div className="flex-none p-4 sm:p-6 bg-app-surface border-b border-app-border">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
+            <div className="p-3 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 shrink-0">
               <FileEdit className="w-6 h-6" />
             </div>
             <div className="min-w-0">
@@ -41,12 +41,12 @@ export function ChangeRequestLog({ projectId, hasEditAccess, isManager, onShowTo
               className="p-2.5 rounded-xl bg-app-bg border border-app-border text-app-muted hover:text-app-fg hover:bg-app-hover active:scale-95 transition-all cursor-pointer shadow-sm"
               title="Refresh Logs"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-indigo-500' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-violet-500' : ''}`} />
             </button>
             {hasEditAccess !== false && (
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md shadow-violet-500/20 transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Log Change</span>

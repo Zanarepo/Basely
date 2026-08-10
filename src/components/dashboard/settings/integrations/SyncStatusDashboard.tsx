@@ -25,7 +25,7 @@ export const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ logsSt
   if (loading) {
     return (
       <div className="p-12 text-center text-gray-500 animate-pulse flex flex-col items-center justify-center space-y-3">
-        <RefreshCw className="h-8 w-8 text-blue-500 animate-spin" />
+        <RefreshCw className="h-8 w-8 text-violet-500 animate-spin" />
         <p className="text-sm font-medium">Querying synchronization history & diagnostic audit logs...</p>
       </div>
     )
@@ -48,8 +48,8 @@ export const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ logsSt
           <span className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1.5">{kpiSummary.totalErrors}</span>
         </div>
         <div className="bg-white dark:bg-gray-800 p-3.5 sm:p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-2xs flex flex-col justify-between min-w-0">
-          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 truncate">Success Rate</span>
-          <span className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1.5">{kpiSummary.successRate}%</span>
+          <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 truncate">Success Rate</span>
+          <span className="text-2xl font-black text-violet-600 dark:text-violet-400 mt-1.5">{kpiSummary.successRate}%</span>
         </div>
       </div>
 
@@ -66,7 +66,7 @@ export const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ logsSt
         <div className="lg:col-span-5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs overflow-hidden">
           <div className="p-3.5 sm:p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/60 dark:bg-gray-900/50">
             <h3 className="font-bold text-gray-800 dark:text-gray-100 text-xs sm:text-sm flex items-center gap-2">
-              <FileText className="w-4 h-4 text-blue-600" />
+              <FileText className="w-4 h-4 text-violet-600" />
               Sync Execution Log
             </h3>
             <button
@@ -86,7 +86,7 @@ export const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ logsSt
                 onClick={() => setFilterStatus(st)}
                 className={`px-2.5 py-1 rounded-md text-2xs font-bold transition whitespace-nowrap ${
                   filterStatus === st 
-                    ? 'bg-blue-600 text-white shadow-xs' 
+                    ? 'bg-violet-600 text-white shadow-xs' 
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200/60 dark:hover:bg-gray-700'
                 }`}
               >
@@ -110,7 +110,7 @@ export const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ logsSt
                     onClick={() => setSelectedLog(log)}
                     className={`w-full text-left p-3.5 sm:p-4 transition-colors duration-150 flex items-start justify-between gap-3 ${
                       isSelected 
-                        ? 'bg-blue-50/80 dark:bg-blue-950/40 border-l-4 border-blue-600' 
+                        ? 'bg-violet-50/80 dark:bg-violet-950/40 border-l-4 border-violet-600' 
                         : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'
                     }`}
                   >
@@ -157,7 +157,7 @@ export const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ logsSt
             {selectedLog && selectedLog.error_count > 0 && (
               <button
                 onClick={onNavigateToMapping}
-                className="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-medium text-2xs transition flex items-center gap-1 shadow-2xs"
+                className="px-2.5 py-1 rounded-md bg-violet-600 hover:bg-violet-700 text-white font-medium text-2xs transition flex items-center gap-1 shadow-2xs"
               >
                 Resolve Mappings <ExternalLink className="w-3 h-3" />
               </button>

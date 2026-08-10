@@ -100,7 +100,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
       {/* Top Controls Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/70 dark:bg-slate-800/70 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
         <div className="flex items-center space-x-3">
-          <div className="p-2.5 bg-indigo-500 text-white rounded-lg shadow-sm">
+          <div className="p-2.5 bg-violet-500 text-white rounded-lg shadow-sm">
             <Users className="w-6 h-6" />
           </div>
           <div>
@@ -118,7 +118,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
             type="button"
             onClick={handleCreateNew}
             style={{ cursor: 'pointer' }}
-            className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg shadow hover:shadow-md transition-all duration-150 shrink-0"
+            className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-white bg-violet-500 hover:bg-violet-600 rounded-lg shadow hover:shadow-md transition-all duration-150 shrink-0"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Persona
@@ -135,7 +135,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by name, role, or JTBD..."
-            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
           />
         </div>
 
@@ -146,7 +146,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
               onClick={() => setFilterScope('all')}
               style={{ cursor: 'pointer' }}
               className={`px-3 py-1.5 rounded-md transition-all ${
-                filterScope === 'all' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                filterScope === 'all' ? 'bg-white dark:bg-slate-700 text-violet-600 dark:text-violet-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               All Personas
@@ -156,7 +156,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
               onClick={() => setFilterScope('project')}
               style={{ cursor: 'pointer' }}
               className={`px-3 py-1.5 rounded-md transition-all ${
-                filterScope === 'project' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                filterScope === 'project' ? 'bg-white dark:bg-slate-700 text-violet-600 dark:text-violet-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Project Scoped
@@ -166,7 +166,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
               onClick={() => setFilterScope('shared')}
               style={{ cursor: 'pointer' }}
               className={`px-3 py-1.5 rounded-md transition-all ${
-                filterScope === 'shared' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                filterScope === 'shared' ? 'bg-white dark:bg-slate-700 text-violet-600 dark:text-violet-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Org Shared
@@ -178,7 +178,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
       {/* Personas Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-20 text-slate-400">
-          <Loader2 className="w-8 h-8 animate-spin mr-3 text-indigo-500" />
+          <Loader2 className="w-8 h-8 animate-spin mr-3 text-violet-500" />
           <span className="text-sm font-medium">Loading target customer personas...</span>
         </div>
       ) : filteredPersonas.length === 0 ? (
@@ -197,7 +197,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
               type="button"
               onClick={handleCreateNew}
               style={{ cursor: 'pointer' }}
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg shadow transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-lg shadow transition-colors"
             >
               <Plus className="w-4 h-4 mr-2" />
               Create First Persona

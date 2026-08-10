@@ -95,7 +95,7 @@ export function RiceMatrixTable({ organizationId, projectId, items, onUpdate, sh
               <th className="px-4 py-4 font-semibold text-center w-24">Impact</th>
               <th className="px-4 py-4 font-semibold text-center w-24">Confidence (%)</th>
               <th className="px-4 py-4 font-semibold text-center w-24">Effort</th>
-              <th className="px-4 py-4 font-semibold text-center w-24 text-indigo-600 dark:text-indigo-400">RICE Score</th>
+              <th className="px-4 py-4 font-semibold text-center w-24 text-violet-600 dark:text-violet-400">RICE Score</th>
               <th className="px-6 py-4 font-semibold text-right w-56">Execution</th>
             </tr>
           </thead>
@@ -111,7 +111,7 @@ export function RiceMatrixTable({ organizationId, projectId, items, onUpdate, sh
                         handleEdit(item, 'title', e.target.value)
                       }
                     }}
-                    className="font-medium text-slate-900 dark:text-white truncate w-full bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded px-1.5 py-0.5 focus:border-indigo-500 focus:outline-none transition-all"
+                    className="font-medium text-slate-900 dark:text-white truncate w-full bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded px-1.5 py-0.5 focus:border-violet-500 focus:outline-none transition-all"
                     placeholder="Feature Title"
                   />
                   <input
@@ -122,7 +122,7 @@ export function RiceMatrixTable({ organizationId, projectId, items, onUpdate, sh
                         handleEdit(item, 'description', e.target.value)
                       }
                     }}
-                    className="text-xs text-slate-500 truncate w-full mt-1 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded px-1.5 py-0.5 focus:border-indigo-500 focus:outline-none transition-all"
+                    className="text-xs text-slate-500 truncate w-full mt-1 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded px-1.5 py-0.5 focus:border-violet-500 focus:outline-none transition-all"
                     placeholder="Feature description..."
                   />
                 </td>
@@ -158,7 +158,7 @@ export function RiceMatrixTable({ organizationId, projectId, items, onUpdate, sh
                         handleEdit(item, 'reach', Number(e.target.value))
                       }
                     }}
-                    className="w-16 text-center bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-md py-1 focus:border-indigo-500 focus:outline-none transition-all"
+                    className="w-16 text-center bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-md py-1 focus:border-violet-500 focus:outline-none transition-all"
                   />
                 </td>
                 <td className="px-4 py-4 text-center">
@@ -171,7 +171,7 @@ export function RiceMatrixTable({ organizationId, projectId, items, onUpdate, sh
                         handleEdit(item, 'impact', Number(e.target.value))
                       }
                     }}
-                    className="w-16 text-center bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-md py-1 focus:border-indigo-500 focus:outline-none transition-all"
+                    className="w-16 text-center bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-md py-1 focus:border-violet-500 focus:outline-none transition-all"
                   />
                 </td>
                 <td className="px-4 py-4 text-center">
@@ -185,7 +185,7 @@ export function RiceMatrixTable({ organizationId, projectId, items, onUpdate, sh
                         handleEdit(item, 'confidence', Number(e.target.value))
                       }
                     }}
-                    className="w-16 text-center bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-md py-1 focus:border-indigo-500 focus:outline-none transition-all"
+                    className="w-16 text-center bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-md py-1 focus:border-violet-500 focus:outline-none transition-all"
                   />
                 </td>
                 <td className="px-4 py-4 text-center">
@@ -198,17 +198,17 @@ export function RiceMatrixTable({ organizationId, projectId, items, onUpdate, sh
                         handleEdit(item, 'effort', Number(e.target.value))
                       }
                     }}
-                    className="w-16 text-center bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-md py-1 focus:border-indigo-500 focus:outline-none transition-all"
+                    className="w-16 text-center bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-md py-1 focus:border-violet-500 focus:outline-none transition-all"
                   />
                 </td>
                 
                 <td className="px-4 py-4 text-center">
                   {savingId === item.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin mx-auto text-indigo-500" />
+                    <Loader2 className="w-4 h-4 animate-spin mx-auto text-violet-500" />
                   ) : item.moscow_status ? (
                     <span className="text-slate-400 font-medium text-xs">N/A</span>
                   ) : (
-                    <span className="font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2.5 py-1 rounded-md">
+                    <span className="font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 px-2.5 py-1 rounded-md">
                       {Number(item.rice_score).toFixed(1)}
                     </span>
                   )}
@@ -225,7 +225,7 @@ export function RiceMatrixTable({ organizationId, projectId, items, onUpdate, sh
                       <button
                         onClick={() => handleSendToExecution(item)}
                         disabled={executingId === item.id}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer shadow-sm transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-500 hover:bg-violet-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer shadow-sm transition-colors"
                       >
                         {executingId === item.id ? (
                           <>

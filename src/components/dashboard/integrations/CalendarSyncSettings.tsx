@@ -69,7 +69,7 @@ export default function CalendarSyncSettings({ projectId }: { projectId?: string
   const googleConnection = connections.find(c => c.provider === 'google')
 
   if (isLoading) {
-    return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>
+    return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-violet-500" /></div>
   }
 
   return (
@@ -118,7 +118,7 @@ export default function CalendarSyncSettings({ projectId }: { projectId?: string
                         <span className="text-sm text-app-fg/90 truncate mr-4">{project.name}</span>
                         <input 
                           type="checkbox" 
-                          className="rounded border-app-border text-indigo-600 focus:ring-indigo-500"
+                          className="rounded border-app-border text-violet-600 focus:ring-violet-500"
                           checked={isSynced}
                           disabled={isSaving}
                           onChange={(e) => toggleProjectSync(googleConnection.id, project.id, e.target.checked)}
@@ -148,7 +148,7 @@ export default function CalendarSyncSettings({ projectId }: { projectId?: string
                 <button
                   onClick={handleManualSync}
                   disabled={isSyncing || isSaving}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-colors"
                 >
                   {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />} 
                   {isSyncing ? 'Syncing...' : 'Sync Now'}

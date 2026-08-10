@@ -43,7 +43,7 @@ export function PillarEditor({ pillars = [], onChange, hasEditAccess = true }: P
     <div className="space-y-4">
       <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2.5">
         <div className="flex items-center space-x-2">
-          <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+          <Layers className="w-4 h-4 text-violet-600 dark:text-violet-400" />
           <h3 className="font-semibold text-sm text-slate-900 dark:text-white uppercase tracking-wide">
             Core Strategic Pillars
           </h3>
@@ -57,7 +57,7 @@ export function PillarEditor({ pillars = [], onChange, hasEditAccess = true }: P
             type="button"
             onClick={() => setIsAdding(true)}
             style={{ cursor: 'pointer' }}
-            className="inline-flex items-center text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+            className="inline-flex items-center text-xs font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
           >
             <Plus className="w-3.5 h-3.5 mr-1" />
             Add Pillar
@@ -67,7 +67,7 @@ export function PillarEditor({ pillars = [], onChange, hasEditAccess = true }: P
 
       {/* Add New Pillar Inline Form */}
       {isAdding && (
-        <form onSubmit={handleAdd} className="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-indigo-200 dark:border-indigo-900/40 space-y-3">
+        <form onSubmit={handleAdd} className="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-violet-200 dark:border-violet-900/40 space-y-3">
           <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase">
             New Strategic Pillar
           </h4>
@@ -79,7 +79,7 @@ export function PillarEditor({ pillars = [], onChange, hasEditAccess = true }: P
                 placeholder="Pillar Title (e.g., AI-Driven Automation)"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none"
               />
             </div>
             <div>
@@ -88,7 +88,7 @@ export function PillarEditor({ pillars = [], onChange, hasEditAccess = true }: P
                 placeholder="Target KPI / Metric (e.g., 50% faster onboarding)"
                 value={targetMetric}
                 onChange={(e) => setTargetMetric(e.target.value)}
-                className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none"
               />
             </div>
           </div>
@@ -98,7 +98,7 @@ export function PillarEditor({ pillars = [], onChange, hasEditAccess = true }: P
               placeholder="Brief operational objective or value delivered by this strategic pillar..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-y"
+              className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none resize-y"
             />
           </div>
           <div className="flex items-center justify-end space-x-2 pt-1">
@@ -113,7 +113,7 @@ export function PillarEditor({ pillars = [], onChange, hasEditAccess = true }: P
             <button
               type="submit"
               style={{ cursor: 'pointer' }}
-              className="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg shadow-sm"
+              className="px-3 py-1.5 text-xs font-semibold text-white bg-violet-500 hover:bg-violet-600 rounded-lg shadow-sm"
             >
               Add Pillar
             </button>
@@ -138,7 +138,7 @@ export function PillarEditor({ pillars = [], onChange, hasEditAccess = true }: P
               <div>
                 <div className="flex items-start justify-between">
                   <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center">
-                    <span className="w-2 h-2 rounded-full bg-indigo-500 mr-2 shrink-0" />
+                    <span className="w-2 h-2 rounded-full bg-violet-500 mr-2 shrink-0" />
                     {pillar.title}
                   </h4>
 

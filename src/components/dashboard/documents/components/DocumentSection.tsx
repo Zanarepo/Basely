@@ -135,16 +135,16 @@ export default function DocumentSection({
               type="button"
               disabled={isAutoFilling}
               onClick={handleAutoFillClick}
-              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 hover:bg-violet-500/20 transition-all cursor-pointer disabled:opacity-50"
               style={{ cursor: 'pointer' }}
               title="Auto-fill content using live project data"
             >
-              <RefreshCw className={`w-3 h-3 text-indigo-500 ${isAutoFilling ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3 h-3 text-violet-500 ${isAutoFilling ? 'animate-spin' : ''}`} />
               {isAutoFilling ? 'Auto-filling...' : 'Auto-fill from Project Data'}
             </button>
           )}
           {section.type === 'data_bound' && template.document_type !== 'charter' ? (
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
               <RefreshCw className="w-3 h-3" /> Auto-populated
             </span>
           ) : (
@@ -157,7 +157,7 @@ export default function DocumentSection({
 
       {/* Data-Bound Section Rendering (non-charter documents) */}
       {section.type === 'data_bound' && template.document_type !== 'charter' && (
-        <div className="py-2 pl-4 border-l-2 border-indigo-500/30 text-app-fg text-sm">
+        <div className="py-2 pl-4 border-l-2 border-violet-500/30 text-app-fg text-sm">
           {section.source === 'wbs.dictionary' || section.source === 'wbs.prototype' || section.source?.startsWith('wbs.') ? (
             <WbsDictionaryResolver projectId={projectId} />
           ) : section.resolver?.startsWith('scope_statement_') || section.source === 'scope_statement_data' ? (

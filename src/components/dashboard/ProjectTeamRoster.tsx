@@ -20,7 +20,7 @@ export function ProjectTeamRoster({ members, assignedUserIds }: ProjectTeamRoste
   return (
     <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 bg-app-surface border border-app-border rounded-2xl p-4">
       <div className="flex items-center gap-2">
-        <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-500">
+        <div className="p-1.5 bg-violet-500/10 rounded-lg text-violet-500">
           <Users className="h-4 w-4" />
         </div>
         <span className="text-sm font-bold text-app-fg">Project Team</span>
@@ -37,9 +37,9 @@ export function ProjectTeamRoster({ members, assignedUserIds }: ProjectTeamRoste
               <div
                 key={m.userId}
                 title={`${m.name} (${m.email}) - ${m.role}`}
-                className="group relative flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-app-muted-surface border border-app-border cursor-default hover:bg-app-hover hover:border-indigo-500/30 transition-colors"
+                className="group relative flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-app-muted-surface border border-app-border cursor-default hover:bg-app-hover hover:border-violet-500/30 transition-colors"
               >
-                <div className="flex items-center justify-center h-6 w-6 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold border border-indigo-500/20 shrink-0">
+                <div className="flex items-center justify-center h-6 w-6 rounded-md bg-violet-500/15 text-violet-600 dark:text-violet-400 text-[10px] font-bold border border-violet-500/20 shrink-0">
                   {initials}
                 </div>
                 <div className="flex flex-col min-w-0">

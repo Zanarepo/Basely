@@ -182,7 +182,7 @@ export function RaciAssignmentPicker({
                 setOpenRole(isOpen ? null : role)
                 setSearchQuery('')
               }}
-              className="text-xs font-medium px-2 py-1 rounded bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 transition-colors"
+              className="text-xs font-medium px-2 py-1 rounded bg-violet-500/10 text-violet-500 hover:bg-violet-500/20 transition-colors"
             >
               {isOpen ? 'Close' : 'Assign'}
             </button>
@@ -233,14 +233,14 @@ export function RaciAssignmentPicker({
                 placeholder="Search stakeholders..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-sm bg-app-bg border border-app-border rounded-lg text-app-fg focus:outline-none focus:border-indigo-500"
+                className="w-full pl-9 pr-3 py-1.5 text-sm bg-app-bg border border-app-border rounded-lg text-app-fg focus:outline-none focus:border-violet-500"
                 autoFocus
               />
             </div>
             <div className="max-h-48 overflow-y-auto space-y-1">
               {loading ? (
                 <div className="flex flex-col items-center justify-center p-4 gap-2 text-app-muted">
-                  <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                  <Loader2 className="w-4 h-4 animate-spin text-violet-500" />
                   <span className="text-xs">Loading team members...</span>
                 </div>
               ) : availableStakeholders.length === 0 ? (
@@ -259,13 +259,13 @@ export function RaciAssignmentPicker({
                         className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg hover:bg-app-hover transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <div className="flex items-center gap-2">
-                          {s.organization_type === 'internal' ? <User className="w-3.5 h-3.5 text-indigo-400" /> : <Users className="w-3.5 h-3.5 text-emerald-400" />}
+                          {s.organization_type === 'internal' ? <User className="w-3.5 h-3.5 text-violet-400" /> : <Users className="w-3.5 h-3.5 text-emerald-400" />}
                           <span className="text-app-fg font-medium truncate max-w-[160px]">{name}</span>
                           <span className="text-xs text-app-muted px-1.5 py-0.5 rounded bg-app-bg">
                             {s.organization_type}
                           </span>
                         </div>
-                        {isAssigned && <Check className="w-4 h-4 text-indigo-500" />}
+                        {isAssigned && <Check className="w-4 h-4 text-violet-500" />}
                       </button>
                     )
                   })}

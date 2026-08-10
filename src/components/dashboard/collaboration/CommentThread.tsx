@@ -47,7 +47,7 @@ export function CommentThread({
   return (
     <div className="flex flex-col w-full h-full">
       <div className="flex items-center gap-2 mb-4">
-        <MessageSquare className="w-5 h-5 text-indigo-500" />
+        <MessageSquare className="w-5 h-5 text-violet-500" />
         <h3 className="text-lg font-semibold text-app-fg">Comments</h3>
       </div>
 

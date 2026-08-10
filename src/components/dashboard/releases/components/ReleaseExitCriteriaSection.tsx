@@ -60,7 +60,7 @@ export function ReleaseExitCriteriaSection({
       {/* Overview Card */}
       <div className="p-5 bg-app-card border border-app-border rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className={`p-3 rounded-xl ${completionPercent === 100 && totalCount > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-500'}`}>
+          <div className={`p-3 rounded-xl ${completionPercent === 100 && totalCount > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-violet-500/10 text-violet-500'}`}>
             <Award className="h-6 w-6" />
           </div>
           <div>
@@ -74,7 +74,7 @@ export function ReleaseExitCriteriaSection({
         <div className="flex flex-col md:items-end shrink-0 min-w-[200px]">
           <div className="flex items-center justify-between md:justify-end gap-2 text-xs font-extrabold mb-1.5 w-full">
             <span className="text-app-muted">Readiness Progress:</span>
-            <span className={completionPercent === 100 && totalCount > 0 ? 'text-emerald-500 font-extrabold' : 'text-indigo-400'}>
+            <span className={completionPercent === 100 && totalCount > 0 ? 'text-emerald-500 font-extrabold' : 'text-violet-400'}>
               {metCount} / {totalCount} Met ({completionPercent}%)
             </span>
           </div>
@@ -83,7 +83,7 @@ export function ReleaseExitCriteriaSection({
               className={`h-full transition-all duration-300 ${
                 completionPercent === 100
                   ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
-                  : 'bg-indigo-500'
+                  : 'bg-violet-500'
               }`}
               style={{ width: `${completionPercent}%` }}
             />
@@ -112,7 +112,7 @@ export function ReleaseExitCriteriaSection({
                     className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-all shrink-0 cursor-pointer ${
                       c.isMet
                         ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm'
-                        : 'border-app-border/80 bg-app-surface group-hover:border-indigo-500'
+                        : 'border-app-border/80 bg-app-surface group-hover:border-violet-500'
                     }`}
                   >
                     {togglingId === c.id ? (
@@ -162,12 +162,12 @@ export function ReleaseExitCriteriaSection({
             value={newText}
             onChange={e => setNewText(e.target.value)}
             placeholder="Add new quality gate or exit requirement (e.g. All critical CVEs remediated)..."
-            className="flex-1 bg-app-card border border-app-border rounded-xl px-4 py-3 text-sm font-semibold text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+            className="flex-1 bg-app-card border border-app-border rounded-xl px-4 py-3 text-sm font-semibold text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-sm"
           />
           <button
             type="submit"
             disabled={adding || !newText.trim()}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 shrink-0"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 shrink-0"
           >
             {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             <span>Add Criterion</span>

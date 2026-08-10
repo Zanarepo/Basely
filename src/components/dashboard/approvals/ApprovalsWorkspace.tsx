@@ -40,7 +40,7 @@ export function ApprovalsWorkspace({ organizationId, requests, isAdmin, currentU
           <button
             onClick={() => setActiveTab('approver')}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'approver'
-                ? 'border-indigo-500 text-indigo-500'
+                ? 'border-violet-500 text-violet-500'
                 : 'border-transparent text-app-muted hover:text-app-fg'
               }`}
           >
@@ -50,7 +50,7 @@ export function ApprovalsWorkspace({ organizationId, requests, isAdmin, currentU
         <button
           onClick={() => setActiveTab('requester')}
           className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'requester'
-              ? 'border-indigo-500 text-indigo-500'
+              ? 'border-violet-500 text-violet-500'
               : 'border-transparent text-app-muted hover:text-app-fg'
             }`}
         >

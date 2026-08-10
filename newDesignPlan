@@ -1,0 +1,56 @@
+Redesign UI to Linear-Inspired Aesthetic
+This plan outlines the steps to refactor your current application UI to achieve the clean, sharp, and highly functional aesthetic known in tools like Linear.app, while keeping your specific project management features intact.
+
+Proposed Changes
+Linear's design relies heavily on dark, high-contrast backgrounds, extremely subtle 1px borders, tight padding, small and precise typography (muted grays and crisp whites), and flat components with minimal box shadows.
+
+We will apply these principles across your core dashboard layout and project cards.
+
+Global Design Tokens
+[MODIFY] 
+globals.css
+Dark Mode Palette: Shift from slate-950 to a deeper, flatter dark gray/black (#0E0F11 or #111214).
+Foregrounds & Muted Text: Adjust the muted colors to be slightly dimmer to increase the contrast ratio when white text is used.
+Borders: Change --app-border to a very subtle translucent white (rgba(255, 255, 255, 0.08)) instead of solid slate colors.
+Buttons:
+Redesign .btn-primary to remove the loud purple/indigo gradient and large shadow. Replace it with a sleek, solid high-contrast button (e.g., solid white with black text, or dark gray with a subtle top inner-shadow).
+Flatten .btn-icon and .btn-secondary to use subtle hover:bg-white/5 effects instead of color-tinted backgrounds.
+Cards & Surfaces: Update .crud-card and .crud-panel to use smaller border radiuses (rounded-xl instead of rounded-2xl or rounded-3xl), tighter padding, and no drop shadows (relying on the 1px border for definition).
+Dashboard Shell & Sidebar
+[MODIFY] 
+DashboardShell.tsx
+Remove the massive background blurred blobs (var(--app-orb-violet)) that muddy the clean background. Linear relies on pure, flat dark backgrounds for focus.
+Tighten the mobile header spacing and adjust the logo presentation to be minimal.
+[MODIFY] 
+DashboardSidebar.tsx
+Reduce the horizontal padding of navigation links to make the sidebar feel more compact and precise.
+Remove the heavy colored backgrounds from the active states, favoring a subtle white/gray highlight with a crisp icon.
+Replace the gradient logo with a simple monochrome or subtle icon.
+Project Dashboard & Cards
+[MODIFY] 
+ProjectsDashboard.tsx
+Update the empty state to remove the glowing colored icon background. Use a crisp, muted monochrome icon.
+Adjust the layout of the top section (headers, tabs, search) to be perfectly aligned using flexbox, with smaller, bolder text for section headers.
+Transform the search input to have a transparent background with a subtle border, focusing on the text.
+[MODIFY] 
+ProjectCard.tsx
+Structure: Tighten the padding (e.g., from p-5 to p-4).
+Typography: Make the project title stark white and the descriptions a precise muted gray.
+Badges: Remove the saturated, tinted backgrounds for the methodology badges (Waterfall, Agile). Replace them with a subtle gray background and a colored 1px border or dot to indicate status, keeping the card from feeling "cluttered" with color.
+Team Avatars: Switch from colorful initial backgrounds to simple, high-contrast monochrome circles or very subtle gray circles with crisp text.
+User Review Required
+WARNING
+
+Aesthetic Shift: This change will remove the current "purple/indigo" gradient theme and the glowing orbs in the background, replacing it with a very stark, professional, high-contrast dark theme (similar to Linear).
+
+Open Questions
+IMPORTANT
+
+Are you okay with removing the purple/indigo gradients on the primary buttons and background orbs to achieve this sleek look?
+Linear's dark mode is very iconic, but how do you want the Light Mode to feel? (We can mirror the changes there to be a crisp white with very subtle gray borders).
+Do you want to keep the rounded corners completely square, slightly rounded (rounded-md), or moderately rounded (rounded-xl / default Linear)?
+Verification Plan
+Manual Verification
+Run the Next.js dev server.
+Verify the global theme tokens apply correctly on the dashboard.
+Check the Project Cards, Sidebar, and Buttons for hover states and layout consisten

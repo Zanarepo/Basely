@@ -49,7 +49,7 @@ export default function ReleaseBurndownWidget({
           <h3 className="text-base font-bold text-app-fg">Burn-down Chart</h3>
           <p className="text-xs text-app-muted">Tracking work remaining across {terms.iterations.toLowerCase()}</p>
         </div>
-        <TrendingDown className="h-5 w-5 text-indigo-500" />
+        <TrendingDown className="h-5 w-5 text-violet-500" />
       </div>
 
       <div className="relative w-full h-[220px] flex items-center justify-center">
@@ -71,13 +71,13 @@ export default function ReleaseBurndownWidget({
           <path d={targetPath} fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-300 dark:text-gray-700" strokeDasharray="4 4" />
           
           {/* Remaining Line */}
-          <path d={remainingPath} fill="none" stroke="currentColor" strokeWidth="3" className="text-indigo-500 drop-shadow-sm" />
+          <path d={remainingPath} fill="none" stroke="currentColor" strokeWidth="3" className="text-violet-500 drop-shadow-sm" />
 
           {/* Data Points */}
           {data.map((d, i) => {
             const { x, y } = getCoordinates(i, d.remaining)
             return (
-              <circle key={`pt-${i}`} cx={x} cy={y} r="4" fill="currentColor" className="text-indigo-500 hover:text-indigo-600 transition-colors cursor-pointer" />
+              <circle key={`pt-${i}`} cx={x} cy={y} r="4" fill="currentColor" className="text-violet-500 hover:text-violet-600 transition-colors cursor-pointer" />
             )
           })}
           
@@ -99,7 +99,7 @@ export default function ReleaseBurndownWidget({
           <span className="text-[10px] text-app-muted font-bold uppercase tracking-wider">Target Base</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-1 bg-indigo-500 rounded-full" />
+          <div className="w-3 h-1 bg-violet-500 rounded-full" />
           <span className="text-[10px] text-app-muted font-bold uppercase tracking-wider">Actual Remaining</span>
         </div>
       </div>

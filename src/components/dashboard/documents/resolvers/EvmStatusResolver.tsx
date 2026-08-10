@@ -77,7 +77,7 @@ export default function EvmStatusResolver({ projectId, periodEnd, frozenData }: 
   if (loading) {
     return (
       <div className="flex h-32 items-center justify-center bg-app-surface border border-app-border rounded-xl">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
       </div>
     )
   }
@@ -169,7 +169,7 @@ export default function EvmStatusResolver({ projectId, periodEnd, frozenData }: 
         <div className="hidden sm:block h-8 w-px bg-app-border" />
         <div>
           <div className="text-xs font-bold text-app-muted uppercase tracking-wider mb-1">Earned Value (EV)</div>
-          <div className="text-xl font-bold text-indigo-500">{formatCurrency(ev)}</div>
+          <div className="text-xl font-bold text-violet-500">{formatCurrency(ev)}</div>
         </div>
         <div className="hidden sm:block h-8 w-px bg-app-border" />
         <div>

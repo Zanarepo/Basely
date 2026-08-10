@@ -59,7 +59,7 @@ export function ResourceRateFormModal({
               value={name}
               onChange={e => setName(e.target.value)}
               autoFocus
-              className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-app-fg placeholder:text-app-muted"
+              className="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 text-app-fg placeholder:text-app-muted"
             />
           </div>
 
@@ -89,7 +89,7 @@ export function ResourceRateFormModal({
                   type="number"
                   value={rate}
                   onChange={e => setRate(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-app-bg border border-app-border rounded-xl pl-12 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-app-fg"
+                  className="w-full bg-app-bg border border-app-border rounded-xl pl-12 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 text-app-fg"
                 />
               </div>
               <span className="text-app-muted font-medium">/</span>
@@ -120,7 +120,7 @@ export function ResourceRateFormModal({
           <button
             onClick={onSave}
             disabled={!name.trim() || isSaving}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (isEditing ? 'Save Changes' : 'Add Resource')}
           </button>

@@ -12,7 +12,7 @@ export function WbsImportPasteView({ csvText, setCsvText }: WbsImportPasteViewPr
       <textarea
         value={csvText}
         onChange={(e) => setCsvText(e.target.value)}
-        className="w-full h-48 px-3 py-2 bg-app-input border border-app-border rounded-xl text-app-fg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+        className="w-full h-48 px-3 py-2 bg-app-input border border-app-border rounded-xl text-app-fg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
         placeholder="WBS Code, Task Name, Type&#10;1, Foundation, Summary&#10;1.1, Dig Trench, Task"
       />
     </div>

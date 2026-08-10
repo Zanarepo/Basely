@@ -89,8 +89,12 @@ export async function checkFeatureAccess(
   }
 }
 
-export async function getOrganizationFeatures(organizationId: string): Promise<Record<string, boolean>> {
-  const sub = await getOrganizationSubscription(organizationId)
+export async function getOrganizationFeatures(
+  organizationId: string,
+  prefetchedSub?: Awaited<ReturnType<typeof getOrganizationSubscription>>
+): Promise<Record<string, boolean>> {
+  // Reuse a pre-fetched subscription if the caller already has it, avoiding an extra DB round-trip
+  const sub = prefetchedSub ?? await getOrganizationSubscription(organizationId)
   const { features } = await fetchTierSettings()
   const tierFeatures = features[sub.tierId] || {}
   
@@ -144,7 +148,8 @@ export async function checkUsageLimit(
   const { limits } = await fetchTierSettings()
   
   const tierLimits = limits[sub.tierId] || limits['free'] || {}
-  const maxLimit = tierLimits[limitKey] ?? -1
+  const defaultLimits = USAGE_LIMITS[sub.tierId] || USAGE_LIMITS['free'] || {}
+  const maxLimit = tierLimits[limitKey] ?? defaultLimits[limitKey] ?? -1
 
   // -1 means unlimited
   if (maxLimit === -1) {

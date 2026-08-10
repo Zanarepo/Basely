@@ -29,6 +29,7 @@ export type WbsTreeProps = {
   callerRole?: string
   showFinancials?: boolean
   currency?: string
+  terms: import('@/utils/terminology').TerminologyDict
 }
 
 export type WbsNodeRowProps = {
@@ -54,4 +55,5 @@ export type WbsNodeRowProps = {
   callerRole?: string
   showFinancials?: boolean
   currency?: string
+  terms: import('@/utils/terminology').TerminologyDict
 }

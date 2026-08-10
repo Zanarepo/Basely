@@ -120,4 +120,87 @@ export async function checkWorkspaceCreationLimitAction(): Promise<{ allowed: bo
   }
 }
 
+export async function seedWelcomeProject(organizationId: string, orgName: string): Promise<{ ok: boolean, projectId?: string, error?: string }> {
+  const { createClient } = await import('@/utils/supabase/server')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'Not authenticated' }
 
+  try {
+    // 1. Create a Welcome Project
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .insert({
+        organization_id: organizationId,
+        name: `Welcome to ${orgName}`,
+        description: 'A sample project to help you get started with Baseline.',
+        methodology: 'Agile',
+        currency: 'USD',
+        created_by: user.id
+      })
+      .select('id')
+      .single()
+
+    if (projectError || !project) {
+      console.error('Failed to create welcome project', projectError)
+      return { ok: false, error: 'Failed to create welcome project' }
+    }
+
+    // 2. Create a Summary Element (Parent) to demonstrate hierarchy
+    const { data: parentTask, error: parentError } = await supabase
+      .from('wbs_elements')
+      .insert({
+        project_id: project.id,
+        name: 'Getting Started with Baseline',
+        status: 'In Progress',
+        is_work_package: false,
+        sort_order: 1,
+        created_by: user.id
+      })
+      .select('id')
+      .single()
+
+    if (parentError || !parentTask) {
+      console.error('Failed to create parent task', parentError)
+      return { ok: false, error: 'Failed to create parent task' }
+    }
+
+    // 3. Create Sample Tasks (Work Packages) nested under the parent
+    const sampleTasks = [
+      {
+        project_id: project.id,
+        parent_id: parentTask.id,
+        name: 'Explore the dashboard',
+        status: 'Complete',
+        is_work_package: true,
+        sort_order: 1,
+        created_by: user.id
+      },
+      {
+        project_id: project.id,
+        parent_id: parentTask.id,
+        name: 'Invite your team members',
+        status: 'In Progress',
+        is_work_package: true,
+        sort_order: 2,
+        created_by: user.id
+      },
+      {
+        project_id: project.id,
+        parent_id: parentTask.id,
+        name: 'Create your first real project',
+        status: 'Not Started',
+        is_work_package: true,
+        sort_order: 3,
+        created_by: user.id
+      }
+    ]
+
+    await supabase.from('wbs_elements').insert(sampleTasks)
+
+    return { ok: true, projectId: project.id }
+  } catch (error: any) {
+    console.error('Error seeding welcome project:', error)
+    return { ok: false, error: error.message }
+  }
+}

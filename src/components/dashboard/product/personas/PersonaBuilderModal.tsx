@@ -167,7 +167,7 @@ export function PersonaBuilderModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Elena the Enterprise Dev"
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
               />
             </div>
 
@@ -181,7 +181,7 @@ export function PersonaBuilderModal({
                 value={roleTitle}
                 onChange={(e) => setRoleTitle(e.target.value)}
                 placeholder="e.g. Senior Backend Engineer"
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
               />
             </div>
           </div>
@@ -217,12 +217,12 @@ export function PersonaBuilderModal({
               value={demographics}
               onChange={(e) => setDemographics(e.target.value)}
               placeholder="e.g. 5+ years tech experience, remote worker, early adopter"
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase mb-1.5">
+            <label className="block text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase mb-1.5">
               Jobs To Be Done (JTBD) Statement
             </label>
             <textarea
@@ -230,7 +230,7 @@ export function PersonaBuilderModal({
               value={jtbdStatement}
               onChange={(e) => setJtbdStatement(e.target.value)}
               placeholder="When I am... I want to... So I can..."
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all resize-y"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all resize-y"
             />
           </div>
 
@@ -271,14 +271,14 @@ export function PersonaBuilderModal({
               value={preferredTools}
               onChange={(e) => setPreferredTools(e.target.value)}
               placeholder="e.g. GitHub, Slack, Linear, VS Code"
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
             />
           </div>
 
           {/* Dynamic Custom Attributes / Document Columns */}
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              <span className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">
                 Dynamic Document Fields & Columns
               </span>
               <span className="text-[10px] text-slate-400 font-medium">Add custom attributes (e.g. Willingness to Pay, Region)</span>
@@ -287,8 +287,8 @@ export function PersonaBuilderModal({
             {Object.keys(customAttributes).length > 0 && (
               <div className="flex flex-wrap gap-2 pt-1">
                 {Object.entries(customAttributes).map(([key, val]) => (
-                  <span key={key} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-900/40 text-xs font-medium text-slate-800 dark:text-slate-200 shadow-2xs group relative">
-                    <strong className="text-indigo-600 dark:text-indigo-400">{key}:</strong> {val}
+                  <span key={key} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-violet-200 dark:border-violet-900/40 text-xs font-medium text-slate-800 dark:text-slate-200 shadow-2xs group relative">
+                    <strong className="text-violet-600 dark:text-violet-400">{key}:</strong> {val}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -312,20 +312,20 @@ export function PersonaBuilderModal({
                 value={newAttrKey}
                 onChange={(e) => setNewAttrKey(e.target.value)}
                 placeholder="Column Name (e.g. Buying Authority)"
-                className="w-1/2 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-1/2 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-violet-500 focus:outline-none"
               />
               <input
                 type="text"
                 value={newAttrVal}
                 onChange={(e) => setNewAttrVal(e.target.value)}
                 placeholder="Value (e.g. High / Executive)"
-                className="w-1/2 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-1/2 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-violet-500 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={handleAddAttribute}
                 style={{ cursor: 'pointer' }}
-                className="px-3 py-1.5 text-xs font-semibold bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg shrink-0 transition-colors"
+                className="px-3 py-1.5 text-xs font-semibold bg-violet-500 hover:bg-violet-600 text-white rounded-lg shrink-0 transition-colors"
               >
                 + Add
               </button>
@@ -339,7 +339,7 @@ export function PersonaBuilderModal({
                 type="checkbox"
                 checked={isProjectScoped}
                 onChange={(e) => setIsProjectScoped(e.target.checked)}
-                className="w-4 h-4 text-indigo-500 border-slate-300 rounded focus:ring-indigo-500 cursor-pointer"
+                className="w-4 h-4 text-violet-500 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
                 style={{ cursor: 'pointer' }}
               />
               <label htmlFor="scopedCheckbox" className="ml-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer" style={{ cursor: 'pointer' }}>
@@ -363,7 +363,7 @@ export function PersonaBuilderModal({
               type="submit"
               disabled={loading}
               style={{ cursor: 'pointer' }}
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 rounded-lg shadow-sm hover:shadow transition-all disabled:opacity-50"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 active:bg-violet-700 rounded-lg shadow-sm hover:shadow transition-all disabled:opacity-50"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

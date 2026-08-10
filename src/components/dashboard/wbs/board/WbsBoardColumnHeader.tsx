@@ -51,9 +51,9 @@ export function WbsBoardColumnHeader({
           aria-label={isCollapsed ? 'Expand column' : 'Collapse column'}
         >
           {isCollapsed ? (
-            <ChevronRight className="w-4 h-4 text-indigo-500" />
+            <ChevronRight className="w-4 h-4 text-violet-500" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-indigo-500" />
+            <ChevronDown className="w-4 h-4 text-violet-500" />
           )}
         </button>
       )}
@@ -77,7 +77,7 @@ export function WbsBoardColumnHeader({
             renameColumn(colName, editingColValue)
             setEditingColName(null)
           }}
-          className="text-xs font-semibold text-app-fg bg-app-input border border-indigo-500 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-28"
+          className="text-xs font-semibold text-app-fg bg-app-input border border-violet-500 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-violet-500 w-28"
         />
       ) : (
         <span
@@ -100,7 +100,7 @@ export function WbsBoardColumnHeader({
       <div className="ml-auto flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover/colheader:opacity-100 focus-within:opacity-100 transition-opacity">
         <button
           onClick={() => toggleColumnVisibility(colName)}
-          className="p-1.5 sm:p-1 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded transition-all"
+          className="p-1.5 sm:p-1 text-slate-400 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded transition-all"
           title="Hide Column"
         >
           <EyeOff className="w-4 h-4 md:w-3.5 md:h-3.5" />

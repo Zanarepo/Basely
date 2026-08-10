@@ -117,9 +117,9 @@ export default function MemberSkillModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-xl max-h-[90vh] flex flex-col bg-app-surface border border-app-border rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-indigo-600/10 via-purple-600/5 to-transparent border-b border-app-border flex items-center justify-between shrink-0">
+        <div className="px-6 py-4 bg-gradient-to-r from-violet-600/10 via-purple-600/5 to-transparent border-b border-app-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-500 flex items-center justify-center shadow-inner">
+            <div className="w-10 h-10 rounded-2xl bg-violet-500/15 border border-violet-500/25 text-violet-500 flex items-center justify-center shadow-inner">
               <Award className="w-5 h-5" />
             </div>
             <div>
@@ -151,7 +151,7 @@ export default function MemberSkillModal({
           {/* Preset tags */}
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-app-muted flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-indigo-500" /> Quick Select Presets
+              <Tag className="w-3.5 h-3.5 text-violet-500" /> Quick Select Presets
             </label>
             <div className="flex flex-wrap gap-1.5">
               {COMMON_SKILL_PRESETS.map((preset) => (
@@ -168,8 +168,8 @@ export default function MemberSkillModal({
                   }}
                   className={`text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all cursor-pointer ${
                     skillName === preset
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                      : 'bg-app-muted-surface text-app-fg border-app-border hover:border-indigo-500/30 hover:bg-indigo-500/10'
+                      ? 'bg-violet-600 text-white border-violet-600 shadow-sm'
+                      : 'bg-app-muted-surface text-app-fg border-app-border hover:border-violet-500/30 hover:bg-violet-500/10'
                   }`}
                 >
                   {preset}
@@ -181,14 +181,14 @@ export default function MemberSkillModal({
           <div className="space-y-4">
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-app-muted block mb-1.5">
-                Competency / Skill Name <span className="text-indigo-500">*</span>
+                Competency / Skill Name <span className="text-violet-500">*</span>
               </label>
               <input
                 type="text"
                 value={skillName}
                 onChange={(e) => setSkillName(e.target.value)}
                 placeholder="e.g. React & Next.js, Cloud Architecture..."
-                className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-medium text-app-fg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-medium text-app-fg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
                 required
               />
             </div>
@@ -245,7 +245,7 @@ export default function MemberSkillModal({
                 max="50"
                 value={years}
                 onChange={(e) => setYears(e.target.value)}
-                className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-semibold text-app-fg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-semibold text-app-fg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
               />
             </div>
 
@@ -255,7 +255,7 @@ export default function MemberSkillModal({
                 id="primary-spec-checkbox"
                 checked={isPrimary}
                 onChange={(e) => setIsPrimary(e.target.checked)}
-                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-app-border bg-app-muted-surface cursor-pointer"
+                className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-app-border bg-app-muted-surface cursor-pointer"
               />
               <label htmlFor="primary-spec-checkbox" className="text-sm font-semibold text-app-fg cursor-pointer select-none">
                 Mark as Primary Specialization
@@ -275,7 +275,7 @@ export default function MemberSkillModal({
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/35 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+              className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 shadow-lg shadow-violet-500/25 hover:shadow-violet-500/35 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
             >
               {isSaving ? (
                 <>

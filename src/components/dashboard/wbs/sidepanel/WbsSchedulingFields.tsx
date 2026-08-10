@@ -31,11 +31,11 @@ export function WbsSchedulingFields({
   if (!isWorkPackage) return null
 
   return (
-    <div className="border border-indigo-500/25 bg-indigo-500/5 dark:bg-indigo-950/20 rounded-2xl p-4 space-y-4 shadow-xs">
-      <div className="flex items-center justify-between border-b border-indigo-500/10 pb-2">
+    <div className="border border-violet-500/25 bg-violet-500/5 dark:bg-violet-950/20 rounded-2xl p-4 space-y-4 shadow-xs">
+      <div className="flex items-center justify-between border-b border-violet-500/10 pb-2">
         <div className="flex items-center gap-2">
-          <CalIcon className="w-4 h-4 text-indigo-500" />
-          <span className="text-xs font-bold text-indigo-500">📅 Schedule Properties</span>
+          <CalIcon className="w-4 h-4 text-violet-500" />
+          <span className="text-xs font-bold text-violet-500">📅 Schedule Properties</span>
         </div>
         
         <div className="flex items-center gap-4">
@@ -65,7 +65,7 @@ export function WbsSchedulingFields({
                 onChange={(e) => setAutoSchedule(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-8 h-4 bg-app-border rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-indigo-500" />
+              <div className="w-8 h-4 bg-app-border rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-violet-500" />
             </div>
           </label>
         </div>
@@ -73,7 +73,7 @@ export function WbsSchedulingFields({
 
       {loadingSchedule ? (
         <div className="flex items-center justify-center py-4 gap-2">
-          <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+          <Loader2 className="w-4 h-4 animate-spin text-violet-500" />
           <span className="text-xs text-app-subtle">Syncing scheduling parameters...</span>
         </div>
       ) : (
@@ -100,7 +100,7 @@ export function WbsSchedulingFields({
                       } catch (err) {}
                     }
                   }}
-                  className="w-full px-3 py-1.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-xs disabled:opacity-60 cursor-pointer"
+                  className="w-full px-3 py-1.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-xs disabled:opacity-60 cursor-pointer"
                 />
               </div>
 
@@ -123,7 +123,7 @@ export function WbsSchedulingFields({
                       } catch (err) {}
                     }
                   }}
-                  className="w-full px-3 py-1.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-xs disabled:opacity-60 cursor-pointer"
+                  className="w-full px-3 py-1.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-xs disabled:opacity-60 cursor-pointer"
                 />
               </div>
             </div>
@@ -141,12 +141,12 @@ export function WbsSchedulingFields({
                 disabled={!hasEditAccess || saving || isMilestone}
                 value={duration}
                 onChange={(e) => handleDurationChange(parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-1.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-xs disabled:opacity-60"
+                className="w-full px-3 py-1.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-xs disabled:opacity-60"
               />
             </div>
 
             {autoSchedule ? (
-              <p className="text-[10px] text-indigo-500 italic mt-1 leading-relaxed">
+              <p className="text-[10px] text-violet-500 italic mt-1 leading-relaxed">
                 ⚡ Auto-Schedule active: Dates are computed automatically from predecessor links. Turn toggle off to set manual constraints.
               </p>
             ) : (

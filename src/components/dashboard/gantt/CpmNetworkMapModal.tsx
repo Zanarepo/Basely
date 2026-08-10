@@ -56,7 +56,7 @@ export function CpmNetworkMapModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-app-border shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl">
+            <div className="p-2.5 bg-violet-500/10 text-violet-500 rounded-xl">
               <Network className="h-6 w-6" />
             </div>
             <div>
@@ -135,7 +135,7 @@ export function CpmNetworkMapModal({
 
             {/* Explanation box */}
             <div className="bg-app-muted-surface border border-app-border rounded-2xl p-4 flex flex-col justify-center gap-3">
-              <div className="flex items-center gap-2 text-indigo-500">
+              <div className="flex items-center gap-2 text-violet-500">
                 <Info className="w-4 h-4 shrink-0" />
                 <span className="text-xs font-bold">Forward & Backward Passes</span>
               </div>
@@ -234,7 +234,7 @@ export function CpmNetworkMapModal({
                           isCritical ? 'border-rose-500 bg-rose-950/40' : 'border-slate-400 dark:border-slate-700 bg-app-muted-surface'
                         }`}>
                           <div className="p-1 border-r border-inherit font-semibold" title={`LS: ${act.ls}`}>{fmt(act.ls)}</div>
-                          <div className={`p-1 border-r border-inherit font-bold ${isCritical ? 'text-rose-500' : 'text-indigo-500'}`}>
+                          <div className={`p-1 border-r border-inherit font-bold ${isCritical ? 'text-rose-500' : 'text-violet-500'}`}>
                             {act.totalFloat !== null ? `${act.totalFloat}d` : '—'}
                           </div>
                           <div className="p-1 font-semibold" title={`LF: ${act.lf}`}>{fmt(act.lf)}</div>

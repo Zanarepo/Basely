@@ -68,7 +68,7 @@ export const UsageProgressMeter: React.FC<UsageProgressMeterProps> = ({
                 isHovered || isAtLimit
                   ? 'opacity-100 scale-100 translate-x-0 pointer-events-auto'
                   : 'opacity-0 scale-95 translate-x-2 pointer-events-none'
-              } inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 active:scale-95`}
+              } inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-violet-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-violet-700 active:scale-95`}
             >
               <span>Upgrade</span>
               <span className="text-[10px]">↗</span>

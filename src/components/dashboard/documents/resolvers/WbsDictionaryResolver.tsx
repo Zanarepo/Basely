@@ -57,7 +57,7 @@ export default function WbsDictionaryResolver({ projectId }: WbsDictionaryResolv
     return (
       <div className="flex h-48 items-center justify-center bg-app-surface border border-app-border rounded-xl mt-4">
         <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
           <p className="text-sm text-app-muted font-medium">Loading WBS Dictionary data...</p>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default function WbsDictionaryResolver({ projectId }: WbsDictionaryResolv
           <div key={el.id} className="bg-app-surface border border-app-border rounded-xl p-6 flex flex-col gap-5 shadow-sm">
             <div className="flex items-start justify-between">
               <h4 className="text-base font-bold text-app-fg">
-                <span className="text-indigo-500 mr-2">{el.code}</span>
+                <span className="text-violet-500 mr-2">{el.code}</span>
                 {el.name}
               </h4>
               <div className="flex items-center gap-2 text-sm bg-app-bg border border-app-border px-3 py-1.5 rounded-full">

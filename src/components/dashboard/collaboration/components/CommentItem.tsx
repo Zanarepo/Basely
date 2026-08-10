@@ -72,8 +72,8 @@ export function CommentItem({
 
   // Parses comment body to replace markdown-style tags [Type: Title](#type:id) with clickable badges
   const renderParsedBody = (bodyText: string) => {
-    // Regex updated to include underscores in the type matcher to support 'cost_actuals', etc.
-    const regex = /\[([^\]]+)\]\(#([a-z_]+):([a-zA-Z0-9-]+)\)/g
+    // Regex updated to include underscores in the type matcher and ID matcher to support 'cost_actuals', 'product_strategy_document', etc.
+    const regex = /\[([^\]]+)\]\(#([a-z_]+):([a-zA-Z0-9-_]+)\)/g
     const parts = []
     let lastIndex = 0
     let match
@@ -87,8 +87,8 @@ export function CommentItem({
       const type = match[2]
       const id = match[3]
 
-      let icon = <CheckSquare className="w-3 h-3 text-indigo-500 mr-1" />
-      let bgClass = "bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20"
+      let icon = <CheckSquare className="w-3 h-3 text-violet-500 mr-1" />
+      let bgClass = "bg-violet-500/10 text-violet-500 hover:bg-violet-500/20"
       
       if (type === 'risk') {
         icon = <AlertTriangle className="w-3 h-3 text-orange-500 mr-1" />
@@ -96,7 +96,7 @@ export function CommentItem({
       } else if (type === 'issue') {
         icon = <AlertCircle className="w-3 h-3 text-red-500 mr-1" />
         bgClass = "bg-red-500/10 text-red-500 hover:bg-red-500/20"
-      } else if (type === 'charter' || type === 'raci' || type.startsWith('cost_') || type === 'gantt') {
+      } else if (type === 'charter' || type === 'raci' || type.startsWith('cost_') || type === 'gantt' || type === 'product_doc') {
         icon = <FileText className="w-3 h-3 text-blue-500 mr-1" />
         bgClass = "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
       } else if (type === 'stakeholders') {
@@ -164,7 +164,7 @@ export function CommentItem({
               <button 
                 type="button"
                 onClick={() => setIsReplying(!isReplying)}
-                className="p-1 text-app-muted hover:text-indigo-400 hover:bg-indigo-500/10 rounded transition-colors"
+                className="p-1 text-app-muted hover:text-violet-400 hover:bg-violet-500/10 rounded transition-colors"
                 title="Reply"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
@@ -175,7 +175,7 @@ export function CommentItem({
                 <button 
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="p-1 text-app-muted hover:text-indigo-400 hover:bg-indigo-500/10 rounded transition-colors"
+                  className="p-1 text-app-muted hover:text-violet-400 hover:bg-violet-500/10 rounded transition-colors"
                   title="Edit comment"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
@@ -202,7 +202,7 @@ export function CommentItem({
             <textarea
               value={editBody}
               onChange={(e) => setEditBody(e.target.value)}
-              className="w-full text-sm bg-app-surface border border-indigo-500/30 rounded-lg p-2 text-app-fg focus:outline-none focus:ring-1 focus:ring-indigo-500/50 resize-y min-h-[80px]"
+              className="w-full text-sm bg-app-surface border border-violet-500/30 rounded-lg p-2 text-app-fg focus:outline-none focus:ring-1 focus:ring-violet-500/50 resize-y min-h-[80px]"
               autoFocus
             />
             <div className="flex items-center justify-end gap-2">
@@ -221,7 +221,7 @@ export function CommentItem({
                 type="button"
                 onClick={handleSaveEdit}
                 disabled={isSubmitting || !editBody.trim()}
-                className="px-3 py-1 text-xs font-medium bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors disabled:opacity-50"
+                className="px-3 py-1 text-xs font-medium bg-violet-500 text-white rounded hover:bg-violet-600 transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </button>
@@ -249,7 +249,7 @@ export function CommentItem({
             <button
               type="button"
               onClick={() => setIsThreadCollapsed(!isThreadCollapsed)}
-              className="flex items-center gap-1.5 text-xs text-app-muted hover:text-indigo-400 transition-colors py-1 group"
+              className="flex items-center gap-1.5 text-xs text-app-muted hover:text-violet-400 transition-colors py-1 group"
             >
               {isThreadCollapsed ? (
                 <ChevronRight className="w-3 h-3 transition-transform" />
@@ -257,7 +257,7 @@ export function CommentItem({
                 <ChevronDown className="w-3 h-3 transition-transform" />
               )}
               <span className="font-medium">{isThreadCollapsed ? 'Show' : 'Hide'} replies</span>
-              <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-indigo-500/15 text-indigo-400 text-[10px] font-bold leading-none">
+              <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-violet-500/15 text-violet-400 text-[10px] font-bold leading-none">
                 {replyCount}
               </span>
             </button>

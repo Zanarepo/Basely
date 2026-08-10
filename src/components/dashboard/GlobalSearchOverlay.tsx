@@ -58,10 +58,10 @@ export function GlobalSearchOverlay() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'project': return <Folder className="w-4 h-4 text-blue-500" />
-      case 'wbs': return <CheckSquare className="w-4 h-4 text-indigo-500" />
+      case 'project': return <Folder className="w-4 h-4 text-violet-500" />
+      case 'wbs': return <CheckSquare className="w-4 h-4 text-violet-500" />
       case 'risk': return <AlertTriangle className="w-4 h-4 text-orange-500" />
-      case 'attachment': return <File className="w-4 h-4 text-gray-500" />
+      case 'attachment': return <File className="w-4 h-4 text-app-muted" />
       default: return <Search className="w-4 h-4 text-app-muted" />
     }
   }
@@ -94,7 +94,7 @@ export function GlobalSearchOverlay() {
               className="flex-1 bg-transparent outline-none text-app-fg placeholder:text-app-muted text-base"
               autoFocus
             />
-            {loading && <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />}
+            {loading && <Loader2 className="w-4 h-4 text-violet-500 animate-spin" />}
             <button 
               onClick={() => setOpen(false)}
               className="p-1 rounded-md text-app-muted hover:text-app-fg hover:bg-app-hover"
@@ -117,12 +117,12 @@ export function GlobalSearchOverlay() {
                     key={item.id}
                     value={item.id}
                     onSelect={() => handleSelect(item.url)}
-                    className="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg cursor-pointer text-sm text-app-fg hover:bg-app-hover aria-selected:bg-indigo-50 dark:aria-selected:bg-indigo-500/10 aria-selected:text-indigo-600 dark:aria-selected:text-indigo-400 group"
+                    className="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg cursor-pointer text-sm text-app-fg hover:bg-app-hover aria-selected:bg-violet-50 dark:aria-selected:bg-violet-500/10 aria-selected:text-violet-600 dark:aria-selected:text-violet-400 group"
                   >
                     {getIcon(item.type)}
                     <div className="flex flex-col overflow-hidden">
                       <span className="font-medium truncate">{item.title}</span>
-                      {item.subtitle && <span className="text-xs text-app-muted truncate group-aria-selected:text-indigo-500/70">{item.subtitle}</span>}
+                      {item.subtitle && <span className="text-xs text-app-muted truncate group-aria-selected:text-violet-500/70">{item.subtitle}</span>}
                     </div>
                   </Command.Item>
                 ))}
@@ -136,12 +136,12 @@ export function GlobalSearchOverlay() {
                     key={item.id}
                     value={item.id}
                     onSelect={() => handleSelect(item.url)}
-                    className="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg cursor-pointer text-sm text-app-fg hover:bg-app-hover aria-selected:bg-indigo-50 dark:aria-selected:bg-indigo-500/10 aria-selected:text-indigo-600 dark:aria-selected:text-indigo-400 group"
+                    className="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg cursor-pointer text-sm text-app-fg hover:bg-app-hover aria-selected:bg-violet-50 dark:aria-selected:bg-violet-500/10 aria-selected:text-violet-600 dark:aria-selected:text-violet-400 group"
                   >
                     {getIcon(item.type)}
                     <div className="flex flex-col overflow-hidden">
                       <span className="font-medium truncate">{item.title}</span>
-                      {item.subtitle && <span className="text-xs text-app-muted truncate group-aria-selected:text-indigo-500/70">{item.subtitle}</span>}
+                      {item.subtitle && <span className="text-xs text-app-muted truncate group-aria-selected:text-violet-500/70">{item.subtitle}</span>}
                     </div>
                   </Command.Item>
                 ))}
@@ -155,12 +155,12 @@ export function GlobalSearchOverlay() {
                     key={item.id}
                     value={item.id}
                     onSelect={() => handleSelect(item.url)}
-                    className="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg cursor-pointer text-sm text-app-fg hover:bg-app-hover aria-selected:bg-indigo-50 dark:aria-selected:bg-indigo-500/10 aria-selected:text-indigo-600 dark:aria-selected:text-indigo-400 group"
+                    className="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg cursor-pointer text-sm text-app-fg hover:bg-app-hover aria-selected:bg-violet-50 dark:aria-selected:bg-violet-500/10 aria-selected:text-violet-600 dark:aria-selected:text-violet-400 group"
                   >
                     {getIcon(item.type)}
                     <div className="flex flex-col overflow-hidden">
                       <span className="font-medium truncate">{item.title}</span>
-                      {item.subtitle && <span className="text-xs text-app-muted truncate group-aria-selected:text-indigo-500/70">{item.subtitle}</span>}
+                      {item.subtitle && <span className="text-xs text-app-muted truncate group-aria-selected:text-violet-500/70">{item.subtitle}</span>}
                     </div>
                   </Command.Item>
                 ))}
@@ -174,12 +174,12 @@ export function GlobalSearchOverlay() {
                     key={item.id}
                     value={item.id}
                     onSelect={() => handleSelect(item.url)}
-                    className="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg cursor-pointer text-sm text-app-fg hover:bg-app-hover aria-selected:bg-indigo-50 dark:aria-selected:bg-indigo-500/10 aria-selected:text-indigo-600 dark:aria-selected:text-indigo-400 group"
+                    className="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg cursor-pointer text-sm text-app-fg hover:bg-app-hover aria-selected:bg-violet-50 dark:aria-selected:bg-violet-500/10 aria-selected:text-violet-600 dark:aria-selected:text-violet-400 group"
                   >
                     {getIcon(item.type)}
                     <div className="flex flex-col overflow-hidden">
                       <span className="font-medium truncate">{item.title}</span>
-                      {item.subtitle && <span className="text-xs text-app-muted truncate group-aria-selected:text-indigo-500/70">{item.subtitle}</span>}
+                      {item.subtitle && <span className="text-xs text-app-muted truncate group-aria-selected:text-violet-500/70">{item.subtitle}</span>}
                     </div>
                   </Command.Item>
                 ))}

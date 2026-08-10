@@ -37,7 +37,7 @@ export function NotificationPreferences() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
       </div>
     )
   }
@@ -45,8 +45,8 @@ export function NotificationPreferences() {
   return (
     <div className="bg-app-surface border border-app-border rounded-xl p-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-indigo-500/10 rounded-lg">
-          <BellRing className="h-5 w-5 text-indigo-500" />
+        <div className="p-2 bg-violet-500/10 rounded-lg">
+          <BellRing className="h-5 w-5 text-violet-500" />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-app-fg">Notification Preferences</h3>
@@ -64,7 +64,7 @@ export function NotificationPreferences() {
                 You will always receive notifications within the application (via the Bell icon). This cannot be disabled.
               </p>
             </div>
-            <div className="h-5 w-10 bg-indigo-500 rounded-full flex items-center justify-end px-1 cursor-not-allowed opacity-70">
+            <div className="h-5 w-10 bg-violet-500 rounded-full flex items-center justify-end px-1 cursor-not-allowed opacity-70">
               <div className="h-3 w-3 bg-white rounded-full"></div>
             </div>
           </div>
@@ -87,7 +87,7 @@ export function NotificationPreferences() {
             aria-checked={emailEnabled}
             onClick={() => setEmailEnabled(!emailEnabled)}
             className={`h-5 w-10 rounded-full flex items-center px-1 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 ${
-              emailEnabled ? 'bg-indigo-500 justify-end' : 'bg-app-border justify-start'
+              emailEnabled ? 'bg-violet-500 justify-end' : 'bg-app-border justify-start'
             }`}
           >
             <div className="h-3 w-3 bg-white rounded-full shadow-sm"></div>
@@ -111,7 +111,7 @@ export function NotificationPreferences() {
             aria-checked={slackEnabled}
             onClick={() => setSlackEnabled(!slackEnabled)}
             className={`h-5 w-10 rounded-full flex items-center px-1 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 ${
-              slackEnabled ? 'bg-indigo-500 justify-end' : 'bg-app-border justify-start'
+              slackEnabled ? 'bg-violet-500 justify-end' : 'bg-app-border justify-start'
             }`}
           >
             <div className="h-3 w-3 bg-white rounded-full shadow-sm"></div>
@@ -126,7 +126,7 @@ export function NotificationPreferences() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100"
+          className="flex items-center gap-2 px-4 py-2 bg-violet-500 hover:bg-violet-600 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save Preferences

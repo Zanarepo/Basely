@@ -27,6 +27,7 @@ type WbsBoardViewProps = {
   callerRole?: string
   callerUserId?: string
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
+  terms: import('@/utils/terminology').TerminologyDict
 }
 
 export function WbsBoardView({
@@ -47,7 +48,8 @@ export function WbsBoardView({
   hasEditAccess,
   callerRole,
   callerUserId,
-  onShowToast
+  onShowToast,
+  terms,
 }: WbsBoardViewProps) {
   const [collapsedCols, setCollapsedCols] = useState<Set<string>>(new Set())
 
@@ -97,14 +99,14 @@ export function WbsBoardView({
       {/* Floating Touch Drag Ghost Card */}
       {touchPos && draggedTask && (
         <div
-          className="fixed z-[9999] pointer-events-none p-3 w-64 rounded-2xl bg-app-surface border-2 border-indigo-500 shadow-2xl scale-105 opacity-95 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-1 backdrop-blur-md"
+          className="fixed z-[9999] pointer-events-none p-3 w-64 rounded-2xl bg-app-surface border-2 border-violet-500 shadow-2xl scale-105 opacity-95 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-1 backdrop-blur-md"
           style={{ left: `${touchPos.x}px`, top: `${touchPos.y}px` }}
         >
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] bg-indigo-500/15 text-indigo-500 dark:text-indigo-400 px-2 py-0.5 rounded font-bold">
+            <span className="font-mono text-[10px] bg-violet-500/15 text-violet-500 dark:text-violet-400 px-2 py-0.5 rounded font-bold">
               {draggedTask.code}
             </span>
-            <span className="text-[10px] font-bold text-indigo-500 animate-pulse">DRAGGING</span>
+            <span className="text-[10px] font-bold text-violet-500 animate-pulse">DRAGGING</span>
           </div>
           <span className="text-sm font-bold text-app-fg truncate">
             {draggedTask.name}
@@ -136,7 +138,7 @@ export function WbsBoardView({
             data-board-column={col.name}
             className={`w-full md:w-72 shrink-0 flex flex-col bg-app-surface-solid border border-app-border rounded-2xl md:h-full transition-all duration-300
               ${draggedColIndex === colIndex ? 'opacity-40 border-dashed' : ''}
-              ${dragOverColIndex === colIndex ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-lg ring-2 ring-indigo-500/30' : ''}
+              ${dragOverColIndex === colIndex ? 'border-violet-500 bg-violet-50/50 dark:bg-violet-900/10 shadow-lg ring-2 ring-violet-500/30' : ''}
             `}
             onDragOver={(e) => {
               if (draggedColIndex !== null) handleColumnDragOver(e, colIndex)
@@ -181,6 +183,7 @@ export function WbsBoardView({
                     hasEditAccess={hasEditAccess}
                     callerRole={callerRole}
                     callerUserId={callerUserId}
+                    terms={terms}
                     draggedTaskId={draggedTaskId}
                     dragOverTaskId={dragOverTaskId}
                     onSelect={onSelect}
@@ -201,7 +204,7 @@ export function WbsBoardView({
                 <button
                   type="button"
                   onClick={() => onAddCard(col.name)}
-                  className="w-full flex items-center justify-center gap-2 py-3 sm:py-2.5 mt-2 rounded-xl border-2 border-dashed border-app-border text-slate-500 hover:text-indigo-600 hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:text-indigo-400 dark:hover:bg-indigo-500/10 transition-colors text-sm font-semibold cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3 sm:py-2.5 mt-2 rounded-xl border-2 border-dashed border-app-border text-slate-500 hover:text-violet-600 hover:border-violet-500 hover:bg-violet-50/50 dark:hover:text-violet-400 dark:hover:bg-violet-500/10 transition-colors text-sm font-semibold cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   Add Card

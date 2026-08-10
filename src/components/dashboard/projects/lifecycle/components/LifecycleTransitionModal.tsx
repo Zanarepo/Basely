@@ -61,7 +61,7 @@ export function LifecycleTransitionModal({
             <div className={`p-2 sm:p-2.5 rounded-lg border shrink-0 ${
               isTerminal 
                 ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' 
-                : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-500'
+                : 'bg-violet-500/10 border-violet-500/20 text-violet-500'
             }`}>
               {isTerminal ? <ShieldAlert className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
             </div>
@@ -94,9 +94,9 @@ export function LifecycleTransitionModal({
             <div className="flex items-center justify-center shrink-0">
               <ArrowRight className="w-5 h-5 text-app-muted sm:rotate-0 rotate-90" />
             </div>
-            <div className="flex-1 min-w-0 p-2 sm:p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
-              <div className="text-[10px] sm:text-xs uppercase font-bold text-indigo-500 tracking-wider mb-1">Target Phase</div>
-              <div className="text-xs sm:text-sm md:text-base font-bold text-indigo-400 truncate">{targetStatus}</div>
+            <div className="flex-1 min-w-0 p-2 sm:p-3 bg-violet-500/10 border border-violet-500/20 rounded-lg">
+              <div className="text-[10px] sm:text-xs uppercase font-bold text-violet-500 tracking-wider mb-1">Target Phase</div>
+              <div className="text-xs sm:text-sm md:text-base font-bold text-violet-400 truncate">{targetStatus}</div>
             </div>
           </div>
 
@@ -138,7 +138,7 @@ export function LifecycleTransitionModal({
               onChange={(e) => setReason(e.target.value)}
               placeholder="Explain why this project phase is advancing or changing (e.g., deliverables completed, sponsor approved)..."
               required={requiresReason}
-              className="w-full bg-app-bg border border-app-border rounded-xl p-3 sm:p-3.5 text-xs sm:text-sm text-app-fg placeholder-app-muted focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full bg-app-bg border border-app-border rounded-xl p-3 sm:p-3.5 text-xs sm:text-sm text-app-fg placeholder-app-muted focus:outline-none focus:border-violet-500 transition-colors"
             />
           </div>
 
@@ -147,7 +147,7 @@ export function LifecycleTransitionModal({
             <button
               type="submit"
               disabled={isTransitioning || (requiresReason && !reason.trim())}
-              className="w-full sm:w-auto px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-indigo-500 hover:bg-indigo-600 active:scale-95 disabled:opacity-50 text-white transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-indigo-500/20"
+              className="w-full sm:w-auto px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-violet-500 hover:bg-violet-600 active:scale-95 disabled:opacity-50 text-white transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-violet-500/20"
             >
               {isTransitioning ? (
                 <>

@@ -56,14 +56,14 @@ export function OrganizationSelector({
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <div className="min-h-[42px] p-1.5 bg-app-surface-solid border border-app-border rounded-lg flex flex-wrap gap-1.5 focus-within:border-indigo-500">
+      <div className="min-h-[42px] p-1.5 bg-app-surface-solid border border-app-border rounded-lg flex flex-wrap gap-1.5 focus-within:border-violet-500">
         {selectedOrgs.map(org => (
-          <div key={org.id} className="flex items-center gap-1 px-2 py-1 bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 rounded-md text-xs font-medium">
+          <div key={org.id} className="flex items-center gap-1 px-2 py-1 bg-violet-500/10 text-violet-600 border border-violet-500/20 rounded-md text-xs font-medium">
             {org.name}
             <button
               type="button"
               onClick={() => handleRemove(org.id)}
-              className="p-0.5 hover:bg-indigo-500/20 rounded"
+              className="p-0.5 hover:bg-violet-500/20 rounded"
             >
               <X className="w-3 h-3" />
             </button>

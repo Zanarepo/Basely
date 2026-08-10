@@ -47,7 +47,7 @@ export function PromoBanner({ organizationId }: { organizationId: string }) {
     <div className={`relative flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8 border-b shadow-sm ${
       isExclusive 
         ? 'bg-linear-to-r from-amber-500 to-orange-600 text-white border-amber-600' 
-        : 'bg-linear-to-r from-indigo-600 to-purple-600 text-white border-indigo-700'
+        : 'bg-linear-to-r from-violet-600 to-purple-600 text-white border-violet-700'
     }`}>
       <div className="flex items-center gap-3">
         <div className="p-1.5 bg-white/20 rounded-lg">

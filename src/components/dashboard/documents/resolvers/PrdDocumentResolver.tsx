@@ -106,10 +106,10 @@ export function PrdDocumentResolver({ projectId, source }: PrdDocumentResolverPr
         {/* Linked Entities */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {persona && (
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
-              <User className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
+              <User className="w-4 h-4 text-violet-500 mt-0.5 shrink-0" />
               <div>
-                <div className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Target Persona</div>
+                <div className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">Target Persona</div>
                 <div className="text-xs font-semibold text-slate-900 dark:text-white">{persona.name}</div>
                 <div className="text-[10px] text-slate-500">{persona.role_title}</div>
               </div>
@@ -137,7 +137,7 @@ export function PrdDocumentResolver({ projectId, source }: PrdDocumentResolverPr
               href={prdMeta.figma_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline truncate"
+              className="text-xs text-violet-600 dark:text-violet-400 font-semibold hover:underline truncate"
             >
               {prdMeta.figma_url}
             </a>
@@ -181,7 +181,7 @@ export function PrdDocumentResolver({ projectId, source }: PrdDocumentResolverPr
                     {insight.severity}
                   </span>
                   {insight.persona && (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
                       <User className="w-2 h-2" />
                       {insight.persona.name}
                     </span>

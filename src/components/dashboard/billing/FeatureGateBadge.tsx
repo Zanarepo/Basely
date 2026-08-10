@@ -18,7 +18,7 @@ export const FeatureGateBadge: React.FC<FeatureGateBadgeProps> = ({
 
   const isEnterprise = requiredTier === 'enterprise'
   const badgeGradient = isEnterprise
-    ? 'from-purple-600 to-indigo-600 border-purple-500/50 shadow-purple-500/20'
+    ? 'from-purple-600 to-violet-600 border-purple-500/50 shadow-purple-500/20'
     : 'from-amber-500 to-amber-600 border-amber-400/50 shadow-amber-500/20'
 
   return (

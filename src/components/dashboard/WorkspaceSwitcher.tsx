@@ -17,7 +17,7 @@ const dropdownPanel =
 const dropdownItem =
   'w-full flex items-center gap-3 px-3 py-2.5 hover:bg-app-hover transition-colors cursor-pointer text-left'
 const switcherButton =
-  'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-app-muted-surface border border-app-border hover:border-indigo-500/40 hover:bg-app-hover transition-all cursor-pointer disabled:opacity-60'
+  'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-app-muted-surface border border-app-border hover:border-violet-500/40 hover:bg-app-hover transition-all cursor-pointer disabled:opacity-60'
 
 export function WorkspaceSwitcher({ collapsed, onCreateWorkspace }: WorkspaceSwitcherProps) {
   const router = useRouter()
@@ -67,26 +67,29 @@ export function WorkspaceSwitcher({ collapsed, onCreateWorkspace }: WorkspaceSwi
     })
   }
 
-  const dropdownList = workspaces.map((workspace) => (
-    <button
-      key={workspace.id}
-      type="button"
-      onClick={() => handleSelect(workspace)}
-      className={dropdownItem}
-    >
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-app-fg truncate">
-          {workspace.name}
-        </p>
-        <p className="text-xs text-app-subtle">
-          {workspace.isOwner ? 'Owner' : workspace.role}
-        </p>
-      </div>
-      {workspace.id === activeWorkspace.id && (
-        <Check className="h-4 w-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
-      )}
-    </button>
-  ))
+  const dropdownList = workspaces.map((workspace) => {
+    const isActive = workspace.id === activeWorkspace.id
+    return (
+      <button
+        key={workspace.id}
+        type="button"
+        onClick={() => handleSelect(workspace)}
+        className={`${dropdownItem} ${isActive ? 'bg-violet-500/10' : ''}`}
+      >
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm font-medium truncate ${isActive ? 'text-violet-500' : 'text-app-fg'}`}>
+            {workspace.name}
+          </p>
+          <p className="text-xs text-app-subtle">
+            {workspace.isOwner ? 'Owner' : workspace.role}
+          </p>
+        </div>
+        {isActive && (
+          <Check className="h-4 w-4 text-violet-500 dark:text-violet-400 shrink-0" />
+        )}
+      </button>
+    )
+  })
 
   /* Portal the dropdown to document.body so it escapes the sidebar's
      backdrop-blur stacking context that traps fixed/absolute children. */
@@ -121,10 +124,10 @@ export function WorkspaceSwitcher({ collapsed, onCreateWorkspace }: WorkspaceSwi
                     }}
                     className={dropdownItem}
                   >
-                    <div className="p-1 rounded-lg bg-indigo-500/15">
-                      <Plus className="h-3.5 w-3.5 text-indigo-500" />
+                    <div className="p-1 rounded-lg bg-violet-500/15">
+                      <Plus className="h-3.5 w-3.5 text-violet-500" />
                     </div>
-                    <span className="text-sm font-medium text-indigo-500 dark:text-indigo-400">New Workspace</span>
+                    <span className="text-sm font-medium text-violet-500 dark:text-violet-400">New Workspace</span>
                   </button>
                 </>
               )}
@@ -142,9 +145,9 @@ export function WorkspaceSwitcher({ collapsed, onCreateWorkspace }: WorkspaceSwi
           type="button"
           title={activeWorkspace.name}
           onClick={() => setOpen((v) => !v)}
-          className="w-full flex items-center justify-center p-2.5 rounded-xl bg-app-muted-surface border border-app-border hover:border-indigo-500/40 hover:bg-app-hover transition-all cursor-pointer"
+          className="w-full flex items-center justify-center p-2.5 rounded-xl bg-app-muted-surface border border-app-border hover:border-violet-500/40 hover:bg-app-hover transition-all cursor-pointer"
         >
-          <Building2 className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
+          <Building2 className="h-5 w-5 text-violet-500 dark:text-violet-400" />
         </button>
         {portalMenu}
       </div>
@@ -160,8 +163,8 @@ export function WorkspaceSwitcher({ collapsed, onCreateWorkspace }: WorkspaceSwi
         disabled={isPending}
         className={switcherButton}
       >
-        <div className="shrink-0 p-1.5 rounded-lg bg-indigo-500/20">
-          <Building2 className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+        <div className="shrink-0 p-1.5 rounded-lg bg-violet-500/20">
+          <Building2 className="h-4 w-4 text-violet-500 dark:text-violet-400" />
         </div>
         <div className="flex-1 min-w-0 text-left">
           <p className="text-xs text-app-subtle font-medium uppercase tracking-wider">

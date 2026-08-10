@@ -22,6 +22,7 @@ interface WbsBoardCardProps {
   onTouchStart?: (e: React.TouchEvent, taskId: string, sourceCol: string) => void
   onTouchMove?: (e: React.TouchEvent) => void
   onTouchEnd?: (e: React.TouchEvent) => void
+  terms: import('@/utils/terminology').TerminologyDict
 }
 
 export function WbsBoardCard({
@@ -45,6 +46,7 @@ export function WbsBoardCard({
   onTouchStart,
   onTouchMove,
   onTouchEnd,
+  terms,
 }: WbsBoardCardProps) {
   const responsible = t.raciAssignments?.find((a) => a.roleType === 'Responsible')
   const responsibleName = responsible?.stakeholder?.name || null
@@ -54,7 +56,7 @@ export function WbsBoardCard({
     ? responsibleName.substring(0, 2).toUpperCase()
     : null
   const parentElement = t.parentId ? elements.find((e) => e.id === t.parentId) : null
-  const tagText = parentElement ? parentElement.name : 'Work Package'
+  const tagText = parentElement ? parentElement.name : terms.workPackage
 
   const isResponsible = callerRole === 'Team Member' && t.raciAssignments?.some((a) => a.roleType === 'Responsible' && a.stakeholder?.linked_user_id === callerUserId)
   const canDragTask = hasEditAccess || isResponsible
@@ -74,18 +76,18 @@ export function WbsBoardCard({
       data-task-id={t.id}
       data-board-column={colName}
       className={`group/task group relative bg-app-surface border rounded-xl p-3.5 sm:p-3 shadow-xs transition-all duration-200 select-none touch-pan-y
-        ${isResponsible ? 'border-indigo-400 ring-1 ring-indigo-400/50 bg-indigo-50/30 dark:bg-indigo-500/5' : 'border-app-border'}
-        ${canDragTask ? 'cursor-grab active:cursor-grabbing hover:border-indigo-400 hover:shadow-md' : 'cursor-pointer hover:border-slate-300'}
-        ${draggedTaskId === t.id ? 'opacity-40 border-dashed scale-95 bg-indigo-500/5' : ''}
-        ${dragOverTaskId === t.id ? 'border-t-2 border-t-indigo-500 transform translate-y-1 shadow-lg' : ''}
+        ${isResponsible ? 'border-violet-400 ring-1 ring-violet-400/50 bg-violet-50/30 dark:bg-violet-500/5' : 'border-app-border'}
+        ${canDragTask ? 'cursor-grab active:cursor-grabbing hover:border-violet-400 hover:shadow-md' : 'cursor-pointer hover:border-slate-300'}
+        ${draggedTaskId === t.id ? 'opacity-40 border-dashed scale-95 bg-violet-500/5' : ''}
+        ${dragOverTaskId === t.id ? 'border-t-2 border-t-violet-500 transform translate-y-1 shadow-lg' : ''}
       `}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="inline-block text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+        <span className="inline-block text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-violet-500/10 text-violet-600 dark:text-violet-400">
           {t.code}
         </span>
         {isResponsible && (
-          <span className="ml-2 text-[9px] font-bold tracking-wide text-indigo-600 bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-500/20 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-500/30">
+          <span className="ml-2 text-[9px] font-bold tracking-wide text-violet-600 bg-violet-100 dark:text-violet-400 dark:bg-violet-500/20 px-2 py-0.5 rounded-full border border-violet-200 dark:border-violet-500/30">
             YOURS
           </span>
         )}
@@ -119,7 +121,7 @@ export function WbsBoardCard({
       </div>
       
       {t.deliverablesData && t.deliverablesData.length > 0 && (
-        <div className="flex items-center gap-1.5 mb-1 text-[10px] font-medium text-indigo-500/80">
+        <div className="flex items-center gap-1.5 mb-1 text-[10px] font-medium text-violet-500/80">
           <CheckSquare className="w-3 h-3" />
           {(() => {
             const completed = t.deliverablesData.filter((d) => d.completed).length
@@ -164,7 +166,7 @@ export function WbsBoardCard({
         {/* Workflow stage progress bar */}
         <div className="w-16 h-1.5 bg-app-muted-surface rounded-full overflow-hidden" title={`Workflow Stage: ${visibleColIndex + 1} of ${visibleColumnsLength}`}>
           <div
-            className="h-full bg-indigo-500 rounded-full transition-all duration-300"
+            className="h-full bg-violet-500 rounded-full transition-all duration-300"
             style={{
               width: `${Math.round(((visibleColIndex + 1) / visibleColumnsLength) * 100)}%`,
             }}

@@ -16,7 +16,7 @@ export function PlanningSidebarSection({ activeTab, onSelect }: PlanningSidebarS
         onClick={() => onSelect('scope_statement')}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
           activeTab === 'scope_statement'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >
@@ -28,7 +28,7 @@ export function PlanningSidebarSection({ activeTab, onSelect }: PlanningSidebarS
         onClick={() => onSelect('communication_plan')}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
           activeTab === 'communication_plan'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >
@@ -40,7 +40,7 @@ export function PlanningSidebarSection({ activeTab, onSelect }: PlanningSidebarS
         onClick={() => onSelect('quality_management_plan')}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
           activeTab === 'quality_management_plan'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >
@@ -53,7 +53,7 @@ export function PlanningSidebarSection({ activeTab, onSelect }: PlanningSidebarS
         style={{ cursor: 'pointer' }}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
           activeTab === 'procurement_plan'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >
@@ -66,7 +66,7 @@ export function PlanningSidebarSection({ activeTab, onSelect }: PlanningSidebarS
         style={{ cursor: 'pointer' }}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
           activeTab === 'schedule_document'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >
@@ -79,7 +79,7 @@ export function PlanningSidebarSection({ activeTab, onSelect }: PlanningSidebarS
         style={{ cursor: 'pointer' }}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
           activeTab === 'budget_baseline'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >
@@ -92,7 +92,7 @@ export function PlanningSidebarSection({ activeTab, onSelect }: PlanningSidebarS
         style={{ cursor: 'pointer' }}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
           activeTab === 'change_management_plan'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >

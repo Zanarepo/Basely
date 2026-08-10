@@ -256,7 +256,7 @@ export function StakeholderImportModal({
               onClick={() => setActiveTab('upload')}
               className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
                 activeTab === 'upload' 
-                  ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' 
+                  ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400' 
                   : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
               }`}
             >
@@ -266,7 +266,7 @@ export function StakeholderImportModal({
               onClick={() => setActiveTab('paste')}
               className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
                 activeTab === 'paste' 
-                  ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' 
+                  ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400' 
                   : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
               }`}
             >
@@ -276,7 +276,7 @@ export function StakeholderImportModal({
               onClick={() => setActiveTab('drive')}
               className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
                 activeTab === 'drive' 
-                  ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' 
+                  ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400' 
                   : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
               }`}
             >
@@ -299,7 +299,7 @@ export function StakeholderImportModal({
               />
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
+                className="px-6 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
               >
                 {file ? file.name : 'Browse Files'}
               </button>
@@ -312,21 +312,21 @@ export function StakeholderImportModal({
                 value={pastedText}
                 onChange={(e) => setPastedText(e.target.value)}
                 placeholder="Name, Email, Organization Type, Role&#10;John Doe, john@example.com, external, Consultant"
-                className="w-full h-full bg-app-surface border border-app-border rounded-xl p-4 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono resize-none"
+                className="w-full h-full bg-app-surface border border-app-border rounded-xl p-4 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 font-mono resize-none"
               />
             </div>
           )}
 
           {activeTab === 'drive' && (
             <div className="border border-app-border rounded-xl bg-app-surface/50 p-10 flex flex-col items-center justify-center text-center h-48">
-              <Cloud className="h-8 w-8 text-indigo-500 mb-4" />
+              <Cloud className="h-8 w-8 text-violet-500 mb-4" />
               <p className="text-app-fg font-medium mb-1">Select from Google Drive</p>
               <p className="text-app-subtle text-sm mb-6">Securely pick a CSV file straight from your Drive</p>
               
               <button 
                 onClick={handleDriveConnect}
                 disabled={isImporting}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm disabled:opacity-50"
+                className="px-6 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm disabled:opacity-50"
               >
                 {isImporting ? 'Loading...' : isConnected ? 'Select File' : 'Connect & Select File'}
               </button>
@@ -344,7 +344,7 @@ export function StakeholderImportModal({
           <button
             onClick={handleImport}
             disabled={!hasDataToImport || isImporting}
-            className="px-5 py-2.5 text-sm font-semibold text-white bg-indigo-400 hover:bg-indigo-500 rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:hover:bg-indigo-400"
+            className="px-5 py-2.5 text-sm font-semibold text-white bg-violet-400 hover:bg-violet-500 rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:hover:bg-violet-400"
           >
             {isImporting ? 'Importing...' : 'Run Import'}
           </button>

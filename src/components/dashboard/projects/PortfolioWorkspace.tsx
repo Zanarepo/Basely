@@ -82,7 +82,7 @@ export default function PortfolioWorkspace({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[450px] text-app-subtle">
-        <Loader2 className="w-8 h-8 animate-spin mb-4 text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-violet-500" />
         <p>Analyzing portfolio metrics...</p>
       </div>
     )
@@ -108,7 +108,7 @@ export default function PortfolioWorkspace({
         {/* Total Budget Rollup */}
         <div className="bg-white dark:bg-app-surface border border-app-border rounded-2xl p-5 shadow-sm">
           <div className="text-[10px] text-app-muted font-bold uppercase tracking-wider mb-1">Portfolio Budget</div>
-          <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 leading-none">
+          <div className="text-2xl font-black text-violet-600 dark:text-violet-400 leading-none">
             <CurrencyDisplay amount={aggregates.totalBudget} currency="USD" compactThreshold={100000} />
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function PortfolioWorkspace({
               onClick={() => setRagFilter(f)}
               className={`px-3 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                 ragFilter === f
-                  ? 'bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-500/15 dark:border-indigo-500/35 dark:text-indigo-400 shadow-sm'
+                  ? 'bg-violet-50 border-violet-200 text-violet-600 dark:bg-violet-500/15 dark:border-violet-500/35 dark:text-violet-400 shadow-sm'
                   : 'bg-white border-app-border text-app-fg hover:bg-gray-50 dark:bg-app-surface dark:hover:bg-app-hover'
               }`}
             >
@@ -238,7 +238,7 @@ export default function PortfolioWorkspace({
                       <div className="flex items-center gap-3">
                         <span className="font-semibold text-app-fg text-xs">{row.overallPercentComplete}%</span>
                         <div className="w-16 bg-gray-100 dark:bg-app-hover rounded-full h-1.5">
-                          <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${row.overallPercentComplete}%` }} />
+                          <div className="bg-violet-500 h-1.5 rounded-full" style={{ width: `${row.overallPercentComplete}%` }} />
                         </div>
                       </div>
                     </td>
@@ -257,7 +257,7 @@ export default function PortfolioWorkspace({
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right whitespace-nowrap">
-                      <div className="font-extrabold text-indigo-500">
+                      <div className="font-extrabold text-violet-500">
                         <CurrencyDisplay amount={row.eac} currency={row.currency} compactThreshold={1000} />
                       </div>
                       <div className="text-[10px] text-app-muted font-semibold mt-0.5">
@@ -267,7 +267,7 @@ export default function PortfolioWorkspace({
                     <td className="py-4 px-6 text-right">
                       <Link
                         href={`/dashboard/projects/${row.id}`}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-app-muted hover:text-indigo-500 transition-colors"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-app-muted hover:text-violet-500 transition-colors"
                       >
                         Drill Down
                         <ChevronRight className="h-3.5 w-3.5 transform group-hover:translate-x-0.5 transition-transform" />
@@ -285,7 +285,7 @@ export default function PortfolioWorkspace({
               <Link
                 key={row.id}
                 href={`/dashboard/projects/${row.id}`}
-                className="bg-gray-50 dark:bg-app-hover border border-app-border rounded-2xl p-4 flex flex-col justify-between gap-4 hover:border-indigo-500 transition-colors group"
+                className="bg-gray-50 dark:bg-app-hover border border-app-border rounded-2xl p-4 flex flex-col justify-between gap-4 hover:border-violet-500 transition-colors group"
               >
                 <div>
                   <div className="flex justify-between items-start mb-2">
@@ -298,7 +298,7 @@ export default function PortfolioWorkspace({
                     }`}>
                       {row.ragStatus}
                     </span>
-                    <ChevronRight className="h-4 w-4 text-app-muted group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                    <ChevronRight className="h-4 w-4 text-app-muted group-hover:text-violet-500 group-hover:translate-x-0.5 transition-all" />
                   </div>
                   <h4 className="font-bold text-app-fg text-base leading-tight mb-1">{row.name}</h4>
                   {row.clientName && <p className="text-xs text-app-muted">{row.clientName}</p>}
@@ -326,7 +326,7 @@ export default function PortfolioWorkspace({
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-app-muted">EAC:</span>
-                    <span className="font-extrabold text-indigo-500">
+                    <span className="font-extrabold text-violet-500">
                       <CurrencyDisplay amount={row.eac} currency={row.currency} compactThreshold={1000} />
                     </span>
                   </div>

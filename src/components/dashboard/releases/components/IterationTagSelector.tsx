@@ -84,7 +84,7 @@ export function IterationTagSelector({
         />
       </div>
 
-      {saving && <Loader2 className="h-3.5 w-3.5 text-indigo-500 animate-spin shrink-0 ml-1" />}
+      {saving && <Loader2 className="h-3.5 w-3.5 text-violet-500 animate-spin shrink-0 ml-1" />}
       {justSaved && !saving && <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0 ml-1 animate-in zoom-in-50" />}
     </div>
   )

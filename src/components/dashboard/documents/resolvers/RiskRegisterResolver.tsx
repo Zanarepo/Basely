@@ -62,7 +62,7 @@ export default function RiskRegisterResolver({ projectId, periodEnd, frozenData 
   if (loading) {
     return (
       <div className="flex h-32 items-center justify-center bg-app-surface border border-app-border rounded-xl">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
       </div>
     )
   }
@@ -142,8 +142,8 @@ export default function RiskRegisterResolver({ projectId, periodEnd, frozenData 
             </div>
 
             {risk.mitigation_plan && (
-              <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-lg p-4 mt-2">
-                <h5 className="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <div className="bg-violet-500/5 border border-violet-500/10 rounded-lg p-4 mt-2">
+                <h5 className="text-xs font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                   <ShieldAlert className="w-3.5 h-3.5" />
                   Mitigation Strategy
                 </h5>

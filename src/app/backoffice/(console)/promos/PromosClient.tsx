@@ -74,7 +74,7 @@ export function PromosClient({ initialPromotions, isSuperadmin }: { initialPromo
               setEditingPromo(null)
               setIsModalOpen(true)
             }}
-            className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 bg-violet-600 text-white rounded-lg text-sm font-medium hover:bg-violet-700 transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             New Promo
@@ -112,7 +112,7 @@ export function PromosClient({ initialPromotions, isSuperadmin }: { initialPromo
                 <tr key={promo.id} className="group hover:bg-app-hover/50 transition-colors">
                   <td className="p-4">
                     <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-indigo-500" />
+                      <Tag className="w-4 h-4 text-violet-500" />
                       <span className="font-bold text-app-fg">{promo.code}</span>
                     </div>
                     {orgLinks.length > 0 && (
@@ -164,7 +164,7 @@ export function PromosClient({ initialPromotions, isSuperadmin }: { initialPromo
                             setEditingPromo(promo)
                             setIsModalOpen(true)
                           }}
-                          className="text-app-muted hover:text-indigo-500 transition-colors cursor-pointer"
+                          className="text-app-muted hover:text-violet-500 transition-colors cursor-pointer"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -275,7 +275,7 @@ function PromoModal({ promo, onClose, onSave }: { promo: Promotion | null, onClo
               name="code"
               defaultValue={promo?.code}
               placeholder="e.g. SUMMER50"
-              className="w-full bg-app-surface-solid border border-app-border rounded-lg px-3 py-2 text-app-fg text-sm focus:outline-none focus:border-indigo-500 uppercase"
+              className="w-full bg-app-surface-solid border border-app-border rounded-lg px-3 py-2 text-app-fg text-sm focus:outline-none focus:border-violet-500 uppercase"
             />
           </div>
 
@@ -300,7 +300,7 @@ function PromoModal({ promo, onClose, onSave }: { promo: Promotion | null, onClo
                 defaultValue={promo?.discount_value}
                 min="1"
                 placeholder="e.g. 50"
-                className="w-full bg-app-surface-solid border border-app-border rounded-lg px-3 py-2 text-app-fg text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full bg-app-surface-solid border border-app-border rounded-lg px-3 py-2 text-app-fg text-sm focus:outline-none focus:border-violet-500"
               />
             </div>
           </div>
@@ -326,7 +326,7 @@ function PromoModal({ promo, onClose, onSave }: { promo: Promotion | null, onClo
                 defaultValue={promo?.duration_in_months || ''}
                 min="1"
                 placeholder="e.g. 3"
-                className="w-full bg-app-surface-solid border border-app-border rounded-lg px-3 py-2 text-app-fg text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full bg-app-surface-solid border border-app-border rounded-lg px-3 py-2 text-app-fg text-sm focus:outline-none focus:border-violet-500"
               />
             </div>
           </div>
@@ -339,7 +339,7 @@ function PromoModal({ promo, onClose, onSave }: { promo: Promotion | null, onClo
               defaultValue={promo?.max_uses || ''}
               min="1"
               placeholder="e.g. 100"
-              className="w-full bg-app-surface-solid border border-app-border rounded-lg px-3 py-2 text-app-fg text-sm focus:outline-none focus:border-indigo-500"
+              className="w-full bg-app-surface-solid border border-app-border rounded-lg px-3 py-2 text-app-fg text-sm focus:outline-none focus:border-violet-500"
             />
           </div>
 
@@ -363,7 +363,7 @@ function PromoModal({ promo, onClose, onSave }: { promo: Promotion | null, onClo
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-medium hover:bg-violet-700 transition-colors disabled:opacity-50 cursor-pointer"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {promo ? 'Save Changes' : 'Create Promo'}

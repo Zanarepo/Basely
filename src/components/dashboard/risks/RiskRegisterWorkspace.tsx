@@ -56,7 +56,7 @@ export default function RiskRegisterWorkspace({
           <button
             onClick={() => setActiveTab('risks')}
             className={`cursor-pointer flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-md transition-all ${activeTab === 'risks'
-                ? 'bg-app-surface shadow-sm text-indigo-500'
+                ? 'bg-app-surface shadow-sm text-violet-500'
                 : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
               }`}
           >
@@ -86,7 +86,7 @@ export default function RiskRegisterWorkspace({
       <div className="flex-1 overflow-auto bg-app-bg relative">
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center bg-app-bg/50 backdrop-blur-sm z-50">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
           </div>
         ) : error ? (
           <div className="p-8 text-center text-red-500">

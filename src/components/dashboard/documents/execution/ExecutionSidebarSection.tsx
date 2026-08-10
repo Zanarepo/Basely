@@ -24,7 +24,7 @@ export function ExecutionSidebarSection({ activeTab, onSelect, hasEditAccess, is
         onClick={() => onSelect('meeting_minutes')}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold ${
           activeTab === 'meeting_minutes'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >
@@ -36,11 +36,11 @@ export function ExecutionSidebarSection({ activeTab, onSelect, hasEditAccess, is
         onClick={() => onSelect('change_requests')}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold mt-1 ${
           activeTab === 'change_requests'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >
-        <FileEdit className="w-4 h-4 text-indigo-400" />
+        <FileEdit className="w-4 h-4 text-violet-400" />
         Change Requests
       </button>
 
@@ -48,7 +48,7 @@ export function ExecutionSidebarSection({ activeTab, onSelect, hasEditAccess, is
         onClick={() => onSelect('deployment_report')}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold mt-1 ${
           activeTab === 'deployment_report'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >
@@ -60,7 +60,7 @@ export function ExecutionSidebarSection({ activeTab, onSelect, hasEditAccess, is
         onClick={() => onSelect('test_summary_report')}
         className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold mt-1 ${
           activeTab === 'test_summary_report'
-            ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+            ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
             : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
         }`}
       >
@@ -73,7 +73,7 @@ export function ExecutionSidebarSection({ activeTab, onSelect, hasEditAccess, is
           onClick={() => onSelect('deliverables')}
           className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold mt-1 ${
             activeTab === 'deliverables'
-              ? 'bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/20'
+              ? 'bg-violet-500/10 text-violet-500 shadow-sm border border-violet-500/20'
               : 'text-app-muted hover:text-app-fg hover:bg-app-hover border border-transparent'
           }`}
         >

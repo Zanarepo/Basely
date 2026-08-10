@@ -62,7 +62,7 @@ export function DashboardShell({
                 <Menu className="w-6 h-6" />
               </button>
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-linear-to-tr from-violet-600 to-indigo-600 shadow-sm">
+                <div className="p-1.5 rounded-lg bg-linear-to-tr from-violet-600 to-violet-600 shadow-sm">
                   <LayoutDashboard className="h-4 w-4 text-white" />
                 </div>
                 <span className="text-sm font-bold tracking-tight text-app-fg">Baseline</span>

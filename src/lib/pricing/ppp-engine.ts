@@ -31,10 +31,15 @@ const DEFAULT_REGION: RegionalPricing = PPP_MATRIX['US']
  * Calculates the localized price based on base USD price and country code.
  * @param baseUsdPrice Base price in USD (e.g. 25 for Premium)
  * @param countryCode 2-letter ISO country code (e.g. 'NG')
+ * @param dynamicRegion Optional dynamic regional pricing from the database
  * @returns localized price object
  */
-export function calculatePppPrice(baseUsdPrice: number, countryCode: string) {
-  const region = PPP_MATRIX[countryCode.toUpperCase()] || DEFAULT_REGION
+export function calculatePppPrice(
+  baseUsdPrice: number, 
+  countryCode: string, 
+  dynamicRegion?: RegionalPricing
+) {
+  const region = dynamicRegion || PPP_MATRIX[countryCode.toUpperCase()] || DEFAULT_REGION
 
   // 1. Apply PPP discount to the USD price
   const discountedUsd = baseUsdPrice * region.discountMultiplier

@@ -7,19 +7,24 @@ import { saveCostEstimate, reconcileBottomUpEstimate } from '@/lib/cost/actions'
 import ActivityAssignmentSheet from './ActivityAssignmentSheet'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 
-type Props = {
+import { TerminologyDict } from '@/utils/terminology'
+
+type CostEstimationViewProps = {
   projectId: string
   wbsCostData: WbsCostData[]
   resourceRates: ResourceRate[]
   projectCurrency: string
   globalOverhead: number
   hasEditAccess: boolean
-  onDataChange: (silent?: boolean) => void
+  onDataChange: (force: boolean) => void
+  terms: TerminologyDict
 }
 
 export default function CostEstimationView({ 
-  projectId, wbsCostData, resourceRates, projectCurrency, globalOverhead, hasEditAccess, onDataChange 
-}: Props) {
+  projectId, wbsCostData, resourceRates, projectCurrency, globalOverhead, hasEditAccess,
+  onDataChange,
+  terms
+}: CostEstimationViewProps) {
   const [selectedWbsId, setSelectedWbsId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   
@@ -119,10 +124,10 @@ export default function CostEstimationView({
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-auto lg:h-[600px]">
-      {/* Left List: Work Packages */}
+      {/* Left List: Terminology Item */}
       <div className="w-full lg:w-1/3 h-[40vh] lg:h-full bg-app-surface border border-app-border rounded-3xl overflow-hidden flex flex-col shadow-sm">
         <div className="shrink-0 p-4 border-b border-app-border bg-app-muted-surface">
-          <h3 className="font-bold text-app-fg mb-3">Work Packages</h3>
+          <h3 className="font-bold text-app-fg mb-3">{terms.workPackages}</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
             <input
@@ -130,14 +135,14 @@ export default function CostEstimationView({
               placeholder="Search packages..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-app-fg"
+              className="w-full pl-9 pr-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 text-app-fg"
             />
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-2">
           {filteredWorkPackages.length === 0 ? (
             <p className="text-center text-app-muted text-sm mt-8">
-              {searchTerm ? 'No packages match your search.' : 'No work packages found. Create them in the WBS tab first.'}
+              {searchTerm ? `No ${terms.workPackages.toLowerCase()} match your search.` : `No ${terms.workPackages.toLowerCase()} found. Create them in the WBS tab first.`}
             </p>
           ) : (
             filteredWorkPackages.map(wp => (
@@ -146,7 +151,7 @@ export default function CostEstimationView({
                 onClick={() => handleSelect(wp)}
                 className={`w-full text-left p-3 mb-2 rounded-xl transition-all duration-200 border cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${
                   selectedWbsId === wp.wbsId
-                    ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/30 shadow-sm'
+                    ? 'bg-violet-50 dark:bg-violet-500/10 border-violet-200 dark:border-violet-500/30 shadow-sm'
                     : 'bg-app-surface border-transparent hover:bg-app-hover hover:border-app-border'
                 }`}
               >
@@ -201,7 +206,7 @@ export default function CostEstimationView({
               {hasEditAccess && (
                 <button
                   onClick={() => setIsSheetOpen(true)}
-                  className="px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-sm font-semibold rounded-lg cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-500/20 hover:scale-105 hover:shadow-sm transition-all duration-200"
+                  className="px-4 py-2 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 text-sm font-semibold rounded-lg cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-500/20 hover:scale-105 hover:shadow-sm transition-all duration-200"
                 >
                   Assign Resources
                 </button>
@@ -215,19 +220,19 @@ export default function CostEstimationView({
                 <div className="flex gap-2 p-1 bg-app-muted-surface rounded-xl inline-flex">
                   <button
                     onClick={() => setMethod('bottom_up')}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer hover:scale-105 ${method === 'bottom_up' ? 'bg-white dark:bg-slate-700 text-indigo-500 shadow-sm' : 'text-app-subtle hover:text-app-fg hover:bg-black/5 dark:hover:bg-white/5'}`}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer hover:scale-105 ${method === 'bottom_up' ? 'bg-white dark:bg-slate-700 text-violet-500 shadow-sm' : 'text-app-subtle hover:text-app-fg hover:bg-black/5 dark:hover:bg-white/5'}`}
                   >
                     Bottom-Up
                   </button>
                   <button
                     onClick={() => setMethod('parametric')}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer hover:scale-105 ${method === 'parametric' ? 'bg-white dark:bg-slate-700 text-indigo-500 shadow-sm' : 'text-app-subtle hover:text-app-fg hover:bg-black/5 dark:hover:bg-white/5'}`}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer hover:scale-105 ${method === 'parametric' ? 'bg-white dark:bg-slate-700 text-violet-500 shadow-sm' : 'text-app-subtle hover:text-app-fg hover:bg-black/5 dark:hover:bg-white/5'}`}
                   >
                     Parametric
                   </button>
                   <button
                     onClick={() => setMethod('analogous')}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer hover:scale-105 ${method === 'analogous' ? 'bg-white dark:bg-slate-700 text-indigo-500 shadow-sm' : 'text-app-subtle hover:text-app-fg hover:bg-black/5 dark:hover:bg-white/5'}`}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer hover:scale-105 ${method === 'analogous' ? 'bg-white dark:bg-slate-700 text-violet-500 shadow-sm' : 'text-app-subtle hover:text-app-fg hover:bg-black/5 dark:hover:bg-white/5'}`}
                   >
                     Analogous
                   </button>
@@ -277,7 +282,7 @@ export default function CostEstimationView({
                       disabled={!hasEditAccess || (selectedWp.costAccount?.reconciliation_status === 'reconciled')}
                       value={total}
                       onChange={e => setTotal(e.target.value)}
-                      className="w-full md:w-1/2 px-4 py-3 bg-app-input border border-app-border rounded-xl text-app-fg font-bold text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                      className="w-full md:w-1/2 px-4 py-3 bg-app-input border border-app-border rounded-xl text-app-fg font-bold text-lg focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-50"
                       placeholder="0.00"
                     />
                     {selectedWp.costAccount?.reconciliation_status === 'reconciled' && (
@@ -300,7 +305,7 @@ export default function CostEstimationView({
                         disabled={!hasEditAccess}
                         value={rate}
                         onChange={e => setRate(e.target.value)}
-                        className="w-full px-4 py-2 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500"
                         placeholder="e.g. 150"
                       />
                     </div>
@@ -314,14 +319,14 @@ export default function CostEstimationView({
                         disabled={!hasEditAccess}
                         value={quantity}
                         onChange={e => setQuantity(e.target.value)}
-                        className="w-full px-4 py-2 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500"
                         placeholder="e.g. 40"
                       />
                     </div>
                   </div>
                   <div className="pt-4 border-t border-app-border">
                     <label className="block text-xs font-semibold text-app-muted uppercase tracking-wider mb-2">Calculated Total</label>
-                    <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                    <div className="text-2xl font-bold text-violet-600 dark:text-violet-400">
                       <CurrencyDisplay amount={(parseFloat(rate) || 0) * (parseFloat(quantity) || 0)} currency={projectCurrency} compactThreshold={1000} />
                     </div>
                   </div>
@@ -340,7 +345,7 @@ export default function CostEstimationView({
                       disabled={!hasEditAccess}
                       value={total}
                       onChange={e => setTotal(e.target.value)}
-                      className="w-full md:w-1/2 px-4 py-3 bg-app-input border border-app-border rounded-xl text-app-fg font-bold text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full md:w-1/2 px-4 py-3 bg-app-input border border-app-border rounded-xl text-app-fg font-bold text-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
                       placeholder="0.00"
                     />
                   </div>
@@ -350,7 +355,7 @@ export default function CostEstimationView({
                       disabled={!hasEditAccess}
                       value={note}
                       onChange={e => setNote(e.target.value)}
-                      className="w-full px-4 py-3 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none h-24"
+                      className="w-full px-4 py-3 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none h-24"
                       placeholder="e.g. Based on actuals from Project Phoenix Phase 1..."
                     />
                   </div>
@@ -366,7 +371,7 @@ export default function CostEstimationView({
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-semibold shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-default disabled:hover:translate-y-0 disabled:hover:shadow-sm"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-violet-500 hover:bg-violet-600 text-white rounded-xl font-semibold shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-default disabled:hover:translate-y-0 disabled:hover:shadow-sm"
                 >
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save Estimate
@@ -386,7 +391,7 @@ export default function CostEstimationView({
           projectCurrency={projectCurrency}
           globalOverhead={globalOverhead}
           onClose={() => setIsSheetOpen(false)}
-          onDataChange={onDataChange}
+          onDataChange={() => onDataChange(true)}
         />
       )}
     </div>

@@ -71,8 +71,8 @@ export function PrdMetadataRibbon({ projectId, organizationId }: PrdMetadataRibb
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-slate-800/60 dark:to-slate-800/40 rounded-2xl p-4 border border-violet-200/60 dark:border-slate-700 flex items-center gap-3">
-        <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+      <div className="bg-gradient-to-r from-violet-50 to-violet-50 dark:from-slate-800/60 dark:to-slate-800/40 rounded-2xl p-4 border border-violet-200/60 dark:border-slate-700 flex items-center gap-3">
+        <Loader2 className="w-4 h-4 animate-spin text-violet-500" />
         <span className="text-xs font-semibold text-slate-500">Loading PRD metadata...</span>
       </div>
     )
@@ -82,7 +82,7 @@ export function PrdMetadataRibbon({ projectId, organizationId }: PrdMetadataRibb
   const selectedOkr = objectives.find(o => o.id === okrId)
 
   return (
-    <div className="bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-slate-800/60 dark:to-slate-800/40 rounded-2xl p-4 lg:p-5 border border-violet-200/60 dark:border-slate-700">
+    <div className="bg-gradient-to-r from-violet-50 to-violet-50 dark:from-slate-800/60 dark:to-slate-800/40 rounded-2xl p-4 lg:p-5 border border-violet-200/60 dark:border-slate-700">
       {/* Ribbon Header */}
       <div className="flex items-center gap-2 mb-4">
         <div className="p-1.5 rounded-lg bg-violet-100 dark:bg-violet-900/40">
@@ -135,7 +135,7 @@ export function PrdMetadataRibbon({ projectId, organizationId }: PrdMetadataRibb
             value={figmaUrl}
             onChange={e => setFigmaUrl(e.target.value)}
             placeholder="https://figma.com/file/..."
-            className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all"
+            className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
           />
         </div>
 

@@ -81,7 +81,7 @@ export function IssueLogTable({ issues }: IssueLogTableProps) {
                 </td>
                 <td className="py-3.5 px-4 whitespace-nowrap">
                   <div className="flex items-center gap-2.5 text-xs font-medium text-app-fg">
-                    <div className="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 flex items-center justify-center font-bold">
+                    <div className="w-7 h-7 rounded-full bg-violet-50 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 flex items-center justify-center font-bold">
                       {(issue.owner_name || 'U').charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -126,7 +126,7 @@ export function IssueLogTable({ issues }: IssueLogTableProps) {
       {/* Mobile & Tablet Card View (< md) */}
       <div className="md:hidden space-y-3">
         {issues.map(issue => (
-          <div key={issue.id} className="group bg-white dark:bg-app-card border border-app-border rounded-xl p-4 transition-all hover:border-indigo-500/50 shadow-sm relative">
+          <div key={issue.id} className="group bg-white dark:bg-app-card border border-app-border rounded-xl p-4 transition-all hover:border-violet-500/50 shadow-sm relative">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div>
                 <h4 className="font-semibold text-app-fg text-base">{issue.title}</h4>

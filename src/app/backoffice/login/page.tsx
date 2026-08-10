@@ -58,7 +58,7 @@ function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] p-4 relative overflow-hidden">
       {/* Background accents */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl mix-blend-multiply filter animate-blob"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl mix-blend-multiply filter animate-blob"></div>
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl mix-blend-multiply filter animate-blob animation-delay-2000"></div>
       </div>
 
@@ -66,11 +66,11 @@ function LoginForm() {
         <div className="bg-white dark:bg-[#111] p-8 rounded-3xl shadow-xl border border-gray-200 dark:border-white/5">
           
           <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-indigo-600 dark:text-indigo-400">
+            <div className="w-14 h-14 bg-violet-100 dark:bg-violet-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-violet-600 dark:text-violet-400">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
             </div>
             <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-              Baseline <span className="text-indigo-600">Ops</span>
+              Baseline <span className="text-violet-600">Ops</span>
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               Sign in to the platform administration console
@@ -93,7 +93,7 @@ function LoginForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all outline-none"
                 placeholder="admin@baseline.com"
               />
             </div>
@@ -107,7 +107,7 @@ function LoginForm() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-black text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all outline-none"
                 placeholder="••••••••"
               />
             </div>
@@ -116,7 +116,7 @@ function LoginForm() {
               type="submit" 
               disabled={loading}
               style={{ cursor: 'pointer' }}
-              className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+              className="w-full py-3.5 px-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-2"
             >
               {loading ? 'Authenticating...' : 'Sign In to Console'}
             </button>
@@ -124,10 +124,10 @@ function LoginForm() {
           
           <div className="mt-8 text-center border-t border-gray-100 dark:border-white/5 pt-6 space-y-2">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              New staff member? <Link href={`/backoffice/signup${nextPath ? `?next=${encodeURIComponent(nextPath)}` : ''}`} className="text-indigo-600 font-semibold hover:underline">Set up your account</Link>
+              New staff member? <Link href={`/backoffice/signup${nextPath ? `?next=${encodeURIComponent(nextPath)}` : ''}`} className="text-violet-600 font-semibold hover:underline">Set up your account</Link>
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Not a platform administrator? <Link href="/login" className="text-indigo-600 font-semibold hover:underline">Return to Customer Login</Link>
+              Not a platform administrator? <Link href="/login" className="text-violet-600 font-semibold hover:underline">Return to Customer Login</Link>
             </p>
           </div>
         </div>

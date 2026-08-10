@@ -67,7 +67,7 @@ export function ActivityPanel({ activeUsers, showCursors, toggleCursors }: Activ
           </span>
           <div 
             className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
-              showCursors ? 'bg-indigo-500' : 'bg-app-border'
+              showCursors ? 'bg-violet-500' : 'bg-app-border'
             }`}
           >
             <span 

@@ -56,7 +56,7 @@ export default function TopRisksResolver({ projectId, periodEnd, frozenData }: T
   if (loading) {
     return (
       <div className="flex h-32 items-center justify-center bg-app-surface border border-app-border rounded-xl">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
       </div>
     )
   }
@@ -95,7 +95,7 @@ export default function TopRisksResolver({ projectId, periodEnd, frozenData }: T
         }
 
         return (
-          <div key={risk.id} className="bg-app-surface border border-app-border rounded-xl p-5 flex flex-col gap-3 shadow-sm hover:border-indigo-500/30 transition-colors">
+          <div key={risk.id} className="bg-app-surface border border-app-border rounded-xl p-5 flex flex-col gap-3 shadow-sm hover:border-violet-500/30 transition-colors">
             <div className="flex items-start justify-between gap-4">
               <h4 className="text-base font-bold text-app-fg flex-1">
                 {risk.title}

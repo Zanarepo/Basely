@@ -37,7 +37,7 @@ export function ScheduleMilestoneList({
       {/* Narrative Metrics Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-app-card border border-app-border rounded-xl p-4 flex items-center gap-4 shadow-sm">
-          <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg text-indigo-600 dark:text-indigo-400">
+          <div className="p-3 bg-violet-50 dark:bg-violet-500/10 rounded-lg text-violet-600 dark:text-violet-400">
             <Calendar className="w-6 h-6" />
           </div>
           <div>
@@ -74,7 +74,7 @@ export function ScheduleMilestoneList({
           onClick={() => setFilter('all')}
           className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
             filter === 'all' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? 'bg-violet-600 text-white shadow-sm' 
               : 'bg-app-surface text-app-muted hover:text-app-fg hover:bg-app-hover border border-app-border'
           }`}
           style={{ cursor: 'pointer' }}
@@ -131,7 +131,7 @@ export function ScheduleMilestoneList({
               <tbody className="divide-y divide-app-border text-sm text-app-fg">
                 {displayedItems.map(item => (
                   <tr key={item.id} className="group hover:bg-slate-50 dark:hover:bg-app-hover/50 transition-colors duration-150">
-                    <td className="py-3.5 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-mono font-bold text-violet-600 dark:text-violet-400 whitespace-nowrap">
                       {item.wbs_code}
                     </td>
                     <td className="py-3.5 px-4 font-semibold text-app-fg max-w-sm truncate">
@@ -185,11 +185,11 @@ export function ScheduleMilestoneList({
           {/* Mobile & Tablet Card Layout (< md) */}
           <div className="md:hidden space-y-3">
             {displayedItems.map(item => (
-              <div key={item.id} className="group bg-white dark:bg-app-card border border-app-border rounded-xl p-4 hover:border-indigo-500/50 shadow-sm transition-all relative">
+              <div key={item.id} className="group bg-white dark:bg-app-card border border-app-border rounded-xl p-4 hover:border-violet-500/50 shadow-sm transition-all relative">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-center gap-1.5">
                     {item.is_milestone && <Flag className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
-                    <span className="text-xs font-mono font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 px-2 py-0.5 rounded">
+                    <span className="text-xs font-mono font-bold bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 px-2 py-0.5 rounded">
                       WBS {item.wbs_code}
                     </span>
                   </div>

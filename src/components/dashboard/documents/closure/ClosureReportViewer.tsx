@@ -121,7 +121,7 @@ export function ClosureReportViewer({
             <button
               onClick={handleSaveSnapshot}
               disabled={saving}
-              className="px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-indigo-500/20 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 active:scale-95 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-violet-500/20 flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               <span>Freeze Closure Snapshot</span>
@@ -141,7 +141,7 @@ export function ClosureReportViewer({
           onChange={(e) => setExecutiveSummary(e.target.value)}
           readOnly={!hasEditAccess}
           placeholder="Enter executive findings, overall delivery statement, and formal closure justification..."
-          className="w-full bg-app-bg border border-app-border rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-app-fg placeholder-app-muted focus:outline-none focus:border-indigo-500 leading-relaxed"
+          className="w-full bg-app-bg border border-app-border rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-app-fg placeholder-app-muted focus:outline-none focus:border-violet-500 leading-relaxed"
         />
       </div>
 
@@ -176,7 +176,7 @@ export function ClosureReportViewer({
           <div className="p-4 bg-app-surface border border-app-border rounded-2xl flex flex-col justify-between">
             <span className="text-xs text-app-muted font-bold">Final Cost CPI / SPI</span>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-lg sm:text-xl font-black text-indigo-400 font-mono">{data.evmSummary.cpi} CPI</span>
+              <span className="text-lg sm:text-xl font-black text-violet-400 font-mono">{data.evmSummary.cpi} CPI</span>
               <span className="text-app-muted">/</span>
               <span className="text-lg sm:text-xl font-black text-sky-400 font-mono">{data.evmSummary.spi} SPI</span>
             </div>
@@ -216,7 +216,7 @@ export function ClosureReportViewer({
               ) : (
                 data.deliverables.map((item) => (
                   <tr key={item.id} className="hover:bg-app-hover/30 transition-colors">
-                    <td className="py-3 px-3 font-mono text-indigo-400 font-bold whitespace-nowrap">{item.code}</td>
+                    <td className="py-3 px-3 font-mono text-violet-400 font-bold whitespace-nowrap">{item.code}</td>
                     <td className="py-3 px-3 text-app-fg font-medium">
                       <div className="flex items-center gap-2">
                         {item.name.replace(/\s*\(?milestone\)?\s*/i, '')}
@@ -299,7 +299,7 @@ export function ClosureReportViewer({
                   </span>
                 </div>
                 <p className="text-xs text-app-muted leading-relaxed">
-                  <strong className="text-indigo-400">Mitigation Plan: </strong> {risk.mitigationPlan}
+                  <strong className="text-violet-400">Mitigation Plan: </strong> {risk.mitigationPlan}
                 </p>
               </div>
             ))}
@@ -329,19 +329,19 @@ export function ClosureReportViewer({
             <tbody className="divide-y divide-app-border/40">
               <tr className="hover:bg-app-hover/30 transition-colors">
                 <td className="py-2.5 px-3 font-bold text-app-fg">Planned Value (PV)</td>
-                <td className="py-2.5 px-3 font-mono text-indigo-400 text-xs">BAC × % planned complete</td>
+                <td className="py-2.5 px-3 font-mono text-violet-400 text-xs">BAC × % planned complete</td>
                 <td className="py-2.5 px-3 font-mono font-bold">${data.evmSummary.pv.toLocaleString()}</td>
                 <td className="py-2.5 px-3 text-app-muted font-medium">Expected baseline value to date</td>
               </tr>
               <tr className="hover:bg-app-hover/30 transition-colors">
                 <td className="py-2.5 px-3 font-bold text-app-fg">Earned Value (EV)</td>
-                <td className="py-2.5 px-3 font-mono text-indigo-400 text-xs">BAC × % actually complete</td>
+                <td className="py-2.5 px-3 font-mono text-violet-400 text-xs">BAC × % actually complete</td>
                 <td className="py-2.5 px-3 font-mono font-bold">${data.evmSummary.ev.toLocaleString()}</td>
                 <td className="py-2.5 px-3 text-app-muted font-medium">Value of work actually performed</td>
               </tr>
               <tr className="hover:bg-app-hover/30 transition-colors">
                 <td className="py-2.5 px-3 font-bold text-app-fg">Cost Variance (CV)</td>
-                <td className="py-2.5 px-3 font-mono text-indigo-400 text-xs">EV - AC</td>
+                <td className="py-2.5 px-3 font-mono text-violet-400 text-xs">EV - AC</td>
                 <td className={`py-2.5 px-3 font-mono font-bold ${data.evmSummary.cv >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   ${data.evmSummary.cv.toLocaleString()}
                 </td>
@@ -351,7 +351,7 @@ export function ClosureReportViewer({
               </tr>
               <tr className="hover:bg-app-hover/30 transition-colors">
                 <td className="py-2.5 px-3 font-bold text-app-fg">Schedule Variance (SV)</td>
-                <td className="py-2.5 px-3 font-mono text-indigo-400 text-xs">EV - PV</td>
+                <td className="py-2.5 px-3 font-mono text-violet-400 text-xs">EV - PV</td>
                 <td className={`py-2.5 px-3 font-mono font-bold ${data.evmSummary.sv >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   ${data.evmSummary.sv.toLocaleString()}
                 </td>
@@ -361,7 +361,7 @@ export function ClosureReportViewer({
               </tr>
               <tr className="hover:bg-app-hover/30 transition-colors">
                 <td className="py-2.5 px-3 font-bold text-app-fg">Cost Performance Index (CPI)</td>
-                <td className="py-2.5 px-3 font-mono text-indigo-400 text-xs">EV ÷ AC</td>
+                <td className="py-2.5 px-3 font-mono text-violet-400 text-xs">EV ÷ AC</td>
                 <td className={`py-2.5 px-3 font-mono font-bold ${data.evmSummary.cpi >= 1 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   {data.evmSummary.cpi}
                 </td>
@@ -371,7 +371,7 @@ export function ClosureReportViewer({
               </tr>
               <tr className="hover:bg-app-hover/30 transition-colors">
                 <td className="py-2.5 px-3 font-bold text-app-fg">Schedule Perf. Index (SPI)</td>
-                <td className="py-2.5 px-3 font-mono text-indigo-400 text-xs">EV ÷ PV</td>
+                <td className="py-2.5 px-3 font-mono text-violet-400 text-xs">EV ÷ PV</td>
                 <td className={`py-2.5 px-3 font-mono font-bold ${data.evmSummary.spi >= 1 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   {data.evmSummary.spi}
                 </td>
@@ -381,19 +381,19 @@ export function ClosureReportViewer({
               </tr>
               <tr className="hover:bg-app-hover/30 transition-colors bg-app-bg/30">
                 <td className="py-2.5 px-3 font-bold text-app-fg">Estimate at Completion (EAC)</td>
-                <td className="py-2.5 px-3 font-mono text-indigo-400 text-xs">BAC ÷ CPI</td>
+                <td className="py-2.5 px-3 font-mono text-violet-400 text-xs">BAC ÷ CPI</td>
                 <td className="py-2.5 px-3 font-mono font-bold">${data.evmSummary.eac.toLocaleString()}</td>
                 <td className="py-2.5 px-3 text-app-muted font-medium">Total forecasted project cost</td>
               </tr>
               <tr className="hover:bg-app-hover/30 transition-colors bg-app-bg/30">
                 <td className="py-2.5 px-3 font-bold text-app-fg">Estimate to Complete (ETC)</td>
-                <td className="py-2.5 px-3 font-mono text-indigo-400 text-xs">EAC - AC</td>
+                <td className="py-2.5 px-3 font-mono text-violet-400 text-xs">EAC - AC</td>
                 <td className="py-2.5 px-3 font-mono font-bold">${data.evmSummary.etc.toLocaleString()}</td>
                 <td className="py-2.5 px-3 text-app-muted font-medium">Forecasted remaining costs</td>
               </tr>
               <tr className="hover:bg-app-hover/30 transition-colors bg-app-bg/30">
                 <td className="py-2.5 px-3 font-bold text-app-fg">Variance at Completion (VAC)</td>
-                <td className="py-2.5 px-3 font-mono text-indigo-400 text-xs">BAC - EAC</td>
+                <td className="py-2.5 px-3 font-mono text-violet-400 text-xs">BAC - EAC</td>
                 <td className={`py-2.5 px-3 font-mono font-bold ${data.evmSummary.vac >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   ${data.evmSummary.vac.toLocaleString()}
                 </td>

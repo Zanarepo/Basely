@@ -109,7 +109,7 @@ export function ProjectCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-semibold text-app-fg truncate hover:text-indigo-500 transition-colors">
+            <h3 className="font-semibold text-app-fg truncate hover:text-violet-500 transition-colors">
               <Link href={`/dashboard/projects/${project.id}`}>
                 {project.name}
               </Link>
@@ -226,7 +226,7 @@ export function ProjectCard({
       <div className="pt-3 border-t border-app-border">
         <div className="flex items-center justify-between gap-3 mb-2 min-h-[28px]">
           <span className="text-sm font-medium text-app-muted inline-flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+            <Users className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
             Assigned team ({project.assignedMembers.length})
           </span>
 
@@ -259,7 +259,7 @@ export function ProjectCard({
                 <span
                   key={userId}
                   title={`${m.name} (${m.role})`}
-                  className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold border border-indigo-500/25"
+                  className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-violet-500/15 text-violet-700 dark:text-violet-300 text-[10px] font-bold border border-violet-500/25"
                 >
                   {initials}
                 </span>
