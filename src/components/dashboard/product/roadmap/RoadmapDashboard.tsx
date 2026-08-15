@@ -21,7 +21,7 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
 
   const loadData = useCallback(async () => {
     try {
-      setIsLoading(true)
+      if (items.length === 0) setIsLoading(true)
       const { success, data, error } = await getRoadmapItems(projectId)
       if (success && data) {
         setItems(data)
@@ -33,7 +33,7 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
     } finally {
       setIsLoading(false)
     }
-  }, [projectId, showToast])
+  }, [projectId, showToast, items.length])
 
   useEffect(() => {
     loadData()
@@ -80,10 +80,11 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
     }
   }
 
-  if (isLoading) {
+  if (isLoading && items.length === 0) {
     return (
-      <div className="flex justify-center p-12">
+      <div className="flex flex-col items-center justify-center p-12 space-y-3 min-h-[300px]">
         <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
+        <span className="text-xs text-app-muted font-medium animate-pulse">Loading Kanban items...</span>
       </div>
     )
   }

@@ -18,6 +18,7 @@ export function useRichTextFormatting(
   onChange: (val: string) => void,
   isEditing: boolean
 ) {
+  const safeValue = typeof value === 'string' ? value : (value == null ? '' : String(value))
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
@@ -38,7 +39,7 @@ export function useRichTextFormatting(
 
     const start = el.selectionStart
     const end = el.selectionEnd
-    const currentVal = value || ''
+    const currentVal = safeValue
 
     let selectedText = ''
     if (start !== end) {
@@ -46,24 +47,26 @@ export function useRichTextFormatting(
     } else {
       selectedText = currentVal
     }
+    // Ensure selectedText is a string for safe methods
+    const sel = String(selectedText)
 
     const bold =
-      (selectedText.length > 0 && selectedText.startsWith('**') && selectedText.endsWith('**')) ||
+      (sel.length > 0 && sel.startsWith('**') && sel.endsWith('**')) ||
       (currentVal.trim().length > 0 && currentVal.startsWith('**') && currentVal.endsWith('**'))
 
     const italic =
-      (selectedText.length > 0 &&
-        selectedText.startsWith('*') &&
-        !selectedText.startsWith('**') &&
-        selectedText.endsWith('*') &&
-        !selectedText.endsWith('**')) ||
+      (sel.length > 0 &&
+        sel.startsWith('*') &&
+        !sel.startsWith('**') &&
+        sel.endsWith('*') &&
+        !sel.endsWith('**')) ||
       (currentVal.trim().length > 0 &&
         currentVal.startsWith('*') &&
         !currentVal.startsWith('**') &&
         currentVal.endsWith('*') &&
         !currentVal.endsWith('**'))
 
-    const link = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/.test(selectedText)
+    const link = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/.test(sel)
 
     const lineStart = currentVal.lastIndexOf('\n', start - 1) + 1
     let lineEnd = currentVal.indexOf('\n', start)
@@ -92,7 +95,7 @@ export function useRichTextFormatting(
 
     const start = el.selectionStart
     const end = el.selectionEnd
-    const currentVal = value || ''
+    const currentVal = safeValue
     const selectedText = currentVal.substring(start, end)
 
     if (selectedText.length > 0) {
@@ -142,7 +145,7 @@ export function useRichTextFormatting(
 
     const start = el.selectionStart
     const end = el.selectionEnd
-    const currentVal = value || ''
+    const currentVal = safeValue
 
     const cleanLinePrefix = (line: string) => {
       return line.replace(/^(#{1,6}\s+|[-*+]\s+|\d+\.\s+|>+\s+)/, '')
@@ -193,7 +196,7 @@ export function useRichTextFormatting(
     const el = textareaRef.current
     if (!el) return
     const start = el.selectionStart
-    const currentVal = value || ''
+    const currentVal = safeValue
     const newVal = currentVal.substring(0, start) + tableSnippet + currentVal.substring(start)
     onChange(newVal)
   }
@@ -204,7 +207,7 @@ export function useRichTextFormatting(
 
     const start = el.selectionStart
     const end = el.selectionEnd
-    const currentVal = value || ''
+    const currentVal = safeValue
     const selectedText = currentVal.substring(start, end)
 
     const defaultUrl = selectedText.startsWith('http') ? selectedText : 'https://'
@@ -267,7 +270,7 @@ export function useRichTextFormatting(
 
       const start = el.selectionStart
       const end = el.selectionEnd
-      const currentVal = value || ''
+      const currentVal = safeValue
 
       const newVal = currentVal.substring(0, start) + convertedMarkdown + currentVal.substring(end)
       onChange(newVal)

@@ -13,6 +13,7 @@ import DocumentCenterHeader from './components/DocumentCenterHeader'
 import ActiveDocumentHeader from './components/ActiveDocumentHeader'
 import DocumentCardGrid from './components/DocumentCardGrid'
 import PmGuideDrawer from './components/PmGuideDrawer'
+import WorkflowsDrawer from './components/WorkflowsDrawer'
 
 interface DocumentsWorkspaceProps {
   projectId: string
@@ -33,6 +34,7 @@ export default function DocumentsWorkspace({
     searchQuery,
     selectedCategory,
     showGuideDrawer,
+    showWorkflowsDrawer,
     isDropdownOpen,
     activeSnapshotId,
     toasts,
@@ -44,6 +46,7 @@ export default function DocumentsWorkspace({
     setSearchQuery,
     setSelectedCategory,
     setShowGuideDrawer,
+    setShowWorkflowsDrawer,
     setIsDropdownOpen,
     addToast,
     dismissToast,
@@ -64,12 +67,14 @@ export default function DocumentsWorkspace({
             currentSuiteDocs={currentSuiteDocs}
             isDropdownOpen={isDropdownOpen}
             showGuideDrawer={showGuideDrawer}
+            showWorkflowsDrawer={showWorkflowsDrawer}
             onBackToHub={() => setSelectedDocId(null)}
             onSuiteChange={setActiveSuite}
             onSelectDoc={setSelectedDocId}
             onToggleDropdown={() => setIsDropdownOpen(!isDropdownOpen)}
             onCloseDropdown={() => setIsDropdownOpen(false)}
             onToggleGuideDrawer={() => setShowGuideDrawer(!showGuideDrawer)}
+            onToggleWorkflowsDrawer={() => setShowWorkflowsDrawer(!showWorkflowsDrawer)}
           />
         ) : (
           <DocumentCenterHeader
@@ -79,12 +84,19 @@ export default function DocumentsWorkspace({
             onSuiteChange={setActiveSuite}
             onSearchChange={setSearchQuery}
             onCategoryChange={setSelectedCategory}
+            showWorkflowsDrawer={showWorkflowsDrawer}
+            onToggleWorkflowsDrawer={() => setShowWorkflowsDrawer(!showWorkflowsDrawer)}
           />
         )}
       </div>
 
       {/* BODY CONTENT AREA */}
       <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-6">
+        {/* Global Workflows Drawer */}
+        {showWorkflowsDrawer && (
+          <WorkflowsDrawer onClose={() => setShowWorkflowsDrawer(false)} />
+        )}
+
         {selectedDocId ? (
           /* ACTIVE DOCUMENT WORKSPACE VIEW */
           <div className="space-y-6">
@@ -112,9 +124,14 @@ export default function DocumentsWorkspace({
                 'test_summary_report',
                 'product_strategy_document',
                 'market_research_report',
+                'market_research_workspace',
                 'competitive_benchmarking_matrix',
+                'competitive_analysis_workspace',
                 'okr_kpi_performance_report',
                 'product_requirements_document',
+                'roadmap_workspace',
+                'product_roadmap_document',
+                'product_roadmap',
               ].includes(selectedDocId) && (
                 <ProjectDocument
                   key={selectedDocId + (activeSnapshotId || 'draft')}
@@ -136,9 +153,7 @@ export default function DocumentsWorkspace({
                 'voc_discovery_workspace',
                 'discovery_insights_document',
                 'prioritization_workspace',
-                'roadmap_workspace',
-                'competitive_analysis_workspace',
-                'competitive_benchmarking_matrix',
+                'release_checklist_workspace',
               ].includes(selectedDocId) && (
                 <ProductDocumentsRouter
                   documentType={selectedDocId}

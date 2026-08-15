@@ -1,5 +1,5 @@
 import React from 'react'
-import { ArrowLeft, Target, Layers, ChevronDown, Check, BookOpen } from 'lucide-react'
+import { ArrowLeft, Target, Layers, ChevronDown, Check, BookOpen, Route } from 'lucide-react'
 import { DocumentItem } from '../constants/documentDefinitions'
 
 interface ActiveDocumentHeaderProps {
@@ -9,12 +9,14 @@ interface ActiveDocumentHeaderProps {
   currentSuiteDocs: DocumentItem[]
   isDropdownOpen: boolean
   showGuideDrawer: boolean
+  showWorkflowsDrawer: boolean
   onBackToHub: () => void
   onSuiteChange: (suite: 'product' | 'project') => void
   onSelectDoc: (id: string) => void
   onToggleDropdown: () => void
   onCloseDropdown: () => void
   onToggleGuideDrawer: () => void
+  onToggleWorkflowsDrawer: () => void
 }
 
 export default function ActiveDocumentHeader({
@@ -24,12 +26,14 @@ export default function ActiveDocumentHeader({
   currentSuiteDocs,
   isDropdownOpen,
   showGuideDrawer,
+  showWorkflowsDrawer,
   onBackToHub,
   onSuiteChange,
   onSelectDoc,
   onToggleDropdown,
   onCloseDropdown,
   onToggleGuideDrawer,
+  onToggleWorkflowsDrawer,
 }: ActiveDocumentHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -132,6 +136,19 @@ export default function ActiveDocumentHeader({
       <div className="flex items-center gap-2">
         <button
           type="button"
+          onClick={onToggleWorkflowsDrawer}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer flex items-center gap-1.5 ${
+            showWorkflowsDrawer
+              ? 'bg-violet-500/15 border-violet-500 text-violet-600 dark:text-violet-400'
+              : 'bg-app-surface border-app-border text-app-muted hover:text-app-fg'
+          }`}
+        >
+          <Route className="w-3.5 h-3.5" />
+          <span>Workflows</span>
+        </button>
+
+        <button
+          type="button"
           onClick={onToggleGuideDrawer}
           className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer flex items-center gap-1.5 ${
             showGuideDrawer
@@ -140,7 +157,7 @@ export default function ActiveDocumentHeader({
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
-          <span>💡 PM Guide</span>
+          <span>PM Guide</span>
         </button>
       </div>
     </div>

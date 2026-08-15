@@ -11,37 +11,55 @@ interface ReferenceLink {
 interface ReferenceDocumentsSectionProps {
   freeText: Record<string, string>
   allSections: Array<{ key: string; title: string }>
+  documentType?: string
+  documentTitle?: string
 }
 
 export default function ReferenceDocumentsSection({
   freeText,
-  allSections
+  allSections,
+  documentType = '',
+  documentTitle = ''
 }: ReferenceDocumentsSectionProps) {
-  // Extract all markdown links from freeText
-  const extractedLinks: ReferenceLink[] = []
+  const rawDocName = documentTitle || (documentType ? documentType.replaceAll('_', ' ') : 'Document')
+  const docName = rawDocName.toLowerCase().endsWith('document') || rawDocName.toLowerCase().endsWith('doc')
+    ? rawDocName.replace(/\b\w/g, l => l.toUpperCase())
+    : `${rawDocName.replace(/\b\w/g, l => l.toUpperCase())} Document`
 
   const sectionTitleMap = new Map<string, string>()
   allSections.forEach(s => sectionTitleMap.set(s.key, s.title))
 
+  const activeSectionKeys = new Set(allSections.map(s => s.key))
+  const uniqueExtractedLinks: ReferenceLink[] = []
+  const seenUrls = new Set<string>()
+
   Object.entries(freeText).forEach(([key, val]) => {
     if (!val || typeof val !== 'string' || key.startsWith('__')) return
+    if (!activeSectionKeys.has(key)) return
 
     const sectionTitle = sectionTitleMap.get(key) || key.replace(/^custom_sec_/, 'Section ')
 
-    // Regex for markdown links: [label](url)
-    const regex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g
+    const regex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<]+[^<.,:\s])/g
     let match: RegExpExecArray | null
 
     while ((match = regex.exec(val)) !== null) {
-      const label = match[1].trim()
-      const url = match[2].trim()
-      if (url && !extractedLinks.some(l => l.url === url && l.sectionKey === key)) {
-        extractedLinks.push({
-          label: label || url,
-          url,
-          sectionKey: key,
-          sectionTitle
-        })
+      const label = (match[1] || match[3] || '').trim()
+      let url = (match[2] || match[3] || '').trim()
+
+      if (url) {
+        if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('/')) {
+          url = `https://${url}`
+        }
+
+        if (!seenUrls.has(url)) {
+          seenUrls.add(url)
+          uniqueExtractedLinks.push({
+            label: label || url,
+            url,
+            sectionKey: key,
+            sectionTitle
+          })
+        }
       }
     }
   })
@@ -57,17 +75,17 @@ export default function ReferenceDocumentsSection({
             <h3 className="text-base font-bold text-app-fg flex items-center gap-2">
               Reference Documents & External Links
               <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-                {extractedLinks.length} {extractedLinks.length === 1 ? 'Link' : 'Links'}
+                {uniqueExtractedLinks.length} {uniqueExtractedLinks.length === 1 ? 'Link' : 'Links'}
               </span>
             </h3>
             <p className="text-xs text-app-muted">
-              Auto-indexed external resources, specs, and reference documents linked in this PRD
+              Auto-indexed external resources, specs, and reference documents linked in this {docName}
             </p>
           </div>
         </div>
       </div>
 
-      {extractedLinks.length > 0 ? (
+      {uniqueExtractedLinks.length > 0 ? (
         <div className="overflow-x-auto border border-app-border rounded-xl bg-app-surface shadow-xs">
           <table className="w-full text-left text-xs">
             <thead className="bg-app-muted-surface border-b border-app-border text-app-muted font-bold uppercase tracking-wider">
@@ -79,7 +97,7 @@ export default function ReferenceDocumentsSection({
               </tr>
             </thead>
             <tbody className="divide-y divide-app-border">
-              {extractedLinks.map((link, idx) => (
+              {uniqueExtractedLinks.map((link, idx) => (
                 <tr key={`${link.url}-${idx}`} className="hover:bg-app-hover/50 transition-colors">
                   <td className="px-4 py-3 font-semibold text-app-fg flex items-center gap-2">
                     <FileText className="w-3.5 h-3.5 text-violet-500 shrink-0" />
@@ -98,7 +116,7 @@ export default function ReferenceDocumentsSection({
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20 border border-violet-500/20 transition-all cursor-pointer"
                     >
-                      Open Link <ExternalLink className="w-3 h-3" />
+                      Open <ExternalLink className="w-3 h-3" />
                     </a>
                   </td>
                 </tr>
@@ -107,10 +125,8 @@ export default function ReferenceDocumentsSection({
           </table>
         </div>
       ) : (
-        <div className="p-4 rounded-xl border border-dashed border-app-border bg-app-muted-surface/30 text-center">
-          <p className="text-xs text-app-muted">
-            No reference documents linked yet. Use the Link tool (<Link2 className="w-3 h-3 inline text-violet-500 mx-0.5" />) in any section toolbar to insert target URLs.
-          </p>
+        <div className="p-6 rounded-xl border border-app-border bg-app-surface text-center text-xs text-app-muted">
+          No reference links added yet in any section. Use the <Link2 className="w-3 h-3 inline text-violet-500 mx-0.5" /> button in any section toolbar to insert external links.
         </div>
       )}
     </div>

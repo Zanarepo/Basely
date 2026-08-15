@@ -1,41 +1,7 @@
-import { Users, FileCheck, Lightbulb } from 'lucide-react'
+import { FileCheck, Lightbulb } from 'lucide-react'
 import { DocumentItem } from '../types'
 
 export const productRequirementsDocs: DocumentItem[] = [
-  {
-    id: 'user_journey_workspace',
-    title: 'User Journey Map',
-    category: 'requirements',
-    suite: 'product',
-    icon: Users,
-    description: 'End-to-end user touchpoints, emotional curve & drop-off friction.',
-    badge: 'UX Map',
-    guide: {
-      purpose: 'Visualizes the step-by-step experience of a user achieving a goal within your product.',
-      audience: 'UX Designers, Product Managers, Customer Support Leads',
-      bestPractices: [
-        'Identify key friction points where users drop off.',
-        'Map emotion levels across onboarding and core tasks.',
-      ],
-    },
-  },
-  {
-    id: 'feature_backlog_workspace',
-    title: 'Feature Backlog Roster',
-    category: 'requirements',
-    suite: 'product',
-    icon: FileCheck,
-    description: 'Centralized feature requests, user stories, acceptance criteria.',
-    badge: 'Backlog',
-    guide: {
-      purpose: 'Consolidates all feature requests, ideas, and backlog items in one place.',
-      audience: 'Product Owners, Scrum Masters, Engineering Teams',
-      bestPractices: [
-        'Groom weekly to remove stale or duplicate requests.',
-        'Ensure items are tagged with clear priority badges.',
-      ],
-    },
-  },
   {
     id: 'product_requirements_document',
     title: 'Product Requirements Doc',

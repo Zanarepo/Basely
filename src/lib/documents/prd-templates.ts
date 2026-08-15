@@ -1,4 +1,7 @@
-import { DocumentSectionDef } from './actions'
+import type { DocumentSectionDef } from './actions'
+import { STRATEGY_TEMPLATE_VARIANTS } from './strategy-templates'
+import { ROADMAP_TEMPLATE_VARIANTS } from './roadmap-templates'
+import { MARKET_RESEARCH_TEMPLATE_VARIANTS } from './market-research-templates'
 
 export interface PrdTemplateVariant {
   id: string
@@ -231,10 +234,11 @@ export const PRD_TEMPLATE_VARIANTS: Record<string, PrdTemplateVariant> = {
 }
 
 export function getSyncDocumentTemplate(documentType: string, templateId?: string): any {
-  if (templateId && PRD_TEMPLATE_VARIANTS[templateId]) {
-    const variant = PRD_TEMPLATE_VARIANTS[templateId]
+  if (templateId && (PRD_TEMPLATE_VARIANTS[templateId] || STRATEGY_TEMPLATE_VARIANTS[templateId] || ROADMAP_TEMPLATE_VARIANTS[templateId] || MARKET_RESEARCH_TEMPLATE_VARIANTS[templateId])) {
+    const variant = PRD_TEMPLATE_VARIANTS[templateId] || STRATEGY_TEMPLATE_VARIANTS[templateId] || ROADMAP_TEMPLATE_VARIANTS[templateId] || MARKET_RESEARCH_TEMPLATE_VARIANTS[templateId]
     return {
       id: variant.id,
+      name: variant.name,
       document_type: documentType || 'product_requirements_document',
       is_custom: true,
       created_at: new Date().toISOString(),
@@ -509,30 +513,63 @@ export function getSyncDocumentTemplate(documentType: string, templateId?: strin
   }
 
   if (documentType === 'product_strategy_document') {
-    return {
-      id: 'product_strategy_document_template',
-      document_type: 'product_strategy_document',
-      is_custom: false,
-      created_at: new Date().toISOString(),
-      section_definitions: [
-        { key: 'strategy_vision', title: 'Product Vision Canvas & Core Pillars', type: 'data_bound', source: 'product.strategy_canvas' },
-        { key: 'executive_commentary', title: 'Executive Strategy & Strategic Intent', type: 'free_text' }
-      ]
+    const stratVariant = templateId
+      ? STRATEGY_TEMPLATE_VARIANTS[templateId] || STRATEGY_TEMPLATE_VARIANTS['standard_product_strategy']
+      : STRATEGY_TEMPLATE_VARIANTS['standard_product_strategy']
+
+    if (stratVariant) {
+      return {
+        id: stratVariant.id,
+        name: stratVariant.name,
+        document_type: 'product_strategy_document',
+        is_custom: stratVariant.id !== 'standard_product_strategy',
+        created_at: new Date().toISOString(),
+        section_definitions: stratVariant.section_definitions,
+      }
     }
   }
 
-  if (documentType === 'market_research_report') {
-    return {
-      id: 'market_research_report_template',
-      document_type: 'market_research_report',
-      is_custom: false,
-      created_at: new Date().toISOString(),
-      section_definitions: [
-        { key: 'target_market_segmentation', title: 'Target Market & Customer Segments', type: 'data_bound', source: 'product.target_market' },
-        { key: 'customer_personas', title: 'Customer Personas & JTBD Analysis', type: 'data_bound', source: 'product.personas' },
-        { key: 'tam_sam_som_analysis', title: 'TAM / SAM / SOM Financial Opportunity', type: 'free_text' },
-        { key: 'industry_trends', title: 'Industry Trends & Macro Factors', type: 'free_text' }
-      ]
+  if (documentType === 'roadmap_workspace' || documentType === 'product_roadmap_document' || documentType === 'product_roadmap') {
+    const roadmapVariant = templateId
+      ? ROADMAP_TEMPLATE_VARIANTS[templateId] || ROADMAP_TEMPLATE_VARIANTS['now_next_later']
+      : ROADMAP_TEMPLATE_VARIANTS['now_next_later']
+
+    if (roadmapVariant) {
+      return {
+        id: roadmapVariant.id,
+        name: roadmapVariant.name,
+        document_type: documentType,
+        is_custom: roadmapVariant.id !== 'now_next_later',
+        created_at: new Date().toISOString(),
+        section_definitions: roadmapVariant.section_definitions,
+      }
+    }
+  }
+
+  if (
+    documentType === 'market_research_report' ||
+    documentType === 'market_research_workspace' ||
+    documentType === 'competitive_analysis_workspace' ||
+    documentType === 'competitive_benchmarking_matrix'
+  ) {
+    const defaultVariantKey =
+      documentType === 'competitive_analysis_workspace' || documentType === 'competitive_benchmarking_matrix'
+        ? 'competitive_analysis_matrix'
+        : 'master_market_research'
+
+    const researchVariant = templateId
+      ? MARKET_RESEARCH_TEMPLATE_VARIANTS[templateId] || MARKET_RESEARCH_TEMPLATE_VARIANTS[defaultVariantKey]
+      : MARKET_RESEARCH_TEMPLATE_VARIANTS[defaultVariantKey]
+
+    if (researchVariant) {
+      return {
+        id: researchVariant.id,
+        name: researchVariant.name,
+        document_type: documentType,
+        is_custom: researchVariant.id !== defaultVariantKey,
+        created_at: new Date().toISOString(),
+        section_definitions: researchVariant.section_definitions,
+      }
     }
   }
 
@@ -580,7 +617,7 @@ export function getSyncDocumentTemplate(documentType: string, templateId?: strin
     }
   }
 
-  const selectedVariant = templateId ? PRD_TEMPLATE_VARIANTS[templateId] || null : null
+  const selectedVariant = templateId ? (PRD_TEMPLATE_VARIANTS[templateId] || STRATEGY_TEMPLATE_VARIANTS[templateId] || null) : null
   const defaultSectionDefs: DocumentSectionDef[] = [
     { key: 'prd_objective', title: 'Objective & Business Value', type: 'data_bound', source: 'prd.objective_overview' },
     { key: 'prd_scope_in', title: 'In Scope', type: 'free_text' },

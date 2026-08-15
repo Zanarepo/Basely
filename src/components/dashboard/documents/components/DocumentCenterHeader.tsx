@@ -1,5 +1,5 @@
 import React from 'react'
-import { FileText, Target, Layers, Search } from 'lucide-react'
+import { FileText, Target, Layers, Search, Route } from 'lucide-react'
 
 interface DocumentCenterHeaderProps {
   activeSuite: 'product' | 'project'
@@ -8,6 +8,8 @@ interface DocumentCenterHeaderProps {
   onSuiteChange: (suite: 'product' | 'project') => void
   onSearchChange: (query: string) => void
   onCategoryChange: (category: string) => void
+  showWorkflowsDrawer?: boolean
+  onToggleWorkflowsDrawer?: () => void
 }
 
 export default function DocumentCenterHeader({
@@ -17,6 +19,8 @@ export default function DocumentCenterHeader({
   onSuiteChange,
   onSearchChange,
   onCategoryChange,
+  showWorkflowsDrawer = false,
+  onToggleWorkflowsDrawer,
 }: DocumentCenterHeaderProps) {
   const categoryPills =
     activeSuite === 'project'
@@ -77,6 +81,22 @@ export default function DocumentCenterHeader({
               <span>Project Suite</span>
             </button>
           </div>
+
+          {/* PM Workflows Button */}
+          {onToggleWorkflowsDrawer && (
+            <button
+              type="button"
+              onClick={onToggleWorkflowsDrawer}
+              className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                showWorkflowsDrawer
+                  ? 'bg-violet-500/15 border-violet-500 text-violet-600 dark:text-violet-400'
+                  : 'bg-app-surface border-app-border text-app-muted hover:text-app-fg'
+              }`}
+            >
+              <Route className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline-block">Workflows</span>
+            </button>
+          )}
         </div>
       </div>
 

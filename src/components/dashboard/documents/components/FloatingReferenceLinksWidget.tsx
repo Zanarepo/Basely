@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link2, ExternalLink, ChevronUp, ChevronDown, FileText } from 'lucide-react'
+import { Link2, ExternalLink, ChevronDown, FileText } from 'lucide-react'
 
 interface ReferenceLink {
   label: string
@@ -11,39 +11,58 @@ interface ReferenceLink {
 interface FloatingReferenceLinksWidgetProps {
   freeText: Record<string, string>
   allSections: Array<{ key: string; title: string }>
+  documentType?: string
+  documentTitle?: string
 }
 
 export default function FloatingReferenceLinksWidget({
   freeText,
-  allSections
+  allSections,
+  documentType = '',
+  documentTitle = ''
 }: FloatingReferenceLinksWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  // Extract all markdown links from freeText
-  const extractedLinks: ReferenceLink[] = []
+  const rawDocName = documentTitle || (documentType ? documentType.replaceAll('_', ' ') : 'Document')
+  const docName = rawDocName.toLowerCase().endsWith('document') || rawDocName.toLowerCase().endsWith('doc')
+    ? rawDocName.replace(/\b\w/g, l => l.toUpperCase())
+    : `${rawDocName.replace(/\b\w/g, l => l.toUpperCase())} Document`
 
   const sectionTitleMap = new Map<string, string>()
   allSections.forEach(s => sectionTitleMap.set(s.key, s.title))
 
+  const activeSectionKeys = new Set(allSections.map(s => s.key))
+  const uniqueExtractedLinks: ReferenceLink[] = []
+  const seenUrls = new Set<string>()
+
   Object.entries(freeText).forEach(([key, val]) => {
     if (!val || typeof val !== 'string' || key.startsWith('__')) return
+    if (!activeSectionKeys.has(key)) return
 
     const sectionTitle = sectionTitleMap.get(key) || key.replace(/^custom_sec_/, 'Section ')
 
-    // Regex for markdown links: [label](url)
-    const regex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g
+    // Match markdown links [label](url) and raw URLs
+    const regex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<]+[^<.,:\s])/g
     let match: RegExpExecArray | null
 
     while ((match = regex.exec(val)) !== null) {
-      const label = match[1].trim()
-      const url = match[2].trim()
-      if (url && !extractedLinks.some(l => l.url === url && l.sectionKey === key)) {
-        extractedLinks.push({
-          label: label || url,
-          url,
-          sectionKey: key,
-          sectionTitle
-        })
+      const label = (match[1] || match[3] || '').trim()
+      let url = (match[2] || match[3] || '').trim()
+
+      if (url) {
+        if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('/')) {
+          url = `https://${url}`
+        }
+
+        if (!seenUrls.has(url)) {
+          seenUrls.add(url)
+          uniqueExtractedLinks.push({
+            label: label || url,
+            url,
+            sectionKey: key,
+            sectionTitle
+          })
+        }
       }
     }
   })
@@ -60,21 +79,24 @@ export default function FloatingReferenceLinksWidget({
               </div>
               <div>
                 <h4 className="text-xs font-bold text-app-fg">Reference Documents</h4>
-                <p className="text-[10px] text-app-muted">{extractedLinks.length} {extractedLinks.length === 1 ? 'link' : 'links'} in this PRD</p>
+                <p className="text-[10px] text-app-muted">
+                  {uniqueExtractedLinks.length} {uniqueExtractedLinks.length === 1 ? 'link' : 'links'} in this {docName}
+                </p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="p-1 rounded-lg hover:bg-app-hover text-app-muted hover:text-app-fg transition-colors"
+              style={{ cursor: 'pointer' }}
+              className="p-1 rounded-lg hover:bg-app-hover text-app-muted hover:text-app-fg transition-colors cursor-pointer"
             >
               <ChevronDown className="w-4 h-4" />
             </button>
           </div>
 
           <div className="overflow-y-auto p-2 divide-y divide-app-border/50 max-h-72">
-            {extractedLinks.length > 0 ? (
-              extractedLinks.map((link, idx) => (
+            {uniqueExtractedLinks.length > 0 ? (
+              uniqueExtractedLinks.map((link, idx) => (
                 <div key={`${link.url}-${idx}`} className="p-2.5 hover:bg-app-hover/50 rounded-xl transition-colors space-y-1">
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-xs font-bold text-app-fg flex items-center gap-1.5">
@@ -116,9 +138,8 @@ export default function FloatingReferenceLinksWidget({
         <Link2 className="w-4 h-4 text-violet-200 group-hover:rotate-12 transition-transform" />
         <span>Reference Links</span>
         <span className="bg-white/20 text-white px-2 py-0.5 rounded-full text-[10px] font-extrabold">
-          {extractedLinks.length}
+          {uniqueExtractedLinks.length}
         </span>
-        {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
       </button>
     </div>
   )

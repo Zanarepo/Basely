@@ -193,52 +193,66 @@ export function useSectionOrdering({
     const sectionTitle = sourceTitleOverrides[key] || targetSec?.title || 'Section'
     const isCustom = Boolean(targetSec?.isCustom || key.startsWith('custom_sec_'))
 
-    setFreeText((prev) => {
-      const next = { ...prev }
+    startTransition(() => {
+      setFreeText((prev) => {
+        const next = { ...prev }
 
-      // 1. Save into __removed_sections_meta with timestamp for 24hr auto-purge
-      const currentMeta: Record<string, any> = (() => {
+        // 1. Save into __removed_sections_meta with timestamp for 24hr auto-purge
+        const currentMeta: Record<string, any> = (() => {
+          try {
+            return prev['__removed_sections_meta'] ? JSON.parse(prev['__removed_sections_meta']) : {}
+          } catch {
+            return {}
+          }
+        })()
+
+        currentMeta[key] = {
+          key,
+          title: sectionTitle,
+          isCustom,
+          removedAt: Date.now()
+        }
+        next['__removed_sections_meta'] = JSON.stringify(currentMeta)
+
+        // 2. Mark in __deleted_section_keys
+        const currentDeleted: string[] = (() => {
+          try {
+            return prev['__deleted_section_keys'] ? JSON.parse(prev['__deleted_section_keys']) : []
+          } catch {
+            return []
+          }
+        })()
+        if (!currentDeleted.includes(key)) {
+          next['__deleted_section_keys'] = JSON.stringify([...currentDeleted, key])
+        }
+
+        // 3. Remove text content and clean up custom sections registry if applicable
+        delete next[key]
+        if (isCustom && next['__custom_sections']) {
+          try {
+            const currentCustom = JSON.parse(next['__custom_sections']) as any[]
+            const updatedCustom = currentCustom.filter((c) => c.key !== key)
+            next['__custom_sections'] = JSON.stringify(updatedCustom)
+          } catch {
+            // ignore
+          }
+        }
+
+        // 4. Remove from __section_order array
         try {
-          return prev['__removed_sections_meta'] ? JSON.parse(prev['__removed_sections_meta']) : {}
+          if (prev['__section_order']) {
+            const currentOrder: string[] = JSON.parse(prev['__section_order'])
+            const updatedOrder = currentOrder.filter((k) => k !== key)
+            next['__section_order'] = JSON.stringify(updatedOrder)
+          }
         } catch {
-          return {}
+          // ignore error
         }
-      })()
 
-      currentMeta[key] = {
-        key,
-        title: sectionTitle,
-        isCustom,
-        removedAt: Date.now()
-      }
-      next['__removed_sections_meta'] = JSON.stringify(currentMeta)
-
-      // 2. Mark in __deleted_section_keys
-      const currentDeleted: string[] = (() => {
-        try {
-          return prev['__deleted_section_keys'] ? JSON.parse(prev['__deleted_section_keys']) : []
-        } catch {
-          return []
-        }
-      })()
-      if (!currentDeleted.includes(key)) {
-        next['__deleted_section_keys'] = JSON.stringify([...currentDeleted, key])
-      }
-
-      // 3. Remove from __section_order array
-      try {
-        if (prev['__section_order']) {
-          const currentOrder: string[] = JSON.parse(prev['__section_order'])
-          const updatedOrder = currentOrder.filter((k) => k !== key)
-          next['__section_order'] = JSON.stringify(updatedOrder)
-        }
-      } catch {
-        // ignore error
-      }
-
-      return next
+        return next
+      })
+      setIsDirty(true)
     })
-    setIsDirty(true)
     onShowToast('success', `Moved "${sectionTitle}" to Removed Sections (Restorable for 24h)`)
   }
 

@@ -22,6 +22,7 @@ export function useDocumentWorkspaceState() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [showGuideDrawer, setShowGuideDrawer] = useState(false)
+  const [showWorkflowsDrawer, setShowWorkflowsDrawer] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [activeSnapshotId, setActiveSnapshotId] = useState<string | null>(null)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
@@ -78,6 +79,7 @@ export function useDocumentWorkspaceState() {
     searchQuery,
     selectedCategory,
     showGuideDrawer,
+    showWorkflowsDrawer,
     isDropdownOpen,
     activeSnapshotId,
     toasts,
@@ -89,6 +91,7 @@ export function useDocumentWorkspaceState() {
     setSearchQuery,
     setSelectedCategory,
     setShowGuideDrawer,
+    setShowWorkflowsDrawer,
     setIsDropdownOpen,
     setActiveSnapshotId,
     addToast,

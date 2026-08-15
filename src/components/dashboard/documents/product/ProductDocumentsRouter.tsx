@@ -9,6 +9,7 @@ import { DiscoveryInbox } from '@/components/dashboard/product/discovery/Discove
 import { PrioritizationDashboard } from '@/components/dashboard/product/prioritization/PrioritizationDashboard'
 import { RoadmapDashboard } from '@/components/dashboard/product/roadmap/RoadmapDashboard'
 import { CompetitiveIntelligenceDashboard } from '@/components/dashboard/product/strategy/CompetitiveIntelligenceDashboard'
+import { ReleasesWorkspace } from '@/components/dashboard/releases/ReleasesWorkspace'
 
 export interface ProductDocumentsRouterProps {
   documentType: string
@@ -112,6 +113,17 @@ export function ProductDocumentsRouter({
         <CompetitiveIntelligenceDashboard
           projectId={projectId}
           organizationId={organizationId}
+          hasEditAccess={hasEditAccess}
+        />
+      </div>
+    )
+  }
+
+  if (documentType === 'release_checklist_workspace') {
+    return (
+      <div className="h-full overflow-y-auto pr-2">
+        <ReleasesWorkspace
+          projectId={projectId}
           hasEditAccess={hasEditAccess}
         />
       </div>

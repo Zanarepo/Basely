@@ -14,6 +14,7 @@ interface StructuredEditableFieldProps {
   hasEditAccess: boolean
   isDataBound?: boolean
   placeholder?: string
+  documentType?: string
 }
 
 export default function StructuredEditableField({
@@ -21,10 +22,13 @@ export default function StructuredEditableField({
   onChange,
   title,
   hasEditAccess,
-  placeholder
+  placeholder,
+  documentType
 }: StructuredEditableFieldProps) {
+  // Coerce value to string once — AI chain actions may store objects in JSONB
+  const safeValue = typeof value === 'string' ? value : (value == null ? '' : String(value))
   // View mode by default if there's text, otherwise edit mode
-  const [isEditing, setIsEditing] = useState(!value)
+  const [isEditing, setIsEditing] = useState(!safeValue)
   const [fontSize, setFontSize] = useState<'text-xs' | 'text-sm' | 'text-base' | 'text-lg'>('text-sm')
   const [isAiLoading, setIsAiLoading] = useState(false)
 
@@ -37,13 +41,13 @@ export default function StructuredEditableField({
     insertTableTemplate,
     insertLink,
     handlePaste
-  } = useRichTextFormatting(value, onChange, isEditing)
+  } = useRichTextFormatting(safeValue, onChange, isEditing)
 
-  const handleRunAiCopilot = async (mode: AiCopilotMode) => {
+  const handleRunAiCopilot = async (mode: AiCopilotMode, customInstruction?: string) => {
     if (isAiLoading) return
     setIsAiLoading(true)
     try {
-      const res = await refineSectionTextWithAi(value, mode)
+      const res = await refineSectionTextWithAi(safeValue, mode, customInstruction)
       if (res.ok && res.resultText) {
         onChange(res.resultText)
       }
@@ -52,7 +56,7 @@ export default function StructuredEditableField({
     }
   }
 
-  const displayValue = value || '*No content entered.*'
+  const displayValue = safeValue || '*No content entered.*'
 
   return (
     <div className="group relative rounded-xl border border-app-border bg-app-surface shadow-sm transition-all z-10">
@@ -70,13 +74,15 @@ export default function StructuredEditableField({
         insertLink={insertLink}
         onRunAiCopilot={handleRunAiCopilot}
         isAiLoading={isAiLoading}
+        documentType={documentType}
+        sectionTitle={title}
       />
 
       {/* Editor or Markdown View */}
       {isEditing && hasEditAccess ? (
         <textarea
           ref={textareaRef}
-          value={value || ''}
+          value={safeValue}
           onChange={(e) => {
             onChange(e.target.value)
             checkActiveFormats()
@@ -86,18 +92,18 @@ export default function StructuredEditableField({
           onClick={checkActiveFormats}
           onPaste={handlePaste}
           placeholder={placeholder || `Enter ${title.toLowerCase()}... (Use bullet points, headings, links, or tables)`}
-          rows={Math.max(7, (value?.split('\n').length || 0) + 2)}
+          rows={Math.max(7, safeValue.split('\n').length + 2)}
           className={`w-full p-4 bg-app-bg text-app-fg placeholder:text-app-muted focus:outline-none transition-all resize-y font-mono ${fontSize}`}
         />
       ) : (
-        <div className={`p-5 bg-app-surface text-app-fg prose prose-sm dark:prose-invert max-w-none ${fontSize}`}>
+        <div className={`p-4 bg-app-bg text-app-fg ${fontSize} min-h-[100px] leading-relaxed transition-all`}>
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
             {displayValue}
           </ReactMarkdown>
         </div>
       )}
 
-      {/* Bottom-Right Reference Links Bar */}
+      {/* Section Bottom Links Bar */}
       <SectionReferenceLinksBar value={value} />
     </div>
   )

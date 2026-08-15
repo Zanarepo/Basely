@@ -12,7 +12,7 @@ export default function PmGuideDrawer({ guide }: PmGuideDrawerProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-violet-600 dark:text-violet-300 font-extrabold text-sm">
           <Sparkles className="w-4 h-4 text-violet-500" />
-          <span>💡 PM Guide: How to write this document effectively</span>
+          <span>PM Guide: How to write this document effectively</span>
         </div>
         <span className="text-[11px] text-app-muted font-medium">
           Audience: <strong className="text-app-fg">{guide.audience}</strong>

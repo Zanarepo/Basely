@@ -7,6 +7,9 @@ import { logProjectActivity } from '@/lib/projects/activity-actions'
 import { dispatchNotification } from '@/lib/notifications/actions'
 import { checkProjectFeatureAccess } from '@/lib/organizations/tier-logic'
 import { PRD_TEMPLATE_VARIANTS, getSyncDocumentTemplate } from './prd-templates'
+import { STRATEGY_TEMPLATE_VARIANTS } from './strategy-templates'
+import { ROADMAP_TEMPLATE_VARIANTS } from './roadmap-templates'
+import { MARKET_RESEARCH_TEMPLATE_VARIANTS } from './market-research-templates'
 
 export type DocumentSectionDef = {
   key: string
@@ -18,6 +21,7 @@ export type DocumentSectionDef = {
 
 export type DocumentTemplate = {
   id: string
+  name?: string
   document_type: string
   section_definitions: DocumentSectionDef[]
   created_at: string
@@ -45,7 +49,7 @@ function isUuid(val?: string | null): boolean {
 }
 
 export async function getDocumentTemplate(documentType: string, templateId?: string): Promise<DocumentTemplate | null> {
-  if (templateId && PRD_TEMPLATE_VARIANTS[templateId]) {
+  if (templateId && (PRD_TEMPLATE_VARIANTS[templateId] || STRATEGY_TEMPLATE_VARIANTS[templateId])) {
     return getSyncDocumentTemplate(documentType, templateId)
   }
 
@@ -162,7 +166,7 @@ export async function saveGeneratedDocument(
       // Drafts are upserted using adminSupabase to guarantee reviewer sign-offs persist regardless of user RLS role
       const { data: existing } = await adminSupabase
         .from('generated_documents')
-        .select('id')
+        .select('id, free_text_content')
         .eq('project_id', projectId)
         .eq('document_type', documentType)
         .eq('is_snapshot', false)
@@ -170,11 +174,21 @@ export async function saveGeneratedDocument(
 
       if (existing) {
         docId = existing.id
+        const existingFreeText = (existing.free_text_content as Record<string, string>) || {}
+        const mergedFreeText = { ...freeTextPayload }
+
+        if (existingFreeText['__prd_template_variant'] && !mergedFreeText['__prd_template_variant']) {
+          mergedFreeText['__prd_template_variant'] = existingFreeText['__prd_template_variant']
+        }
+        if (existingFreeText['__section_order'] && !mergedFreeText['__section_order']) {
+          mergedFreeText['__section_order'] = existingFreeText['__section_order']
+        }
+
         const { error } = await adminSupabase
           .from('generated_documents')
           .update({
             custom_template_id: validUuid,
-            free_text_content: freeTextPayload,
+            free_text_content: mergedFreeText,
             updated_at: now,
           })
           .eq('id', existing.id)
@@ -256,10 +270,13 @@ export async function updateDocumentTemplateId(
 
     if (existing) {
       const freeText = (existing.free_text_content as Record<string, string>) || {}
-      if (templateId && PRD_TEMPLATE_VARIANTS[templateId]) {
-        const variant = PRD_TEMPLATE_VARIANTS[templateId]
-        freeText['__prd_template_variant'] = templateId
-        freeText['__section_order'] = JSON.stringify(variant.section_definitions.map((s) => s.key))
+      const selectedVariant = templateId
+        ? (PRD_TEMPLATE_VARIANTS[templateId] || STRATEGY_TEMPLATE_VARIANTS[templateId] || ROADMAP_TEMPLATE_VARIANTS[templateId] || MARKET_RESEARCH_TEMPLATE_VARIANTS[templateId] || null)
+        : null
+
+      if (selectedVariant) {
+        freeText['__prd_template_variant'] = selectedVariant.id
+        freeText['__section_order'] = JSON.stringify(selectedVariant.section_definitions.map((s) => s.key))
         delete freeText['__custom_sections']
         delete freeText['__deleted_section_keys']
         delete freeText['__removed_sections_meta']
@@ -286,10 +303,13 @@ export async function updateDocumentTemplateId(
       }
     } else {
       const freeText: Record<string, string> = {}
-      if (templateId && PRD_TEMPLATE_VARIANTS[templateId]) {
-        const variant = PRD_TEMPLATE_VARIANTS[templateId]
-        freeText['__prd_template_variant'] = templateId
-        freeText['__section_order'] = JSON.stringify(variant.section_definitions.map((s) => s.key))
+      const selectedVariant = templateId
+        ? (PRD_TEMPLATE_VARIANTS[templateId] || STRATEGY_TEMPLATE_VARIANTS[templateId] || ROADMAP_TEMPLATE_VARIANTS[templateId] || MARKET_RESEARCH_TEMPLATE_VARIANTS[templateId] || null)
+        : null
+
+      if (selectedVariant) {
+        freeText['__prd_template_variant'] = selectedVariant.id
+        freeText['__section_order'] = JSON.stringify(selectedVariant.section_definitions.map((s) => s.key))
       }
 
       const { error } = await adminSupabase

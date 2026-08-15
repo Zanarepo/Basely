@@ -7,6 +7,9 @@ import { getSyncDocumentTemplate } from '@/lib/documents/prd-templates'
 import { getCustomTemplates, CustomDocumentTemplate } from '@/lib/documents/template-actions'
 import { FileText, LayoutTemplate, ArrowRight, Loader2 } from 'lucide-react'
 import { PrdTemplateSelectorModal } from '@/components/dashboard/product/prd/PrdTemplateSelectorModal'
+import { StrategyTemplateSelectorModal } from '@/components/dashboard/product/strategy/templates/components/StrategyTemplateSelectorModal'
+import { RoadmapTemplateSelectorModal } from '@/components/dashboard/product/roadmap/templates/components/RoadmapTemplateSelectorModal'
+import { MarketResearchTemplateSelectorModal } from '@/components/dashboard/product/market-research/templates/components/MarketResearchTemplateSelectorModal'
 
 interface ProjectDocumentProps {
   documentType: string
@@ -36,6 +39,9 @@ export default function ProjectDocument({
   const [availableCustomTemplates, setAvailableCustomTemplates] = useState<CustomDocumentTemplate[]>([])
   const [needsTemplateSelection, setNeedsTemplateSelection] = useState(false)
   const [isPrdModalOpen, setIsPrdModalOpen] = useState(false)
+  const [isStrategyModalOpen, setIsStrategyModalOpen] = useState(false)
+  const [isRoadmapModalOpen, setIsRoadmapModalOpen] = useState(false)
+  const [isMarketResearchModalOpen, setIsMarketResearchModalOpen] = useState(false)
   const orgId = projectContext?.organization_id || ''
 
   useEffect(() => {
@@ -49,7 +55,19 @@ export default function ProjectDocument({
         if (!isMounted) return
 
         // Resolve exact template variant selection BEFORE setting template state
-        const activeTemplateId = doc?.free_text_content?.['__prd_template_variant'] || doc?.custom_template_id || undefined
+        const isMarketResearchType =
+          documentType === 'market_research_report' ||
+          documentType === 'market_research_workspace' ||
+          documentType === 'competitive_analysis_workspace' ||
+          documentType === 'competitive_benchmarking_matrix'
+
+        const activeTemplateId = doc?.free_text_content?.['__prd_template_variant'] || doc?.custom_template_id || (
+          documentType === 'product_strategy_document' ? 'standard_product_strategy' :
+          documentType === 'product_requirements_document' ? 'standard_prd' :
+          (documentType === 'roadmap_workspace' || documentType === 'product_roadmap_document' || documentType === 'product_roadmap') ? 'now_next_later' :
+          isMarketResearchType ? (documentType === 'competitive_analysis_workspace' || documentType === 'competitive_benchmarking_matrix' ? 'competitive_analysis_matrix' : 'master_market_research') :
+          undefined
+        )
         const tpl = getSyncDocumentTemplate(documentType, activeTemplateId)
         setTemplate(tpl)
         setGeneratedDoc(doc)
@@ -59,7 +77,6 @@ export default function ProjectDocument({
           if (!isMounted) return
           if (customTemplates.length > 0) {
             setAvailableCustomTemplates(customTemplates)
-            setNeedsTemplateSelection(true)
           }
         }
       } catch (err) {
@@ -94,6 +111,50 @@ export default function ProjectDocument({
       const refreshed = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
       setGeneratedDoc(refreshed)
     }
+  }
+
+  const handleSelectTemplateVariant = async (variantId: string) => {
+    // 0ms instant UI template update!
+    const tpl = getSyncDocumentTemplate(documentType, variantId)
+    setTemplate(tpl)
+    setIsPrdModalOpen(false)
+    setIsStrategyModalOpen(false)
+    setIsRoadmapModalOpen(false)
+    setIsMarketResearchModalOpen(false)
+    const res = await updateDocumentTemplateId(projectId, documentType, variantId)
+    if (res.ok) {
+      const refreshed = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
+      setGeneratedDoc(refreshed)
+      onShowToast('success', `Swapped to ${tpl.name || 'template'}`)
+    } else {
+      console.error('[Template Error] Failed to update template in database:', res.error)
+      onShowToast('error', res.error || 'Failed to update template in database')
+    }
+  }
+
+  const handleOpenSelector = () => {
+    const isMarketResearchType =
+      documentType === 'market_research_report' ||
+      documentType === 'market_research_workspace' ||
+      documentType === 'competitive_analysis_workspace' ||
+      documentType === 'competitive_benchmarking_matrix'
+
+    if (documentType === 'product_requirements_document') {
+      setIsPrdModalOpen(true)
+    } else if (documentType === 'product_strategy_document') {
+      setIsStrategyModalOpen(true)
+    } else if (documentType === 'roadmap_workspace' || documentType === 'product_roadmap_document' || documentType === 'product_roadmap') {
+      setIsRoadmapModalOpen(true)
+    } else if (isMarketResearchType) {
+      setIsMarketResearchModalOpen(true)
+    } else {
+      handleShowSelector()
+    }
+  }
+
+  const handleDocumentSaved = async () => {
+    const refreshed = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
+    setGeneratedDoc(refreshed)
   }
 
   if (isLoading) {
@@ -166,37 +227,10 @@ export default function ProjectDocument({
     )
   }
 
-  const handleSelectPrdVariant = async (variantId: string) => {
-    // 0ms instant UI template update!
-    const tpl = getSyncDocumentTemplate(documentType, variantId)
-    setTemplate(tpl)
-    const res = await updateDocumentTemplateId(projectId, documentType, variantId)
-    if (res.ok) {
-      const refreshed = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
-      setGeneratedDoc(refreshed)
-      onShowToast('success', `Swapped to ${tpl.name || 'template'}`)
-    } else {
-      console.error('[PRD Template Error] Failed to update template in database:', res.error)
-      onShowToast('error', res.error || 'Failed to update template in database')
-    }
-  }
-
-  const handleOpenSelector = () => {
-    if (documentType === 'product_requirements_document') {
-      setIsPrdModalOpen(true)
-    } else {
-      handleShowSelector()
-    }
-  }
-
-  const handleDocumentSaved = async () => {
-    const refreshed = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
-    setGeneratedDoc(refreshed)
-  }
-
   return (
     <>
       <DocumentEngine
+        key={template.id}
         projectId={projectId}
         projectContext={projectContext}
         template={template}
@@ -212,7 +246,28 @@ export default function ProjectDocument({
         isOpen={isPrdModalOpen}
         currentTemplateId={template.id}
         onClose={() => setIsPrdModalOpen(false)}
-        onSelectTemplate={handleSelectPrdVariant}
+        onSelectTemplate={handleSelectTemplateVariant}
+      />
+
+      <StrategyTemplateSelectorModal
+        isOpen={isStrategyModalOpen}
+        currentTemplateId={template.id}
+        onClose={() => setIsStrategyModalOpen(false)}
+        onSelectTemplate={handleSelectTemplateVariant}
+      />
+
+      <RoadmapTemplateSelectorModal
+        isOpen={isRoadmapModalOpen}
+        currentTemplateId={template.id}
+        onClose={() => setIsRoadmapModalOpen(false)}
+        onSelectTemplate={handleSelectTemplateVariant}
+      />
+
+      <MarketResearchTemplateSelectorModal
+        isOpen={isMarketResearchModalOpen}
+        currentTemplateId={template.id}
+        onClose={() => setIsMarketResearchModalOpen(false)}
+        onSelectTemplate={handleSelectTemplateVariant}
       />
     </>
   )

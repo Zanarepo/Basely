@@ -98,11 +98,10 @@ export default function DocumentSection({
     setShowConfirmDelete(true)
   }
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = () => {
     if (isRemoving || !onRemoveSection) return
     setIsRemoving(true)
     try {
-      await new Promise((res) => setTimeout(res, 350))
       onRemoveSection(section.key)
       setShowConfirmDelete(false)
     } finally {
@@ -210,6 +209,7 @@ export default function DocumentSection({
                 hasEditAccess={hasEditAccess && !isSnapshot}
                 isDataBound={section.type === 'data_bound'}
                 placeholder={section.placeholder}
+                documentType={template.document_type}
               />
             </div>
           )}
