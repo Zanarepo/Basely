@@ -55,6 +55,18 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
         return
       }
 
+      // Pre-seed profile to satisfy foreign key constraint on organizations.owner_id
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            email: user.email || '',
+            full_name: user.user_metadata?.full_name || '',
+          }, { onConflict: 'id' })
+      }
+
       const { data, error } = await supabase.rpc('create_organization_with_admin', {
         p_name: name.trim(),
         p_team_size: null,
@@ -67,6 +79,12 @@ export function CreateOrganizationForm({ onSuccess }: CreateOrganizationFormProp
       }
 
       if (data) {
+        // Clear onboarding flags so onboarding modal triggers for the new account/workspace
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('zanarepo_onboarding_completed')
+          localStorage.removeItem('zanarepo_user_persona')
+        }
+
         // Seed the welcome project automatically to avoid empty states
         const seedResult = await seedWelcomeProject(data, name.trim())
 

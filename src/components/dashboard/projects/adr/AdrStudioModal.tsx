@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Save, ShieldAlert, CheckCircle2, AlertTriangle, Cpu, Layers, Terminal, FileText, Sparkles, HelpCircle } from 'lucide-react'
+import { X, Save, ShieldAlert, CheckCircle2, AlertTriangle, Cpu, Layers, Terminal, FileText, Sparkles, HelpCircle, Loader2 } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 import { saveAdr, type ArchitectureDecisionRecord, type AdrStatus, type AdrDomain } from '@/lib/adr/actions'
+import { generateAdrWithAiAction } from '@/lib/adr/ai-adr-actions'
 
 interface AdrStudioModalProps {
   isOpen: boolean
@@ -11,6 +12,8 @@ interface AdrStudioModalProps {
   projectId: string
   organizationId: string
   initialData?: ArchitectureDecisionRecord | null
+  tier?: string
+  aiEnabled?: boolean
   onSuccess?: (record: ArchitectureDecisionRecord) => void
   onShowToast?: (type: 'success' | 'error' | 'info', message: string) => void
 }
@@ -21,7 +24,7 @@ const DOMAIN_OPTIONS: { value: AdrDomain; label: string; description: string }[]
   { value: 'database', label: 'Database & Storage', description: 'Schema engineering, SQL/NoSQL choices & indexing strategy' },
   { value: 'infrastructure', label: 'Infrastructure & DevOps', description: 'Cloud deployment, Docker containerization & CI/CD pipelines' },
   { value: 'security', label: 'Security & Auth', description: 'Encryption, SSO protocols, RLS policies & vulnerability mitigation' },
-  { value: 'ai_data', label: 'AI & Data Pipelines', description: 'LLM integrations, embedding vector storage & telemetry pipelines' }
+  { value: 'ai_data', label: 'Praz-AI & Data Pipelines', description: 'LLM integrations, embedding vector storage & telemetry pipelines' }
 ]
 
 const STATUS_OPTIONS: { value: AdrStatus; label: string; description: string }[] = [
@@ -38,6 +41,8 @@ export default function AdrStudioModal({
   projectId,
   organizationId,
   initialData,
+  tier = 'free',
+  aiEnabled = false,
   onSuccess,
   onShowToast
 }: AdrStudioModalProps) {
@@ -48,6 +53,7 @@ export default function AdrStudioModal({
   const [decision, setDecision] = useState(initialData?.decision || '')
   const [consequences, setConsequences] = useState(initialData?.consequences || '')
   const [isSaving, setIsSaving] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   if (!isOpen) return null
@@ -97,6 +103,31 @@ export default function AdrStudioModal({
     onClose()
   }
 
+  const handleAiDraft = async () => {
+    if (!title.trim()) {
+      setError('Please provide at least an ADR Title/Topic before auto-drafting.')
+      return
+    }
+
+    setIsGenerating(true)
+    setError(null)
+    
+    const res = await generateAdrWithAiAction(projectId, organizationId, title, domain, context)
+    
+    setIsGenerating(false)
+    if (!res.ok || !res.data) {
+      setError(res.error || 'Failed to generate ADR using Praz-AI.')
+      if (onShowToast) onShowToast('error', 'Praz-AI generation failed.')
+      return
+    }
+
+    setContext(res.data.context || context)
+    setDecision(res.data.decision || decision)
+    setConsequences(res.data.consequences || consequences)
+    
+    if (onShowToast) onShowToast('success', 'Praz-AI successfully drafted the ADR!')
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-app-surface border border-app-border rounded-2xl shadow-2xl flex flex-col">
@@ -140,9 +171,33 @@ export default function AdrStudioModal({
           {/* Title & Metadata row */}
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-app-muted uppercase tracking-wider block mb-2">
-                ADR Title / Topic
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-app-muted uppercase tracking-wider block">
+                  ADR Title / Topic
+                </label>
+                <div className="relative group">
+                  <button
+                    type="button"
+                    onClick={handleAiDraft}
+                    disabled={isGenerating || !title.trim() || (tier !== 'enterprise' && (tier !== 'premium' || !aiEnabled))}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_15px_-3px_rgba(124,58,237,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                  >
+                    {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                    {isGenerating ? 'Drafting...' : 'Auto-Draft with Praz-AI'}
+                    {tier === 'free' && <span className="ml-1 bg-white/20 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider">Premium</span>}
+                    {tier === 'premium' && !aiEnabled && <span className="ml-1 bg-amber-500/80 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider">Locked</span>}
+                  </button>
+                  {tier === 'free' ? (
+                    <div className="absolute top-full right-0 mt-2 w-48 p-2 bg-app-surface border border-app-border rounded-lg shadow-xl text-xs text-app-muted opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      Praz-AI Auto-Drafting is available on Premium and Enterprise plans.
+                    </div>
+                  ) : tier === 'premium' && !aiEnabled ? (
+                    <div className="absolute top-full right-0 mt-2 w-48 p-2 bg-app-surface border border-app-border rounded-lg shadow-xl text-xs text-app-muted opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      Praz-AI Features are currently locked for this workspace. Contact platform support to enable them.
+                    </div>
+                  ) : null}
+                </div>
+              </div>
               <input
                 type="text"
                 value={title}

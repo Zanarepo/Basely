@@ -22,16 +22,16 @@ export function GanttTimelineGrid({
       {rowData.map((row) => (
         <div
           key={row.element.id}
-          className="border-b border-slate-300 dark:border-slate-800 flex"
+          className="border-b border-slate-200/50 dark:border-slate-800/40 flex"
           style={{ height: `${rowHeight}px`, width: `${canvasWidth}px` }}
         />
       ))}
       
-      {/* Vertical guidelines (Highly Visible Dotted/Dashed Grid) */}
+      {/* Vertical guidelines (Subtle Dotted Grid) */}
       {timelineHeaders.map((hdr, idx) => (
         <div
           key={idx}
-          className="absolute top-0 bottom-0 border-l border-dashed border-slate-400/80 dark:border-slate-700/65 pointer-events-none"
+          className="absolute top-0 bottom-0 border-l border-dotted border-slate-200/75 dark:border-slate-800/60 pointer-events-none"
           style={{ left: `${hdr.left}px` }}
         />
       ))}

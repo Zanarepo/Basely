@@ -107,7 +107,7 @@ export default function SkillsMatrixTable({
     {
       userId: 'usr-4',
       name: 'Sophia Chen',
-      role: 'AI & Telemetry Lead',
+      role: 'Praz-AI & Telemetry Lead',
       avatar: 'SC',
       capacityHours: 40,
       velocityPoints: 20,
@@ -356,7 +356,7 @@ export default function SkillsMatrixTable({
                 { value: 'frontend', label: 'Frontend & UI', description: 'React, TypeScript & Design' },
                 { value: 'backend', label: 'Backend & APIs', description: 'Node.js, Microservices & DB' },
                 { value: 'devops', label: 'Cloud & DevOps', description: 'AWS, Docker, Kubernetes & CI/CD' },
-                { value: 'data_science', label: 'AI & Data Science', description: 'LLM embeddings & SQL analytics' },
+                { value: 'data_science', label: 'Praz-AI & Data Science', description: 'LLM embeddings & SQL analytics' },
                 { value: 'management', label: 'Agile & Management', description: 'Scrum Leadership & Architecture' }
               ]}
             />

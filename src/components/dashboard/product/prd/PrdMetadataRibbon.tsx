@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import type { Persona, OkrObjective, ProductRequirementsDoc } from '@/lib/product-strategy/types'
 import { getPersonas, getOkrObjectives } from '@/lib/product-strategy/actions'
 import { getPrdMetadata, upsertPrdMetadata } from '@/lib/product-discovery/actions'
@@ -26,9 +26,12 @@ export function PrdMetadataRibbon({ projectId, organizationId }: PrdMetadataRibb
   const [figmaUrl, setFigmaUrl] = useState('')
   const [prdStatus, setPrdStatus] = useState<string>('draft')
 
+  const initialLoadedRef = useRef(false)
+
   useEffect(() => {
     if (!organizationId) return
     setLoading(true)
+    initialLoadedRef.current = false
     Promise.all([
       getPersonas(organizationId, projectId),
       getOkrObjectives(organizationId, projectId),
@@ -45,28 +48,57 @@ export function PrdMetadataRibbon({ projectId, organizationId }: PrdMetadataRibb
         setPrdStatus(meta.prd_status || 'draft')
       }
       setLoading(false)
+      setTimeout(() => {
+        initialLoadedRef.current = true
+      }, 100)
     })
   }, [organizationId, projectId])
 
-  const handleSave = async () => {
+  const saveMetadata = async (newPersonaId: string, newOkrId: string, newFigmaUrl: string, newStatus: string) => {
+    if (!initialLoadedRef.current) return
     setSaving(true)
     setSaved(false)
     const payload: Partial<ProductRequirementsDoc> = {
       ...(prdMeta?.id ? { id: prdMeta.id } : {}),
       organization_id: organizationId,
       project_id: projectId,
-      target_persona_id: personaId || null,
-      primary_okr_id: okrId || null,
-      figma_url: figmaUrl || null,
-      prd_status: prdStatus as any
+      target_persona_id: newPersonaId || null,
+      primary_okr_id: newOkrId || null,
+      figma_url: newFigmaUrl || null,
+      prd_status: newStatus as any
     }
     const result = await upsertPrdMetadata(payload)
+    setSaving(false)
     if (result.ok && result.data) {
       setPrdMeta(result.data)
+      setSaved(true)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('prd-metadata-updated'))
+      }
+      setTimeout(() => setSaved(false), 2500)
+    } else {
+      console.error('[PRD Studio Error] Failed to auto-save PRD metadata:', result.error)
     }
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+  }
+
+  // Auto-save handlers
+  const handlePersonaChange = (val: string) => {
+    setPersonaId(val)
+    saveMetadata(val, okrId, figmaUrl, prdStatus)
+  }
+
+  const handleOkrChange = (val: string) => {
+    setOkrId(val)
+    saveMetadata(personaId, val, figmaUrl, prdStatus)
+  }
+
+  const handleStatusChange = (val: string) => {
+    setPrdStatus(val)
+    saveMetadata(personaId, okrId, figmaUrl, val)
+  }
+
+  const handleFigmaBlur = () => {
+    saveMetadata(personaId, okrId, figmaUrl, prdStatus)
   }
 
   if (loading) {
@@ -78,17 +110,33 @@ export function PrdMetadataRibbon({ projectId, organizationId }: PrdMetadataRibb
     )
   }
 
-  const selectedPersona = personas.find(p => p.id === personaId)
-  const selectedOkr = objectives.find(o => o.id === okrId)
-
   return (
     <div className="bg-gradient-to-r from-violet-50 to-violet-50 dark:from-slate-800/60 dark:to-slate-800/40 rounded-2xl p-4 lg:p-5 border border-violet-200/60 dark:border-slate-700">
       {/* Ribbon Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 rounded-lg bg-violet-100 dark:bg-violet-900/40">
-          <FileText className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-violet-100 dark:bg-violet-900/40">
+            <FileText className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+          </div>
+          <span className="text-xs font-bold text-violet-700 dark:text-violet-300 uppercase tracking-wider">PRD Studio — Strategic Metadata</span>
         </div>
-        <span className="text-xs font-bold text-violet-700 dark:text-violet-300 uppercase tracking-wider">PRD Studio — Strategic Metadata</span>
+
+        {/* Inline Auto-Save Status */}
+        <div className="px-2.5 py-1 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold">
+          {saving ? (
+            <span className="text-violet-500 flex items-center gap-1">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
+            </span>
+          ) : saved ? (
+            <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <Check className="w-3.5 h-3.5 text-emerald-500" /> Saved
+            </span>
+          ) : (
+            <span className="text-slate-400 flex items-center gap-1">
+              <Check className="w-3.5 h-3.5 text-emerald-500" /> Auto-saved
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Controls Grid */}
@@ -100,7 +148,7 @@ export function PrdMetadataRibbon({ projectId, organizationId }: PrdMetadataRibb
           </label>
           <EnterpriseSelect
             value={personaId}
-            onChange={setPersonaId}
+            onChange={handlePersonaChange}
             placeholder="— Select Persona —"
             options={[
               { value: '', label: '— Select Persona —' },
@@ -116,7 +164,7 @@ export function PrdMetadataRibbon({ projectId, organizationId }: PrdMetadataRibb
           </label>
           <EnterpriseSelect
             value={okrId}
-            onChange={setOkrId}
+            onChange={handleOkrChange}
             placeholder="— Select OKR Objective —"
             options={[
               { value: '', label: '— Select OKR Objective —' },
@@ -134,45 +182,27 @@ export function PrdMetadataRibbon({ projectId, organizationId }: PrdMetadataRibb
             type="url"
             value={figmaUrl}
             onChange={e => setFigmaUrl(e.target.value)}
+            onBlur={handleFigmaBlur}
             placeholder="https://figma.com/file/..."
             className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all"
           />
         </div>
 
-        {/* Status + Save */}
+        {/* Status */}
         <div>
           <label className="flex items-center gap-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wider">
             Status
           </label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <EnterpriseSelect
-                value={prdStatus}
-                onChange={setPrdStatus}
-                options={[
-                  { value: 'draft', label: '📝 Draft' },
-                  { value: 'in_review', label: '👀 In Review' },
-                  { value: 'approved', label: '✅ Approved' },
-                  { value: 'deprecated', label: '🛑 Deprecated' },
-                ]}
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              style={{ cursor: 'pointer' }}
-              className="px-3 py-2 rounded-xl bg-[#6b4eff] hover:bg-[#5839ec] text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition-all disabled:opacity-50 whitespace-nowrap"
-            >
-              {saving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : saved ? (
-                <Check className="w-3.5 h-3.5" />
-              ) : null}
-              {saving ? 'Saving...' : saved ? 'Saved' : 'Save'}
-            </button>
-          </div>
+          <EnterpriseSelect
+            value={prdStatus}
+            onChange={handleStatusChange}
+            options={[
+              { value: 'draft', label: 'Draft' },
+              { value: 'in_review', label: 'In Review' },
+              { value: 'approved', label: 'Approved' },
+              { value: 'deprecated', label: 'Deprecated' },
+            ]}
+          />
         </div>
       </div>
 

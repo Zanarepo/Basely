@@ -60,7 +60,7 @@ export function RiceMatrixTable({ organizationId, projectId, items, onUpdate, sh
       if (!success) throw new Error(error)
       onUpdate()
       if (data?.usedAi) {
-        showToast('AI successfully deconstructed this item into an Epic and child work packages!', 'success')
+        showToast('Praz-AI successfully deconstructed this item into an Epic and child work packages!', 'success')
       } else {
         showToast('Successfully created an Epic shell in the WBS.', 'success')
       }

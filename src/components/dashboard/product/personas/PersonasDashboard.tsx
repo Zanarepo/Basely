@@ -7,6 +7,7 @@ import { PersonaCard } from './PersonaCard'
 import { PersonaBuilderModal } from './PersonaBuilderModal'
 import { createClient } from '@/utils/supabase/client'
 import { Plus, Users, Filter, Search, Loader2 } from 'lucide-react'
+import { PmDiscoveryWorkflowGuide } from '../discovery/PmDiscoveryWorkflowGuide'
 
 interface PersonasDashboardProps {
   organizationId: string
@@ -97,6 +98,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
 
   return (
     <div className="space-y-6">
+      <PmDiscoveryWorkflowGuide currentStep={2} />
       {/* Top Controls Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/70 dark:bg-slate-800/70 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
         <div className="flex items-center space-x-3">

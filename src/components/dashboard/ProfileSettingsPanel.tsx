@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Save, User, Mail, ShieldCheck } from 'lucide-react'
 import { updateProfileName } from '@/lib/workspace/member-actions'
+import { useUserPersona } from '@/hooks/use-user-persona'
+import { PersonaSelectorCard } from '@/components/dashboard/persona/PersonaSelectorCard'
 
 type Props = {
   currentName: string
@@ -12,6 +14,7 @@ type Props = {
 
 export function ProfileSettingsPanel({ currentName, email }: Props) {
   const router = useRouter()
+  const { persona, setPersona } = useUserPersona()
   const [isPending, startTransition] = useTransition()
   const [name, setName] = useState(currentName)
   const [message, setMessage] = useState<string | null>(null)
@@ -78,6 +81,17 @@ export function ProfileSettingsPanel({ currentName, email }: Props) {
             <span className="text-sm text-app-muted">{email}</span>
           </div>
           <p className="mt-1 text-xs text-app-subtle">Email cannot be changed from here.</p>
+        </div>
+
+        {/* Persona Mode Selector */}
+        <div className="pt-2 border-t border-app-border">
+          <label className="block text-sm font-medium text-app-fg mb-1.5">
+            Primary Role & UI Mode
+          </label>
+          <p className="text-xs text-app-muted mb-3">
+            Tailors your default navigation and action labels across all workspaces.
+          </p>
+          <PersonaSelectorCard currentPersona={persona} onSelectPersona={setPersona} />
         </div>
       </div>
 

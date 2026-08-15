@@ -29,7 +29,7 @@ const GENERATED_TRANSACTIONS: ExternalTransaction[] = [
     amount: 4320.50,
     currency: 'USD',
     date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
-    description: 'Monthly dedicated database clustering & AI compute reserved instances',
+    description: 'Monthly dedicated database clustering & Praz-AI compute reserved instances',
     vendor: 'Amazon Web Services',
     projectTag: 'Basely Core'
   },

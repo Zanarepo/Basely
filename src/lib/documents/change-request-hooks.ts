@@ -43,7 +43,7 @@ export async function useChangeRequestCreatedHook(projectId: string, description
       projectId: projectId,
       contentSummary: `A new change request was logged for "${projectName}": ${description}`,
       emailContext: {
-        subject: `[Basely PM] New Change Request: ${projectName}`,
+        subject: `[Prazaner PM] New Change Request: ${projectName}`,
         title: `Change Request Review`,
         message: `A new standalone change request has been logged and requires your review.\n\nDescription: ${description}\nRationale: ${rationale || 'N/A'}\n\nPlease review and approve or reject it from the project dashboard.`,
         actionUrl

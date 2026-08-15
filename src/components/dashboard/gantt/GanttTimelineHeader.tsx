@@ -18,28 +18,7 @@ export function GanttTimelineHeader({
   headerHeight,
 }: GanttTimelineHeaderProps) {
   const timelineHeaders = useMemo(() => {
-    const start = new Date(timelineStart)
-    const headers: { label: string; left: number }[] = []
-
-    for (let i = 0; i < totalDays; i++) {
-      const date = new Date(start.getTime() + i * 24 * 60 * 60 * 1000)
-      let label = ''
-
-      if (zoom === 'day') {
-        label = date.toLocaleDateString('en-US', { day: 'numeric' })
-      } else if (zoom === 'week' && date.getUTCDay() === 1) {
-        label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      } else if (zoom === 'month' && date.getUTCDate() === 1) {
-        label = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-      } else if (zoom === 'quarter' && (date.getUTCMonth() % 3 === 0) && date.getUTCDate() === 1) {
-        label = `Q${Math.floor(date.getUTCMonth() / 3) + 1} '${date.toLocaleDateString('en-US', { year: '2-digit' })}`
-      }
-
-      if (label) {
-        headers.push({ label, left: i * dayWidth })
-      }
-    }
-    return headers
+    return getTimelineHeaders(timelineStart, totalDays, dayWidth, zoom)
   }, [timelineStart, totalDays, dayWidth, zoom])
 
   return (
@@ -66,21 +45,23 @@ export function getTimelineHeaders(
   dayWidth: number,
   zoom: 'day' | 'week' | 'month' | 'quarter'
 ) {
-  const start = new Date(timelineStart)
+  const [y, m, d] = timelineStart.split('T')[0]!.split('-').map(Number)
+  const startUtc = Date.UTC(y!, m! - 1, d!)
   const headers: { label: string; left: number }[] = []
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   for (let i = 0; i < totalDays; i++) {
-    const date = new Date(start.getTime() + i * 24 * 60 * 60 * 1000)
+    const date = new Date(startUtc + i * 24 * 60 * 60 * 1000)
     let label = ''
 
     if (zoom === 'day') {
-      label = date.toLocaleDateString('en-US', { day: 'numeric' })
+      label = `${date.getUTCDate()}`
     } else if (zoom === 'week' && date.getUTCDay() === 1) {
-      label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      label = `${monthNames[date.getUTCMonth()]} ${date.getUTCDate()}`
     } else if (zoom === 'month' && date.getUTCDate() === 1) {
-      label = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+      label = `${monthNames[date.getUTCMonth()]} '${String(date.getUTCFullYear()).slice(-2)}`
     } else if (zoom === 'quarter' && (date.getUTCMonth() % 3 === 0) && date.getUTCDate() === 1) {
-      label = `Q${Math.floor(date.getUTCMonth() / 3) + 1} '${date.toLocaleDateString('en-US', { year: '2-digit' })}`
+      label = `Q${Math.floor(date.getUTCMonth() / 3) + 1} '${String(date.getUTCFullYear()).slice(-2)}`
     }
 
     if (label) {

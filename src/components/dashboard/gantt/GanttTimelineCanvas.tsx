@@ -28,6 +28,7 @@ type GanttTimelineCanvasProps = {
   lockedActivities?: { [activityId: string]: string }
   acquireLock?: (activityId: string) => void
   releaseLock?: (activityId: string) => void
+  onSelectElement?: (id: string) => void
 }
 
 const ROW_HEIGHT = 48
@@ -51,6 +52,7 @@ export function GanttTimelineCanvas({
   lockedActivities = {},
   acquireLock,
   releaseLock,
+  onSelectElement,
 }: GanttTimelineCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -188,6 +190,7 @@ export function GanttTimelineCanvas({
     handleStartDrawLink,
     handleAnchorPointerUp,
     handleItemHover,
+    wasJustDragging,
   } = useGanttCanvasInteraction({
     dayWidth,
     timelineStart,
@@ -266,6 +269,8 @@ export function GanttTimelineCanvas({
           onItemLeave={() => setHoveredItem(null)}
           onStartDrawLink={handleStartDrawLink}
           onAnchorPointerUp={handleAnchorPointerUp as any}
+          onSelectElement={onSelectElement}
+          wasJustDragging={wasJustDragging}
         />
 
       </div>

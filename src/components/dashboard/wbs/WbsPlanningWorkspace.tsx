@@ -27,6 +27,9 @@ type WbsPlanningWorkspaceProps = {
   allowTeamScheduleEdits?: boolean
   currency?: string
   methodology?: ProjectMethodology | null
+  organizationId: string
+  tier: string
+  aiEnabled: boolean
 }
 
 import { useWbsBoard } from './workspace/useWbsBoard'
@@ -41,6 +44,9 @@ export function WbsPlanningWorkspace({
   allowTeamScheduleEdits = false,
   currency = 'USD',
   methodology,
+  organizationId,
+  tier,
+  aiEnabled,
 }: WbsPlanningWorkspaceProps) {
   const searchParams = useSearchParams()
   const initialView = (searchParams.get('wbsView') as WbsViewType) || 'tree'
@@ -379,7 +385,9 @@ export function WbsPlanningWorkspace({
         allowTeamScheduleEdits={allowTeamScheduleEdits}
         currency={currency}
         terms={terms}
-
+        organizationId={organizationId}
+        tier={tier}
+        aiEnabled={aiEnabled}
       />
     </div>
   )

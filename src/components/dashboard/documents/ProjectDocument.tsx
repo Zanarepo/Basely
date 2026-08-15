@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import DocumentEngine from './DocumentEngine'
 import { getDocumentTemplate, getGeneratedDocument, updateDocumentTemplateId, DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
+import { getSyncDocumentTemplate } from '@/lib/documents/prd-templates'
 import { getCustomTemplates, CustomDocumentTemplate } from '@/lib/documents/template-actions'
-import { FileText, LayoutTemplate, ArrowRight } from 'lucide-react'
-import { DocumentLoader } from './DocumentLoader'
+import { FileText, LayoutTemplate, ArrowRight, Loader2 } from 'lucide-react'
+import { PrdTemplateSelectorModal } from '@/components/dashboard/product/prd/PrdTemplateSelectorModal'
 
 interface ProjectDocumentProps {
   documentType: string
@@ -26,82 +27,84 @@ export default function ProjectDocument({
   isSnapshot = false,
   snapshotId
 }: ProjectDocumentProps) {
-  const [template, setTemplate] = useState<DocumentTemplate | null>(null)
+  // Pre-initialize template synchronously (0ms instant render!)
+  const [template, setTemplate] = useState<DocumentTemplate>(() => getSyncDocumentTemplate(documentType))
   const [generatedDoc, setGeneratedDoc] = useState<GeneratedDocument | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   
   // Selection state
   const [availableCustomTemplates, setAvailableCustomTemplates] = useState<CustomDocumentTemplate[]>([])
   const [needsTemplateSelection, setNeedsTemplateSelection] = useState(false)
+  const [isPrdModalOpen, setIsPrdModalOpen] = useState(false)
+  const orgId = projectContext?.organization_id || ''
 
   useEffect(() => {
-    async function load() {
-      setLoading(true)
-      
-      // 1. Check for existing generated document
-      const doc = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
-      setGeneratedDoc(doc)
+    let isMounted = true
+    setIsLoading(true)
 
-      if (doc) {
-        // Document exists: load the specific template it was generated with
-        const tpl = await getDocumentTemplate(documentType, doc.custom_template_id)
-        if (tpl) {
-          setTemplate(tpl)
-        } else {
-          onShowToast('error', `Could not load template for this document`)
-        }
-      } else {
-        // No existing document: Check for custom templates
-        const customTemplates = await getCustomTemplates(projectContext.organization_id, documentType)
-        
-        if (customTemplates.length > 0 && hasEditAccess && !isSnapshot) {
-          setAvailableCustomTemplates(customTemplates)
-          setNeedsTemplateSelection(true)
-        } else {
-          // No custom templates or no edit access: use default
-          const tpl = await getDocumentTemplate(documentType)
-          if (tpl) {
-            setTemplate(tpl)
-          } else {
-            onShowToast('error', `Could not load default template`)
+    async function load() {
+      try {
+        // Fetch generated document draft in background
+        const doc = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
+        if (!isMounted) return
+
+        // Resolve exact template variant selection BEFORE setting template state
+        const activeTemplateId = doc?.free_text_content?.['__prd_template_variant'] || doc?.custom_template_id || undefined
+        const tpl = getSyncDocumentTemplate(documentType, activeTemplateId)
+        setTemplate(tpl)
+        setGeneratedDoc(doc)
+
+        if (!doc && hasEditAccess && !isSnapshot) {
+          const customTemplates = await getCustomTemplates(orgId, documentType)
+          if (!isMounted) return
+          if (customTemplates.length > 0) {
+            setAvailableCustomTemplates(customTemplates)
+            setNeedsTemplateSelection(true)
           }
         }
+      } catch (err) {
+        console.error('Error loading document draft:', err)
+        if (onShowToast) onShowToast('error', 'Failed to load document')
+      } finally {
+        if (isMounted) setIsLoading(false)
       }
-      
-      setLoading(false)
     }
+
     load()
-  }, [documentType, projectId, onShowToast, isSnapshot, snapshotId, projectContext.organization_id, hasEditAccess])
+    return () => {
+      isMounted = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [documentType, projectId, isSnapshot, snapshotId, orgId, hasEditAccess])
 
   const handleShowSelector = async () => {
-    setLoading(true)
     if (availableCustomTemplates.length === 0) {
       const customTemplates = await getCustomTemplates(projectContext.organization_id, documentType)
       setAvailableCustomTemplates(customTemplates)
     }
     setNeedsTemplateSelection(true)
-    setLoading(false)
   }
 
   const handleSelectTemplate = async (templateId?: string) => {
-    setLoading(true)
-    const tpl = await getDocumentTemplate(documentType, templateId)
-    if (tpl) {
-      setTemplate(tpl)
-      setNeedsTemplateSelection(false)
-      
-      // If a document is already generated, update its template immediately in DB
-      if (generatedDoc) {
-        await updateDocumentTemplateId(projectId, documentType, tpl.is_custom ? tpl.id : null)
-      }
-    } else {
-      onShowToast('error', 'Failed to load selected template')
+    const tpl = getSyncDocumentTemplate(documentType, templateId)
+    setTemplate(tpl)
+    setNeedsTemplateSelection(false)
+    const res = await updateDocumentTemplateId(projectId, documentType, tpl.id)
+    if (res.ok) {
+      const refreshed = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
+      setGeneratedDoc(refreshed)
     }
-    setLoading(false)
   }
 
-  if (loading) {
-    return <DocumentLoader />
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 space-y-3 min-h-[400px]">
+        <div className="p-3 bg-violet-500/10 rounded-2xl border border-violet-500/20 shadow-xs">
+          <Loader2 className="w-6 h-6 text-violet-500 animate-spin" />
+        </div>
+        <p className="text-xs font-semibold text-app-muted animate-pulse">Loading document workspace...</p>
+      </div>
+    )
   }
 
   if (needsTemplateSelection) {
@@ -163,24 +166,54 @@ export default function ProjectDocument({
     )
   }
 
-  if (!template) {
-    return (
-      <div className="flex h-full min-h-[600px] items-center justify-center bg-app-surface border border-app-border rounded-xl">
-        <p className="text-sm text-app-muted">Template "{documentType}" not found in database.</p>
-      </div>
-    )
+  const handleSelectPrdVariant = async (variantId: string) => {
+    // 0ms instant UI template update!
+    const tpl = getSyncDocumentTemplate(documentType, variantId)
+    setTemplate(tpl)
+    const res = await updateDocumentTemplateId(projectId, documentType, variantId)
+    if (res.ok) {
+      const refreshed = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
+      setGeneratedDoc(refreshed)
+      onShowToast('success', `Swapped to ${tpl.name || 'template'}`)
+    } else {
+      console.error('[PRD Template Error] Failed to update template in database:', res.error)
+      onShowToast('error', res.error || 'Failed to update template in database')
+    }
+  }
+
+  const handleOpenSelector = () => {
+    if (documentType === 'product_requirements_document') {
+      setIsPrdModalOpen(true)
+    } else {
+      handleShowSelector()
+    }
+  }
+
+  const handleDocumentSaved = async () => {
+    const refreshed = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
+    setGeneratedDoc(refreshed)
   }
 
   return (
-    <DocumentEngine
-      projectId={projectId}
-      projectContext={projectContext}
-      template={template}
-      generatedDoc={generatedDoc}
-      hasEditAccess={hasEditAccess}
-      onShowToast={onShowToast}
-      isSnapshot={isSnapshot}
-      onShowTemplateSelector={!isSnapshot && hasEditAccess ? handleShowSelector : undefined}
-    />
+    <>
+      <DocumentEngine
+        projectId={projectId}
+        projectContext={projectContext}
+        template={template}
+        generatedDoc={generatedDoc}
+        hasEditAccess={hasEditAccess}
+        onShowToast={onShowToast}
+        isSnapshot={isSnapshot}
+        onShowTemplateSelector={!isSnapshot && hasEditAccess ? handleOpenSelector : undefined}
+        onSaveSuccess={handleDocumentSaved}
+      />
+
+      <PrdTemplateSelectorModal
+        isOpen={isPrdModalOpen}
+        currentTemplateId={template.id}
+        onClose={() => setIsPrdModalOpen(false)}
+        onSelectTemplate={handleSelectPrdVariant}
+      />
+    </>
   )
 }

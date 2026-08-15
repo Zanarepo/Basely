@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react'
 import type { DiscoveryInsight, Persona } from '@/lib/product-strategy/types'
-import { X, Loader2, Lightbulb } from 'lucide-react'
+import { X, Loader2, Lightbulb, Plus, Check } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import { createPersona } from '@/lib/product-strategy/actions'
+import { toast } from 'sonner'
 
 interface DiscoveryInsightModalProps {
   isOpen: boolean
@@ -60,6 +62,17 @@ export function DiscoveryInsightModal({
   const [status, setStatus] = useState('new')
   const [saving, setSaving] = useState(false)
 
+  // Quick Create Persona State
+  const [localPersonas, setLocalPersonas] = useState<Persona[]>(personas)
+  const [showQuickCreate, setShowQuickCreate] = useState(false)
+  const [quickName, setQuickName] = useState('')
+  const [quickRole, setQuickRole] = useState('')
+  const [isCreatingPersona, setIsCreatingPersona] = useState(false)
+
+  useEffect(() => {
+    setLocalPersonas(personas)
+  }, [personas])
+
   useEffect(() => {
     if (existingInsight) {
       setTitle(existingInsight.title || '')
@@ -100,6 +113,45 @@ export function DiscoveryInsightModal({
     await onSave(payload)
     setSaving(false)
     onClose()
+  }
+
+  const handleQuickCreatePersona = async () => {
+    if (!quickName.trim() || !quickRole.trim()) {
+      toast.error('Name and Role are required')
+      return
+    }
+    
+    setIsCreatingPersona(true)
+    
+    // Generate a random pleasant color
+    const colors = ['#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6', '#ef4444', '#10b981']
+    const randomColor = colors[Math.floor(Math.random() * colors.length)]
+    
+    const payload = {
+      name: quickName.trim(),
+      role_title: quickRole.trim(),
+      organization_id: organizationId,
+      project_id: projectId,
+      avatar_color: randomColor
+    }
+    
+    try {
+      const res = await createPersona(payload)
+      if (res.ok && res.data) {
+        toast.success('Persona created!')
+        setLocalPersonas(prev => [res.data!, ...prev])
+        setPersonaId(res.data.id)
+        setShowQuickCreate(false)
+        setQuickName('')
+        setQuickRole('')
+      } else {
+        toast.error(res.error || 'Failed to create persona')
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'An error occurred')
+    } finally {
+      setIsCreatingPersona(false)
+    }
   }
 
   return (
@@ -191,16 +243,63 @@ export function DiscoveryInsightModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Linked Persona</label>
-              <EnterpriseSelect
-                value={personaId}
-                onChange={setPersonaId}
-                placeholder="— No persona —"
-                options={[
-                  { value: '', label: '— No persona —' },
-                  ...personas.map(p => ({ value: p.id, label: `${p.name} (${p.role_title})` }))
-                ]}
-              />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Linked Persona</label>
+                {!showQuickCreate && (
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickCreate(true)}
+                    className="text-[11px] font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 flex items-center cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3 mr-0.5" />
+                    Quick Create
+                  </button>
+                )}
+              </div>
+
+              {showQuickCreate ? (
+                <div className="p-3 bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800/40 rounded-xl space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-violet-700 dark:text-violet-400 uppercase tracking-wider">New Persona</span>
+                    <button type="button" onClick={() => setShowQuickCreate(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={quickName}
+                    onChange={e => setQuickName(e.target.value)}
+                    placeholder="Name (e.g. Sarah)"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-violet-200 dark:border-violet-700/50 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all"
+                  />
+                  <input
+                    type="text"
+                    value={quickRole}
+                    onChange={e => setQuickRole(e.target.value)}
+                    placeholder="Role (e.g. Site Supervisor)"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-violet-200 dark:border-violet-700/50 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleQuickCreatePersona}
+                    disabled={isCreatingPersona || !quickName.trim() || !quickRole.trim()}
+                    className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[11px] font-semibold transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isCreatingPersona ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                    {isCreatingPersona ? 'Saving...' : 'Save & Select'}
+                  </button>
+                </div>
+              ) : (
+                <EnterpriseSelect
+                  value={personaId}
+                  onChange={setPersonaId}
+                  placeholder="— No persona —"
+                  options={[
+                    { value: '', label: '— No persona —' },
+                    ...localPersonas.map(p => ({ value: p.id, label: `${p.name} (${p.role_title})` }))
+                  ]}
+                />
+              )}
             </div>
           </div>
 
@@ -230,7 +329,7 @@ export function DiscoveryInsightModal({
               type="submit"
               disabled={saving || !title.trim()}
               style={{ cursor: 'pointer' }}
-              className="px-5 py-2.5 rounded-xl bg-[#6b4eff] hover:bg-[#5839ec] text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
             >
               {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {saving ? 'Saving...' : isEditMode ? 'Update Insight' : 'Log Insight'}

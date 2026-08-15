@@ -1,17 +1,26 @@
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, RotateCcw, Trash2 } from 'lucide-react'
 import { DocumentTemplate, GeneratedDocument, saveGeneratedDocument, regenerateDocument } from '@/lib/documents/actions'
 import DocumentHistoryModal from './DocumentHistoryModal'
 import { fetchAutoFillText } from './engine/autoFillDataFetcher'
 import { useDocumentExports } from './engine/useDocumentExports'
 import DocumentHeader from './components/DocumentHeader'
 import DocumentSection from './components/DocumentSection'
+import InlineSectionInserter from './components/InlineSectionInserter'
+import ReferenceDocumentsSection from './components/ReferenceDocumentsSection'
+import FloatingReferenceLinksWidget from './components/FloatingReferenceLinksWidget'
 import RegenConfirmModal from './components/RegenConfirmModal'
 import SnapshotModal from './components/SnapshotModal'
 import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
 import { PrdMetadataRibbon } from '@/components/dashboard/product/prd/PrdMetadataRibbon'
+import { useSectionOrdering } from './hooks/useSectionOrdering'
+import DocumentStatsRibbon from './components/DocumentStatsRibbon'
+import DocumentPropertiesHeader from './components/DocumentPropertiesHeader'
+import PrdToRiceAutomationBanner from './components/rice-automation/PrdToRiceAutomationBanner'
+import DocumentApprovalBanner from './components/DocumentApprovalBanner'
+import DocumentTableOfContents from './components/DocumentTableOfContents'
 
 interface DocumentEngineProps {
   projectId: string
@@ -23,6 +32,7 @@ interface DocumentEngineProps {
   isSnapshot?: boolean
   onShowTemplateSelector?: () => void
   isReadOnlyTemplate?: boolean // For pre-project entities that don't save to generated_documents
+  onSaveSuccess?: () => void
 }
 
 export default function DocumentEngine({
@@ -35,6 +45,7 @@ export default function DocumentEngine({
   isSnapshot = false,
   onShowTemplateSelector,
   isReadOnlyTemplate = false,
+  onSaveSuccess,
 }: DocumentEngineProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -59,7 +70,98 @@ export default function DocumentEngine({
     return []
   })()
 
-  const allSections = [...template.section_definitions, ...customSections]
+  // Track deleted section keys
+  const deletedSectionKeys: string[] = (() => {
+    try {
+      if (freeText['__deleted_section_keys']) {
+        const parsed = JSON.parse(freeText['__deleted_section_keys'])
+        if (Array.isArray(parsed)) return parsed
+      }
+    } catch (e) {
+      console.error('Failed to parse deleted section keys:', e)
+    }
+    return []
+  })()
+
+  // Compute section order array from freeText
+  const sectionOrder: string[] = (() => {
+    try {
+      if (freeText['__section_order']) {
+        return JSON.parse(freeText['__section_order'])
+      }
+    } catch (e) {
+      console.error('Failed to parse section order:', e)
+    }
+    return []
+  })()
+
+  // Standard & Custom sections soft-removed with 24-hour expiration filter
+  const removedSectionsMeta: Record<string, { key: string; title: string; isCustom?: boolean; removedAt: number }> = (() => {
+    try {
+      if (freeText['__removed_sections_meta']) {
+        return JSON.parse(freeText['__removed_sections_meta'])
+      }
+    } catch {
+      // fallback
+    }
+    return {}
+  })()
+
+  const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
+  const now = Date.now()
+
+  // Compute active soft-removed sections (filtering out items removed > 24 hours ago)
+  const removedSectionsList = Object.values(removedSectionsMeta).filter(
+    (item) => item && typeof item.removedAt === 'number' && now - item.removedAt < TWENTY_FOUR_HOURS_MS
+  )
+
+  // Compute all active sections (filtering out deleted and soft-removed ones)
+  const activeUnsortedSections = [...template.section_definitions, ...customSections].filter(
+    (sec) => !deletedSectionKeys.includes(sec.key) && !removedSectionsMeta[sec.key]
+  )
+
+  const sectionOrderMap = new Map<string, number>()
+  if (sectionOrder && sectionOrder.length > 0) {
+    sectionOrder.forEach((key, idx) => sectionOrderMap.set(key, idx))
+  }
+
+  const allSections = [...activeUnsortedSections].sort((a, b) => {
+    const orderA = sectionOrderMap.has(a.key) ? sectionOrderMap.get(a.key)! : 9999
+    const orderB = sectionOrderMap.has(b.key) ? sectionOrderMap.get(b.key)! : 9999
+    if (orderA !== orderB) return orderA - orderB
+    return activeUnsortedSections.indexOf(a) - activeUnsortedSections.indexOf(b)
+  })
+
+  const legacyRemovedSections = [...template.section_definitions, ...customSections]
+    .filter((sec) => deletedSectionKeys.includes(sec.key) && !removedSectionsMeta[sec.key])
+    .map((sec) => ({
+      key: sec.key,
+      title: sec.title,
+      isCustom: 'isCustom' in sec ? Boolean(sec.isCustom) : false,
+      removedAt: Date.now()
+    }))
+
+  const allRemovedSections = [...removedSectionsList, ...legacyRemovedSections]
+
+  // Compute section title overrides stored inside freeText
+  const sectionTitleOverrides: Record<string, string> = (() => {
+    try {
+      if (freeText['__section_title_overrides']) {
+        return JSON.parse(freeText['__section_title_overrides'])
+      }
+    } catch (e) {
+      console.error('Failed to parse section title overrides:', e)
+    }
+    return {}
+  })()
+
+  const handleDocumentTitleChange = (newTitle: string) => {
+    setFreeText(prev => ({
+      ...prev,
+      '__document_title_override': newTitle
+    }))
+    setIsDirty(true)
+  }
 
   // Track if we have unsaved changes
   const [isDirty, setIsDirty] = useState(false)
@@ -76,13 +178,10 @@ export default function DocumentEngine({
 
   // Initialize state
   useEffect(() => {
-    if (generatedDoc?.free_text_content) {
+    if (generatedDoc?.free_text_content && !isDirty) {
       setFreeText(generatedDoc.free_text_content)
-    } else {
-      setFreeText({})
     }
-    setIsDirty(false)
-  }, [generatedDoc?.id, template?.document_type])
+  }, [generatedDoc?.id, generatedDoc?.updated_at, template?.id, template?.document_type])
 
   const {
     showExportMenu,
@@ -106,65 +205,50 @@ export default function DocumentEngine({
     setIsDirty(true)
   }
 
-  const handleAddSection = () => {
-    if (!newSectionTitle.trim()) return
-    const sectionTitle = newSectionTitle.trim()
-    const sectionKey = 'custom_sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6)
+  // Real-time debounced auto-save (saves 1s after user stops typing)
+  useEffect(() => {
+    if (!isDirty || isPending || isSnapshot || isReadOnlyTemplate) return
 
-    startTransition(() => {
-      setFreeText((prev) => {
-        const next = { ...prev }
-        const currentCustom = (() => {
-          try {
-            return prev['__custom_sections'] ? JSON.parse(prev['__custom_sections']) : []
-          } catch {
-            return []
-          }
-        })()
-        const updatedCustom = [...currentCustom, { key: sectionKey, title: sectionTitle }]
-        next['__custom_sections'] = JSON.stringify(updatedCustom)
-        next[sectionKey] = '' // Initialize as empty string to trigger interactive edit field
-        return next
-      })
-      setNewSectionTitle('')
-      setIsDirty(true)
-    })
-    onShowToast('success', `Added new custom section "${sectionTitle}"`)
-  }
+    const timer = setTimeout(() => {
+      handleSave()
+    }, 1000)
 
-  const handleRemoveSection = (sectionKey: string) => {
-    startTransition(() => {
-      setFreeText((prev) => {
-        const next = { ...prev }
-        delete next[sectionKey]
-        try {
-          if (next['__custom_sections']) {
-            const current = JSON.parse(next['__custom_sections']) as { key: string; title: string }[]
-            const updated = current.filter((s) => s.key !== sectionKey)
-            if (updated.length > 0) {
-              next['__custom_sections'] = JSON.stringify(updated)
-            } else {
-              delete next['__custom_sections']
-            }
-          }
-        } catch {
-          // ignore parsing errors
-        }
-        return next
-      })
-      setIsDirty(true)
-    })
-    onShowToast('success', 'Custom section removed')
-  }
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [freeText, isDirty, isPending, isSnapshot, isReadOnlyTemplate])
+
+  const {
+    handleMoveSectionUp,
+    handleMoveSectionDown,
+    handleAddSection,
+    handleDuplicateSection,
+    handleRemoveSection,
+    handleSectionTitleChange,
+    handleRestoreSection,
+    handlePermanentDeleteSection,
+    handleClearAllRemovedSections,
+    handleResetToDefaultLayout
+  } = useSectionOrdering({
+    freeText,
+    setFreeText,
+    allSections,
+    setIsDirty,
+    onShowToast,
+    startTransition,
+    newSectionTitle,
+    setNewSectionTitle
+  })
 
   const handleSave = () => {
     startTransition(async () => {
-      const customTemplateId = template.is_custom ? template.id : undefined
+      const customTemplateId = template.id
       const result = await saveGeneratedDocument(projectId, template.document_type, freeText, false, undefined, undefined, customTemplateId)
       if (result.ok) {
         setIsDirty(false)
         onShowToast('success', 'Document saved successfully')
+        if (onSaveSuccess) onSaveSuccess()
       } else {
+        console.error('[DocumentEngine Error] Failed to save document:', result.error)
         onShowToast('error', result.error || 'Failed to save document')
       }
     })
@@ -266,6 +350,8 @@ export default function DocumentEngine({
         handleExportXlsx={handleExportXlsx}
         onShowTemplateSelector={onShowTemplateSelector}
         isReadOnlyTemplate={isReadOnlyTemplate}
+        customDocumentTitle={freeText['__document_title_override']}
+        onDocumentTitleChange={handleDocumentTitleChange}
       />
 
       {/* Document Content Rendering */}
@@ -279,33 +365,102 @@ export default function DocumentEngine({
             </div>
           )}
 
-          {/* PRD Studio Metadata Ribbon — only visible for Product Requirements Documents */}
-          {template.document_type === 'product_requirements_document' && !isSnapshot && (
-            <div className="mb-8">
-              <PrdMetadataRibbon
-                projectId={projectId}
-                organizationId={projectContext?.organization_id || ''}
-              />
-            </div>
+
+
+          {/* Live Document Reading Stats & Save Telemetry Ribbon */}
+          <DocumentStatsRibbon
+            freeText={freeText}
+            allSectionsCount={allSections.length}
+            isDirty={isDirty}
+            isPending={isPending}
+            isSnapshot={isSnapshot}
+            onResetLayout={() => handleResetToDefaultLayout(template.section_definitions)}
+          />
+
+          {/* Dedicated PRD -> RICE Backlog Automation Banner */}
+          {template.document_type === 'product_requirements_document' && (
+            <PrdToRiceAutomationBanner
+              projectId={projectId}
+              organizationId={projectContext?.organization_id || ''}
+              freeText={freeText}
+              onShowToast={onShowToast}
+              isSnapshot={isSnapshot}
+            />
           )}
 
+          {/* Notion-Style Document Properties Header Grid */}
+          <DocumentPropertiesHeader
+            projectId={projectId}
+            documentType={template.document_type}
+            freeText={freeText}
+            setFreeText={setFreeText}
+            setIsDirty={setIsDirty}
+            onShowToast={onShowToast}
+            hasEditAccess={hasEditAccess}
+            isSnapshot={isSnapshot}
+          />
+
+          {/* Universal Enterprise Document Approval & Governance Sign-Off Banner */}
+          <DocumentApprovalBanner
+            projectId={projectId}
+            documentType={template.document_type}
+            freeText={freeText}
+            setFreeText={setFreeText}
+            setIsDirty={setIsDirty}
+            onShowToast={onShowToast}
+            hasEditAccess={hasEditAccess}
+            isSnapshot={isSnapshot}
+          />
+
+
+
+          {/* Floating Table of Contents (TOC) / Outline Side Navigator */}
+          <DocumentTableOfContents
+            sections={allSections}
+            sectionTitleOverrides={sectionTitleOverrides}
+          />
+
           {/* Engine: Loop through all standard and dynamic custom sections */}
-          {allSections.map((section) => (
-            <DocumentSection
-              key={section.key}
-              section={section}
-              template={template}
-              generatedDoc={generatedDoc}
-              projectId={projectId}
-              projectContext={projectContext}
-              isSnapshot={isSnapshot}
-              hasEditAccess={hasEditAccess}
-              freeText={freeText}
-              handleAutoFillSection={handleAutoFillSection}
-              handleFreeTextChange={handleFreeTextChange}
-              onRemoveSection={handleRemoveSection}
-            />
+          {allSections.map((section, index) => (
+            <div key={section.key} className="space-y-4">
+              {/* Hover Section Inserter Line above each section */}
+              {hasEditAccess && !isSnapshot && (
+                <InlineSectionInserter
+                  onAddSection={(title, content) => handleAddSection(title, index, content)}
+                  isPending={isPending}
+                />
+              )}
+
+              <DocumentSection
+                section={section}
+                template={template}
+                generatedDoc={generatedDoc}
+                projectId={projectId}
+                projectContext={projectContext}
+                isSnapshot={isSnapshot}
+                hasEditAccess={hasEditAccess}
+                freeText={freeText}
+                handleAutoFillSection={handleAutoFillSection}
+                handleFreeTextChange={handleFreeTextChange}
+                onRemoveSection={handleRemoveSection}
+                sectionTitleOverride={sectionTitleOverrides[section.key]}
+                onSectionTitleChange={handleSectionTitleChange}
+                onMoveSectionUp={handleMoveSectionUp}
+                onMoveSectionDown={handleMoveSectionDown}
+                onDuplicateSection={handleDuplicateSection}
+                isFirstSection={index === 0}
+                isLastSection={index === allSections.length - 1}
+              />
+            </div>
           ))}
+
+          {/* Hover Section Inserter Line after the last section */}
+          {hasEditAccess && !isSnapshot && allSections.length > 0 && (
+            <InlineSectionInserter
+              onAddSection={(title, content) => handleAddSection(title, allSections.length, content)}
+              isPending={isPending}
+            />
+          )}
 
           {/* Dynamic Section Builder (For Competitive Matrix, Market Research & all documents) */}
           {hasEditAccess && !isSnapshot && (
@@ -368,6 +523,60 @@ export default function DocumentEngine({
               />
             </div>
           )}
+
+          {/* Restore & Permanently Delete Removed Sections Panel */}
+          {hasEditAccess && !isSnapshot && allRemovedSections.length > 0 && (
+            <div className="mt-6 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-3 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Removed Sections ({allRemovedSections.length})
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClearAllRemovedSections}
+                  style={{ cursor: 'pointer' }}
+                  className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
+                  title="Permanently clear all removed sections now"
+                >
+                  <Trash2 className="w-3 h-3" /> Clear Trash
+                </button>
+              </div>
+
+              <p className="text-xs text-app-muted">
+                ⏱️ Removed sections are kept in trash for <strong>24 hours</strong> before being automatically purged. Click to restore or permanently remove:
+              </p>
+
+              <div className="flex flex-wrap gap-2 pt-1">
+                {allRemovedSections.map((sec) => (
+                  <div
+                    key={sec.key}
+                    className="inline-flex items-center rounded-lg bg-app-surface border border-app-border text-app-fg shadow-2xs overflow-hidden"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleRestoreSection(sec.key)}
+                      style={{ cursor: 'pointer' }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 transition-colors cursor-pointer"
+                      title="Restore section to document"
+                    >
+                      <span>+ Restore {(sectionTitleOverrides && sectionTitleOverrides[sec.key]) || sec.title}</span>
+                    </button>
+                    <div className="w-px h-7 bg-app-border" />
+                    <button
+                      type="button"
+                      onClick={() => handlePermanentDeleteSection(sec.key)}
+                      style={{ cursor: 'pointer' }}
+                      className="px-2.5 py-1.5 text-app-muted hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      title="Permanently delete this section now"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -391,6 +600,12 @@ export default function DocumentEngine({
         projectId={projectId}
         documentType={template.document_type}
         onShowToast={onShowToast}
+      />
+
+      {/* Floating VoC & Document Evidence Reference Links Widget */}
+      <FloatingReferenceLinksWidget
+        freeText={freeText}
+        allSections={allSections}
       />
     </div>
   )

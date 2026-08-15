@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Undo2, Redo2, Maximize2, Minimize2, Plus, Search, ListTree, Kanban, Table2, Upload, Trash2, DollarSign } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
+import { useUserPersona } from '@/hooks/use-user-persona'
 
 export type WbsViewType = 'tree' | 'board' | 'grid' | 'raci' | 'unassigned'
 
@@ -44,6 +46,21 @@ export function WbsToolbar({
   showFinancials = false,
   onToggleFinancials,
 }: WbsToolbarProps) {
+  const { isProductMode, addButtonText, showBudgetControls } = useUserPersona()
+  const [isAllExpanded, setIsAllExpanded] = useState(true)
+
+  const viewTabLabel = isProductMode ? 'List' : 'Hierarchy'
+
+  const toggleExpandCollapse = () => {
+    if (isAllExpanded) {
+      handleCollapseAll()
+      setIsAllExpanded(false)
+    } else {
+      handleExpandAll()
+      setIsAllExpanded(true)
+    }
+  }
+
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-app-surface border border-app-border rounded-2xl backdrop-blur-md">
       <div className="flex flex-wrap items-center gap-3">
@@ -52,11 +69,11 @@ export function WbsToolbar({
           <button
             type="button"
             onClick={() => onViewChange('tree')}
-            title="Tree View"
+            title={`${viewTabLabel} View`}
             className={`p-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${currentView === 'tree' ? 'bg-white text-violet-600 shadow-sm' : 'text-app-fg hover:bg-app-hover'}`}
           >
             <ListTree className="h-4 w-4" />
-            <span className="text-xs font-medium hidden md:inline">Tree</span>
+            <span className="text-xs font-medium hidden md:inline">{viewTabLabel}</span>
           </button>
           <button
             type="button"
@@ -118,28 +135,24 @@ export function WbsToolbar({
           </button>
         </div>
 
-        {/* Node Expand/Collapse buttons */}
+        {/* Morphed Single Expand/Collapse Toggle Button */}
         <div className="flex rounded-xl bg-app-muted-surface border border-app-border p-1">
           <button
             type="button"
-            onClick={handleExpandAll}
-            title="Expand all elements"
-            className="p-1.5 rounded-lg hover:bg-app-hover text-app-fg transition-colors cursor-pointer"
+            onClick={toggleExpandCollapse}
+            title={isAllExpanded ? "Collapse All" : "Expand All"}
+            className="p-1.5 rounded-lg hover:bg-app-hover text-app-fg transition-colors cursor-pointer flex items-center gap-1"
           >
-            <Maximize2 className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={handleCollapseAll}
-            title="Collapse all elements"
-            className="p-1.5 rounded-lg hover:bg-app-hover text-app-fg transition-colors cursor-pointer"
-          >
-            <Minimize2 className="h-4 w-4" />
+            {isAllExpanded ? (
+              <Minimize2 className="h-4 w-4 text-violet-500" />
+            ) : (
+              <Maximize2 className="h-4 w-4 text-violet-500" />
+            )}
           </button>
         </div>
 
-        {/* Financials Toggle */}
-        {onToggleFinancials && (
+        {/* Financials Toggle (Hidden in Product / Agile mode) */}
+        {showBudgetControls && onToggleFinancials && (
           <div className="flex rounded-xl bg-app-muted-surface border border-app-border p-1">
             <button
               type="button"
@@ -159,7 +172,7 @@ export function WbsToolbar({
           </div>
         )}
 
-        {/* Add sibling root button */}
+        {/* Add primary root button (Role-Adaptive: + Add Epic vs + Add Phase) */}
         {hasEditAccess && (
           <>
             {selectedIds.length > 0 && handleBulkDelete && (
@@ -185,10 +198,10 @@ export function WbsToolbar({
             <button
               type="button"
               onClick={() => handleCreateElement(null)}
-              className="btn-primary py-1.5 px-3 rounded-xl flex items-center gap-1.5"
+              className="btn-primary py-1.5 px-3 rounded-xl flex items-center gap-1.5 font-semibold shadow-xs"
             >
               <Plus className="h-4 w-4" />
-              Add Root Element
+              {addButtonText}
             </button>
           </>
         )}

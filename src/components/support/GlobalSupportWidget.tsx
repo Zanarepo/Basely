@@ -97,8 +97,10 @@ export function GlobalSupportWidget({ mode }: GlobalSupportWidgetProps) {
           playNotificationSound()
         }
       }
-    } catch (e) {
-      console.error('Failed to load support conversations:', e)
+    } catch (e: any) {
+      if (!e?.message?.includes('unexpected response')) {
+        console.warn('Failed to load support conversations:', e?.message || e)
+      }
     }
   }
 

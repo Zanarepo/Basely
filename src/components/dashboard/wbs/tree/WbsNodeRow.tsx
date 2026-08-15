@@ -16,6 +16,7 @@ import { useWbsDragAndDrop } from './hooks/useWbsDragAndDrop'
 import { useWbsNodeRename } from './hooks/useWbsNodeRename'
 import { IterationBadge } from '@/components/dashboard/releases/components/IterationBadge'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
+import { useUserPersona } from '@/hooks/use-user-persona'
 
 export function WbsNodeRow({
   node,
@@ -45,6 +46,16 @@ export function WbsNodeRow({
   const { element, children } = node
   const isExpanded = expandedNodeIds.has(element.id)
   const hasChildren = children.length > 0
+
+  const { isProductMode } = useUserPersona()
+  const isTopLevel = !element.parentId
+  const siblingTitle = isProductMode
+    ? (isTopLevel ? 'Add Epic' : 'Add Story')
+    : (isTopLevel ? 'Add Phase' : 'Add Work Package')
+
+  const childTitle = isProductMode
+    ? (isTopLevel ? 'Add Story' : 'Add Sub-task')
+    : (isTopLevel ? 'Add Work Package' : 'Add Task')
 
   const {
     isEditing,
@@ -205,6 +216,17 @@ export function WbsNodeRow({
                     {terms.workPackage}
                   </span>
                 ) : null}
+                
+                {element.priority && (
+                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${
+                    element.priority === 'Critical' ? 'bg-red-500/10 text-red-600 border-red-500/20' :
+                    element.priority === 'High' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
+                    element.priority === 'Medium' ? 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20' :
+                    'bg-slate-500/10 text-slate-600 border-slate-500/20'
+                  }`}>
+                    {element.priority}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -276,7 +298,7 @@ export function WbsNodeRow({
               </button>
               <button
                 type="button"
-                title="Add sibling element"
+                title={siblingTitle}
                 onClick={(e) => {
                   e.stopPropagation()
                   onAddSibling(element)
@@ -287,7 +309,7 @@ export function WbsNodeRow({
               </button>
               <button
                 type="button"
-                title="Add child element"
+                title={childTitle}
                 onClick={(e) => {
                   e.stopPropagation()
                   onAddChild(element)

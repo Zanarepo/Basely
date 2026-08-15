@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Activity, Dependency } from '@/lib/schedule/cpm'
 import { getDaysDiff, getX } from './canvasUtils'
 
@@ -33,6 +33,8 @@ export function useGanttCanvasInteraction({
   acquireLock,
   releaseLock,
 }: UseGanttCanvasInteractionProps) {
+  const lastDragEndTimeRef = useRef<number>(0)
+
   // Drag states
   const [dragging, setDragging] = useState<{
     id: string
@@ -122,25 +124,48 @@ export function useGanttCanvasInteraction({
       }
     };
 
-    const handlePointerUp = async (e: PointerEvent) => {
+    const handlePointerUp = (e: PointerEvent) => {
       const type = dragging.type
       const act = dragging.activity
       const startX = dragging.startX
+      const barId = dragging.id
+
+      const deltaX = e.clientX - startX
+      const deltaDays = Math.round(deltaX / dayWidth)
+      const didActuallyDrag = Math.abs(deltaX) > 3
 
       // Clear drag state synchronously so UI responds immediately
       setDragging(null)
       if (releaseLock) releaseLock(act.id)
 
-      const deltaX = e.clientX - startX
-      const deltaDays = Math.round(deltaX / dayWidth)
+      if (didActuallyDrag) {
+        lastDragEndTimeRef.current = Date.now()
+      }
 
+      // Fire the optimistic state update FIRST — this calls setActivities()
+      // synchronously, so React will commit the new position before we clear styles
       if (deltaDays !== 0) {
         if (type === 'move') {
-          await onMoveActivity(act.id, deltaDays)
+          onMoveActivity(act.id, deltaDays)
         } else if (type === 'resize-right' || type === 'resize-left') {
           const newDur = Math.max(1, act.duration + (type === 'resize-right' ? deltaDays : -deltaDays))
-          await onResizeActivity(act.id, newDur)
+          onResizeActivity(act.id, newDur)
         }
+      }
+
+      // Clear inline DOM overrides AFTER React state has been updated.
+      // Use rAF to ensure React has committed the new position/width before
+      // we remove the drag-preview transforms, preventing any visual flash.
+      if (didActuallyDrag) {
+        requestAnimationFrame(() => {
+          const barElement = document.getElementById(`bar-${barId}`)
+          if (barElement) {
+            barElement.style.transform = ''
+            if (type === 'resize-right' || type === 'resize-left') {
+              barElement.style.removeProperty('width')
+            }
+          }
+        })
       }
     };
 
@@ -289,6 +314,10 @@ export function useGanttCanvasInteraction({
     })
   }
 
+  const wasJustDragging = () => {
+    return Date.now() - lastDragEndTimeRef.current < 500
+  }
+
   return {
     dragging,
     drawingLink,
@@ -298,5 +327,6 @@ export function useGanttCanvasInteraction({
     handleStartDrawLink,
     handleAnchorPointerUp,
     handleItemHover,
+    wasJustDragging,
   }
 }

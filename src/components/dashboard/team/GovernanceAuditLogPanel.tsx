@@ -16,7 +16,7 @@ const EVENT_TYPE_LABELS: Record<GovernanceEventType, string> = {
   'approval_decision': 'Approval Decision',
   'permission_change': 'Permission Change',
   'sso_config_change': 'SSO Config Change',
-  'ai_generation': 'AI Generation'
+  'ai_generation': 'Praz-AI Generation'
 }
 
 export function GovernanceAuditLogPanel({ organizationId, isAdmin }: GovernanceAuditLogPanelProps) {

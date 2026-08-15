@@ -255,3 +255,20 @@ export async function checkWorkspaceCreationLimit(userId: string): Promise<{ all
 
   return { allowed: true, currentUsage, maxLimit }
 }
+
+export async function getOrganizationAiEnabled(organizationId: string): Promise<boolean> {
+  const supabase = createAdminClient()
+  try {
+    const { data, error } = await supabase
+      .from('organizations')
+      .select('ai_features_enabled')
+      .eq('id', organizationId)
+      .single()
+      
+    if (error || !data) return false
+    return !!data.ai_features_enabled
+  } catch {
+    return false
+  }
+}
+

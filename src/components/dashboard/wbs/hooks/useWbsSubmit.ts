@@ -32,6 +32,37 @@ export function useWbsSubmit({
     setScheduleError(null)
 
     try {
+      if (elementState.isWorkPackage) {
+        let activeActId = schedulingState.activityId
+        if (!activeActId) {
+          const supabase = createClient()
+          const { data: newAct } = await supabase
+            .from('activities')
+            .select('id')
+            .eq('wbs_element_id', element.id)
+            .maybeSingle()
+          if (newAct) activeActId = newAct.id
+        }
+
+        if (activeActId) {
+          const constraintType = schedulingState.autoSchedule ? 'ASAP' : 'Must Start On'
+          const constraintDate = schedulingState.autoSchedule ? null : (schedulingState.startDate ? schedulingState.startDate.split('T')[0] : null)
+
+          const schedRes = await updateActivityScheduling(element.projectId, activeActId, {
+            duration: schedulingState.duration,
+            constraintType,
+            constraintDate,
+            predecessors: schedulingState.predecessors,
+          })
+
+          if (!schedRes.ok) {
+            setScheduleError(schedRes.error)
+            setSaving(false)
+            return
+          }
+        }
+      }
+
       const wbsSuccess = await onSave(element.id, {
         name: elementState.name.trim(),
         description: elementState.description.trim() || null,
@@ -48,38 +79,6 @@ export function useWbsSubmit({
       if (!wbsSuccess) {
         setSaving(false)
         return
-      }
-
-      if (elementState.isWorkPackage) {
-        let activeActId = schedulingState.activityId
-        const supabase = createClient()
-        
-        if (!activeActId) {
-          const { data: newAct } = await supabase
-            .from('activities')
-            .select('id')
-            .eq('wbs_element_id', element.id)
-            .maybeSingle()
-          if (newAct) activeActId = newAct.id
-        }
-
-        if (activeActId) {
-          const constraintType = schedulingState.autoSchedule ? 'ASAP' : 'Start No Earlier Than'
-          const constraintDate = schedulingState.autoSchedule ? null : (schedulingState.startDate || null)
-
-          const schedRes = await updateActivityScheduling(element.projectId, activeActId, {
-            duration: schedulingState.duration,
-            constraintType,
-            constraintDate,
-            predecessors: schedulingState.predecessors,
-          })
-
-          if (!schedRes.ok) {
-            setScheduleError(schedRes.error)
-            setSaving(false)
-            return
-          }
-        }
       }
 
       setSaving(false)

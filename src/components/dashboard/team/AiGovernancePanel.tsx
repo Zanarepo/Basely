@@ -36,10 +36,10 @@ export function AiGovernancePanel({ organizationId }: { organizationId: string }
       .eq('id', organizationId)
       
     if (error) {
-      toast.error('Failed to update AI settings')
+      toast.error('Failed to update Praz-AI settings')
       setIsEnabled(!checked)
     } else {
-      toast.success(checked ? 'AI WBS Auto-Deconstruct Enabled' : 'AI WBS Auto-Deconstruct Disabled')
+      toast.success(checked ? 'Praz-AI WBS Auto-Deconstruct Enabled' : 'Praz-AI WBS Auto-Deconstruct Disabled')
     }
     setIsSaving(false)
   }
@@ -62,7 +62,7 @@ export function AiGovernancePanel({ organizationId }: { organizationId: string }
             </div>
             <div>
               <h3 className="text-lg font-medium text-slate-900 dark:text-white flex items-center gap-3">
-                AI Assistant Features
+                Praz-AI Assistant Features
                 {isEnabled ? (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
                     Active
@@ -74,7 +74,7 @@ export function AiGovernancePanel({ organizationId }: { organizationId: string }
                 )}
               </h3>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 max-w-2xl">
-                Enable AI-powered automation for product management. When active, sending a Backlog Item to execution will automatically use AI to generate an Epic and break it down into realistic Work Packages based on the provided requirements.
+                Enable AI-powered automation for product management. When active, sending a Backlog Item to execution will automatically use Praz-AI to generate an Epic and break it down into realistic Work Packages based on the provided requirements.
               </p>
             </div>
           </div>

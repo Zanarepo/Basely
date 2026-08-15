@@ -8,6 +8,7 @@ import { OkrDashboard } from '@/components/dashboard/product/okrs/OkrDashboard'
 import { DiscoveryInbox } from '@/components/dashboard/product/discovery/DiscoveryInbox'
 import { PrioritizationDashboard } from '@/components/dashboard/product/prioritization/PrioritizationDashboard'
 import { RoadmapDashboard } from '@/components/dashboard/product/roadmap/RoadmapDashboard'
+import { CompetitiveIntelligenceDashboard } from '@/components/dashboard/product/strategy/CompetitiveIntelligenceDashboard'
 
 export interface ProductDocumentsRouterProps {
   documentType: string
@@ -72,7 +73,7 @@ export function ProductDocumentsRouter({
     )
   }
 
-  if (documentType === 'voc_discovery_workspace') {
+  if (documentType === 'voc_discovery_workspace' || documentType === 'discovery_insights_document') {
     return (
       <div className="h-full overflow-y-auto pr-2">
         <DiscoveryInbox
@@ -100,6 +101,18 @@ export function ProductDocumentsRouter({
       <div className="h-full overflow-y-auto pr-2">
         <RoadmapDashboard
           projectId={projectId}
+        />
+      </div>
+    )
+  }
+
+  if (documentType === 'competitive_analysis_workspace' || documentType === 'competitive_benchmarking_matrix') {
+    return (
+      <div className="h-full overflow-y-auto pr-2">
+        <CompetitiveIntelligenceDashboard
+          projectId={projectId}
+          organizationId={organizationId}
+          hasEditAccess={hasEditAccess}
         />
       </div>
     )

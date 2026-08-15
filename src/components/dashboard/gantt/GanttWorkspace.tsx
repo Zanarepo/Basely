@@ -11,6 +11,10 @@ import { ScheduleSheetModal } from './ScheduleSheetModal'
 import { useGanttData } from '@/lib/schedule/useGanttData'
 import { useGanttPresence } from './useGanttPresence'
 import { LiveCursorsOverlay } from '../wbs/workspace/LiveCursorsOverlay'
+import { WbsElementSidePanel } from '../wbs/WbsElementSidePanel'
+import { updateWbsElement } from '@/lib/wbs/actions'
+import { getTerminology } from '@/utils/terminology'
+import type { WbsElement } from '@/lib/wbs/constants'
 
 type GanttWorkspaceProps = {
   projectId: string
@@ -54,7 +58,11 @@ export default function GanttWorkspace({
     handleCreateBaseline,
     handleDeleteBaseline,
     handleRenameBaseline,
+    refetchData,
   } = useGanttData(projectId)
+
+  const [activeElementId, setActiveElementId] = useState<string | null>(null)
+  const activeElement = elements.find((el) => el.id === activeElementId) || null
 
   // Navigation & Control States
   const [zoom, setZoom] = useState<'day' | 'week' | 'month' | 'quarter'>('week')
@@ -154,6 +162,7 @@ export default function GanttWorkspace({
             expandedNodeIds={expandedNodeIds}
             workspaceMembers={workspaceMembers}
             onToggleExpand={handleToggleExpand}
+            onSelectElement={setActiveElementId}
             scrollRef={leftScrollRef}
             rowHeight={ROW_HEIGHT}
           />
@@ -183,6 +192,7 @@ export default function GanttWorkspace({
             lockedActivities={lockedActivities}
             acquireLock={acquireLock}
             releaseLock={releaseLock}
+            onSelectElement={setActiveElementId}
           />
         </div>
       </div>
@@ -203,6 +213,38 @@ export default function GanttWorkspace({
         dependencies={dependencies}
         wbsCodes={wbsCodes}
         elementLevels={elementLevels}
+      />
+
+      <WbsElementSidePanel
+        element={activeElement}
+        workspaceMembers={workspaceMembers}
+        onClose={() => setActiveElementId(null)}
+        onSave={async (id: string, updates: Partial<WbsElement>) => {
+          try {
+            const res = await updateWbsElement(id, projectId, updates)
+            if (res.ok) {
+              await refetchData(true)
+              return true
+            }
+            return false
+          } catch (err) {
+            console.error('Failed to update element:', err)
+            return false
+          }
+        }}
+        onAssignmentChanged={() => refetchData(true)}
+        hasEditAccess={hasEditAccess}
+        canAssignMembers={hasEditAccess}
+        customStatuses={['Not Started', 'In Progress', 'Complete', 'On Hold']}
+        onAddCustomStatus={() => {}}
+        onShowToast={() => {}}
+        callerRole="PM"
+        callerUserId={currentUserId}
+        currency="USD"
+        terms={getTerminology(null)}
+        organizationId="default_org"
+        tier="premium"
+        aiEnabled={true}
       />
     </div>
   )

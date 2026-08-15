@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react'
 import type { Persona } from '@/lib/product-strategy/types'
-import { Trash2, Edit3, User, Briefcase, Target, Frown, Wrench } from 'lucide-react'
+import { Trash2, Edit3, User, Briefcase, Target, Frown, Wrench, Sparkles, Loader2 } from 'lucide-react'
+import { autoGenerateBacklogFromPersona } from '@/lib/product-backlog/actions'
+import { autoEnrichPersonaFromInsights } from '@/lib/product-strategy/actions'
+import { toast } from 'sonner'
 
 interface PersonaCardProps {
   persona: Persona
@@ -13,6 +16,57 @@ interface PersonaCardProps {
 
 export function PersonaCard({ persona, onEdit, onDelete, hasEditAccess = true }: PersonaCardProps) {
   const [isHovered, setIsHovered] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [isEnriching, setIsEnriching] = useState(false)
+
+  const handleGenerateBacklog = async () => {
+    if (!persona.project_id) {
+      toast.error('Cannot generate backlog for org-level personas without a specific project context.')
+      return
+    }
+    
+    setIsGenerating(true)
+    const toastId = toast.loading('Analyzing pain points and generating backlog items...')
+    
+    try {
+      const res = await autoGenerateBacklogFromPersona(persona.id, persona.project_id, persona.organization_id)
+      
+      if (res.success) {
+        toast.success(`Successfully generated ${res.count} backlog items!`, {
+          id: toastId,
+          description: 'They have been added to your Prioritization Matrix and Product Backlog.'
+        })
+      } else {
+        toast.error(res.error || 'Failed to generate backlog items', { id: toastId })
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'An unexpected error occurred', { id: toastId })
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleEnrichPersona = async () => {
+    setIsEnriching(true)
+    const toastId = toast.loading('Analyzing linked customer insights...')
+    
+    try {
+      const res = await autoEnrichPersonaFromInsights(persona.id, persona.organization_id)
+      
+      if (res.success) {
+        toast.success('Persona enriched successfully!', {
+          id: toastId,
+          description: 'Jobs To Be Done and Pain Points have been updated based on insights.'
+        })
+      } else {
+        toast.error(res.error || 'Failed to enrich persona', { id: toastId })
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'An unexpected error occurred', { id: toastId })
+    } finally {
+      setIsEnriching(false)
+    }
+  }
 
   return (
     <div
@@ -136,6 +190,51 @@ export function PersonaCard({ persona, onEdit, onDelete, hasEditAccess = true }:
                   <strong className="text-violet-900 dark:text-violet-200">{k}:</strong> {v}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Actions */}
+          {hasEditAccess && (
+            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/60 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleEnrichPersona}
+                disabled={isEnriching || isGenerating}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-semibold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isEnriching ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Extracting Insights...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Enrich from Insights</span>
+                  </>
+                )}
+              </button>
+
+              {persona.project_id && (
+                <button
+                  type="button"
+                  onClick={handleGenerateBacklog}
+                  disabled={isGenerating || isEnriching}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-linear-to-r from-violet-600/10 to-indigo-600/10 hover:from-violet-600/20 hover:to-indigo-600/20 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-800/60 rounded-lg text-xs font-semibold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Generating Backlog...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+                      <span>Generate Backlog</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           )}
         </div>

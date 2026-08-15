@@ -70,19 +70,37 @@ export async function GET(request: Request) {
         if (!email) continue
 
         const { data: emailData, error: emailError } = await resend.emails.send({
-          from: 'Basely <onboarding@resend.dev>', // Use onboarding@resend.dev for testing if domain not verified
+          from: 'Prazaner <onboarding@resend.dev>', // Use onboarding@resend.dev for testing if domain not verified
           to: [email],
           subject: `Reminder: Post-Implementation Review Due for ${project.name}`,
           html: `
-            <h2>Post-Implementation Review (PIR) Reminder</h2>
-            <p>Hi ${profile?.full_name || 'Stakeholder'},</p>
-            <p>This is an automated reminder that the scheduled post-closure period for your project <strong>${project.name}</strong> has completed.</p>
-            <p>Please log in to the project dashboard and navigate to the <strong>Closure Documents</strong> section to finalize the Post-Implementation Review and record the final ROI and lessons learned.</p>
-            <br/>
-            <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/projects/${project.id}?tab=documents&doc=post_implementation_review" style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;">View Project Closure Dashboard</a></p>
-            <br/>
-            <p>Best regards,</p>
-            <p>Basely</p>
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="font-family: Arial, sans-serif; background-color: #f9fafb; margin: 0; padding: 0;">
+              <div style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb;">
+                <div style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 32px 24px; text-align: center;">
+                  <img src="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/prazaner_logo_transparent.png" alt="Prazaner" style="height: 42px; width: auto; max-width: 220px; display: inline-block; border: 0;" />
+                </div>
+                <div style="padding: 32px 24px;">
+                  <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-top: 0;">Post-Implementation Review (PIR) Reminder</h2>
+                  <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">Hi ${profile?.full_name || 'Stakeholder'},</p>
+                  <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">This is an automated reminder that the scheduled post-closure period for your project <strong>${project.name}</strong> has completed.</p>
+                  <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">Please log in to the project dashboard and navigate to the <strong>Closure Documents</strong> section to finalize the Post-Implementation Review and record the final ROI and lessons learned.</p>
+                  <div style="text-align: center; margin: 32px 0;">
+                    <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/projects/${project.id}?tab=documents&doc=post_implementation_review" style="display: inline-block; padding: 12px 26px; background-color: #4f46e5; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                      <span style="color: #ffffff;">View Project Closure Dashboard</span>
+                    </a>
+                  </div>
+                  <div style="border-top: 1px solid #f3f4f6; padding-top: 24px; margin-top: 24px;">
+                    <p style="font-size: 14px; color: #6b7280; margin: 0;">Best regards,<br/><strong>The Prazaner Team</strong></p>
+                  </div>
+                </div>
+              </div>
+            </body>
+            </html>
           `
         })
 

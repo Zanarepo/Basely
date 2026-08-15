@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { ForgotPasswordForm } from './ForgotPasswordForm'
 
 export const metadata: Metadata = {
-  title: 'Reset Password | Basely',
-  description: 'Request a secure link to reset your Basely account password.',
+  title: 'Reset Password | Prazaner',
+  description: 'Request a secure link to reset your Prazaner account password.',
 }
 
 export default function ForgotPasswordPage() {

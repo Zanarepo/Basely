@@ -20,6 +20,8 @@ import {
   Archive
 } from 'lucide-react'
 
+import { PmDiscoveryWorkflowGuide } from './PmDiscoveryWorkflowGuide'
+
 interface DiscoveryInboxProps {
   organizationId: string
   projectId: string
@@ -108,7 +110,8 @@ export function DiscoveryInbox({ organizationId, projectId, hasEditAccess = true
   })
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-6 pb-12">
+      <PmDiscoveryWorkflowGuide currentStep={1} />
       {/* Header Banner */}
       <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -142,7 +145,7 @@ export function DiscoveryInbox({ organizationId, projectId, hasEditAccess = true
                 type="button"
                 onClick={handleCreate}
                 style={{ cursor: 'pointer' }}
-                className="px-5 py-2.5 rounded-xl bg-[#6b4eff] hover:bg-[#5839ec] text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
+                className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
               >
                 <Plus className="w-4 h-4" />
                 Log Insight
@@ -208,7 +211,7 @@ export function DiscoveryInbox({ organizationId, projectId, hasEditAccess = true
               type="button"
               onClick={handleCreate}
               style={{ cursor: 'pointer' }}
-              className="mt-2 px-5 py-2.5 rounded-xl bg-[#6b4eff] hover:bg-[#5839ec] text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
+              className="mt-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
             >
               <Plus className="w-4 h-4" />
               Log Your First Insight

@@ -8,6 +8,7 @@ type GanttSidebarProps = {
   expandedNodeIds: Set<string>
   workspaceMembers: any[]
   onToggleExpand: (id: string, e: React.MouseEvent) => void
+  onSelectElement?: (id: string) => void
   scrollRef: React.RefObject<HTMLDivElement | null>
   rowHeight: number
 }
@@ -19,6 +20,7 @@ export function GanttSidebar({
   expandedNodeIds,
   workspaceMembers,
   onToggleExpand,
+  onSelectElement,
   scrollRef,
   rowHeight,
 }: GanttSidebarProps) {
@@ -46,7 +48,8 @@ export function GanttSidebar({
             return (
               <div
                 key={el.id}
-                className="h-12 flex items-center px-4 border-b border-app-border/40 hover:bg-app-muted-surface/30 group"
+                onClick={() => onSelectElement?.(el.id)}
+                className="h-12 flex items-center px-4 border-b border-app-border/40 hover:bg-violet-500/10 dark:hover:bg-violet-500/15 cursor-pointer transition-all group"
               >
                 {/* WBS Code Column */}
                 <span className="text-xs font-bold text-app-subtle w-16 truncate">

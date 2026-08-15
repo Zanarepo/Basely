@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, Briefcase, Loader2, ShieldAlert, ChevronDown } from 'lucide-react'
 import { createProject } from '@/lib/projects/actions'
+import { useUserPersona } from '@/hooks/use-user-persona'
 
 function CustomDropdown({
   id,
@@ -77,6 +78,7 @@ const DAYS_OF_WEEK = [
 
 export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWizardModalProps) {
   const router = useRouter()
+  const { showBudgetControls } = useUserPersona()
   const [isPending, startTransition] = useTransition()
   const [name, setName] = useState('')
   const [clientName, setClientName] = useState('')
@@ -165,7 +167,7 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
               <div className="space-y-2"><label htmlFor="project-name" className="auth-label">Project Name <span className="text-rose-500">*</span></label><input id="project-name" value={name} onChange={(event) => setName(event.target.value)} disabled={isPending} placeholder="e.g. Q3 Commercial Launch" className="auth-input pl-4" /></div>
               <div className="space-y-2"><label htmlFor="project-client" className="auth-label">Client Name</label><input id="project-client" value={clientName} onChange={(event) => setClientName(event.target.value)} disabled={isPending} placeholder="e.g. Acme Corp" className="auth-input pl-4" /></div>
               <div className="space-y-2"><label htmlFor="project-description" className="auth-label">Description</label><textarea id="project-description" value={description} onChange={(event) => setDescription(event.target.value)} disabled={isPending} placeholder="Describe the main deliverables and objectives..." className="auth-input pl-4 py-3 min-h-[80px] resize-none" /></div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className={`grid grid-cols-1 ${showBudgetControls ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-4`}>
                 <div className="space-y-2">
                   <label htmlFor="project-methodology" className="auth-label">Methodology</label>
                   <CustomDropdown
@@ -176,16 +178,18 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
                     disabled={isPending}
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="project-currency" className="auth-label">Currency</label>
-                  <CustomDropdown
-                    id="project-currency"
-                    value={currency}
-                    options={CURRENCIES.map(c => ({ label: `${c.code} (${c.symbol})`, value: c.code }))}
-                    onChange={(val) => setCurrency(val)}
-                    disabled={isPending}
-                  />
-                </div>
+                {showBudgetControls && (
+                  <div className="space-y-2">
+                    <label htmlFor="project-currency" className="auth-label">Currency</label>
+                    <CustomDropdown
+                      id="project-currency"
+                      value={currency}
+                      options={CURRENCIES.map(c => ({ label: `${c.code} (${c.symbol})`, value: c.code }))}
+                      onChange={(val) => setCurrency(val)}
+                      disabled={isPending}
+                    />
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2"><label htmlFor="project-start" className="auth-label">Start Date</label><input id="project-start" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} disabled={isPending} className="auth-input pl-4" /></div>

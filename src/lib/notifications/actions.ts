@@ -2,6 +2,23 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
+import fs from 'fs'
+import path from 'path'
+
+function getEmailLogoSrc(siteUrl: string): string {
+  try {
+    if (!siteUrl || siteUrl.includes('localhost') || siteUrl.includes('127.0.0.1')) {
+      const logoPath = path.join(process.cwd(), 'public', 'prazaner_logo_transparent.png')
+      if (fs.existsSync(logoPath)) {
+        const b64 = fs.readFileSync(logoPath).toString('base64')
+        return `data:image/png;base64,${b64}`
+      }
+    }
+  } catch (err) {
+    console.warn('Could not read local logo file for email base64 embedding:', err)
+  }
+  return `${siteUrl}/prazaner_logo_transparent.png`
+}
 
 export type NotificationTriggerType = 'mention' | 'assignment' | 'risk_change' | 'cost_change' | 'schedule_change' | 'document_change' | 'status_report' | 'approval_request' | 'approval_update' | 'erp_sync_failure'
 
@@ -116,7 +133,7 @@ export async function dispatchNotification(payload: NotificationPayload) {
       // Slack Webhook Delivery
       if (projectData.slack_webhook_url) {
         try {
-          const detailLink = payload.emailContext?.actionUrl ? `\n<${payload.emailContext.actionUrl}|*👉 View Details in Basely*>` : ''
+          const detailLink = payload.emailContext?.actionUrl ? `\n<${payload.emailContext.actionUrl}|*👉 View Details in Prazaner*>` : ''
           const slackText = `🚀 *New Update in ${projectData.name}*\n\n*Event:* \`${payload.triggerType}\`\n*Details:* ${payload.contentSummary}\n*For User:* ${userData?.full_name || 'Team member'}${detailLink}`
 
           const res = await fetch(projectData.slack_webhook_url, {
@@ -266,16 +283,40 @@ export async function sendDirectEmail(to: string, context: { subject: string; ti
     return
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const logoSrc = getEmailLogoSrc(siteUrl)
   const html = `
-    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #333;">${context.title}</h2>
-      <p style="color: #555; line-height: 1.6;">${context.message}</p>
-      <div style="margin-top: 30px;">
-        <a href="${context.actionUrl}" style="background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-          View Details
-        </a>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+      </style>
+    </head>
+    <body style="font-family: 'Inter', Arial, sans-serif; background-color: #f9fafb; margin: 0; padding: 0; -webkit-font-smoothing: antialiased;">
+      <div style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e5e7eb;">
+        <div style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 32px 24px; text-align: center;">
+          <img src="${logoSrc}" alt="Prazaner" style="height: 42px; width: auto; max-width: 220px; display: inline-block; border: 0;" />
+        </div>
+        <div style="padding: 32px 24px;">
+          <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-top: 0; margin-bottom: 16px;">${context.title}</h2>
+          <p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 28px; white-space: pre-line;">${context.message}</p>
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${context.actionUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff !important; padding: 12px 26px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+              <span style="color: #ffffff;">View Details</span>
+            </a>
+          </div>
+          <div style="border-top: 1px solid #f3f4f6; padding-top: 24px; margin-top: 24px;">
+            <p style="font-size: 14px; color: #6b7280; margin: 0;">Best regards,<br/><strong>The Prazaner Team</strong></p>
+          </div>
+        </div>
       </div>
-    </div>
+      <div style="text-align: center; padding: 0 20px 30px;">
+        <p style="font-size: 12px; color: #9ca3af; margin: 0;">&copy; ${new Date().getFullYear()} Prazaner Inc. All rights reserved.</p>
+      </div>
+    </body>
+    </html>
   `
 
   const response = await fetch('https://api.resend.com/emails', {

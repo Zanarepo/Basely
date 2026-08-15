@@ -40,6 +40,11 @@ export type WbsElement = {
   deliverablesData?: DeliverableItem[]
   acceptanceCriteria: string | null
   acceptanceCriteriaData?: AcceptanceCriteriaItem[]
+  userStories: string | null
+  userStoriesData?: ChecklistItem[]
+  edgeCases: string | null
+  edgeCasesData?: ChecklistItem[]
+  priority: string | null
   status: WbsStatus
   isWorkPackage: boolean
   sortOrder: number

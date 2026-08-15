@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Search, Filter, ShieldAlert, AlertTriangle, HelpCircle, GitBranch, CheckCircle2, Clock, Calendar, ExternalLink, Trash2, Edit3, Layers, Sparkles } from 'lucide-react'
+import { Plus, Search, Filter, ShieldAlert, AlertTriangle, HelpCircle, GitBranch, CheckCircle2, Clock, Calendar, ExternalLink, Trash2, Edit3, Layers, Sparkles, Loader2 } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 import RaidItemModal from './RaidItemModal'
 import { getRaidEntries, deleteRaidEntry, type RaidLogEntry, type RaidCategory, type RaidStatus, type RaidPriority } from '@/lib/raid/actions'
@@ -11,6 +11,8 @@ import type { WbsElement } from '@/lib/wbs/constants'
 import { ToastContainer } from '@/components/dashboard/Toast'
 import { useWbsToasts } from '@/components/dashboard/wbs/workspace/hooks/useWbsToasts'
 import { getTerminology } from '@/utils/terminology'
+import { AiRaidCopilotModal } from './ai-copilot/AiRaidCopilotModal'
+import { useAiRaidCopilot } from './ai-copilot/useAiRaidCopilot'
 
 interface RaidWorkspaceProps {
   projectId: string
@@ -36,6 +38,13 @@ export default function RaidWorkspace({
   const { toasts, showToast, dismissToast } = useWbsToasts()
 
   const terms = getTerminology(methodology)
+  
+  const aiCopilot = useAiRaidCopilot({
+    projectId,
+    organizationId,
+    onComplete: () => fetchRaidItems(),
+    onShowToast: showToast
+  })
 
   const fetchRaidItems = async () => {
     setLoading(true)
@@ -194,6 +203,14 @@ export default function RaidWorkspace({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={aiCopilot.handleOpen}
+            disabled={aiCopilot.isPredicting}
+            className="px-4 py-2.5 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 text-violet-400 border border-violet-500/30 font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-violet-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {aiCopilot.isPredicting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {aiCopilot.isPredicting ? 'Analyzing...' : 'Predictive Praz-AI'}
+          </button>
           <button
             onClick={() => {
               setSelectedItem(null)
@@ -432,6 +449,17 @@ export default function RaidWorkspace({
         onShowToast={showToast}
       />
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      <AiRaidCopilotModal
+        isOpen={aiCopilot.isOpen}
+        isPredicting={aiCopilot.isPredicting}
+        isSaving={aiCopilot.isSaving}
+        predictions={aiCopilot.predictions}
+        selectedIndices={aiCopilot.selectedIndices}
+        onClose={aiCopilot.handleClose}
+        onToggleSelection={aiCopilot.toggleSelection}
+        onCommit={aiCopilot.handleCommit}
+      />
     </div>
   )
 }

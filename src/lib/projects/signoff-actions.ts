@@ -123,7 +123,7 @@ export async function createSignoffInvitation(
     // Dedicated External Stakeholder workflow: custom invitation text & secure unauthenticated token portal link
     try {
       await sendDirectEmail(signerEmail.trim(), {
-        subject: `[Basely PM] External Stakeholder Sign-Off & Acceptance: ${projectName}`,
+        subject: `[Prazaner PM] External Stakeholder Sign-Off & Acceptance: ${projectName}`,
         title: `Project Completion Deliverable Sign-Off`,
         message: `Hello ${signerName.trim()},\n\nThe project leadership team invites you to evaluate and execute formal completion sign-off for "${projectName}". As an external stakeholder or client sponsor, no account registration or login is required. Click the secure acceptance portal link below to review project completion details and record your digital acceptance signature.`,
         actionUrl: inviteUrl
@@ -142,7 +142,7 @@ export async function createSignoffInvitation(
       .maybeSingle()
 
     const internalEmailContext = {
-      subject: `[Basely PM] Internal Sign-Off Requested: ${projectName}`,
+      subject: `[Prazaner PM] Internal Sign-Off Requested: ${projectName}`,
       title: `Internal Workspace Closure Sign-Off`,
       message: `Hello ${signerName.trim()},\n\nYou have been assigned as an internal reviewer to formally verify and sign off on project completion deliverables for "${projectName}". Please access your project workspace using the link below to confirm and execute your digital signature.`,
       actionUrl: internalUrl

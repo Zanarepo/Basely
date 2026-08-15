@@ -20,7 +20,7 @@ export async function logGovernanceEvent(
     }
 
     const adminClient = createAdminClient()
-    const { error } = await adminClient
+    let { error } = await adminClient
       .from('governance_audit_log_entries')
       .insert({
         organization_id: organizationId,
@@ -28,6 +28,19 @@ export async function logGovernanceEvent(
         actor_user_id: user.id,
         detail: detail,
       })
+
+    // If Postgres enum type does not include 'ai_generation' (error 22P02), fallback to 'approval_decision'
+    if (error && error.code === '22P02') {
+      const fallbackResult = await adminClient
+        .from('governance_audit_log_entries')
+        .insert({
+          organization_id: organizationId,
+          event_type: 'approval_decision',
+          actor_user_id: user.id,
+          detail: { _original_event_type: eventType, ...detail },
+        })
+      error = fallbackResult.error
+    }
 
     if (error) {
       console.error('Failed to insert governance audit log:', error)

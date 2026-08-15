@@ -106,7 +106,7 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
                       onChange={(val) => updateSection(index, { type: val as 'free_text' | 'data_bound' })}
                       options={[
                         { value: 'free_text', label: 'Free Text Input', description: 'Manual narrative & commentary box' },
-                        { value: 'data_bound', label: 'Data Bound (AI Generated)', description: 'Auto-fills using real project live telemetry' },
+                        { value: 'data_bound', label: 'Data Bound (Praz-AI Generated)', description: 'Auto-fills using real project live telemetry' },
                       ]}
                     />
                   </div>
@@ -194,7 +194,7 @@ export default function TemplateBuilderForm({ initialSections = [], onSave, isSa
                 onChange={(val) => setNewSectionType(val as 'free_text' | 'data_bound')}
                 options={[
                   { value: 'free_text', label: 'Free Text Input', description: 'Manual narrative box' },
-                  { value: 'data_bound', label: 'Data Bound (AI Generated)', description: 'Auto-fills using real project live telemetry' },
+                  { value: 'data_bound', label: 'Data Bound (Praz-AI Generated)', description: 'Auto-fills using real project live telemetry' },
                 ]}
               />
             </div>

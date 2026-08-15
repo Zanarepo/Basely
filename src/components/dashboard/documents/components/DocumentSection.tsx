@@ -1,28 +1,9 @@
-import { useState } from 'react'
-import { RefreshCw, FileText, Trash2, Loader2 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
 import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
 import StructuredEditableField from './StructuredEditableField'
-import WbsDictionaryResolver from '../resolvers/WbsDictionaryResolver'
-import RaciMatrixResolver from '../resolvers/RaciMatrixResolver'
-import ScheduleStatusResolver from '../resolvers/ScheduleStatusResolver'
-import EvmStatusResolver from '../resolvers/EvmStatusResolver'
-import { ScopeStatementResolver } from '../planning/ScopeStatementResolver'
-import { CommunicationPlanResolver } from '../planning/CommunicationPlanResolver'
-import { QualityManagementPlanResolver } from '../planning/QualityManagementPlanResolver'
-import { ProcurementPlanResolver } from '../planning/ProcurementPlanResolver'
-import TopRisksResolver from '../resolvers/TopRisksResolver'
-import StakeholderRegisterResolver from '../resolvers/StakeholderRegisterResolver'
-import RiskRegisterResolver from '../resolvers/RiskRegisterResolver'
-import BusinessCaseResolver from '../resolvers/BusinessCaseResolver'
-import FeasibilityStudyResolver from '../resolvers/FeasibilityStudyResolver'
-import { BudgetBaselineResolver } from '../resolvers/BudgetBaselineResolver'
-import { IssueLogResolver } from '../resolvers/IssueLogResolver'
-import { ScheduleDocumentResolver } from '../resolvers/ScheduleDocumentResolver'
-import { ChangeManagementPlanResolver } from '../resolvers/ChangeManagementPlanResolver'
-import { ProjectManagementPlanResolver } from '../resolvers/ProjectManagementPlanResolver'
-import { ProductStrategyResolver } from '../resolvers/ProductStrategyResolver'
-import { OkrKpiReportResolver } from '../resolvers/OkrKpiReportResolver'
-import { PrdDocumentResolver } from '../resolvers/PrdDocumentResolver'
+import { SectionHeaderToolbar } from './section/components/SectionHeaderToolbar'
+import { SectionResolverSwitch } from './section/components/SectionResolverSwitch'
+import { SectionDeleteConfirmModal } from './section/components/SectionDeleteConfirmModal'
 
 interface DocumentSectionProps {
   section: any
@@ -36,6 +17,13 @@ interface DocumentSectionProps {
   handleAutoFillSection: (section: any) => void
   handleFreeTextChange: (key: string, value: string) => void
   onRemoveSection?: (key: string) => void
+  onSectionTitleChange?: (key: string, newTitle: string) => void
+  sectionTitleOverride?: string
+  onMoveSectionUp?: (key: string) => void
+  onMoveSectionDown?: (key: string) => void
+  onDuplicateSection?: (key: string) => void
+  isFirstSection?: boolean
+  isLastSection?: boolean
 }
 
 export default function DocumentSection({
@@ -49,10 +37,47 @@ export default function DocumentSection({
   freeText,
   handleAutoFillSection,
   handleFreeTextChange,
-  onRemoveSection
+  onRemoveSection,
+  onSectionTitleChange,
+  sectionTitleOverride,
+  onMoveSectionUp,
+  onMoveSectionDown,
+  onDuplicateSection,
+  isFirstSection = false,
+  isLastSection = false,
 }: DocumentSectionProps) {
   const [isRemoving, setIsRemoving] = useState(false)
   const [isAutoFilling, setIsAutoFilling] = useState(false)
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isCopied, setIsCopied] = useState(false)
+
+  const sectionTitleOverrides = (() => {
+    try {
+      return JSON.parse(freeText['__section_title_overrides'] || '{}')
+    } catch {
+      return {}
+    }
+  })()
+
+  const currentTitle = sectionTitleOverrides[section.key] || sectionTitleOverride || section.title
+
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [editedTitle, setEditedTitle] = useState(currentTitle)
+
+  useEffect(() => {
+    setEditedTitle(currentTitle)
+  }, [currentTitle])
+
+  const handleTitleSubmit = () => {
+    setIsEditingTitle(false)
+    const trimmed = editedTitle.trim()
+    if (trimmed && trimmed !== currentTitle && onSectionTitleChange) {
+      onSectionTitleChange(section.key, trimmed)
+    } else {
+      setEditedTitle(currentTitle)
+    }
+  }
 
   const handleAutoFillClick = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -66,13 +91,20 @@ export default function DocumentSection({
     }
   }
 
-  const handleRemoveClick = async (e: React.MouseEvent) => {
+  const handleRemoveClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     if (isRemoving || !onRemoveSection) return
+    setShowConfirmDelete(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (isRemoving || !onRemoveSection) return
     setIsRemoving(true)
     try {
+      await new Promise((res) => setTimeout(res, 350))
       onRemoveSection(section.key)
+      setShowConfirmDelete(false)
     } finally {
       setIsRemoving(false)
     }
@@ -99,136 +131,99 @@ export default function DocumentSection({
     }
 
     if (source.startsWith('initiation.') || source.startsWith('cost.') || source.startsWith('accountability.') || source.startsWith('planning.') || source.startsWith('register.')) {
-       return `Pending generation: Click "Auto-fill from Project Data" to pull the latest ${source.split('.')[0]} records.`
+      return `Pending generation: Click "Auto-fill from Project Data" to pull the latest ${source.split('.')[0]} records.`
     }
 
     return `Unknown source: ${source}`
   }
 
-  return (
-    <div className="space-y-3 group relative transition-all duration-200">
-      <div className="flex items-center justify-between border-b border-app-border/60 pb-2">
-        <h3 className="text-base font-bold text-app-fg">{section.title}</h3>
-        <div className="flex items-center gap-2">
-          {section.isCustom && hasEditAccess && !isSnapshot && onRemoveSection && (
-            <button
-              type="button"
-              disabled={isRemoving}
-              onClick={handleRemoveClick}
-              style={{ cursor: 'pointer' }}
-              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-opacity duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer disabled:opacity-50"
-              title="Remove Custom Section"
-            >
-              {isRemoving ? (
-                <>
-                  <Loader2 className="w-3 h-3 text-rose-500 animate-spin" /> Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="w-3 h-3 text-rose-500" /> Delete Section
-                </>
-              )}
-            </button>
-          )}
-          {section.source && hasEditAccess && !isSnapshot && (
-            <button
-              type="button"
-              disabled={isAutoFilling}
-              onClick={handleAutoFillClick}
-              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 hover:bg-violet-500/20 transition-all cursor-pointer disabled:opacity-50"
-              style={{ cursor: 'pointer' }}
-              title="Auto-fill content using live project data"
-            >
-              <RefreshCw className={`w-3 h-3 text-violet-500 ${isAutoFilling ? 'animate-spin' : ''}`} />
-              {isAutoFilling ? 'Auto-filling...' : 'Auto-fill from Project Data'}
-            </button>
-          )}
-          {section.type === 'data_bound' && template.document_type !== 'charter' ? (
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-              <RefreshCw className="w-3 h-3" /> Auto-populated
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <FileText className="w-3 h-3" /> Free-text
-            </span>
-          )}
-        </div>
-      </div>
+  const handleCopySection = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
 
-      {/* Data-Bound Section Rendering (non-charter documents) */}
-      {section.type === 'data_bound' && template.document_type !== 'charter' && (
-        <div className="py-2 pl-4 border-l-2 border-violet-500/30 text-app-fg text-sm">
-          {section.source === 'wbs.dictionary' || section.source === 'wbs.prototype' || section.source?.startsWith('wbs.') ? (
-            <WbsDictionaryResolver projectId={projectId} />
-          ) : section.resolver?.startsWith('scope_statement_') || section.source === 'scope_statement_data' ? (
-            <ScopeStatementResolver projectId={projectId} sectionKey={section.resolver.replace('scope_statement_', '')} />
-          ) : section.resolver === 'communication_plan_entries' || section.source === 'communication_plan_data' ? (
-            <CommunicationPlanResolver projectId={projectId} />
-          ) : section.resolver === 'quality_management_plan_data' ? (
-            <QualityManagementPlanResolver projectId={projectId} />
-          ) : section.resolver === 'procurement_plan_entries' ? (
-            <ProcurementPlanResolver projectId={projectId} />
-          ) : section.source === 'raci.matrix' ? (
-            <RaciMatrixResolver projectId={projectId} />
-          ) : section.source === 'status.schedule' ? (
-            <ScheduleStatusResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.schedule : undefined} />
-          ) : section.source === 'status.cost' ? (
-            <EvmStatusResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.cost : undefined} />
-          ) : section.source === 'status.risks' ? (
-            <TopRisksResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.risks : undefined} />
-          ) : section.source === 'register.stakeholders' ? (
-            <StakeholderRegisterResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.stakeholders : undefined} />
-          ) : section.source === 'register.risks' ? (
-            <RiskRegisterResolver projectId={projectId} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? generatedDoc?.frozen_data?.risks : undefined} />
-          ) : section.source?.startsWith('initiation.business_case') ? (
-            <BusinessCaseResolver entityId={projectId} field={section.source.split('_').pop() as any} />
-          ) : section.source?.startsWith('initiation.feasibility') ? (
-            <FeasibilityStudyResolver entityId={projectId} field={section.source.split('_').pop() as any} />
-          ) : section.source === 'cost.budget_baseline' ? (
-            <BudgetBaselineResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.budget_baseline : undefined} />
-          ) : section.source === 'accountability.issue_log' ? (
-            <IssueLogResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.issue_log : undefined} />
-          ) : section.source === 'planning.schedule_document' ? (
-            <ScheduleDocumentResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.schedule_document : undefined} />
-          ) : section.source === 'governance.change_management_plan' ? (
-            <ChangeManagementPlanResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.change_management : undefined} />
-          ) : section.source === 'master.project_management_plan' ? (
-            <ProjectManagementPlanResolver projectId={projectId} sectionKey={section.key} periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())} frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.project_management_plan : undefined} />
-          ) : section.source?.startsWith('product.') ? (
-            <ProductStrategyResolver projectId={projectId} source={section.source as any} />
-          ) : section.source?.startsWith('okrs.') ? (
-            <OkrKpiReportResolver projectId={projectId} organizationId={projectContext?.organization_id || ''} source={section.source} />
-          ) : section.source?.startsWith('prd.') ? (
-            <PrdDocumentResolver projectId={projectId} source={section.source as any} />
-          ) : freeText[section.key] ? (
-            <div className="-ml-4 mt-2">
+    const contentText = freeText[section.key] || resolveDataBoundSource(section.source) || ''
+    const formattedMarkdown = `## ${currentTitle}\n\n${contentText}`
+
+    navigator.clipboard.writeText(formattedMarkdown)
+    setIsCopied(true)
+    setTimeout(() => setIsCopied(false), 2000)
+  }
+
+  return (
+    <div id={`doc-section-${section.key}`} className="space-y-3 group relative transition-all duration-200 scroll-mt-24">
+      {/* Header Toolbar */}
+      <SectionHeaderToolbar
+        sectionKey={section.key}
+        currentTitle={currentTitle}
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+        isEditingTitle={isEditingTitle}
+        setIsEditingTitle={setIsEditingTitle}
+        editedTitle={editedTitle}
+        setEditedTitle={setEditedTitle}
+        handleTitleSubmit={handleTitleSubmit}
+        hasEditAccess={hasEditAccess}
+        isSnapshot={isSnapshot}
+        isCopied={isCopied}
+        handleCopySection={handleCopySection}
+        onDuplicateSection={onDuplicateSection}
+        onMoveSectionUp={onMoveSectionUp}
+        onMoveSectionDown={onMoveSectionDown}
+        isFirstSection={isFirstSection}
+        isLastSection={isLastSection}
+        onRemoveSection={onRemoveSection}
+        isRemoving={isRemoving}
+        handleRemoveClick={handleRemoveClick}
+        hasSource={!!section.source}
+        isAutoFilling={isAutoFilling}
+        handleAutoFillClick={handleAutoFillClick}
+      />
+
+      {/* Render Section Body Content when Expanded */}
+      {!isCollapsed && (
+        <>
+          {/* Data-Bound Section Rendering (non-charter documents) */}
+          {section.type === 'data_bound' && template.document_type !== 'charter' && (
+            <div className="py-2 pl-4 border-l-2 border-violet-500/30 text-app-fg text-sm">
+              <SectionResolverSwitch
+                section={section}
+                template={template}
+                generatedDoc={generatedDoc}
+                projectId={projectId}
+                projectContext={projectContext}
+                isSnapshot={isSnapshot}
+                hasEditAccess={hasEditAccess}
+                freeText={freeText}
+                handleFreeTextChange={handleFreeTextChange}
+                resolveDataBoundSource={resolveDataBoundSource}
+              />
+            </div>
+          )}
+
+          {/* Free-Text & Hybrid Charter Section Rendering */}
+          {(section.type === 'free_text' || template.document_type === 'charter') && (
+            <div className="mt-2">
               <StructuredEditableField
-                value={freeText[section.key]}
+                value={freeText[section.key] || ''}
                 onChange={(val) => handleFreeTextChange(section.key, val)}
                 title={section.title}
                 hasEditAccess={hasEditAccess && !isSnapshot}
-                isDataBound={true}
+                isDataBound={section.type === 'data_bound'}
+                placeholder={section.placeholder}
               />
             </div>
-          ) : (
-            <p className="font-medium">{resolveDataBoundSource(section.source)}</p>
           )}
-        </div>
+        </>
       )}
 
-      {/* Free-Text & Hybrid Charter Section Rendering */}
-      {(section.type === 'free_text' || template.document_type === 'charter') && (
-        <div className="mt-2">
-          <StructuredEditableField
-            value={freeText[section.key] || ''}
-            onChange={(val) => handleFreeTextChange(section.key, val)}
-            title={section.title}
-            hasEditAccess={hasEditAccess && !isSnapshot}
-            isDataBound={section.type === 'data_bound'}
-            placeholder={section.placeholder}
-          />
-        </div>
-      )}
+      {/* Confirmation Delete Warning Modal */}
+      <SectionDeleteConfirmModal
+        isOpen={showConfirmDelete}
+        currentTitle={currentTitle}
+        isRemoving={isRemoving}
+        onClose={() => setShowConfirmDelete(false)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }

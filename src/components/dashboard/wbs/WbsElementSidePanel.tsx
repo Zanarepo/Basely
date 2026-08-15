@@ -5,6 +5,7 @@ import { X, Settings2, Loader2, Save, Calendar as CalIcon, AlertCircle, Users, C
 import type { WbsElement } from '@/lib/wbs/constants'
 import { RaciAssignmentPicker } from './RaciAssignmentPicker'
 import { WbsBasicDetails } from './sidepanel/WbsBasicDetails'
+import { AiAutoAssignButton } from './AiAutoAssignButton'
 import { WbsSchedulingFields } from './sidepanel/WbsSchedulingFields'
 import { WbsDependenciesList } from './sidepanel/WbsDependenciesList'
 import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
@@ -14,10 +15,12 @@ import { AttachmentPicker } from '@/components/dashboard/collaboration/attachmen
 import { useEntityAttachments } from '@/components/dashboard/collaboration/hooks/useEntityAttachments'
 import { IterationTagSelector } from '@/components/dashboard/releases/components/IterationTagSelector'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import { WbsResourceAssignments } from './sidepanel/WbsResourceAssignments'
 
 import { useWbsElementState } from './hooks/useWbsElementState'
 import { useWbsScheduling } from './hooks/useWbsScheduling'
 import { useWbsSubmit } from './hooks/useWbsSubmit'
+import { useUserPersona } from '@/hooks/use-user-persona'
 
 type WbsElementSidePanelProps = {
   element: WbsElement | null
@@ -35,6 +38,9 @@ type WbsElementSidePanelProps = {
   allowTeamScheduleEdits?: boolean
   currency?: string
   terms: import('@/utils/terminology').TerminologyDict
+  organizationId: string
+  tier: string
+  aiEnabled: boolean
 }
 
 export function WbsElementSidePanel({
@@ -53,7 +59,11 @@ export function WbsElementSidePanel({
   allowTeamScheduleEdits = false,
   currency = 'USD',
   terms,
+  organizationId,
+  tier,
+  aiEnabled,
 }: WbsElementSidePanelProps) {
+  const { showBudgetControls } = useUserPersona()
   const elementState = useWbsElementState(element)
   const schedulingState = useWbsScheduling(element, elementState.isWorkPackage)
 
@@ -143,6 +153,12 @@ export function WbsElementSidePanel({
                 setDeliverablesData={elementState.setDeliverablesData}
                 acceptanceCriteriaData={elementState.acceptanceCriteriaData}
                 setAcceptanceCriteriaData={elementState.setAcceptanceCriteriaData}
+                userStoriesData={elementState.userStoriesData}
+                setUserStoriesData={elementState.setUserStoriesData}
+                edgeCasesData={elementState.edgeCasesData}
+                setEdgeCasesData={elementState.setEdgeCasesData}
+                priority={elementState.priority}
+                setPriority={elementState.setPriority}
                 hasEditAccess={effectiveEditAccess}
                 canCheckDeliverables={canCheckDeliverables}
                 canCheckCriteria={canCheckCriteria}
@@ -155,6 +171,15 @@ export function WbsElementSidePanel({
                 }}
                 onAutoSaveCriteria={(items) => {
                   if (element?.id) onSave(element.id, { acceptanceCriteriaData: items })
+                }}
+                onAutoSaveUserStories={(items) => {
+                  if (element?.id) onSave(element.id, { userStoriesData: items })
+                }}
+                onAutoSaveEdgeCases={(items) => {
+                  if (element?.id) onSave(element.id, { edgeCasesData: items })
+                }}
+                onAutoSavePriority={(val) => {
+                  if (element?.id) onSave(element.id, { priority: val })
                 }}
                 canAssignMembers={canAssignMembers}
                 callerRole={callerRole}
@@ -196,6 +221,15 @@ export function WbsElementSidePanel({
                 
                 {isRaciOpen && (
                   <div className="p-4 border-t border-app-border bg-app-surface-solid">
+                    <AiAutoAssignButton 
+                      organizationId={organizationId}
+                      projectId={element.projectId}
+                      wbsElementId={element.id}
+                      tier={tier}
+                      aiEnabled={aiEnabled}
+                      onAssignmentChanged={onAssignmentChanged}
+                      onShowToast={onShowToast}
+                    />
                     <RaciAssignmentPicker
                       projectId={element?.projectId || ''}
                       wbsElementId={element?.id || ''}
@@ -210,7 +244,7 @@ export function WbsElementSidePanel({
                 )}
               </div>
 
-              {elementState.isWorkPackage && (
+              {showBudgetControls && elementState.isWorkPackage && (
                 <div className="border border-green-500/25 rounded-xl overflow-hidden bg-green-500/5 dark:bg-green-950/20 shadow-xs">
                   <button
                     type="button"
@@ -219,7 +253,7 @@ export function WbsElementSidePanel({
                   >
                     <div className="flex items-center gap-2 text-sm font-semibold text-green-700 dark:text-green-400">
                       <span className="w-4 h-4 flex items-center justify-center font-bold text-xs">$</span>
-                      Budget Estimate
+                      Budget & Resource Assignments
                     </div>
                     {isBudgetOpen ? (
                       <ChevronDown className="w-4 h-4 text-green-500/70" />
@@ -257,6 +291,18 @@ export function WbsElementSidePanel({
                             placeholder="Select method..."
                           />
                         </div>
+                      </div>
+
+                      {/* Direct Resource Assignment section */}
+                      <div className="pt-2 border-t border-green-500/20">
+                        <WbsResourceAssignments
+                          wbsElementId={element.id}
+                          wbsName={element.name}
+                          projectId={element.projectId}
+                          hasEditAccess={effectiveEditAccess}
+                          currency={currency}
+                          onAssignmentsChanged={onAssignmentChanged}
+                        />
                       </div>
                     </div>
                   )}
@@ -311,6 +357,7 @@ export function WbsElementSidePanel({
                         handleUpdatePredLag={schedulingState.handleUpdatePredLag}
                         projectId={element?.projectId}
                         wbsElementId={element?.id}
+                        onDependenciesChanged={schedulingState.refetchSchedulingData}
                       />
                     </div>
                   )}

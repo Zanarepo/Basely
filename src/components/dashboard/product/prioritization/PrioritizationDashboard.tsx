@@ -8,6 +8,7 @@ import { ProductBacklogItem } from '@/lib/product-strategy/types'
 import { getBacklogItems, upsertBacklogItem } from '@/lib/product-backlog/actions'
 import { Loader2, Plus } from 'lucide-react'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
+import { PmDiscoveryWorkflowGuide } from '../discovery/PmDiscoveryWorkflowGuide'
 
 export function PrioritizationDashboard({ 
   organizationId, 
@@ -82,6 +83,7 @@ export function PrioritizationDashboard({
   return (
     <div className="space-y-6">
       <ToastContainer toasts={toasts} onDismiss={(id) => setToasts(t => t.filter(x => x.id !== id))} />
+      <PmDiscoveryWorkflowGuide currentStep={3} />
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>

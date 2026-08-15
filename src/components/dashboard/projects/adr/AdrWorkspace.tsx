@@ -12,12 +12,16 @@ interface AdrWorkspaceProps {
   projectId?: string
   organizationId: string
   methodology?: 'waterfall' | 'agile' | 'hybrid'
+  tier?: string
+  aiEnabled?: boolean
 }
 
 export default function AdrWorkspace({
   projectId,
   organizationId,
-  methodology = 'hybrid'
+  methodology = 'hybrid',
+  tier = 'free',
+  aiEnabled = false
 }: AdrWorkspaceProps) {
   const [adrs, setAdrs] = useState<ArchitectureDecisionRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -148,7 +152,7 @@ export default function AdrWorkspace({
       database: 'Database & Storage',
       infrastructure: 'DevOps & Infra',
       security: 'Security & Auth',
-      ai_data: 'AI & Data Pipelines'
+      ai_data: 'Praz-AI & Data Pipelines'
     }
     return map[domain] || domain
   }
@@ -207,7 +211,7 @@ export default function AdrWorkspace({
                 { value: 'database', label: 'Database & Storage', description: 'PostgreSQL & data models' },
                 { value: 'infrastructure', label: 'DevOps & Infra', description: 'Cloud deployment pipelines' },
                 { value: 'security', label: 'Security & Auth', description: 'SSO, RLS & encryption' },
-                { value: 'ai_data', label: 'AI & Data Pipelines', description: 'LLMs & analytics telemetry' }
+                { value: 'ai_data', label: 'Praz-AI & Data Pipelines', description: 'LLMs & analytics telemetry' }
               ]}
             />
           </div>
@@ -404,10 +408,15 @@ export default function AdrWorkspace({
 
       <AdrStudioModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        projectId={projectId || ''}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedAdr(null)
+        }}
+        projectId={projectId!}
         organizationId={organizationId}
         initialData={selectedAdr}
+        tier={tier}
+        aiEnabled={aiEnabled}
         onSuccess={(updatedRecord) => {
           setAdrs((prev) => {
             const exists = prev.some((i) => i.id === updatedRecord.id)

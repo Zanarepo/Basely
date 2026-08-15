@@ -19,7 +19,7 @@ interface MemberSkillModalProps {
 const COMMON_SKILL_PRESETS = [
   'React & Next.js',
   'TypeScript & Node.js',
-  'Python & AI/ML',
+  'Python & Praz-AI/ML',
   'DevOps & AWS Cloud',
   'UI/UX & Design Systems',
   'Agile & Scrum Leadership',
@@ -164,7 +164,7 @@ export default function MemberSkillModal({
                     else if (preset.includes('Node') || preset.includes('PostgreSQL') || preset.includes('Python')) setCategory('backend')
                     else if (preset.includes('DevOps') || preset.includes('AWS') || preset.includes('System')) setCategory('devops')
                     else if (preset.includes('Leadership') || preset.includes('Agile') || preset.includes('Scrum')) setCategory('management')
-                    else if (preset.includes('AI/ML') || preset.includes('Data')) setCategory('data_science')
+                    else if (preset.includes('Praz-AI/ML') || preset.includes('Data')) setCategory('data_science')
                   }}
                   className={`text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all cursor-pointer ${
                     skillName === preset
@@ -205,7 +205,7 @@ export default function MemberSkillModal({
                     { value: 'frontend', label: 'Frontend & UI' },
                     { value: 'backend', label: 'Backend & Systems' },
                     { value: 'devops', label: 'DevOps & Cloud' },
-                    { value: 'data_science', label: 'Data Science & AI' },
+                    { value: 'data_science', label: 'Data Science & Praz-AI' },
                     { value: 'design', label: 'UI/UX & Design' },
                     { value: 'management', label: 'Agile & Management' },
                   ]}

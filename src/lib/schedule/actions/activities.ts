@@ -28,12 +28,7 @@ export async function updateActivityDuration(
     return { ok: false, error: updErr.message }
   }
 
-  // Fetch the name for logging
-  const { data } = await supabase.from('activities').select('name').eq('id', activityId).single()
-  if (data) {
-    await logProjectActivity(projectId, 'activity', activityId, 'updated', { name: data.name, field: 'duration' })
-  }
-
+  logProjectActivity(projectId, 'activity', activityId, 'updated', { field: 'duration' }).catch(() => {})
   return recalculateSchedule(projectId)
 }
 
@@ -61,11 +56,7 @@ export async function updateActivityConstraint(
     return { ok: false, error: updErr.message }
   }
 
-  const { data } = await supabase.from('activities').select('name').eq('id', activityId).single()
-  if (data) {
-    await logProjectActivity(projectId, 'activity', activityId, 'updated', { name: data.name, field: 'constraint' })
-  }
-
+  logProjectActivity(projectId, 'activity', activityId, 'updated', { field: 'constraint' }).catch(() => {})
   return recalculateSchedule(projectId)
 }
 
@@ -166,10 +157,6 @@ export async function updateActivityScheduling(
     return { ok: false, error: recalcRes.error }
   }
 
-  const { data } = await supabase.from('activities').select('name').eq('id', activityId).single()
-  if (data) {
-    await logProjectActivity(projectId, 'activity', activityId, 'updated', { name: data.name, field: 'scheduling' })
-  }
-
+  logProjectActivity(projectId, 'activity', activityId, 'updated', { field: 'scheduling' }).catch(() => {})
   return { ok: true }
 }

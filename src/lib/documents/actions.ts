@@ -1,10 +1,12 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
 import { dispatchNotification } from '@/lib/notifications/actions'
 import { checkProjectFeatureAccess } from '@/lib/organizations/tier-logic'
+import { PRD_TEMPLATE_VARIANTS, getSyncDocumentTemplate } from './prd-templates'
 
 export type DocumentSectionDef = {
   key: string
@@ -36,551 +38,283 @@ export type GeneratedDocument = {
   updated_at: string
 }
 
+function isUuid(val?: string | null): boolean {
+  if (!val) return false
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  return uuidRegex.test(val)
+}
+
 export async function getDocumentTemplate(documentType: string, templateId?: string): Promise<DocumentTemplate | null> {
-  const supabase = await createClient()
+  if (templateId && PRD_TEMPLATE_VARIANTS[templateId]) {
+    return getSyncDocumentTemplate(documentType, templateId)
+  }
 
   if (templateId) {
+    const supabase = await createClient()
     const { data: customTemplate, error: customError } = await supabase
       .from('custom_document_templates')
       .select('id, document_type, section_definitions, created_at')
       .eq('id', templateId)
-      .single()
+      .maybeSingle()
 
     if (!customError && customTemplate) {
-      return { ...customTemplate, is_custom: true } as DocumentTemplate
+      return {
+        id: customTemplate.id,
+        document_type: customTemplate.document_type,
+        section_definitions: (customTemplate.section_definitions as any) || [],
+        created_at: customTemplate.created_at,
+        is_custom: true,
+      }
     }
   }
 
-  const { data, error } = await supabase
-    .from('document_templates')
-    .select('*')
-    .eq('document_type', documentType)
-    .single()
-
-  if (documentType === 'charter') {
-    return {
-      id: data?.id || 'charter-template',
-      document_type: 'charter',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'executive_summary', title: 'Executive Summary', type: 'free_text' },
-        { key: 'business_case', title: 'Business Case & Justification', type: 'free_text' },
-        { key: 'objectives', title: 'Project Objectives', type: 'free_text' },
-        { key: 'scope_statement', title: 'Scope Statement', type: 'free_text' },
-        { key: 'wbs_dictionary', title: 'Key Deliverables & Work Packages', type: 'free_text' },
-        { key: 'success_criteria', title: 'Success Criteria', type: 'free_text' },
-        { key: 'assumptions', title: 'Assumptions', type: 'free_text' },
-        { key: 'constraints', title: 'Constraints', type: 'free_text' },
-        { key: 'risks', title: 'High-Level Risks', type: 'free_text' },
-        { key: 'milestones', title: 'Milestones & Key Dates', type: 'free_text' },
-        { key: 'organization', title: 'Project Organization & RACI', type: 'free_text' },
-        { key: 'approval', title: 'Sign-Off & Approval', type: 'free_text' }
-      ]
-    }
-  }
-
-  if (documentType === 'quality_management_plan') {
-    return {
-      id: data?.id || 'quality_management_plan_template',
-      document_type: 'quality_management_plan',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'quality_management_data', title: 'Quality Standards', type: 'data_bound' }
-      ]
-    }
-  }
-
-  if (documentType === 'procurement_plan') {
-    return {
-      id: data?.id || 'procurement_plan_template',
-      document_type: 'procurement_plan',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'procurement_entries', title: 'Procurement Register', type: 'data_bound' }
-      ]
-    }
-  }
-
-  if (documentType === 'closure_report') {
-    return {
-      id: data?.id || 'closure_report_template',
-      document_type: 'closure_report',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'executive_summary', title: 'Closure Summary & Statement', type: 'free_text' },
-        { key: 'evm_summary', title: 'Final Budget & EVM Performance', type: 'data_bound' },
-        { key: 'deliverables_status', title: 'WBS Deliverables Status', type: 'data_bound' },
-        { key: 'risks_status', title: 'Final Risk Register & Mitigations', type: 'data_bound' }
-      ]
-    }
-  }
-
-  if (documentType === 'lessons_learned') {
-    return {
-      id: data?.id || 'lessons_learned_template',
-      document_type: 'lessons_learned',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'executive_context', title: 'Executive Context & Scope', type: 'free_text' },
-        { key: 'what_worked_well', title: 'What Worked Well (Successes)', type: 'free_text' },
-        { key: 'what_did_not_work', title: 'What Did Not Work (Challenges)', type: 'free_text' },
-        { key: 'recommendations_for_future', title: 'Recommendations for Future Projects', type: 'free_text' }
-      ]
-    }
-  }
-
-  if (documentType === 'handover_document') {
-    return {
-      id: data?.id || 'handover_document_template',
-      document_type: 'handover_document',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'operational_instructions', title: 'Operational & Acceptance Instructions', type: 'free_text' },
-        { key: 'deliverables_table', title: 'Transferred WBS Deliverables', type: 'data_bound' },
-        { key: 'ongoing_owners', title: 'Ongoing Ownership & Support RACI', type: 'data_bound' },
-        { key: 'support_escalation', title: 'Support & Escalation Procedures', type: 'free_text' },
-        { key: 'transition_notes', title: 'Transition & Archival Notes', type: 'free_text' }
-      ]
-    }
-  }
-
-  if (documentType === 'post_implementation_review') {
-    return {
-      id: data?.id || 'post_implementation_review_template',
-      document_type: 'post_implementation_review',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'charter_comparison', title: 'Original Charter Objectives vs Actuals', type: 'data_bound' },
-        { key: 'outcome_assessment', title: 'Post-Implementation Outcome Assessment', type: 'free_text' },
-        { key: 'roi_and_business_impact', title: 'ROI Realization & Business Impact', type: 'free_text' },
-        { key: 'recommendations', title: 'Long-term Recommendations', type: 'free_text' }
-      ]
-    }
-  }
-
-  if (documentType === 'stakeholder_register') {
-    return {
-      id: data?.id || 'stakeholder_register_template',
-      document_type: 'stakeholder_register',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'executive_summary', title: 'Stakeholder Summary', type: 'free_text' },
-        { key: 'stakeholder_roster', title: 'Stakeholder Roster & Analysis', type: 'data_bound', source: 'register.stakeholders' }
-      ]
-    }
-  }
-
-  if (documentType === 'risk_register') {
-    return {
-      id: data?.id || 'risk_register_template',
-      document_type: 'risk_register',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'executive_summary', title: 'Risk Summary & Profile', type: 'free_text' },
-        { key: 'risk_log', title: 'Detailed Risk & Mitigation Log', type: 'data_bound', source: 'register.risks' }
-      ]
-    }
-  }
-
-  if (documentType === 'release_notes') {
-    return {
-      id: data?.id || 'release_notes_template',
-      document_type: 'release_notes',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'executive_summary', title: 'Summary & Context', type: 'free_text' },
-        { key: 'release_scope', title: 'Release Scope (Derived)', type: 'data_bound', source: 'release.scope' },
-        { key: 'release_exit_criteria', title: 'Exit Criteria', type: 'data_bound', source: 'release.criteria' }
-      ]
-    }
-  }
-
-  if (documentType === 'deployment_report') {
-    return {
-      id: data?.id || 'deployment_report_template',
-      document_type: 'deployment_report',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'deployment_summary', title: 'Deployment Summary', type: 'free_text' },
-        { key: 'deployment_plan', title: 'Deployment Plan & Execution', type: 'data_bound', source: 'release.deployment' }
-      ]
-    }
-  }
-
-  if (documentType === 'test_summary_report') {
-    return {
-      id: data?.id || 'test_summary_report_template',
-      document_type: 'test_summary_report',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'test_summary', title: 'QA Summary & Sign-off', type: 'free_text' },
-        { key: 'qa_readiness', title: 'QA Readiness Items', type: 'data_bound', source: 'release.qa' },
-        { key: 'linked_defects', title: 'Linked Defects', type: 'data_bound', source: 'release.defects' }
-      ]
-    }
-  }
-
-  if (documentType === 'business_case') {
-    return {
-      id: data?.id || 'business_case_template',
-      document_type: 'business_case',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'problem_statement', title: 'Problem & Opportunity Statement', type: 'data_bound', source: 'initiation.business_case_problem' },
-        { key: 'proposed_solution', title: 'Proposed Solution', type: 'data_bound', source: 'initiation.business_case_solution' },
-        { key: 'financials', title: 'Financial Estimates & ROI', type: 'data_bound', source: 'initiation.business_case_financials' },
-        { key: 'recommendation', title: 'Recommendation', type: 'data_bound', source: 'initiation.business_case_recommendation' }
-      ]
-    }
-  }
-
-  if (documentType === 'feasibility_study') {
-    return {
-      id: data?.id || 'feasibility_study_template',
-      document_type: 'feasibility_study',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'technical', title: 'Technical Assessment', type: 'data_bound', source: 'initiation.feasibility_technical' },
-        { key: 'financial', title: 'Financial Assessment', type: 'data_bound', source: 'initiation.feasibility_financial' },
-        { key: 'operational', title: 'Operational Assessment', type: 'data_bound', source: 'initiation.feasibility_operational' },
-        { key: 'recommendation', title: 'Overall Recommendation', type: 'data_bound', source: 'initiation.feasibility_recommendation' }
-      ]
-    }
-  }
-
-  if (documentType === 'budget_baseline') {
-    return {
-      id: data?.id || 'budget_baseline_template',
-      document_type: 'budget_baseline',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'executive_summary', title: 'Executive Budget Summary', type: 'free_text' },
-        { key: 'budget_baseline_table', title: 'Work Package Estimates & S-Curve Baseline', type: 'data_bound', source: 'cost.budget_baseline' }
-      ]
-    }
-  }
-
-  if (documentType === 'issue_log') {
-    return {
-      id: data?.id || 'issue_log_template',
-      document_type: 'issue_log',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'executive_summary', title: 'Issue Management & Governance Summary', type: 'free_text' },
-        { key: 'issue_roster', title: 'Active & Resolved Issue Log', type: 'data_bound', source: 'accountability.issue_log' }
-      ]
-    }
-  }
-
-  if (documentType === 'schedule_document') {
-    return {
-      id: data?.id || 'schedule_document_template',
-      document_type: 'schedule_document',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'schedule_assumptions', title: 'Scheduling Assumptions & Constraints', type: 'free_text' },
-        { key: 'schedule_narrative', title: 'Baseline Schedule, Milestones & Critical Path Summary', type: 'data_bound', source: 'planning.schedule_document' }
-      ]
-    }
-  }
-
-  if (documentType === 'change_management_plan') {
-    return {
-      id: data?.id || 'change_management_plan_template',
-      document_type: 'change_management_plan',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'change_philosophy', title: 'Change Control Philosophy & Escalation Process', type: 'free_text' },
-        { key: 'approval_workflows', title: 'Configured Approval Workflows & Thresholds', type: 'data_bound', source: 'governance.change_management_plan' }
-      ]
-    }
-  }
-
-  if (documentType === 'project_management_plan') {
-    return {
-      id: data?.id || 'project_management_plan_template',
-      document_type: 'project_management_plan',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'executive_overview', title: 'Master Project Plan Executive Overview', type: 'free_text' },
-        { key: 'sub_plans_aggregator', title: 'Integrated Sub-Plans & References', type: 'data_bound', source: 'master.project_management_plan' }
-      ]
-    }
-  }
-
-  if (documentType === 'product_strategy_document') {
-    return {
-      id: data?.id || 'product_strategy_document_template',
-      document_type: 'product_strategy_document',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'strategy_vision', title: 'Product Vision Canvas & Core Pillars', type: 'data_bound', source: 'product.strategy_canvas' },
-        { key: 'executive_commentary', title: 'Executive Strategy & Strategic Intent', type: 'free_text' }
-      ]
-    }
-  }
-
-  if (documentType === 'market_research_report') {
-    return {
-      id: data?.id || 'market_research_report_template',
-      document_type: 'market_research_report',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'target_market_segmentation', title: 'Target Market & Customer Segments', type: 'data_bound', source: 'product.target_market' },
-        { key: 'customer_personas', title: 'Customer Personas & JTBD Analysis', type: 'data_bound', source: 'product.personas' },
-        { key: 'tam_sam_som_analysis', title: 'TAM / SAM / SOM Financial Opportunity', type: 'free_text' },
-        { key: 'industry_trends', title: 'Industry Trends & Macro Factors', type: 'free_text' }
-      ]
-    }
-  }
-
-  if (documentType === 'competitive_benchmarking_matrix') {
-    return {
-      id: data?.id || 'competitive_benchmarking_matrix_template',
-      document_type: 'competitive_benchmarking_matrix',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'defensibility_moats', title: 'Competitive Moat & Defensibility Profile', type: 'data_bound', source: 'product.competitive_moats' },
-        { key: 'competitor_feature_comparison', title: 'Competitor Feature & Pricing Matrix', type: 'free_text' },
-        { key: 'swot_evaluation', title: 'SWOT Evaluation', type: 'free_text' }
-      ]
-    }
-  }
-
-  if (documentType === 'okr_kpi_performance_report') {
-    return {
-      id: data?.id || 'okr_kpi_performance_report_template',
-      document_type: 'okr_kpi_performance_report',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'north_star_telemetry', title: 'Executive North Star KPI & Growth Levers', type: 'data_bound', source: 'okrs.north_star_report' },
-        { key: 'okr_hierarchy', title: 'Quarterly OKR Objectives & Key Results Hierarchy', type: 'data_bound', source: 'okrs.hierarchy_tree' },
-        { key: 'executive_commentary_and_adjustments', title: 'Quarterly Executive Commentary & Pivot Strategy', type: 'free_text' }
-      ]
-    }
-  }
-
-  if (documentType === 'product_requirements_document') {
-    return {
-      id: data?.id || 'product_requirements_document_template',
-      document_type: 'product_requirements_document',
-      is_custom: false,
-      created_at: data?.created_at || new Date().toISOString(),
-      section_definitions: [
-        { key: 'prd_objective', title: 'Objective & Business Value', type: 'data_bound', source: 'prd.objective_overview' },
-        { key: 'prd_scope_in', title: 'In Scope', type: 'free_text' },
-        { key: 'prd_scope_out', title: 'Out of Scope', type: 'free_text' },
-        { key: 'prd_acceptance_criteria', title: 'Acceptance Criteria', type: 'free_text' },
-        { 
-          key: 'prd_telemetry', 
-          title: 'Tracking & Metrics', 
-          type: 'free_text',
-          placeholder: 'Example:\n- Click rate on the "Checkout" button\n- Time spent on the new form (Goal: < 30s)\n- Daily Active Users (DAU) interacting with the feature'
-        },
-        { key: 'prd_discovery_insights', title: 'Linked Discovery Insights (VoC Evidence)', type: 'data_bound', source: 'prd.discovery_insights' },
-        { key: 'prd_wireframes', title: 'UX Wireframes & Visual Specifications', type: 'free_text' }
-      ]
-    }
-  }
-
-  if (error) {
-    console.error('Failed to load document template:', error)
-    return null
-  }
-  return { ...data, is_custom: false }
+  return getSyncDocumentTemplate(documentType)
 }
 
-export async function getGeneratedDocument(projectId: string, documentType: string, isSnapshot = false, snapshotId?: string): Promise<GeneratedDocument | null> {
+export async function getGeneratedDocument(
+  projectId: string,
+  documentType: string,
+  isSnapshot?: boolean,
+  snapshotId?: string
+): Promise<GeneratedDocument | null> {
   const supabase = await createClient()
+
   let query = supabase
     .from('generated_documents')
     .select('*')
     .eq('project_id', projectId)
     .eq('document_type', documentType)
-    .eq('is_snapshot', isSnapshot)
 
-  if (isSnapshot && snapshotId) {
+  if (snapshotId) {
     query = query.eq('id', snapshotId)
   } else if (isSnapshot) {
-    // If asking for a snapshot but no ID provided, maybe order by latest
-    query = query.order('generated_at', { ascending: false }).limit(1)
+    query = query.eq('is_snapshot', true)
+  } else {
+    query = query.eq('is_snapshot', false)
   }
 
   const { data, error } = await query.maybeSingle()
 
-  if (error) {
-    console.error('Failed to load generated document:', error)
-    return null
+  if (error || !data) return null
+
+  return {
+    id: data.id,
+    project_id: data.project_id,
+    document_type: data.document_type,
+    custom_template_id: data.custom_template_id,
+    free_text_content: (data.free_text_content as Record<string, string>) || {},
+    is_snapshot: data.is_snapshot,
+    frozen_data: data.frozen_data,
+    period_end: data.period_end,
+    generated_at: data.generated_at,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
   }
-  return data
-}
-
-export async function getReportSnapshots(projectId: string, documentType: string): Promise<GeneratedDocument[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('generated_documents')
-    .select('id, period_end, generated_at')
-    .eq('project_id', projectId)
-    .eq('document_type', documentType)
-    .eq('is_snapshot', true)
-    .order('period_end', { ascending: false })
-
-  if (error) return []
-  return data as GeneratedDocument[]
 }
 
 export async function saveGeneratedDocument(
   projectId: string,
   documentType: string,
-  freeTextContent: Record<string, string>,
+  freeTextPayload: Record<string, string>,
   isSnapshot = false,
   frozenData?: any,
   periodEnd?: string,
-  templateId?: string | null
+  templateId?: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const access = await checkProjectFeatureAccess(projectId, 'documentation.engine')
-  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
+  try {
+    const access = await checkProjectFeatureAccess(projectId, 'documentation.engine')
+    if (!access.allowed) {
+      const err = `Feature locked: Requires ${access.requiredTier} tier`
+      console.error(`[Document Action Error] saveGeneratedDocument locked: ${err}`)
+      return { ok: false, error: err }
+    }
 
-  const supabase = await createClient()
-  const now = new Date().toISOString()
+    const supabase = await createClient()
+    const adminSupabase = createAdminClient()
+    const now = new Date().toISOString()
+    const validUuid = isUuid(templateId) ? templateId : null
+    let docId = ''
 
-  let docId = ''
+    if (isSnapshot) {
+      const { data: newDoc, error } = await adminSupabase
+        .from('generated_documents')
+        .insert({
+          project_id: projectId,
+          document_type: documentType,
+          custom_template_id: validUuid,
+          free_text_content: freeTextPayload,
+          is_snapshot: true,
+          frozen_data: frozenData,
+          period_end: periodEnd,
+          generated_at: now,
+          updated_at: now,
+        })
+        .select('id')
+        .single()
 
-  if (isSnapshot) {
-    // Snapshots are always inserts now
-    const { data: newDoc, error } = await supabase
+      if (error) {
+        console.error('[Document Action Error] Failed to insert snapshot document:', error)
+        return { ok: false, error: error.message }
+      }
+      docId = newDoc?.id || projectId
+      await logProjectActivity(projectId, 'document', docId, 'published', { period_end: periodEnd, document_type: documentType })
+    } else {
+      // Drafts are upserted using adminSupabase to guarantee reviewer sign-offs persist regardless of user RLS role
+      const { data: existing } = await adminSupabase
+        .from('generated_documents')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('document_type', documentType)
+        .eq('is_snapshot', false)
+        .maybeSingle()
+
+      if (existing) {
+        docId = existing.id
+        const { error } = await adminSupabase
+          .from('generated_documents')
+          .update({
+            custom_template_id: validUuid,
+            free_text_content: freeTextPayload,
+            updated_at: now,
+          })
+          .eq('id', existing.id)
+
+        if (error) {
+          console.error('[Document Action Error] Failed to update draft document:', error)
+          return { ok: false, error: error.message }
+        }
+        await logProjectActivity(projectId, 'document', existing.id, 'updated', { document_type: documentType })
+      } else {
+        const { data: newDoc, error } = await adminSupabase
+          .from('generated_documents')
+          .insert({
+            project_id: projectId,
+            document_type: documentType,
+            custom_template_id: validUuid,
+            free_text_content: freeTextPayload,
+            is_snapshot: false,
+            generated_at: now,
+            updated_at: now,
+          })
+          .select('id')
+          .single()
+
+        if (error) {
+          console.error('[Document Action Error] Failed to insert draft document:', error)
+          return { ok: false, error: error.message }
+        }
+        docId = newDoc?.id || projectId
+        await logProjectActivity(projectId, 'document', docId, 'created', { document_type: documentType })
+      }
+    }
+
+    const { data: authData } = await supabase.auth.getUser()
+    if (authData?.user?.id) {
+      dispatchNotification({
+        userId: authData.user.id,
+        projectId,
+        triggerType: isSnapshot ? 'status_report' : 'document_change',
+        referenceEntityType: 'document',
+        referenceEntityId: docId || projectId,
+        contentSummary: isSnapshot
+          ? `Published status report snapshot for period ending ${periodEnd || 'now'}`
+          : `Generated/updated ${documentType} document draft`
+      }).catch(err => console.error('Webhook notification failed:', err))
+    }
+
+    return { ok: true }
+  } catch (err: any) {
+    console.error('[Document Action Exception] saveGeneratedDocument failed:', err)
+    return { ok: false, error: err?.message || 'Failed to save document' }
+  }
+}
+
+export async function updateDocumentTemplateId(
+  projectId: string,
+  documentType: string,
+  templateId?: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const access = await checkProjectFeatureAccess(projectId, 'documentation.engine')
+    if (!access.allowed) {
+      const err = `Feature locked: Requires ${access.requiredTier} tier`
+      console.error(`[Document Action Error] updateDocumentTemplateId locked: ${err}`)
+      return { ok: false, error: err }
+    }
+
+    const adminSupabase = createAdminClient()
+    const now = new Date().toISOString()
+    const validUuid = isUuid(templateId) ? templateId : null
+    
+    const { data: existing } = await adminSupabase
       .from('generated_documents')
-      .insert({
-        project_id: projectId,
-        document_type: documentType,
-        custom_template_id: templateId || null,
-        free_text_content: freeTextContent,
-        is_snapshot: true,
-        frozen_data: frozenData || {},
-        period_end: periodEnd,
-        generated_at: now,
-        updated_at: now,
-      })
-      .select('id')
-      .single()
-
-    if (error) return { ok: false, error: error.message }
-    docId = newDoc?.id || projectId
-
-    // Log snapshot published
-    await logProjectActivity(projectId, 'document', docId, 'published', { period_end: periodEnd, document_type: documentType })
-  } else {
-    // Drafts are upserted using the partial unique index or manually
-    // To be safe with the partial index, we can just do an update or insert
-    const { data: existing } = await supabase
-      .from('generated_documents')
-      .select('id')
+      .select('id, free_text_content')
       .eq('project_id', projectId)
       .eq('document_type', documentType)
       .eq('is_snapshot', false)
       .maybeSingle()
 
     if (existing) {
-      docId = existing.id
-      const { error } = await supabase
+      const freeText = (existing.free_text_content as Record<string, string>) || {}
+      if (templateId && PRD_TEMPLATE_VARIANTS[templateId]) {
+        const variant = PRD_TEMPLATE_VARIANTS[templateId]
+        freeText['__prd_template_variant'] = templateId
+        freeText['__section_order'] = JSON.stringify(variant.section_definitions.map((s) => s.key))
+        delete freeText['__custom_sections']
+        delete freeText['__deleted_section_keys']
+        delete freeText['__removed_sections_meta']
+      } else if (!templateId) {
+        delete freeText['__prd_template_variant']
+        delete freeText['__section_order']
+        delete freeText['__custom_sections']
+        delete freeText['__deleted_section_keys']
+        delete freeText['__removed_sections_meta']
+      }
+
+      const { error } = await adminSupabase
         .from('generated_documents')
         .update({
-          custom_template_id: templateId || null,
-          free_text_content: freeTextContent,
+          custom_template_id: validUuid,
+          free_text_content: freeText,
           updated_at: now,
         })
         .eq('id', existing.id)
-      if (error) return { ok: false, error: error.message }
-      
-      // Log updated
-      await logProjectActivity(projectId, 'document', existing.id, 'updated', { document_type: documentType })
+
+      if (error) {
+        console.error('[Document Action Error] Failed to update document template ID:', error)
+        return { ok: false, error: error.message }
+      }
     } else {
-      const { data: newDoc, error } = await supabase
+      const freeText: Record<string, string> = {}
+      if (templateId && PRD_TEMPLATE_VARIANTS[templateId]) {
+        const variant = PRD_TEMPLATE_VARIANTS[templateId]
+        freeText['__prd_template_variant'] = templateId
+        freeText['__section_order'] = JSON.stringify(variant.section_definitions.map((s) => s.key))
+      }
+
+      const { error } = await adminSupabase
         .from('generated_documents')
         .insert({
           project_id: projectId,
           document_type: documentType,
-          custom_template_id: templateId || null,
-          free_text_content: freeTextContent,
+          custom_template_id: validUuid,
+          free_text_content: freeText,
           is_snapshot: false,
           generated_at: now,
           updated_at: now,
         })
-        .select('id')
-        .single()
-      if (error) return { ok: false, error: error.message }
-      docId = newDoc?.id || projectId
-      
-      // Log created
-      await logProjectActivity(projectId, 'document', docId, 'created', { document_type: documentType })
+
+      if (error) {
+        console.error('[Document Action Error] Failed to insert document with template ID:', error)
+        return { ok: false, error: error.message }
+      }
     }
+    
+    return { ok: true }
+  } catch (err: any) {
+    console.error('[Document Action Exception] updateDocumentTemplateId failed:', err)
+    return { ok: false, error: err?.message || 'Failed to update template ID' }
   }
-
-  const { data: authData } = await supabase.auth.getUser()
-  if (authData?.user?.id) {
-    await dispatchNotification({
-      userId: authData.user.id,
-      projectId,
-      triggerType: isSnapshot ? 'status_report' : 'document_change',
-      referenceEntityType: 'document',
-      referenceEntityId: docId || projectId,
-      contentSummary: isSnapshot
-        ? `Published status report snapshot for period ending ${periodEnd || 'now'}`
-        : `Generated/updated ${documentType} document draft`
-    }).catch(err => console.error('Webhook notification failed:', err))
-  }
-
-  revalidatePath(`/dashboard/projects/${projectId}`)
-  return { ok: true }
-}
-
-export async function updateDocumentTemplateId(
-  projectId: string,
-  documentType: string,
-  templateId: string | null
-): Promise<{ ok: boolean; error?: string }> {
-  const access = await checkProjectFeatureAccess(projectId, 'documentation.engine')
-  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
-
-  const supabase = await createClient()
-  
-  const { error } = await supabase
-    .from('generated_documents')
-    .update({
-      custom_template_id: templateId,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('project_id', projectId)
-    .eq('document_type', documentType)
-    .eq('is_snapshot', false)
-
-  if (error) return { ok: false, error: error.message }
-  
-  revalidatePath(`/dashboard/projects/${projectId}`)
-  return { ok: true }
 }
 
 export async function regenerateDocument(
@@ -591,14 +325,14 @@ export async function regenerateDocument(
   const access = await checkProjectFeatureAccess(projectId, 'documentation.engine')
   if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
 
-  const supabase = await createClient()
+  const adminSupabase = createAdminClient()
   const now = new Date().toISOString()
 
   if (isSnapshot) {
     return { ok: false, error: 'Cannot regenerate a snapshot directly this way' }
   }
   
-  const { data: existing } = await supabase
+  const { data: existing } = await adminSupabase
     .from('generated_documents')
     .select('id')
     .eq('project_id', projectId)
@@ -607,14 +341,14 @@ export async function regenerateDocument(
     .maybeSingle()
 
   if (existing) {
-    const { error } = await supabase
+    const { error } = await adminSupabase
       .from('generated_documents')
       .update({ generated_at: now, updated_at: now })
       .eq('id', existing.id)
 
     if (error) return { ok: false, error: error.message }
   } else {
-    const { error } = await supabase
+    const { error } = await adminSupabase
       .from('generated_documents')
       .insert({
         project_id: projectId,
@@ -622,6 +356,7 @@ export async function regenerateDocument(
         free_text_content: {},
         is_snapshot: false,
         generated_at: now,
+        updated_at: now,
       })
 
     if (error) return { ok: false, error: error.message }
@@ -651,4 +386,296 @@ export async function getAvailableDocumentTypes() {
     { id: 'quality_management_plan', name: 'Quality Management Plan' },
     { id: 'procurement_plan', name: 'Procurement Plan' },
   ]
+}
+
+export async function getProjectOrOrgMembers(projectId: string): Promise<{
+  currentUserId?: string
+  isAdmin?: boolean
+  members: Array<{ userId: string; name: string; role: string; email?: string }>
+}> {
+  try {
+    const supabase = await createClient()
+    const { data: { user: currentUser } } = await supabase.auth.getUser()
+    const adminSupabase = createAdminClient()
+
+    let organizationId: string | null = null
+    try {
+      const { data: proj } = await adminSupabase
+        .from('projects')
+        .select('organization_id')
+        .eq('id', projectId)
+        .maybeSingle()
+      if (proj?.organization_id) organizationId = proj.organization_id
+    } catch (e) {
+      console.warn('Project org query error:', e)
+    }
+
+    const membersMap = new Map<string, { userId: string; name: string; role: string; email?: string }>()
+
+    // 1. Fetch organization members directly
+    if (organizationId) {
+      const { data: orgMembers } = await adminSupabase
+        .from('organization_members')
+        .select('user_id, role')
+        .eq('organization_id', organizationId)
+        .eq('is_active', true)
+
+      if (orgMembers && orgMembers.length > 0) {
+        const userIds = orgMembers.map((m: any) => m.user_id)
+        const { data: profiles } = await adminSupabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', userIds)
+
+        const profilesMap = new Map((profiles || []).map((p: any) => [p.id, p]))
+
+        for (const m of orgMembers) {
+          const prof = profilesMap.get(m.user_id)
+          membersMap.set(m.user_id, {
+            userId: m.user_id,
+            name: prof?.full_name || prof?.email || 'Team Member',
+            role: m.role || 'Member',
+            email: prof?.email,
+          })
+        }
+      }
+    }
+
+    // 2. Fetch project members
+    try {
+      const { data: projMembers } = await adminSupabase
+        .from('project_members')
+        .select('user_id, project_role_title')
+        .eq('project_id', projectId)
+
+      if (projMembers && projMembers.length > 0) {
+        const pUserIds = projMembers.map((m: any) => m.user_id)
+        const { data: pProfiles } = await adminSupabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', pUserIds)
+
+        const pProfilesMap = new Map((pProfiles || []).map((p: any) => [p.id, p]))
+
+        for (const pm of projMembers) {
+          if (!membersMap.has(pm.user_id)) {
+            const prof = pProfilesMap.get(pm.user_id)
+            membersMap.set(pm.user_id, {
+              userId: pm.user_id,
+              name: prof?.full_name || prof?.email || 'Project Member',
+              role: pm.project_role_title || 'Contributor',
+              email: prof?.email,
+            })
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Project members fallback fetch error:', e)
+    }
+
+    // 3. Fallback: Query profiles table directly if list is still empty
+    if (membersMap.size === 0) {
+      const { data: allProfiles } = await adminSupabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .limit(20)
+
+      if (allProfiles && allProfiles.length > 0) {
+        for (const prof of allProfiles) {
+          membersMap.set(prof.id, {
+            userId: prof.id,
+            name: prof.full_name || prof.email || 'Workspace Member',
+            role: 'Team Member',
+            email: prof.email,
+          })
+        }
+      }
+    }
+
+    // 4. Fallback: Auth Users via admin API
+    if (membersMap.size === 0) {
+      try {
+        const { data: authData } = await adminSupabase.auth.admin.listUsers()
+        if (authData?.users) {
+          for (const u of authData.users) {
+            membersMap.set(u.id, {
+              userId: u.id,
+              name: u.user_metadata?.full_name || u.email || 'Team User',
+              role: u.user_metadata?.role || 'Member',
+              email: u.email,
+            })
+          }
+        }
+      } catch (e) {
+        console.warn('Auth admin listUsers error:', e)
+      }
+    }
+
+    // 5. Always include current logged-in user
+    if (currentUser && !membersMap.has(currentUser.id)) {
+      membersMap.set(currentUser.id, {
+        userId: currentUser.id,
+        name: currentUser.user_metadata?.full_name || currentUser.email || 'Current User',
+        role: 'Product Manager',
+        email: currentUser.email,
+      })
+    }
+
+    let isAdmin = false
+    if (currentUser) {
+      if (organizationId) {
+        const { data: org } = await adminSupabase
+          .from('organizations')
+          .select('owner_id')
+          .eq('id', organizationId)
+          .maybeSingle()
+
+        if (org?.owner_id === currentUser.id) {
+          isAdmin = true
+        } else {
+          const { data: orgMem } = await adminSupabase
+            .from('organization_members')
+            .select('role')
+            .eq('organization_id', organizationId)
+            .eq('user_id', currentUser.id)
+            .maybeSingle()
+
+          if (orgMem?.role === 'Admin' || orgMem?.role === 'PM' || orgMem?.role === 'Owner') {
+            isAdmin = true
+          }
+        }
+      }
+
+      if (!isAdmin) {
+        const { data: proj } = await adminSupabase
+          .from('projects')
+          .select('created_by')
+          .eq('id', projectId)
+          .maybeSingle()
+
+        if (proj?.created_by === currentUser.id) {
+          isAdmin = true
+        }
+      }
+    }
+
+    const membersList = Array.from(membersMap.values())
+
+    return {
+      currentUserId: currentUser?.id,
+      isAdmin,
+      members: membersList,
+    }
+  } catch (err) {
+    console.error('Error in getProjectOrOrgMembers:', err)
+    return { members: [] }
+  }
+}
+
+export async function dispatchReviewerAssignmentNotification(
+  projectId: string,
+  documentType: string,
+  targetUserId: string,
+  targetUserName: string,
+  roleTitle: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+
+    let projectName = 'Project Workspace'
+    try {
+      const { data: proj } = await adminSupabase
+        .from('projects')
+        .select('name')
+        .eq('id', projectId)
+        .maybeSingle()
+      if (proj?.name) projectName = proj.name
+    } catch (e) {
+      console.warn('Project name fetch error for reviewer notification:', e)
+    }
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const actionUrl = `${siteUrl}/dashboard/projects/${projectId}?tab=documents`
+
+    const emailContext = {
+      subject: `[Prazaner PM] Document Reviewer Assignment: ${projectName}`,
+      title: `You have been assigned as a Document Reviewer`,
+      message: `Hello ${targetUserName},\n\nYou have been designated as a formal ${roleTitle} reviewer for "${projectName}". Please log into your dashboard to inspect the document and record your sign-off decision.`,
+      actionUrl,
+    }
+
+    await dispatchNotification({
+      userId: targetUserId,
+      triggerType: 'assignment',
+      referenceEntityType: 'document',
+      referenceEntityId: projectId,
+      projectId,
+      contentSummary: `Assigned as ${roleTitle} document reviewer for ${projectName}`,
+      emailContext,
+    })
+
+    return { ok: true }
+  } catch (err: any) {
+    console.error('Error dispatching reviewer assignment notification:', err)
+    return { ok: false, error: err?.message || 'Failed to dispatch notification' }
+  }
+}
+
+export async function dispatchStatusChangeNotificationToPM(
+  projectId: string,
+  documentType: string,
+  reviewerName: string,
+  roleTitle: string,
+  newStatus: 'pending' | 'approved' | 'changes_requested'
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+
+    const { data: proj } = await adminSupabase
+      .from('projects')
+      .select('name, created_by, organization_id')
+      .eq('id', projectId)
+      .maybeSingle()
+
+    if (!proj) return { ok: false, error: 'Project not found' }
+
+    let pmUserId = proj.created_by
+
+    if (!pmUserId && proj.organization_id) {
+      const { data: org } = await adminSupabase
+        .from('organizations')
+        .select('owner_id')
+        .eq('id', proj.organization_id)
+        .maybeSingle()
+      if (org?.owner_id) pmUserId = org.owner_id
+    }
+
+    if (!pmUserId) return { ok: true }
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const actionUrl = `${siteUrl}/dashboard/projects/${projectId}?tab=documents`
+    const statusLabel = newStatus === 'approved' ? 'Approved 🟢' : newStatus === 'changes_requested' ? 'Changes Requested 🔴' : 'Pending Review 🟡'
+
+    const emailContext = {
+      subject: `[Prazaner PM] Sign-Off Update (${statusLabel}): ${proj.name}`,
+      title: `Document Sign-Off Status Updated`,
+      message: `Hello,\n\n${reviewerName} (${roleTitle}) has updated their sign-off status to "${statusLabel}" for the document in project "${proj.name}".\n\nPlease click the button below to inspect the updated document governance workspace.`,
+      actionUrl,
+    }
+
+    await dispatchNotification({
+      userId: pmUserId,
+      triggerType: 'approval_update',
+      referenceEntityType: 'document',
+      referenceEntityId: projectId,
+      projectId,
+      contentSummary: `${reviewerName} (${roleTitle}) updated sign-off status to ${statusLabel} for ${proj.name}`,
+      emailContext,
+    })
+
+    return { ok: true }
+  } catch (err: any) {
+    console.error('Error dispatching PM status change notification:', err)
+    return { ok: false, error: err?.message || 'Failed to dispatch notification' }
+  }
 }

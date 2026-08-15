@@ -40,7 +40,7 @@ export function useWbsScheduling(element: WbsElement | null, isWorkPackage: bool
         setProjectActivities([])
       }
     }
-  }, [element])
+  }, [element?.id, (element as any)?.updatedAt, isWorkPackage])
 
   useEffect(() => {
     if (isWorkPackage && element && !activityId) {
@@ -92,8 +92,10 @@ export function useWbsScheduling(element: WbsElement | null, isWorkPackage: bool
         const isAuto = act.constraint_type === 'ASAP'
         setAutoSchedule(isAuto)
         
-        setStartDate(act.es || '')
-        setEndDate(act.ef || '')
+        const cleanEs = act.es ? act.es.split('T')[0]!.split(' ')[0]! : ''
+        const cleanEf = act.ef ? act.ef.split('T')[0]!.split(' ')[0]! : ''
+        setStartDate(cleanEs)
+        setEndDate(cleanEf)
 
         const { data: deps, error: depErr } = await supabase
           .from('dependencies')
@@ -162,23 +164,25 @@ export function useWbsScheduling(element: WbsElement | null, isWorkPackage: bool
   }
 
   const handleStartDateChange = (startVal: string) => {
-    setStartDate(startVal)
+    const cleanVal = startVal ? startVal.split('T')[0]!.split(' ')[0]! : ''
+    setStartDate(cleanVal)
 
-    if (!autoSchedule && startVal) {
+    if (cleanVal) {
       if (isMilestone) {
-        setEndDate(startVal)
+        setEndDate(cleanVal)
       } else if (duration > 0) {
-        const nextEnd = calculateFinishDate(startVal, duration, calendar)
+        const nextEnd = calculateFinishDate(cleanVal, duration, calendar)
         setEndDate(nextEnd)
       }
     }
   }
 
   const handleEndDateChange = (endVal: string) => {
-    setEndDate(endVal)
+    const cleanVal = endVal ? endVal.split('T')[0]!.split(' ')[0]! : ''
+    setEndDate(cleanVal)
 
-    if (!autoSchedule && startDate && endVal) {
-      const workingDaysCount = countWorkingDays(startDate, endVal, calendar)
+    if (startDate && cleanVal) {
+      const workingDaysCount = countWorkingDays(startDate, cleanVal, calendar)
       const nextDur = Math.max(1, workingDaysCount + 1)
       setDuration(nextDur)
     }
@@ -204,6 +208,12 @@ export function useWbsScheduling(element: WbsElement | null, isWorkPackage: bool
     )
   }
 
+  const refetchSchedulingData = () => {
+    if (element && element.isWorkPackage) {
+      fetchSchedulingData(element.id, element.projectId)
+    }
+  }
+
   return {
     activityId,
     loadingSchedule,
@@ -216,6 +226,7 @@ export function useWbsScheduling(element: WbsElement | null, isWorkPackage: bool
     projectActivities, setProjectActivities,
     predecessors, setPredecessors,
     handleTogglePredecessor, handleUpdatePredType, handleUpdatePredLag,
-    scheduleError, setScheduleError
+    scheduleError, setScheduleError,
+    refetchSchedulingData
   }
 }

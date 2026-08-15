@@ -1,5 +1,5 @@
 import type { Activity, Dependency } from '@/lib/schedule/cpm'
-import { getX } from './canvasUtils'
+import { getX, isValidDateStr } from './canvasUtils'
 
 type GanttTimelineDependenciesProps = {
   dependencies: Dependency[]
@@ -59,6 +59,9 @@ export function GanttTimelineDependencies({
           if (predRowIdx === undefined || succRowIdx === undefined || !predAct || !succAct) {
             return null
           }
+          if (!isValidDateStr(predAct.ef) || !isValidDateStr(succAct.es)) {
+            return null
+          }
 
           // Calculate anchor positions
           const startX = getX(predAct.ef!, timelineStart, dayWidth) + dayWidth
@@ -107,6 +110,9 @@ export function GanttTimelineDependencies({
             const succAct = activities.find((a) => a.id === dep.successorId)
 
             if (predRowIdx === undefined || succRowIdx === undefined || !predAct || !succAct) {
+              return null
+            }
+            if (!isValidDateStr(predAct.ef) || !isValidDateStr(succAct.es)) {
               return null
             }
 

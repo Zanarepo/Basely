@@ -143,6 +143,17 @@ export function WbsBoardCard({
           })()}
         </div>
       )}
+
+      {t.priority && (
+        <div className={`mb-3 w-max px-2 py-0.5 rounded-md text-[10px] font-semibold border ${
+          t.priority === 'Critical' ? 'bg-red-500/10 text-red-600 border-red-500/20' :
+          t.priority === 'High' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
+          t.priority === 'Medium' ? 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20' :
+          'bg-slate-500/10 text-slate-600 border-slate-500/20'
+        }`}>
+          {t.priority}
+        </div>
+      )}
       
       <div className="flex items-center justify-between mt-auto">
         <div className="flex items-center gap-1.5">

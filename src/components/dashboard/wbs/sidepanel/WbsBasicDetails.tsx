@@ -1,4 +1,4 @@
-import { User, FileText, CheckSquare, Plus, Check, X, ChevronDown, ChevronRight } from 'lucide-react'
+import { User, FileText, CheckSquare, Plus, Check, X, ChevronDown, ChevronRight, Sparkles, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import type { WbsStatus, ChecklistItem } from '@/lib/wbs/constants'
 import { WbsChecklist } from './WbsChecklist'
@@ -18,6 +18,12 @@ type WbsBasicDetailsProps = {
   setDeliverablesData: React.Dispatch<React.SetStateAction<ChecklistItem[]>>
   acceptanceCriteriaData: ChecklistItem[]
   setAcceptanceCriteriaData: React.Dispatch<React.SetStateAction<ChecklistItem[]>>
+  userStoriesData?: ChecklistItem[]
+  setUserStoriesData?: React.Dispatch<React.SetStateAction<ChecklistItem[]>>
+  edgeCasesData?: ChecklistItem[]
+  setEdgeCasesData?: React.Dispatch<React.SetStateAction<ChecklistItem[]>>
+  priority?: string | null
+  setPriority?: (val: string | null) => void
   hasEditAccess: boolean
   canCheckDeliverables?: boolean
   canCheckCriteria?: boolean
@@ -30,6 +36,9 @@ type WbsBasicDetailsProps = {
   callerUserId?: string
   onAutoSaveDeliverables?: (items: ChecklistItem[]) => void
   onAutoSaveCriteria?: (items: ChecklistItem[]) => void
+  onAutoSaveUserStories?: (items: ChecklistItem[]) => void
+  onAutoSaveEdgeCases?: (items: ChecklistItem[]) => void
+  onAutoSavePriority?: (val: string | null) => void
   terms: TerminologyDict
 }
 
@@ -40,6 +49,9 @@ export function WbsBasicDetails({
   description, setDescription,
   deliverablesData, setDeliverablesData,
   acceptanceCriteriaData, setAcceptanceCriteriaData,
+  userStoriesData = [], setUserStoriesData,
+  edgeCasesData = [], setEdgeCasesData,
+  priority, setPriority,
   hasEditAccess,
   canCheckDeliverables,
   canCheckCriteria,
@@ -48,11 +60,54 @@ export function WbsBasicDetails({
   onAddCustomStatus,
   onAutoSaveDeliverables,
   onAutoSaveCriteria,
+  onAutoSaveUserStories,
+  onAutoSaveEdgeCases,
+  onAutoSavePriority,
   terms
 }: WbsBasicDetailsProps) {
   const [isAddingStatus, setIsAddingStatus] = useState(false)
   const [newStatusName, setNewStatusName] = useState('')
   const [isScopeOpen, setIsScopeOpen] = useState(false)
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false)
+
+  const handleAiGenerateScope = async () => {
+    if (!name.trim()) return
+    setIsGeneratingAi(true)
+    try {
+      const { generateScopeDetailsWithAiAction } = await import('@/lib/wbs/actions')
+      const result = await generateScopeDetailsWithAiAction(name, description)
+
+      if (result.ok && result.data) {
+        const res = result.data
+        if (res.tangible_deliverables?.length) {
+          const newDel: ChecklistItem[] = res.tangible_deliverables.map((text, i) => ({
+            id: `del_ai_${i}_${Date.now()}`,
+            text,
+            completed: false
+          }))
+          setDeliverablesData(newDel)
+          onAutoSaveDeliverables?.(newDel)
+        }
+
+        if (res.acceptance_criteria?.length) {
+          const newCrit: ChecklistItem[] = res.acceptance_criteria.map((text, i) => ({
+            id: `acc_ai_${i}_${Date.now()}`,
+            text,
+            completed: false
+          }))
+          setAcceptanceCriteriaData(newCrit)
+          onAutoSaveCriteria?.(newCrit)
+        }
+      } else {
+        console.error('Failed to generate scope details:', result.error)
+      }
+      setIsScopeOpen(true)
+    } catch (err) {
+      console.error('Failed to Praz-AI generate scope details:', err)
+    } finally {
+      setIsGeneratingAi(false)
+    }
+  }
 
   const handleSaveNewStatus = () => {
     const trimmed = newStatusName.trim()
@@ -173,23 +228,64 @@ export function WbsBasicDetails({
         </div>
       </div>
 
+      <div className="space-y-2 mt-4">
+        <label className="auth-label">Priority</label>
+        <EnterpriseSelect
+          value={priority || 'None'}
+          onChange={(val) => {
+            const newVal = val === 'None' ? null : val
+            setPriority?.(newVal)
+            onAutoSavePriority?.(newVal)
+          }}
+          options={['Critical', 'High', 'Medium', 'Low', 'None']}
+          disabled={!hasEditAccess || saving}
+          size="lg"
+          placeholder="Select priority..."
+        />
+      </div>
+
       {/* Scope & Deliverables Accordion */}
       <div className="border border-app-border rounded-xl overflow-hidden bg-app-surface mt-6">
-        <button
-          type="button"
-          onClick={() => setIsScopeOpen(!isScopeOpen)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-app-surface hover:bg-app-hover transition-colors"
-        >
-          <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
+        <div className="w-full flex items-center justify-between px-4 py-3 bg-app-surface hover:bg-app-hover transition-colors">
+          <button
+            type="button"
+            onClick={() => setIsScopeOpen(!isScopeOpen)}
+            className="flex items-center gap-2 text-sm font-semibold text-app-fg focus:outline-none"
+          >
             <FileText className="w-4 h-4 text-app-muted" />
-            Scope & Deliverables
-          </div>
-          {isScopeOpen ? (
-            <ChevronDown className="w-4 h-4 text-app-muted" />
-          ) : (
-            <ChevronRight className="w-4 h-4 text-app-muted" />
+            <span>Scope & Deliverables</span>
+            {isScopeOpen ? (
+              <ChevronDown className="w-4 h-4 text-app-muted" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-app-muted" />
+            )}
+          </button>
+
+          {hasEditAccess && (
+            <button
+              type="button"
+              disabled={isGeneratingAi || !name.trim()}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleAiGenerateScope()
+              }}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-linear-to-r from-violet-500/10 to-indigo-500/10 text-violet-600 dark:text-violet-400 hover:from-violet-500/20 hover:to-indigo-500/20 border border-violet-500/30 transition-all disabled:opacity-50 cursor-pointer"
+              title="Auto-generate Tangible Deliverables and Acceptance Criteria with Praz-AI"
+            >
+              {isGeneratingAi ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                  <span>Auto-Fill Praz-AI</span>
+                </>
+              )}
+            </button>
           )}
-        </button>
+        </div>
         
         {isScopeOpen && (
           <div className="p-4 border-t border-app-border bg-app-surface-solid space-y-6">
@@ -229,10 +325,36 @@ export function WbsBasicDetails({
               items={acceptanceCriteriaData}
               setItems={setAcceptanceCriteriaData}
               hasEditAccess={hasEditAccess}
-              canCheckItems={canCheckCriteria}
+              canCheckItems={isCheckboxEnabled || canCheckCriteria}
               saving={saving}
               placeholder="E.g., Passes User Testing"
               onAutoSave={onAutoSaveCriteria}
+            />
+
+            {/* User Stories (Agile Focus) */}
+            <WbsChecklist
+              title="User Stories"
+              icon={<User className="h-3.5 w-3.5 text-app-subtle" />}
+              items={userStoriesData}
+              setItems={setUserStoriesData || setDeliverablesData}
+              hasEditAccess={hasEditAccess}
+              canCheckItems={isCheckboxEnabled || canCheckCriteria}
+              saving={saving}
+              placeholder="As a [user], I want..."
+              onAutoSave={onAutoSaveUserStories}
+            />
+
+            {/* Edge Cases (Agile Focus) */}
+            <WbsChecklist
+              title="Edge Cases"
+              icon={<CheckSquare className="h-3.5 w-3.5 text-app-subtle" />}
+              items={edgeCasesData}
+              setItems={setEdgeCasesData || setDeliverablesData}
+              hasEditAccess={hasEditAccess}
+              canCheckItems={isCheckboxEnabled || canCheckCriteria}
+              saving={saving}
+              placeholder="E.g., If API returns 500..."
+              onAutoSave={onAutoSaveEdgeCases}
             />
           </div>
         )}

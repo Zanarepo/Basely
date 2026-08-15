@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   ArrowRight,
@@ -135,19 +136,24 @@ export function DashboardSidebar({
           }`}
         >
           <Link href="/" className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity">
-            <div className="shrink-0 p-2 rounded-xl bg-linear-to-tr from-violet-600 to-violet-600 shadow-lg shadow-violet-600/20">
-              <LayoutDashboard className="h-5 w-5 text-white" />
-            </div>
-            {!effectivelyCollapsed && (
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-app-fg tracking-tight truncate">
-                  Baseline
-                </p>
-                <p className="text-[10px] text-app-subtle uppercase tracking-widest">
-                  Project Controls
-                </p>
-              </div>
-            )}
+            {/* Light Mode Logo */}
+            <Image
+              src="/prazaner_logo_light.png"
+              alt="Prazaner"
+              width={effectivelyCollapsed ? 32 : 130}
+              height={effectivelyCollapsed ? 32 : 36}
+              className={`dark:hidden block ${effectivelyCollapsed ? 'h-7 w-7 object-contain' : 'h-8 w-auto object-contain'} transition-all`}
+              priority
+            />
+            {/* Dark Mode Logo */}
+            <Image
+              src="/prazaner_logo_transparent.png"
+              alt="Prazaner"
+              width={effectivelyCollapsed ? 32 : 130}
+              height={effectivelyCollapsed ? 32 : 36}
+              className={`hidden dark:block ${effectivelyCollapsed ? 'h-7 w-7 object-contain' : 'h-8 w-auto object-contain'} transition-all`}
+              priority
+            />
           </Link>
 
           {/* Close button on mobile */}
@@ -242,8 +248,26 @@ export function DashboardSidebar({
           }`}
         >
           {/* Accordion Content */}
-          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isFooterOpen ? 'max-h-48 opacity-100 mb-2' : 'max-h-0 opacity-0 mb-0'}`}>
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isFooterOpen ? 'max-h-96 opacity-100 mb-2' : 'max-h-0 opacity-0 mb-0'}`}>
             <div className="space-y-1 p-1">
+              {/* Sign Out Button (positioned at top of footer menu) */}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={signingOut}
+                title="Sign out"
+                className={`w-full flex items-center gap-3 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 font-semibold transition-all cursor-pointer disabled:opacity-50 ${
+                  effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                }`}
+              >
+                {signingOut ? (
+                  <Loader2 className="h-5 w-5 animate-spin shrink-0 text-rose-500" />
+                ) : (
+                  <LogOut className="h-5 w-5 shrink-0 text-rose-500" />
+                )}
+                {!effectivelyCollapsed && <span className="text-sm font-semibold">Sign out</span>}
+              </button>
+
               {(activeWorkspace.role === 'Admin' || activeWorkspace.role === 'Owner') && tier === 'enterprise' && (
                 <>
                   <Link
@@ -268,32 +292,16 @@ export function DashboardSidebar({
                   </Link>
                 </>
               )}
-              
-              <div className={effectivelyCollapsed ? 'flex justify-center p-1' : 'px-1 py-1'}>
+
+              <div className={effectivelyCollapsed ? 'flex justify-center p-1' : 'px-1 py-0.5'}>
                 <ThemeToggle collapsed={effectivelyCollapsed} />
               </div>
-
-              <button
-                type="button"
-                onClick={handleSignOut}
-                disabled={signingOut}
-                title="Sign out"
-                className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-rose-500 dark:hover:text-rose-300 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer disabled:opacity-50 ${
-                  effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
-                }`}
-              >
-                {signingOut ? (
-                  <Loader2 className="h-5 w-5 animate-spin shrink-0" />
-                ) : (
-                  <LogOut className="h-5 w-5 shrink-0" />
-                )}
-                {!effectivelyCollapsed && <span className="text-sm font-medium">Sign out</span>}
-              </button>
             </div>
           </div>
 
-          {/* Accordion Trigger */}
+          {/* Accordion Trigger (User Profile Card) */}
           <button
+            type="button"
             onClick={() => setIsFooterOpen(!isFooterOpen)}
             title={effectivelyCollapsed ? userEmail : undefined}
             className={`w-full flex items-center justify-between rounded-xl hover:bg-app-hover transition-colors text-app-fg cursor-pointer border border-transparent hover:border-app-border/50 ${
@@ -305,7 +313,7 @@ export function DashboardSidebar({
                   <span className="font-semibold text-sm uppercase">{userEmail ? userEmail[0] : 'U'}</span>
                </div>
                {!effectivelyCollapsed && (
-                 <span className="text-sm font-medium truncate">{userEmail}</span>
+                 <span className="text-sm font-medium truncate text-app-fg">{userEmail}</span>
                )}
             </div>
             {!effectivelyCollapsed && (

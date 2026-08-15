@@ -7,6 +7,7 @@ import { AccountHealthPanel } from '@/components/backoffice/AccountHealthPanel'
 import { getChurnRiskScores } from '@/lib/backoffice/analytics'
 import { DataDeletionButton } from '@/components/backoffice/compliance/DataDeletionButton'
 import { SandboxToggleClient } from '@/components/backoffice/SandboxToggleClient'
+import { AiFeatureToggleClient } from '@/components/backoffice/AiFeatureToggleClient'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -315,10 +316,17 @@ export default async function TenantDetailView({ params }: { params: Promise<{ i
           />
 
           {staff?.role === 'superadmin' && (
-            <SandboxToggleClient 
-              orgId={orgId} 
-              initialStatus={org.is_sandbox || false} 
-            />
+            <>
+              <SandboxToggleClient 
+                orgId={orgId} 
+                initialStatus={org.is_sandbox || false} 
+              />
+              <AiFeatureToggleClient 
+                organizationId={orgId}
+                initialAiEnabled={org.ai_features_enabled || false}
+                tier={sub?.tier_id || 'free'}
+              />
+            </>
           )}
 
           {churnScore && (

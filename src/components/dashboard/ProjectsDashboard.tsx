@@ -300,25 +300,25 @@ export function ProjectsDashboard({
       </div>
 
       {/* Subscription Tier Engine & Live Testing Overrides (Sprint 29) */}
-      <div className="space-y-4">
-        <ManualPlanSwitcher organizationId={organizationId} />
-
-        {viewMode === 'list' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UsageProgressMeter
-              label="Active Projects Quota"
-              current={projects.filter((p) => !p.isArchived).length}
-              max={tier === 'free' ? 3 : -1}
-              onUpgrade={isAdmin ? () => setUpgradeModalOpen(true) : undefined}
-            />
-            <UsageProgressMeter
-              label="Assigned Edit-level Seats"
-              current={workspaceMembers.filter((m) => m.role === 'PM' || m.role === 'Admin' || m.isOwner).length}
-              max={tier === 'free' ? 3 : -1}
-              onUpgrade={isAdmin ? () => setUpgradeModalOpen(true) : undefined}
-            />
-          </div>
-        )}
+      <div>
+        <ManualPlanSwitcher organizationId={organizationId}>
+          {viewMode === 'list' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <UsageProgressMeter
+                label="Active Projects Quota"
+                current={projects.filter((p) => !p.isArchived).length}
+                max={tier === 'free' ? 3 : -1}
+                onUpgrade={isAdmin ? () => setUpgradeModalOpen(true) : undefined}
+              />
+              <UsageProgressMeter
+                label="Assigned Edit-level Seats"
+                current={workspaceMembers.filter((m) => m.role === 'PM' || m.role === 'Admin' || m.isOwner).length}
+                max={tier === 'free' ? 3 : -1}
+                onUpgrade={isAdmin ? () => setUpgradeModalOpen(true) : undefined}
+              />
+            </div>
+          )}
+        </ManualPlanSwitcher>
       </div>
 
       {/* View Mode Tabs */}

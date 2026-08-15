@@ -1,5 +1,6 @@
+import { useRef } from 'react'
 import { Link2, Lock } from 'lucide-react'
-import { getX } from './canvasUtils'
+import { getX, isValidDateStr } from './canvasUtils'
 
 type GanttTimelineBarsProps = {
   rowData: any[]
@@ -17,6 +18,8 @@ type GanttTimelineBarsProps = {
   onItemLeave: () => void
   onStartDrawLink: (e: React.PointerEvent, row: any, rowHeight: number, headerHeight: number, edge: 'start' | 'end') => void
   onAnchorPointerUp: (e: React.PointerEvent, row: any) => void
+  onSelectElement?: (id: string) => void
+  wasJustDragging?: () => boolean
 }
 
 export function GanttTimelineBars({
@@ -35,7 +38,11 @@ export function GanttTimelineBars({
   onItemLeave,
   onStartDrawLink,
   onAnchorPointerUp,
+  onSelectElement,
+  wasJustDragging,
 }: GanttTimelineBarsProps) {
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
+
   return (
     <div
       className="absolute left-0 right-0 bottom-0 z-20"
@@ -43,9 +50,11 @@ export function GanttTimelineBars({
     >
       {rowData.map((row) => {
         if (!row.es || !row.ef) return null
+        if (!isValidDateStr(row.es) || !isValidDateStr(row.ef)) return null
 
         const startX = getX(row.es, timelineStart, dayWidth)
-        const width = getX(row.ef, timelineStart, dayWidth) - startX + dayWidth
+        const efX = getX(row.ef, timelineStart, dayWidth)
+        const width = Math.max(dayWidth, efX - startX + dayWidth)
 
         // Summary vs Milestone vs Task
         const isSummary = !row.element.isWorkPackage
@@ -91,13 +100,34 @@ export function GanttTimelineBars({
             {/* Task Bar / Milestone / Summary */}
             <div
               id={row.activity ? `bar-${row.activity.id}` : undefined}
-              className={`absolute group flex items-center transition-shadow ${
-                hasEditAccess && !isSummary && !isLockedByOther ? 'cursor-grab active:cursor-grabbing' : ''
-              } ${isLockedByOther ? 'opacity-50 pointer-events-none' : ''}`}
+              className={`absolute group flex items-center transition-shadow cursor-pointer ${hasEditAccess && !isSummary && !isLockedByOther ? 'hover:ring-2 hover:ring-violet-500/50' : ''
+                } ${isLockedByOther ? 'opacity-50 pointer-events-none' : ''}`}
               onPointerEnter={(e) => onItemHover(e, row)}
               onPointerLeave={() => onItemLeave()}
-              onPointerDown={(e) => !isSummary && onPointerDown(e, row, 'move')}
+              onPointerDown={(e) => {
+                pointerStartRef.current = { x: e.clientX, y: e.clientY }
+                if (!isSummary) onPointerDown(e, row, 'move')
+              }}
               onPointerUp={(e) => onAnchorPointerUp(e, row)}
+              onDoubleClick={(e) => {
+                e.stopPropagation()
+                onSelectElement?.(row.element.id)
+              }}
+              onClick={(e) => {
+                if (wasJustDragging?.()) {
+                  // Suppress onClick if user was moving or resizing timeline bar
+                  return
+                }
+                if (pointerStartRef.current) {
+                  const dist = Math.hypot(e.clientX - pointerStartRef.current.x, e.clientY - pointerStartRef.current.y)
+                  pointerStartRef.current = null
+                  if (dist > 5) {
+                    // User was dragging/resizing timeline bar — ignore click so side panel doesn't auto-open
+                    return
+                  }
+                }
+                onSelectElement?.(row.element.id)
+              }}
               style={{
                 touchAction: 'none', // Prevent mobile scrolling when dragging
                 left: `${startX}px`,
@@ -112,7 +142,7 @@ export function GanttTimelineBars({
                   <div className="absolute top-1 left-0 right-0 h-4 bg-slate-800 dark:bg-slate-300 rounded-sm overflow-hidden border border-slate-700/50">
                     {/* Progress overlay */}
                     {row.percentComplete > 0 && (
-                      <div 
+                      <div
                         className="h-full bg-emerald-500 transition-all duration-500"
                         style={{ width: `${row.percentComplete}%` }}
                       />
@@ -120,7 +150,7 @@ export function GanttTimelineBars({
                   </div>
                   <div className="absolute -bottom-1 -left-1 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-slate-800 dark:border-t-slate-300" />
                   <div className="absolute -bottom-1 -right-1 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-slate-800 dark:border-t-slate-300" />
-                  
+
                   {/* Summary Progress Text */}
                   <span className="absolute -top-3.5 right-0 text-[9px] font-bold text-app-subtle">
                     {row.percentComplete}%
@@ -130,11 +160,10 @@ export function GanttTimelineBars({
                 // --- Milestone Diamond ---
                 <div className="w-full h-full flex items-center justify-center relative z-10">
                   <div
-                    className={`w-5 h-5 rotate-45 transform origin-center border-2 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-violet-400 group-hover:brightness-110 ${
-                      isCritical
+                    className={`w-5 h-5 rotate-45 transform origin-center border-2 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-violet-400 group-hover:brightness-110 ${isCritical
                         ? 'bg-red-500 border-red-700'
                         : 'bg-emerald-400 border-emerald-600'
-                    }`}
+                      }`}
                   />
                   {(row.activity?.constraintType !== 'As Soon As Possible' || isLockedByOther) && (
                     <Lock className={`w-3 h-3 absolute -right-4 ${isLockedByOther ? 'text-amber-500' : 'text-rose-500'}`} />
@@ -146,15 +175,14 @@ export function GanttTimelineBars({
               ) : (
                 // --- Standard Task Bar ---
                 <div
-                  className={`w-full h-full rounded-md shadow-sm border overflow-hidden relative z-10 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-violet-400 group-hover:brightness-110 ${
-                    row.element.status === 'Complete'
+                  className={`w-full h-full rounded-md shadow-sm border overflow-hidden relative z-10 transition-all group-hover:ring-2 group-hover:ring-offset-1 group-hover:ring-violet-400 group-hover:brightness-110 ${row.element.status === 'Complete'
                       ? 'bg-emerald-500 border-emerald-600'
                       : isCritical
-                      ? 'bg-red-500 border-red-600'
-                      : row.element.status === 'In Progress'
-                      ? 'bg-blue-500 border-blue-600'
-                      : 'bg-violet-500 border-violet-600'
-                  }`}
+                        ? 'bg-red-500 border-red-600'
+                        : row.element.status === 'In Progress'
+                          ? 'bg-blue-500 border-blue-600'
+                          : 'bg-violet-500 border-violet-600'
+                    }`}
                 >
                   <div className="w-full h-full bg-gradient-to-b from-white/20 to-transparent" />
                   {/* Progress fill visual */}
@@ -165,7 +193,7 @@ export function GanttTimelineBars({
                     />
                   )}
                   {(row.activity?.constraintType !== 'As Soon As Possible' || isLockedByOther) && (
-                    <Lock className={`w-3 h-3 absolute top-1.5 left-1 ${isLockedByOther ? 'text-amber-400' : 'text-white/70'}`} />
+                    <Lock className={`w-3 h-3 absolute top-1.5 left-2 z-10 ${isLockedByOther ? 'text-amber-400' : 'text-white/70'}`} />
                   )}
                   {/* CPM Badge for critical path tasks */}
                   {isCritical && (
@@ -176,11 +204,11 @@ export function GanttTimelineBars({
 
               {/* Float Indicator */}
               {!isSummary && !isMilestone && row.activity?.totalFloat > 0 && (
-                <div 
+                <div
                   className="absolute top-1/2 -translate-y-1/2 h-1.5 bg-violet-200 dark:bg-violet-900/50 rounded-r-sm z-0 pointer-events-none border border-l-0 border-violet-300 dark:border-violet-800"
-                  style={{ 
-                    left: `100%`, 
-                    width: `${row.activity.totalFloat * dayWidth}px` 
+                  style={{
+                    left: `100%`,
+                    width: `${row.activity.totalFloat * dayWidth}px`
                   }}
                   title={`Float: ${row.activity.totalFloat} days`}
                 >
@@ -204,14 +232,22 @@ export function GanttTimelineBars({
               {!isSummary && !isMilestone && hasEditAccess && (
                 <>
                   <div
-                    className="absolute left-0 top-0 bottom-0 w-3 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-gradient-to-r from-black/20 to-transparent z-20"
-                    onPointerDown={(e) => onPointerDown(e, row, 'resize-left')}
+                    className="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/30 hover:bg-violet-400 z-20 transition-colors"
+                    onPointerDown={(e) => {
+                      e.stopPropagation()
+                      onPointerDown(e, row, 'resize-left')
+                    }}
                     style={{ touchAction: 'none' }}
+                    title="Drag edge to resize duration from start"
                   />
                   <div
-                    className="absolute right-0 top-0 bottom-0 w-3 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-gradient-to-l from-black/20 to-transparent z-20"
-                    onPointerDown={(e) => onPointerDown(e, row, 'resize-right')}
+                    className="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/30 hover:bg-violet-400 z-20 transition-colors"
+                    onPointerDown={(e) => {
+                      e.stopPropagation()
+                      onPointerDown(e, row, 'resize-right')
+                    }}
                     style={{ touchAction: 'none' }}
+                    title="Drag edge to resize duration from end"
                   />
                 </>
               )}
@@ -240,7 +276,7 @@ export function GanttTimelineBars({
             </div>
 
             {/* Label outside the bar */}
-            <span 
+            <span
               className="absolute text-[11px] font-semibold text-app-fg mt-1 pointer-events-none opacity-0 group-hover/row:opacity-100 transition-opacity duration-500"
               style={{ left: `${startX + width + 12}px`, top: '16px' }}
             >

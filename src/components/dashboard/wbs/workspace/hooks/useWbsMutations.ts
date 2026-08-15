@@ -94,17 +94,27 @@ export function useWbsMutations({
       })
     }
 
+    // Compute role-adaptive default name based on active persona and hierarchy level
+    const savedPersona = typeof window !== 'undefined' ? localStorage.getItem('zanarepo_user_persona') : null
+    const isProjectMode = savedPersona === 'project_manager'
+    const defaultName = isProjectMode
+      ? (parentId === null ? 'New Phase' : 'New Work Package')
+      : (parentId === null ? 'New Epic' : 'New Story')
+
     const tempId = `temp-${Math.random()}`
     const newTempElement: WbsElement = {
       id: tempId,
       projectId,
       parentId,
       code: '',
-      name: 'New Element',
+      name: defaultName,
       description: null,
       ownerId: null,
       deliverables: null,
       acceptanceCriteria: null,
+      userStories: null,
+      edgeCases: null,
+      priority: null,
       status: (initialData?.status as WbsStatus) || 'Not Started',
       isWorkPackage: initialData?.isWorkPackage ?? false,
       sortOrder: nextSortOrder,
@@ -123,7 +133,7 @@ export function useWbsMutations({
     }
 
     startTransition(async () => {
-      const result = await createWbsElement(projectId, parentId, 'New Element', nextSortOrder, initialData)
+      const result = await createWbsElement(projectId, parentId, defaultName, nextSortOrder, initialData)
       if (result.ok) {
         setElements((prevList) =>
           prevList.map((item) => (item.id === tempId ? { ...item, id: result.id } : item))

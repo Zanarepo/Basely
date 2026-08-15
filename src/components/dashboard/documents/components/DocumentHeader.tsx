@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react'
-import { FileText, Save, RefreshCw, Download, History, FileSpreadsheet, File, LayoutTemplate, MoreHorizontal } from 'lucide-react'
+import { FileText, Save, RefreshCw, Download, History, FileSpreadsheet, File, LayoutTemplate, MoreHorizontal, Check, Loader2, Pencil } from 'lucide-react'
 import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
 
 interface DocumentHeaderProps {
@@ -23,6 +23,8 @@ interface DocumentHeaderProps {
   handleExportXlsx: () => void
   onShowTemplateSelector?: () => void
   isReadOnlyTemplate?: boolean
+  customDocumentTitle?: string
+  onDocumentTitleChange?: (newTitle: string) => void
 }
 
 export default function DocumentHeader({
@@ -44,10 +46,33 @@ export default function DocumentHeader({
   handleExportXlsx,
   onShowTemplateSelector,
   isReadOnlyTemplate = false,
+  customDocumentTitle,
+  onDocumentTitleChange
 }: DocumentHeaderProps) {
   const isTabularDoc = template.document_type === 'wbs_dictionary' || template.document_type === 'raci_matrix'
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  const rawType = template.document_type.replaceAll('_', ' ')
+  const defaultTitle = rawType.toLowerCase().endsWith('document') ? rawType : `${rawType} Document`
+  const currentDocTitle = customDocumentTitle || defaultTitle
+
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [editedTitle, setEditedTitle] = useState(currentDocTitle)
+
+  useEffect(() => {
+    setEditedTitle(currentDocTitle)
+  }, [currentDocTitle])
+
+  const handleTitleSubmit = () => {
+    setIsEditingTitle(false)
+    const trimmed = editedTitle.trim()
+    if (trimmed && trimmed !== currentDocTitle && onDocumentTitleChange) {
+      onDocumentTitleChange(trimmed)
+    } else {
+      setEditedTitle(currentDocTitle)
+    }
+  }
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -69,7 +94,39 @@ export default function DocumentHeader({
           <FileText className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-app-fg capitalize">{template.document_type.replace('_', ' ')} Document</h2>
+          {isEditingTitle && hasEditAccess && !isSnapshot ? (
+            <input
+              type="text"
+              value={editedTitle}
+              onChange={e => setEditedTitle(e.target.value)}
+              onBlur={handleTitleSubmit}
+              onKeyDown={e => {
+                if (e.key === 'Enter') handleTitleSubmit()
+                if (e.key === 'Escape') {
+                  setEditedTitle(currentDocTitle)
+                  setIsEditingTitle(false)
+                }
+              }}
+              className="text-lg font-bold text-app-fg bg-app-bg border border-violet-500 rounded-lg px-2.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-sm"
+              autoFocus
+            />
+          ) : (
+            <h2
+              onClick={() => {
+                if (hasEditAccess && !isSnapshot) setIsEditingTitle(true)
+              }}
+              onDoubleClick={() => {
+                if (hasEditAccess && !isSnapshot) setIsEditingTitle(true)
+              }}
+              className={`text-lg font-bold text-app-fg capitalize flex items-center gap-2 group/headerTitle ${hasEditAccess && !isSnapshot ? 'cursor-pointer hover:text-violet-600 dark:hover:text-violet-400 transition-colors' : ''}`}
+              title={hasEditAccess && !isSnapshot ? "Double-click or click to edit document title" : undefined}
+            >
+              {currentDocTitle}
+              {hasEditAccess && !isSnapshot && (
+                <Pencil className="w-3.5 h-3.5 opacity-0 group-hover/headerTitle:opacity-100 text-app-muted transition-opacity" />
+              )}
+            </h2>
+          )}
           <p className="text-xs text-app-muted">
             {isSnapshot
               ? `Snapshot for period ending ${new Date(generatedDoc?.period_end || '').toLocaleDateString()}`
@@ -81,6 +138,21 @@ export default function DocumentHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Real-Time Auto-Save Indicator */}
+        {hasEditAccess && !isSnapshot && !isReadOnlyTemplate && (
+          <div className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 text-xs font-semibold">
+            {isPending || isDirty ? (
+              <span className="text-violet-500 flex items-center gap-1.5">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
+              </span>
+            ) : (
+              <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-500" /> Auto-saved
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Change Template Button */}
         {onShowTemplateSelector && (
           <button
@@ -110,26 +182,6 @@ export default function DocumentHeader({
           >
             <Save className="w-3.5 h-3.5 mr-1.5" />
             Generate Snapshot
-          </button>
-        )}
-
-        {hasEditAccess && !isSnapshot && !isReadOnlyTemplate && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              if (!isPending && isDirty) handleSave()
-            }}
-            style={{ cursor: 'pointer' }}
-            disabled={isPending || !isDirty}
-            className="btn-secondary text-xs px-3 py-1.5 inline-flex items-center"
-          >
-            {isPending ? (
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin text-violet-500" />
-            ) : (
-              <Save className="w-3.5 h-3.5 mr-1.5" />
-            )}
-            {isPending ? 'Saving...' : 'Save Draft'}
           </button>
         )}
 

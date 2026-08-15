@@ -128,6 +128,22 @@ export async function upsertPrdMetadata(payload: Partial<ProductRequirementsDoc>
 
   const insertPayload = { ...payload, created_by: user?.id || null }
 
+  // If no ID is provided, check if a PRD metadata row already exists for this project_id
+  let existingId = payload.id
+  if (!existingId && payload.project_id && payload.organization_id) {
+    const { data: existing } = await supabase
+      .from('product_requirements_docs')
+      .select('id')
+      .eq('organization_id', payload.organization_id)
+      .eq('project_id', payload.project_id)
+      .maybeSingle()
+
+    if (existing?.id) {
+      existingId = existing.id
+      insertPayload.id = existing.id
+    }
+  }
+
   const { data, error } = await supabase
     .from('product_requirements_docs')
     .upsert(insertPayload, { onConflict: 'id' })
@@ -135,12 +151,8 @@ export async function upsertPrdMetadata(payload: Partial<ProductRequirementsDoc>
     .single()
 
   if (error) {
-    console.error('Error upserting PRD metadata:', error)
+    console.error('[PRD Action Error] Error upserting PRD metadata:', error)
     return { ok: false, error: error.message }
-  }
-
-  if (data?.project_id) {
-    revalidatePath(`/dashboard/projects/${data.project_id}`)
   }
 
   return { ok: true, data: data as ProductRequirementsDoc }

@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { Activity } from 'lucide-react'
 
 export const metadata = {
-  title: 'System Status | Baseline',
-  description: 'Baseline system status and uptime monitoring',
+  title: 'System Status | Prazaner',
+  description: 'Prazaner system status and uptime monitoring',
 }
 
 export default function StatusPage() {

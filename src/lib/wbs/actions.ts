@@ -1,12 +1,21 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { wbsElementSchema } from '@/lib/validations/wbs'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
-import type { WbsElement, WbsStatus, RaciRoleType, DeliverableItem, AcceptanceCriteriaItem } from './constants'
+import type { 
+  WbsElement, 
+  WbsStatus, 
+  RaciRoleType, 
+  DeliverableItem, 
+  AcceptanceCriteriaItem,
+  ChecklistItem 
+} from './constants'
 import { recalculateSchedule } from '@/lib/schedule/actions/recalculate'
+
 
 export type ActionResponse = { ok: true } | { ok: false; error: string }
 export type CreateWbsResult = { ok: true; id: string } | { ok: false; error: string }
@@ -60,6 +69,11 @@ export async function getWbsElements(projectId: string): Promise<
       createdAt: d.created_at,
       updatedAt: d.updated_at,
       iterationId: d.iteration_id || null,
+      priority: d.priority || null,
+      userStories: d.user_stories || null,
+      userStoriesData: typeof d.user_stories === 'string' ? JSON.parse(d.user_stories) : (d.user_stories || []),
+      edgeCases: d.edge_cases || null,
+      edgeCasesData: typeof d.edge_cases === 'string' ? JSON.parse(d.edge_cases) : (d.edge_cases || []),
       duration: d.activities ? Number(d.activities.duration) : undefined,
       cost,
       estimationMethod,
@@ -168,6 +182,9 @@ export async function updateWbsElement(
     isWorkPackage?: boolean
     cost?: number
     estimationMethod?: 'analogous' | 'parametric' | 'bottom_up'
+    priority?: string | null
+    userStoriesData?: ChecklistItem[]
+    edgeCasesData?: ChecklistItem[]
   }
 ): Promise<ActionResponse> {
   const supabase = await createClient()
@@ -192,6 +209,9 @@ export async function updateWbsElement(
   }
   if (payload.status !== undefined) updateData.status = payload.status
   if (payload.isWorkPackage !== undefined) updateData.is_work_package = payload.isWorkPackage
+  if (payload.priority !== undefined) updateData.priority = payload.priority
+  if (payload.userStoriesData !== undefined) updateData.user_stories = JSON.stringify(payload.userStoriesData)
+  if (payload.edgeCasesData !== undefined) updateData.edge_cases = JSON.stringify(payload.edgeCasesData)
 
   const { error } = await supabase
     .from('wbs_elements')
@@ -251,38 +271,106 @@ export async function updateWbsElement(
     }
   }
 
-  // Recalculate schedule if name or work package status changes
-  if (payload.isWorkPackage !== undefined || payload.name !== undefined) {
+  // Recalculate schedule if work package status changed
+  if (payload.isWorkPackage !== undefined) {
     await recalculateSchedule(projectId)
   }
 
-  await logProjectActivity(projectId, 'wbs_element', id, 'updated', { name: payload.name || 'WBS Element Updated' })
+  logProjectActivity(projectId, 'wbs_element', id, 'updated', { name: payload.name || 'WBS Element Updated' }).catch(() => {})
 
-  revalidatePath(`/dashboard/projects/${projectId}`)
+  try {
+    revalidatePath(`/dashboard/projects/${projectId}`)
+  } catch (err) {}
+
   return { ok: true }
 }
 
-export async function deleteWbsElement(id: string, projectId: string): Promise<ActionResponse> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+async function performCascadingWbsDelete(adminClient: any, targetIds: string[], projectId: string) {
+  if (!targetIds || targetIds.length === 0) return
 
-  if (!user) return { ok: false, error: 'You must be signed in' }
+  // 1. Fetch all WBS elements for the project to recursively gather all child IDs
+  const { data: allWbs } = await adminClient
+    .from('wbs_elements')
+    .select('id, parent_id')
+    .eq('project_id', projectId)
 
-  const { error } = await supabase
+  const allToDelete = new Set<string>(targetIds)
+  let addedNew = true
+  while (addedNew) {
+    addedNew = false
+    if (allWbs) {
+      for (const item of allWbs) {
+        if (item.parent_id && allToDelete.has(item.parent_id) && !allToDelete.has(item.id)) {
+          allToDelete.add(item.id)
+          addedNew = true
+        }
+      }
+    }
+  }
+
+  const idsArray = Array.from(allToDelete)
+
+  // 2. Unlink product backlog items (SET wbs_element_id = NULL)
+  await adminClient
+    .from('product_backlog_items')
+    .update({ wbs_element_id: null })
+    .in('wbs_element_id', idsArray)
+
+  // 3. Find all activity IDs for these WBS elements
+  const { data: acts } = await adminClient
+    .from('activities')
+    .select('id')
+    .in('wbs_element_id', idsArray)
+
+  if (acts && acts.length > 0) {
+    const actIds = acts.map((a: any) => a.id)
+    // Delete dependencies referencing these activities (as predecessor or successor)
+    await adminClient.from('dependencies').delete().in('predecessor_id', actIds)
+    await adminClient.from('dependencies').delete().in('successor_id', actIds)
+    // Delete activities
+    await adminClient.from('activities').delete().in('id', actIds)
+  }
+
+  // 4. Delete associated cost accounts
+  await adminClient.from('cost_accounts').delete().in('wbs_element_id', idsArray)
+
+  // 5. Delete RACI assignments
+  await adminClient.from('raci_assignments').delete().in('wbs_element_id', idsArray)
+
+  // 6. Delete WBS elements
+  const { error: delErr } = await adminClient
     .from('wbs_elements')
     .delete()
-    .eq('id', id)
+    .in('id', idsArray)
 
-  if (error) return { ok: false, error: error.message }
+  if (delErr) {
+    console.error('Cascading WBS delete error:', delErr)
+    throw new Error(delErr.message)
+  }
+}
 
-  // Recalculate schedule to update timelines after deletion
-  await recalculateSchedule(projectId)
+export async function deleteWbsElement(id: string, projectId: string): Promise<ActionResponse> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-  await logProjectActivity(projectId, 'wbs_element', id, 'deleted', { id })
+    if (!user) return { ok: false, error: 'You must be signed in' }
 
-  revalidatePath(`/dashboard/projects/${projectId}`)
-  revalidatePath('/dashboard')
-  return { ok: true }
+    const adminClient = createAdminClient()
+    await performCascadingWbsDelete(adminClient, [id], projectId)
+
+    // Recalculate schedule to update timelines after deletion
+    await recalculateSchedule(projectId)
+
+    await logProjectActivity(projectId, 'wbs_element', id, 'deleted', { id })
+
+    revalidatePath(`/dashboard/projects/${projectId}`)
+    revalidatePath('/dashboard')
+    return { ok: true }
+  } catch (err: any) {
+    console.error('deleteWbsElement failed:', err)
+    return { ok: false, error: err?.message || 'Could not delete WBS element' }
+  }
 }
 
 export async function moveWbsElement(
@@ -364,24 +452,25 @@ export async function bulkDeleteWbsElements(
   ids: string[],
   projectId: string
 ): Promise<ActionResponse> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return { ok: false, error: 'You must be signed in' }
-  if (!ids || ids.length === 0) return { ok: true }
+    if (!user) return { ok: false, error: 'You must be signed in' }
+    if (!ids || ids.length === 0) return { ok: true }
 
-  const { error } = await supabase
-    .from('wbs_elements')
-    .delete()
-    .in('id', ids)
+    const adminClient = createAdminClient()
+    await performCascadingWbsDelete(adminClient, ids, projectId)
 
-  if (error) return { ok: false, error: error.message }
+    await recalculateSchedule(projectId)
 
-  await recalculateSchedule(projectId)
-
-  revalidatePath(`/dashboard/projects/${projectId}`)
-  revalidatePath('/dashboard')
-  return { ok: true }
+    revalidatePath(`/dashboard/projects/${projectId}`)
+    revalidatePath('/dashboard')
+    return { ok: true }
+  } catch (err: any) {
+    console.error('bulkDeleteWbsElements failed:', err)
+    return { ok: false, error: err?.message || 'Could not delete WBS elements' }
+  }
 }
 
 import { dispatchNotification } from '@/lib/notifications/actions'
@@ -566,3 +655,91 @@ export async function getProjectRaciStakeholders(projectId: string): Promise<any
 
   return stakeholdersList
 }
+
+export async function autoGenerateWbsDeliverablesAndAcceptance(wbsElementId: string): Promise<{ ok: boolean; data?: { deliverables: any[]; criteria: any[] }; error?: string }> {
+  try {
+    const supabase = await createClient()
+    const { data: element, error } = await supabase
+      .from('wbs_elements')
+      .select('id, name, description, project_id')
+      .eq('id', wbsElementId)
+      .single()
+
+    if (error || !element) {
+      return { ok: false, error: error?.message || 'WBS Element not found' }
+    }
+
+    const { generateStructuredJson } = await import('@/lib/ai/ai-provider-router')
+
+    const result = await generateStructuredJson<{
+      tangible_deliverables: string[]
+      acceptance_criteria: string[]
+    }>({
+      systemPrompt: `You are an expert Technical Project Manager & Quality Lead. Auto-generate realistic, concrete Tangible Deliverables and Acceptance Criteria for a given WBS project task.
+Output strictly a JSON object matching this schema:
+{
+  "tangible_deliverables": ["2 to 4 concrete deliverables/artifacts"],
+  "acceptance_criteria": ["2 to 4 testable pass/fail conditions"]
+}`,
+      userPrompt: `Task Name: ${element.name}\nTask Description: ${element.description || 'No description provided.'}`
+    })
+
+    const deliverablesItems = (result.tangible_deliverables || []).map((text, i) => ({
+      id: `del_${i}_${Date.now()}`,
+      text,
+      completed: false
+    }))
+
+    const acceptanceItems = (result.acceptance_criteria || []).map((text, i) => ({
+      id: `acc_${i}_${Date.now()}`,
+      text,
+      completed: false
+    }))
+
+    const { error: updateErr } = await supabase
+      .from('wbs_elements')
+      .update({
+        deliverables: result.tangible_deliverables?.join('\n') || null,
+        deliverables_data: deliverablesItems,
+        acceptance_criteria: result.acceptance_criteria?.join('\n') || null,
+        acceptance_criteria_data: acceptanceItems
+      })
+      .eq('id', wbsElementId)
+
+    if (updateErr) return { ok: false, error: updateErr.message }
+
+    revalidatePath(`/dashboard/projects/${element.project_id}`)
+    return { ok: true, data: { deliverables: deliverablesItems, criteria: acceptanceItems } }
+  } catch (err: any) {
+    console.error('autoGenerateWbsDeliverablesAndAcceptance failed:', err)
+    return { ok: false, error: err?.message || 'Praz-AI generation failed' }
+  }
+}
+
+export async function generateScopeDetailsWithAiAction(name: string, description?: string): Promise<{
+  ok: boolean
+  data?: { tangible_deliverables: string[]; acceptance_criteria: string[] }
+  error?: string
+}> {
+  try {
+    const { generateStructuredJson } = await import('@/lib/ai/ai-provider-router')
+    const result = await generateStructuredJson<{
+      tangible_deliverables: string[]
+      acceptance_criteria: string[]
+    }>({
+      systemPrompt: `You are an expert Technical Project Manager & Quality Lead. Auto-generate realistic, concrete Tangible Deliverables and Acceptance Criteria for a given WBS project task.
+Output strictly a JSON object matching this schema:
+{
+  "tangible_deliverables": ["2 to 4 concrete deliverables/artifacts"],
+  "acceptance_criteria": ["2 to 4 testable pass/fail conditions"]
+}`,
+      userPrompt: `Task Name: ${name}\nTask Description: ${description || 'No description provided.'}`
+    })
+    return { ok: true, data: result }
+  } catch (err: any) {
+    console.error('generateScopeDetailsWithAiAction server error:', err)
+    return { ok: false, error: err?.message || 'Praz-AI Generation failed' }
+  }
+}
+
+

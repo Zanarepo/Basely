@@ -2,6 +2,7 @@
 
 import React from 'react'
 import type { ExecutionDocType } from './ExecutionSidebarSection'
+export type { ExecutionDocType }
 import { MeetingMinutesList } from './MeetingMinutesList'
 import { ChangeRequestLog } from '../change-requests/ChangeRequestLog'
 import { DeliverableSignoffSheet } from '../deliverables/DeliverableSignoffSheet'

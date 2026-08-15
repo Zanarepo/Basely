@@ -1,4 +1,5 @@
 import { AuthThemeToggle } from '@/components/AuthThemeToggle'
+import Image from 'next/image'
 import { Shield } from 'lucide-react' // Using Shield as an enterprise logo placeholder
 import { AuthShowcaseMockup } from './AuthShowcaseMockup'
 
@@ -35,10 +36,14 @@ export function AuthPageShell({ children }: AuthPageShellProps) {
         <div className="relative z-10 flex flex-col h-full w-full max-w-lg mx-auto">
           {/* Branding & Logo */}
           <div className="flex items-center gap-3 mb-10">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-tr from-violet-600 to-indigo-600 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
-              <Shield className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-extrabold tracking-tight text-white">Baseline</span>
+            <Image
+              src="/prazaner_logo_transparent.png"
+              alt="Prazaner"
+              width={160}
+              height={45}
+              className="h-10 w-auto object-contain"
+              priority
+            />
           </div>
 
           {/* Essence Statement */}

@@ -153,7 +153,7 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
               onClick={handleSave}
               disabled={!isDirty || saving}
               style={{ cursor: 'pointer' }}
-              className="inline-flex items-center justify-center px-5 py-2.5 text-xs font-bold text-white bg-[#6b4eff] hover:bg-[#5839ec] rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:pointer-events-none"
+              className="inline-flex items-center justify-center px-5 py-2.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:pointer-events-none"
             >
               {saving ? (
                 <>
