@@ -5,6 +5,8 @@ import type { ProductKpi } from '@/lib/product-strategy/types'
 import { getProductKpis } from '@/lib/product-strategy/actions'
 import { KpiScorecard } from './KpiScorecard'
 import { KpiBuilderModal } from './KpiBuilderModal'
+import { GenerateNorthStarButton } from './GenerateNorthStarButton'
+import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
 import { Target, Plus, Loader2, RefreshCw, Compass, TrendingUp } from 'lucide-react'
 
 interface NorthStarDashboardProps {
@@ -24,6 +26,11 @@ export function NorthStarDashboard({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedKpi, setSelectedKpi] = useState<ProductKpi | null>(null)
   const [activeFilter, setActiveFilter] = useState<'all' | 'north_star' | 'growth_levers'>('all')
+  const [toasts, setToasts] = useState<ToastMessage[]>([])
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToasts(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, message }])
+  }
 
   const fetchKpis = async (isRef = false) => {
     if (isRef) setRefreshing(true)
@@ -79,54 +86,8 @@ export function NorthStarDashboard({
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800 mb-3">
-              <Compass className="w-3.5 h-3.5 text-violet-500" />
-              <span>NORTH STAR KPI ENGINE & GROWTH TREE</span>
-            </div>
-            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
-              Quantitative Outcome Driver & Levers
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl font-medium">
-              Establish a definitive North Star metric supported by concrete acquisition, activation, and retention growth levers. Updates synchronize continuously across collaborative dashboards and formal strategic document reports.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault()
-                fetchKpis(true)
-              }}
-              disabled={refreshing || loading}
-              style={{ cursor: 'pointer' }}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold inline-flex items-center transition-colors shadow-2xs disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin text-violet-500' : ''}`} />
-              {refreshing ? 'Syncing...' : 'Sync Levers'}
-            </button>
-
-            {hasEditAccess && (
-              <button
-                type="button"
-                onClick={handleCreate}
-                style={{ cursor: 'pointer' }}
-                className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
-              >
-                <Plus className="w-4 h-4" />
-                Register Growth KPI
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Filter Toolbar */}
-      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -153,6 +114,42 @@ export function NorthStarDashboard({
             🚀 Supporting Levers ({kpis.filter(k => k.category !== 'north_star').length})
           </button>
         </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              fetchKpis(true)
+            }}
+            disabled={refreshing || loading}
+            style={{ cursor: 'pointer' }}
+            className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold inline-flex items-center transition-colors shadow-2xs disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin text-violet-500' : ''}`} />
+            {refreshing ? 'Syncing...' : 'Sync'}
+          </button>
+
+          {hasEditAccess && (
+            <>
+              <GenerateNorthStarButton
+                organizationId={organizationId}
+                projectId={projectId}
+                onGenerated={() => fetchKpis(true)}
+                showToast={showToast}
+              />
+              <button
+                type="button"
+                onClick={handleCreate}
+                style={{ cursor: 'pointer' }}
+                className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                Register KPI
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Content Area */}
@@ -175,15 +172,23 @@ export function NorthStarDashboard({
             Get started by defining your primary North Star outcome (e.g., Weekly Active Corporate Workspaces, Gross Merchandise Value) along with supporting input growth levers.
           </p>
           {hasEditAccess && (
-            <button
-              type="button"
-              onClick={handleCreate}
-              style={{ cursor: 'pointer' }}
-              className="px-5 py-2.5 bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold rounded-xl shadow-sm transition-colors inline-flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Register First North Star KPI
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
+              <GenerateNorthStarButton
+                organizationId={organizationId}
+                projectId={projectId}
+                onGenerated={() => fetchKpis(true)}
+                showToast={showToast}
+              />
+              <button
+                type="button"
+                onClick={handleCreate}
+                style={{ cursor: 'pointer' }}
+                className="px-5 py-2.5 bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold rounded-xl shadow-sm transition-colors inline-flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Register First North Star KPI
+              </button>
+            </div>
           )}
         </div>
       ) : (
@@ -194,7 +199,7 @@ export function NorthStarDashboard({
               <h2 className="text-sm font-extrabold text-violet-600 dark:text-violet-400 uppercase tracking-wider flex items-center gap-1.5">
                 <span>⭐ Primary North Star Metric</span>
               </h2>
-              <div className="max-w-xl">
+              <div className="w-full">
                 <KpiScorecard
                   kpi={northStarKpi}
                   hasEditAccess={hasEditAccess}
@@ -212,7 +217,7 @@ export function NorthStarDashboard({
               <h2 className="text-sm font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5 pt-2">
                 <span>📈 Supporting Growth Levers & Input KPIs</span>
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="flex flex-col gap-6">
                 {filteredLevers.map((kpi) => (
                   <KpiScorecard
                     key={kpi.id}
@@ -238,6 +243,8 @@ export function NorthStarDashboard({
         existingKpi={selectedKpi}
         onSaved={handleSaved}
       />
+      
+      <ToastContainer toasts={toasts} onDismiss={(id) => setToasts(t => t.filter(x => x.id !== id))} />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Undo2, Redo2, Maximize2, Minimize2, Plus, Search, ListTree, Kanban, Table2, Upload, Trash2, DollarSign } from 'lucide-react'
+import { Undo2, Redo2, Maximize2, Minimize2, Plus, Search, ListTree, Kanban, Table2, Upload, Trash2, DollarSign, ChevronDown, Layers, Archive } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
+import type { Iteration } from '@/lib/releases/types'
 import { useUserPersona } from '@/hooks/use-user-persona'
 
 export type WbsViewType = 'tree' | 'board' | 'grid' | 'raci' | 'unassigned'
@@ -24,6 +25,13 @@ type WbsToolbarProps = {
   handleBulkDelete?: () => void
   showFinancials?: boolean
   onToggleFinancials?: () => void
+  onCreateIteration?: () => void
+  iterationButtonLabel?: string
+  iterations?: Iteration[]
+  handleBulkAssignIteration?: (iterationId: string | null) => void
+  hideCompleted?: boolean
+  onToggleHideCompleted?: () => void
+  completedCount?: number
 }
 
 export function WbsToolbar({
@@ -45,9 +53,17 @@ export function WbsToolbar({
   handleBulkDelete,
   showFinancials = false,
   onToggleFinancials,
+  onCreateIteration,
+  iterationButtonLabel,
+  iterations = [],
+  handleBulkAssignIteration,
+  hideCompleted = false,
+  onToggleHideCompleted,
+  completedCount = 0,
 }: WbsToolbarProps) {
   const { isProductMode, addButtonText, showBudgetControls } = useUserPersona()
   const [isAllExpanded, setIsAllExpanded] = useState(true)
+  const [bulkAssignOpen, setBulkAssignOpen] = useState(false)
 
   const viewTabLabel = isProductMode ? 'List' : 'Hierarchy'
 
@@ -62,7 +78,7 @@ export function WbsToolbar({
   }
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-app-surface border border-app-border rounded-2xl backdrop-blur-md">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-app-surface border border-app-border rounded-2xl backdrop-blur-md relative z-30">
       <div className="flex flex-wrap items-center gap-3">
         {/* View Toggle */}
         <div className="flex rounded-xl bg-app-muted-surface border border-app-border p-1">
@@ -175,14 +191,96 @@ export function WbsToolbar({
         {/* Add primary root button (Role-Adaptive: + Add Epic vs + Add Phase) */}
         {hasEditAccess && (
           <>
-            {selectedIds.length > 0 && handleBulkDelete && (
+            {selectedIds.length > 0 && (
+              <div className="flex items-center gap-2">
+                {handleBulkAssignIteration && (
+                  <div className="relative inline-block">
+                    <button
+                      type="button"
+                      onClick={() => setBulkAssignOpen(!bulkAssignOpen)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40 rounded-xl text-sm font-semibold transition-all cursor-pointer shrink-0 shadow-2xs"
+                    >
+                      <Layers className="w-4 h-4 text-purple-500" />
+                      <span>Assign ({selectedIds.length})</span>
+                      <ChevronDown className="w-3.5 h-3.5 text-purple-400" />
+                    </button>
+
+                    {bulkAssignOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40 cursor-default"
+                          onClick={() => setBulkAssignOpen(false)}
+                        />
+                        <div className="absolute left-0 top-full mt-1.5 w-60 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 p-2 space-y-1 animate-in fade-in duration-150">
+                          <div className="px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                            Assign Selected Scope ({selectedIds.length})
+                          </div>
+
+                          {iterations.length === 0 ? (
+                            <div className="px-2.5 py-2 text-xs text-slate-400 italic">No Sprints / Phases created yet</div>
+                          ) : (
+                            iterations.map((iter) => (
+                              <button
+                                key={iter.id}
+                                type="button"
+                                onClick={() => {
+                                  handleBulkAssignIteration(iter.id)
+                                  setBulkAssignOpen(false)
+                                }}
+                                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:text-purple-600 transition-all cursor-pointer"
+                              >
+                                <span className="truncate">{iter.name}</span>
+                              </button>
+                            ))
+                          )}
+
+                          <div className="border-t border-slate-100 dark:border-slate-800 my-1 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleBulkAssignIteration(null)
+                                setBulkAssignOpen(false)
+                              }}
+                              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer"
+                            >
+                              <span>Unassign (Move to Backlog)</span>
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {handleBulkDelete && (
+                  <button
+                    type="button"
+                    onClick={handleBulkDelete}
+                    className="flex items-center justify-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-sm font-medium transition-colors shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete ({selectedIds.length})
+                  </button>
+                )}
+              </div>
+            )}
+            {onToggleHideCompleted && (
               <button
                 type="button"
-                onClick={handleBulkDelete}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-sm font-medium transition-colors shrink-0"
+                onClick={onToggleHideCompleted}
+                className={`p-2 rounded-xl border transition-all cursor-pointer relative shrink-0 shadow-2xs ${
+                  hideCompleted
+                    ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-300 border-purple-300 dark:border-purple-800 ring-2 ring-purple-500/20'
+                    : 'bg-app-surface text-app-subtle border-app-border hover:text-app-fg hover:bg-app-hover'
+                }`}
+                title={hideCompleted ? `Showing active work (${completedCount} completed items archived)` : `Hide ${completedCount} completed items`}
               >
-                <Trash2 className="w-4 h-4" />
-                Delete Selected ({selectedIds.length})
+                <Archive className="w-4 h-4" />
+                {completedCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-purple-600 text-[9px] font-extrabold text-white shadow-xs">
+                    {completedCount}
+                  </span>
+                )}
               </button>
             )}
             {onImport && (
@@ -193,6 +291,16 @@ export function WbsToolbar({
               >
                 <Upload className="h-4 w-4" />
                 Import CSV
+              </button>
+            )}
+            {onCreateIteration && (
+              <button
+                type="button"
+                onClick={onCreateIteration}
+                className="px-3.5 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-all text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>{iterationButtonLabel || 'Create Sprint'}</span>
               </button>
             )}
             <button

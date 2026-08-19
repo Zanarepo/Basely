@@ -14,6 +14,10 @@ export interface Iteration {
   updatedAt: string
   taggedWbsCount?: number
   taggedActivityCount?: number
+  completedCount?: number
+  inProgressCount?: number
+  epicNames?: string[]
+  status?: 'planned' | 'active' | 'completed'
 }
 
 export interface ReleaseExitCriterion {
@@ -51,6 +55,7 @@ export interface Release {
   readinessItems?: ReleaseReadinessItem[]
   deploymentPlans?: ReleaseDeploymentPlan[]
   rollbackPlans?: ReleaseRollbackPlan[]
+  releaseNotes?: string | null
 }
 
 export interface ReleaseReadinessItem {
@@ -95,8 +100,22 @@ export interface ReleaseScopeItem {
   code?: string
   iterationName?: string
   iterationId?: string
+  parentEpicId?: string
+  parentEpicName?: string
+  status?: string
+  progress?: number
+  riceScore?: number
   source: 'auto_derived' | 'manual_override' | 'excluded'
   notes?: string
+}
+
+export interface EpicProgressRollup {
+  epicId: string
+  epicName: string
+  totalWorkItems: number
+  completedWorkItems: number
+  completionPercentage: number
+  iterationIds: string[]
 }
 
 export function getIterationLabel(

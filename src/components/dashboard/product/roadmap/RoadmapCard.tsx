@@ -46,9 +46,14 @@ export function RoadmapCard({ item, onUpdate, showToast, draggedItemId, onDragSt
       
       <h4 className="text-sm font-semibold text-slate-900 dark:text-white leading-snug mb-2">{item.title}</h4>
       
-      {item.okr && (
+      {item.okr ? (
         <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-1">
           <span className="font-semibold text-slate-600 dark:text-slate-300">Goal:</span> {item.okr.title}
+        </div>
+      ) : (
+        <div className="mt-2 inline-flex items-center gap-1 text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/50" title="Low Strategic Value: No OKR attached">
+          <AlertTriangle className="w-3 h-3" />
+          Orphaned Initiative
         </div>
       )}
 

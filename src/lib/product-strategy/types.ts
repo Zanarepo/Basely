@@ -21,6 +21,7 @@ export interface StrategicPillar {
   title: string
   description: string
   target_metric?: string
+  key_initiatives?: string[]
 }
 
 export interface CompetitiveMoat {
@@ -29,6 +30,36 @@ export interface CompetitiveMoat {
   title: string
   description: string
   strength: 'high' | 'medium' | 'low'
+}
+
+export interface DifferentiationItem {
+  id: string
+  title: string
+  description: string
+  defensibility?: string
+}
+
+export interface StrategicBet {
+  id: string
+  bet: string
+  why_it_matters: string
+  expected_outcome: string
+  confidence: 'high' | 'medium' | 'low'
+}
+
+export interface ProductPrinciple {
+  id: string
+  title: string
+  description: string
+}
+
+export interface ProductGoal {
+  id: string
+  category: 'business' | 'customer' | 'product'
+  goal: string
+  baseline?: string
+  target?: string
+  timeframe?: string
 }
 
 export interface ProductStrategy {
@@ -40,6 +71,10 @@ export interface ProductStrategy {
   value_proposition: string | null
   strategic_pillars: StrategicPillar[]
   competitive_moats: CompetitiveMoat[]
+  differentiation?: DifferentiationItem[]
+  strategic_bets?: StrategicBet[]
+  product_principles?: ProductPrinciple[]
+  product_goals?: ProductGoal[]
   custom_attributes?: Record<string, string>
   created_by: string | null
   created_at: string

@@ -3,8 +3,7 @@
 import React from 'react'
 import { StrategyCanvas } from '@/components/dashboard/product/strategy/StrategyCanvas'
 import { PersonasDashboard } from '@/components/dashboard/product/personas/PersonasDashboard'
-import { NorthStarDashboard } from '@/components/dashboard/product/okrs/NorthStarDashboard'
-import { OkrDashboard } from '@/components/dashboard/product/okrs/OkrDashboard'
+import { StrategicOutcomesHub } from '@/components/dashboard/product/okrs/StrategicOutcomesHub'
 import { DiscoveryInbox } from '@/components/dashboard/product/discovery/DiscoveryInbox'
 import { PrioritizationDashboard } from '@/components/dashboard/product/prioritization/PrioritizationDashboard'
 import { RoadmapDashboard } from '@/components/dashboard/product/roadmap/RoadmapDashboard'
@@ -50,25 +49,14 @@ export function ProductDocumentsRouter({
     )
   }
 
-  if (documentType === 'north_star_kpis_workspace') {
+  if (documentType === 'strategic_outcomes_hub') {
     return (
       <div className="h-full overflow-y-auto pr-2">
-        <NorthStarDashboard
+        <StrategicOutcomesHub
           projectId={projectId}
           organizationId={organizationId}
           hasEditAccess={hasEditAccess}
-        />
-      </div>
-    )
-  }
-
-  if (documentType === 'okrs_workspace') {
-    return (
-      <div className="h-full overflow-y-auto pr-2">
-        <OkrDashboard
-          projectId={projectId}
-          organizationId={organizationId}
-          hasEditAccess={hasEditAccess}
+          projectContext={projectContext}
         />
       </div>
     )

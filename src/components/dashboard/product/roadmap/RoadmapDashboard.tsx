@@ -5,6 +5,8 @@ import { getRoadmapItems } from '@/lib/product-roadmap/actions'
 import { RoadmapCard } from './RoadmapCard'
 import { Loader2, Plus } from 'lucide-react'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
+import { useAutoAlignRoadmap } from './hooks/useAutoAlignRoadmap'
+import { AutoAlignButton } from './components/AutoAlignButton'
 
 import { updateRoadmapHorizon } from '@/lib/product-roadmap/actions'
 
@@ -18,6 +20,12 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToasts(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, message }])
   }, [])
+
+  const { isAligning, handleAlign } = useAutoAlignRoadmap(
+    projectId,
+    () => loadData(),
+    showToast
+  )
 
   const loadData = useCallback(async () => {
     try {
@@ -99,6 +107,13 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
         <div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Outcome-Driven Roadmap</h2>
           <p className="text-sm text-slate-500 mt-1">Visualize strategic themes across time horizons. Variances with Gantt schedules will be flagged automatically.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <AutoAlignButton 
+            isAligning={isAligning} 
+            onAlign={handleAlign} 
+            disabled={isLoading}
+          />
         </div>
       </div>
 

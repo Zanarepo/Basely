@@ -1,12 +1,17 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Plus, Trash2, ShieldCheck, UserCheck, Ban, Layers, ListTodo, FileText, Loader2, Sparkles } from 'lucide-react'
+import { Plus, Trash2, ShieldCheck, UserCheck, Ban, Layers, ListTodo, FileText, Loader2, Sparkles, FolderKanban } from 'lucide-react'
 import type { ReleaseScopeItem } from '@/lib/releases/types'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import { ReleaseNotesAiGeneratorModal } from './ReleaseNotesAiGeneratorModal'
+import { getDualLabels } from '@/lib/releases/epic-link-constants'
 
 interface ReleaseScopeSectionProps {
   releaseId: string
+  releaseName?: string
+  projectId?: string
+  methodology?: string | null
   scopeItems: ReleaseScopeItem[]
   availableWorkItems: { id: string; type: 'wbs_element' | 'activity'; title: string; code?: string; iterationId?: string | null }[]
   hasEditAccess: boolean
@@ -23,6 +28,9 @@ interface ReleaseScopeSectionProps {
 
 export function ReleaseScopeSection({
   releaseId,
+  releaseName = 'Release Package',
+  projectId = '',
+  methodology = 'Agile',
   scopeItems,
   availableWorkItems,
   hasEditAccess,
@@ -36,10 +44,28 @@ export function ReleaseScopeSection({
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'all' | 'by_epic'>('all')
+  const [showAiModal, setShowAiModal] = useState(false)
+
+  const labels = getDualLabels(methodology)
 
   // Filter available work items that aren't already included
   const existingIds = new Set(scopeItems.map(i => i.entityId))
   const candidateItems = availableWorkItems.filter(i => !existingIds.has(i.id))
+
+  // Group scope items by parent Epic / Summary
+  const scopeByEpic = React.useMemo(() => {
+    const map = new Map<string, { epicName: string; items: ReleaseScopeItem[] }>()
+    scopeItems.forEach(item => {
+      const epicKey = item.parentEpicId || 'general'
+      const epicName = item.parentEpicName || `General / Unassigned ${labels.epicsTerm}`
+      if (!map.has(epicKey)) {
+        map.set(epicKey, { epicName, items: [] })
+      }
+      map.get(epicKey)!.items.push(item)
+    })
+    return Array.from(map.entries())
+  }, [scopeItems, labels])
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,34 +118,79 @@ export function ReleaseScopeSection({
   }
 
   const handleRemoveOverride = async (item: ReleaseScopeItem) => {
-    // ID prefix was man_
     const realId = item.id.replace('man_', '')
     await onDeleteManualScope(realId, releaseId)
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 bg-violet-500/5 dark:bg-violet-500/10 border border-violet-500/20 rounded-xl">
+      {/* AI Generator Modal */}
+      <ReleaseNotesAiGeneratorModal
+        isOpen={showAiModal}
+        onClose={() => setShowAiModal(false)}
+        releaseId={releaseId}
+        releaseName={releaseName}
+        projectId={projectId}
+        methodology={methodology}
+      />
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 rounded-xl">
         <div className="flex items-center gap-3">
-          <Sparkles className="h-5 w-5 text-violet-500 shrink-0" />
+          <Sparkles className="h-5 w-5 text-purple-400 shrink-0" />
           <div>
-            <h4 className="text-sm font-bold text-app-fg">Unified Scope Derivation</h4>
+            <h4 className="text-sm font-bold text-app-fg">Unified {labels.releaseTerm} Scope & GTM Automation</h4>
             <p className="text-xs text-app-muted font-normal">
-              Items tagged to mapped Sprints/Phases are automatically rolled in. You can inject custom deliverables or override exclusions anytime.
+              Items tagged to mapped {labels.sprintsTerm} are automatically rolled in under their parent {labels.epicsTerm}. Generate {labels.releaseNotesTerm} with Praz-AI.
             </p>
           </div>
         </div>
 
-        {hasEditAccess && !showAddForm && (
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
-            onClick={() => setShowAddForm(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold shadow-sm transition-all cursor-pointer shrink-0"
+            onClick={() => setShowAiModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all cursor-pointer"
           >
-            <Plus className="h-4 w-4" />
-            <span>Add Scope Override</span>
+            <Sparkles className="h-4 w-4 text-purple-400" />
+            <span>AI {labels.releaseNotesTerm}</span>
           </button>
-        )}
+
+          {hasEditAccess && !showAddForm && (
+            <button
+              type="button"
+              onClick={() => setShowAddForm(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Scope Override</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* View Mode Filter Bar */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-1 bg-app-surface p-1 rounded-xl border border-app-border">
+          <button
+            type="button"
+            onClick={() => setViewMode('all')}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              viewMode === 'all' ? 'bg-purple-600 text-white shadow-sm' : 'text-app-muted hover:text-app-fg'
+            }`}
+          >
+            All Scope Items ({scopeItems.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('by_epic')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              viewMode === 'by_epic' ? 'bg-purple-600 text-white shadow-sm' : 'text-app-muted hover:text-app-fg'
+            }`}
+          >
+            <FolderKanban className="w-3.5 h-3.5" />
+            Group by {labels.epicTerm} ({scopeByEpic.length})
+          </button>
+        </div>
       </div>
 
       {showAddForm && (
@@ -217,7 +288,102 @@ export function ReleaseScopeSection({
       <div className="border border-app-border rounded-xl overflow-hidden divide-y divide-app-border bg-app-card">
         {scopeItems.length === 0 ? (
           <div className="p-8 text-center text-sm text-app-muted/70 italic">
-            No scope items derived yet. Map iterations or add manual overrides above.
+            No scope items derived yet. Map {labels.sprintsTerm.toLowerCase()} or add manual overrides above.
+          </div>
+        ) : viewMode === 'by_epic' ? (
+          <div className="divide-y divide-app-border">
+            {scopeByEpic.map(([epicKey, group]) => (
+              <div key={epicKey} className="p-4 space-y-3 bg-app-surface/30">
+                <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
+                  <FolderKanban className="w-4 h-4 text-purple-400 shrink-0" />
+                  <span>{labels.epicTerm}: {group.epicName}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 font-mono font-normal">
+                    {group.items.length} {group.items.length === 1 ? labels.storyTerm : labels.storiesTerm}
+                  </span>
+                </div>
+
+                <div className="divide-y divide-app-border/40 border border-app-border/60 rounded-lg overflow-hidden bg-app-card">
+                  {group.items.map((item, idx) => {
+                    const isExcluded = item.source === 'excluded'
+                    const isManual = item.source === 'manual_override'
+                    const isAuto = item.source === 'auto_derived'
+
+                    return (
+                      <div
+                        key={item.id || idx}
+                        className={`group relative flex items-center justify-between p-3 transition-colors hover:bg-app-surface/50 ${
+                          isExcluded ? 'opacity-50 bg-rose-500/5' : ''
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <div className="p-1.5 rounded-md bg-app-surface text-app-muted shrink-0">
+                            {item.entityType === 'wbs_element' && <Layers className="h-3.5 w-3.5 text-purple-400" />}
+                            {item.entityType === 'activity' && <ListTodo className="h-3.5 w-3.5 text-emerald-400" />}
+                            {item.entityType === 'custom_item' && <FileText className="h-3.5 w-3.5 text-purple-400" />}
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              {item.code && (
+                                <span className="text-xs font-mono font-bold text-purple-400 shrink-0">
+                                  {item.code}
+                                </span>
+                              )}
+                              <span className={`text-xs font-semibold text-app-fg truncate ${isExcluded ? 'line-through text-app-muted' : ''}`}>
+                                {item.title}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 ml-2">
+                          {isAuto && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                              Auto
+                            </span>
+                          )}
+                          {isManual && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                              Manual
+                            </span>
+                          )}
+                          {isExcluded && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                              Excluded
+                            </span>
+                          )}
+
+                          {hasEditAccess && (
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {isAuto && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleExcludeAutoItem(item)}
+                                  className="p-1 rounded text-rose-400 hover:bg-rose-500/10 transition-colors"
+                                  title="Exclude item"
+                                >
+                                  <Ban className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                              {(isManual || isExcluded) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveOverride(item)}
+                                  className="p-1 rounded text-rose-500 hover:bg-rose-500/10 transition-colors"
+                                  title="Remove override"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           scopeItems.map((item, idx) => {
@@ -234,21 +400,26 @@ export function ReleaseScopeSection({
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="p-2 rounded-lg bg-app-surface text-app-muted shrink-0">
-                    {item.entityType === 'wbs_element' && <Layers className="h-4 w-4 text-violet-400" />}
+                    {item.entityType === 'wbs_element' && <Layers className="h-4 w-4 text-purple-400" />}
                     {item.entityType === 'activity' && <ListTodo className="h-4 w-4 text-emerald-400" />}
                     {item.entityType === 'custom_item' && <FileText className="h-4 w-4 text-purple-400" />}
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       {item.code && (
-                        <span className="text-xs font-mono font-bold text-violet-400 shrink-0">
+                        <span className="text-xs font-mono font-bold text-purple-400 shrink-0">
                           {item.code}
                         </span>
                       )}
                       <span className={`text-xs font-bold text-app-fg truncate ${isExcluded ? 'line-through text-app-muted' : ''}`}>
                         {item.title}
                       </span>
+                      {item.parentEpicName && (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-purple-950/40 text-purple-300 border border-purple-800/40 font-medium">
+                          {labels.epicTerm}: {item.parentEpicName}
+                        </span>
+                      )}
                     </div>
                     {item.iterationName && (
                       <div className="text-[11px] text-app-muted mt-0.5">
@@ -264,7 +435,6 @@ export function ReleaseScopeSection({
                 </div>
 
                 <div className="flex items-center gap-3 shrink-0 ml-3">
-                  {/* Badges */}
                   {isAuto && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wider">
                       <ShieldCheck className="h-3 w-3 text-blue-400" />
@@ -284,7 +454,6 @@ export function ReleaseScopeSection({
                     </span>
                   )}
 
-                  {/* Hover Action Buttons */}
                   {hasEditAccess && (
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
                       {isAuto && (
@@ -318,3 +487,4 @@ export function ReleaseScopeSection({
     </div>
   )
 }
+

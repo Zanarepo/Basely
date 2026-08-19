@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react'
 import type { CompetitiveMoat } from '@/lib/product-strategy/types'
-import { Plus, Trash2, ShieldCheck, Award } from 'lucide-react'
+import { Plus, Trash2, ShieldCheck, Award, Pencil } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import ReactMarkdown from 'react-markdown'
 
 interface MoatMatrixProps {
   moats: CompetitiveMoat[]
@@ -34,6 +35,13 @@ export function MoatMatrix({ moats = [], onChange, hasEditAccess = true }: MoatM
   const [strength, setStrength] = useState<CompetitiveMoat['strength']>('medium')
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
+  // Edit State
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editCategory, setEditCategory] = useState<CompetitiveMoat['category']>('technology')
+  const [editStrength, setEditStrength] = useState<CompetitiveMoat['strength']>('medium')
+
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title.trim()) return
@@ -52,6 +60,21 @@ export function MoatMatrix({ moats = [], onChange, hasEditAccess = true }: MoatM
     setCategory('technology')
     setStrength('medium')
     setIsAdding(false)
+  }
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editTitle.trim()) return
+
+    onChange(moats.map(moat => moat.id === editingId ? {
+      ...moat,
+      title: editTitle.trim(),
+      description: editDescription.trim(),
+      category: editCategory,
+      strength: editStrength
+    } : moat))
+    
+    setEditingId(null)
   }
 
   const handleDelete = (id: string) => {
@@ -84,7 +107,6 @@ export function MoatMatrix({ moats = [], onChange, hasEditAccess = true }: MoatM
         )}
       </div>
 
-      {/* Add Inline Form */}
       {isAdding && (
         <form onSubmit={handleAdd} className="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-emerald-200 dark:border-emerald-900/40 space-y-3">
           <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase">
@@ -162,7 +184,6 @@ export function MoatMatrix({ moats = [], onChange, hasEditAccess = true }: MoatM
         </form>
       )}
 
-      {/* Moats Grid / List */}
       {moats.length === 0 && !isAdding ? (
         <div className="text-center py-6 bg-slate-50/50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-xs text-slate-400">
           No competitive moats charted yet. Detail the protective barriers and competitive differentiators for this product.
@@ -170,6 +191,83 @@ export function MoatMatrix({ moats = [], onChange, hasEditAccess = true }: MoatM
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {moats.map((moat, idx) => {
+            if (editingId === moat.id) {
+              return (
+                <form key={moat.id} onSubmit={handleSaveEdit} className="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-emerald-200 dark:border-emerald-900/40 space-y-3">
+                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase">
+                    Edit Competitive Moat
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-1">
+                      <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">
+                        Moat Category
+                      </label>
+                      <EnterpriseSelect
+                        value={editCategory}
+                        onChange={(val) => setEditCategory(val as any)}
+                        options={Object.entries(CATEGORY_LABELS).map(([key, label]) => ({ value: key, label: label as string }))}
+                        size="sm"
+                      />
+                    </div>
+                    <div className="sm:col-span-1">
+                      <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">
+                        Defensibility Strength
+                      </label>
+                      <EnterpriseSelect
+                        value={editStrength}
+                        onChange={(val) => setEditStrength(val as any)}
+                        options={[
+                          { value: 'high', label: '🛡️ High Defensibility' },
+                          { value: 'medium', label: '⚔️ Medium Defensibility' },
+                          { value: 'low', label: '🌱 Developing Defensibility' },
+                        ]}
+                        size="sm"
+                      />
+                    </div>
+                    <div className="sm:col-span-1">
+                      <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">
+                        Moat Title *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Proprietary LLM Datasets"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <textarea
+                      rows={2}
+                      placeholder="Explain how this structural moat protects..."
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none resize-y"
+                    />
+                  </div>
+                  <div className="flex items-center justify-end space-x-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(null)}
+                      style={{ cursor: 'pointer' }}
+                      className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      style={{ cursor: 'pointer' }}
+                      className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </form>
+              )
+            }
+
             const style = STRENGTH_STYLES[moat.strength] || STRENGTH_STYLES.medium
             return (
               <div
@@ -190,17 +288,32 @@ export function MoatMatrix({ moats = [], onChange, hasEditAccess = true }: MoatM
                         {style.label}
                       </span>
                       {hasEditAccess && (
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(moat.id)}
-                          style={{ cursor: 'pointer' }}
-                          className={`p-1 text-slate-400 hover:text-red-500 rounded transition-opacity ${
-                            hoveredIndex === idx ? 'opacity-100' : 'opacity-0 focus:opacity-100'
-                          }`}
-                          title="Delete Moat"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className={`flex items-center space-x-1 transition-opacity ${hoveredIndex === idx ? 'opacity-100' : 'opacity-0 focus:opacity-100'}`}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingId(moat.id)
+                              setEditTitle(moat.title)
+                              setEditDescription(moat.description || '')
+                              setEditCategory(moat.category)
+                              setEditStrength(moat.strength)
+                            }}
+                            style={{ cursor: 'pointer' }}
+                            className="p-1 text-slate-400 hover:text-blue-500 rounded transition-colors"
+                            title="Edit Moat"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(moat.id)}
+                            style={{ cursor: 'pointer' }}
+                            className="p-1 text-slate-400 hover:text-red-500 rounded transition-colors"
+                            title="Delete Moat"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -210,9 +323,9 @@ export function MoatMatrix({ moats = [], onChange, hasEditAccess = true }: MoatM
                   </h4>
 
                   {moat.description && (
-                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
-                      {moat.description}
-                    </p>
+                    <div className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed prose prose-sm prose-emerald dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1">
+                      <ReactMarkdown>{moat.description}</ReactMarkdown>
+                    </div>
                   )}
                 </div>
               </div>

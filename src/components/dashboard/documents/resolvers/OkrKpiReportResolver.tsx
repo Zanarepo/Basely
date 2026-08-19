@@ -142,19 +142,41 @@ export function OkrKpiReportResolver({ projectId, organizationId, source }: OkrK
   return (
     <div className="space-y-6 my-4">
       {/* Quarterly OKR Rollup Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-violet-950 to-slate-900 text-white border border-slate-800 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div>
-          <span className="text-xs font-extrabold text-violet-400 uppercase tracking-widest block mb-1">EXECUTIVE OKR ROLLUP</span>
-          <h3 className="text-xl font-extrabold tracking-tight text-white mb-2">Quarterly Strategic Alignment & Execution</h3>
-          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300 font-semibold">
-            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{data.onTrackCount} On Track</span>
-            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">{data.atRiskCount} At Risk</span>
-            <span className="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">{data.behindCount} Behind</span>
+      <div className="bg-violet-50/50 dark:bg-violet-950/20 rounded-[2rem] p-6 lg:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-violet-100 dark:border-violet-900/50">
+        <div className="flex items-start md:items-center gap-5 w-full">
+          <div className="w-14 h-14 rounded-2xl bg-violet-600 flex items-center justify-center shrink-0 shadow-sm">
+            <Target className="w-7 h-7 text-white" />
+          </div>
+          <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+            <div className="flex items-center flex-wrap gap-2">
+              <h2 className="text-[13px] font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
+                QUARTERLY STRATEGIC ALIGNMENT & EXECUTION
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full bg-violet-600 text-white text-[10px] font-bold uppercase tracking-widest">
+                EXECUTIVE OKR ROLLUP
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 mt-1 text-[11px] font-bold uppercase tracking-wide">
+              <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                {data.onTrackCount} On Track
+              </span>
+              <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                {data.atRiskCount} At Risk
+              </span>
+              <span className="px-3 py-1 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400">
+                {data.behindCount} Behind
+              </span>
+            </div>
           </div>
         </div>
-        <div className="text-right shrink-0 bg-slate-800/60 p-4 rounded-xl border border-slate-700/80">
-          <span className="text-[11px] text-slate-400 uppercase font-bold block mb-0.5">AVG ROLLUP PROGRESS</span>
-          <span className="text-3xl font-extrabold text-violet-400">{data.overallOkrProgress}%</span>
+
+        <div className="text-right shrink-0 bg-white dark:bg-slate-900 px-6 py-4 rounded-2xl border border-violet-100 dark:border-violet-900/50 shadow-sm">
+          <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-0.5">
+            AVG ROLLUP PROGRESS
+          </span>
+          <span className="text-3xl font-extrabold text-violet-600 dark:text-violet-400">
+            {data.overallOkrProgress}%
+          </span>
         </div>
       </div>
 

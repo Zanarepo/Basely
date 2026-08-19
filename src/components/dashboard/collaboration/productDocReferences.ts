@@ -11,6 +11,6 @@ export const productSuiteDocs: ProjectEntity[] = [
   { id: 'product_strategy_document', title: 'Product Strategy Doc', type: 'product_doc' },
   { id: 'market_research_report', title: 'Market Research Report', type: 'product_doc' },
   { id: 'competitive_benchmarking_matrix', title: 'Competitive Matrix', type: 'product_doc' },
-  { id: 'okr_kpi_performance_report', title: 'OKR & KPI Report Doc', type: 'product_doc' },
+  { id: 'strategic_outcomes_hub', title: 'Strategic Outcomes Hub', type: 'product_doc' },
   { id: 'product_requirements_document', title: 'Product Requirements Doc', type: 'product_doc' }
 ]

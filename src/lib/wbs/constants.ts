@@ -56,4 +56,6 @@ export type WbsElement = {
   iteration_id?: string | null
   cost?: number
   estimationMethod?: 'analogous' | 'parametric' | 'bottom_up'
+  okrId?: string | null
+  okrTitle?: string | null
 }

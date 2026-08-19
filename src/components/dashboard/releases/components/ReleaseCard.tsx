@@ -178,9 +178,12 @@ export function ReleaseCard({
           />
         </div>
 
-        <div className="mt-3 flex items-center justify-end text-xs font-semibold text-violet-500 group-hover:text-violet-600 transition-colors gap-1">
-          <span>Inspect Release Architecture</span>
-          <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+        <div className="mt-3.5 flex items-center justify-between pt-2 border-t border-app-border/40">
+          <span className="text-[11px] text-app-muted font-medium">Readiness Score</span>
+          <div className="flex items-center gap-1 text-xs font-bold text-purple-400 group-hover:text-purple-300 transition-colors">
+            <span>🚀 Open 3-Step Release Pipeline</span>
+            <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+          </div>
         </div>
       </div>
     </div>

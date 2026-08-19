@@ -15,10 +15,11 @@ import {
   Brain,
   Zap,
   BookOpen,
+  Target,
 } from 'lucide-react'
 
 interface AiAutomationWorkflowGuideProps {
-  currentStep?: 1 | 2 | 3 | 4 | 5
+  currentStep?: 1 | 2 | 3 | 4 | 5 | 6
   onNavigateToStep?: (step: number) => void
 }
 
@@ -61,20 +62,34 @@ export function AiAutomationWorkflowGuide({
     {
       id: 3,
       badge: 'Step 3',
+      title: 'Strategic Outcomes & OKRs',
+      icon: Target,
+      color: 'from-pink-500/20 to-pink-500/5 text-pink-600 dark:text-pink-400 border-pink-500/30',
+      activeColor: 'bg-pink-600 text-white',
+      tag: 'Objectives & North Star',
+      story:
+        'AI analyzes the product strategy to auto-generate quantitative North Star metrics and strict, measurable OKRs.',
+      keyAction: 'Generate OKRs',
+      detail:
+        'Forms the quantitative backbone of your product, allowing the upcoming roadmap to be automatically aligned with strategic goals.',
+    },
+    {
+      id: 4,
+      badge: 'Step 4',
       title: 'AI Product Roadmap',
       icon: Map,
       color: 'from-indigo-500/20 to-indigo-500/5 text-indigo-600 dark:text-indigo-400 border-indigo-500/30',
       activeColor: 'bg-indigo-600 text-white',
       tag: 'Now / Next / Later Sequencing',
       story:
-        'Auto-converts strategy into a Now/Next/Later timeline, mapping high-level strategic themes to deliverable initiatives.',
+        'Auto-converts strategy into a Now/Next/Later timeline, aligning items automatically to the generated OKRs.',
       keyAction: 'Generate PRD',
       detail:
         'Aligns engineering and leadership on feature sequencing, dependencies, and expected outcomes across quarters.',
     },
     {
-      id: 4,
-      badge: 'Step 4',
+      id: 5,
+      badge: 'Step 5',
       title: 'AI PRD Specs',
       icon: FileText,
       color: 'from-emerald-500/20 to-emerald-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
@@ -87,8 +102,8 @@ export function AiAutomationWorkflowGuide({
         'The AI builds a complete PRD in seconds, allowing PMs to simply review and refine rather than write specs from scratch.',
     },
     {
-      id: 5,
-      badge: 'Step 5',
+      id: 6,
+      badge: 'Step 6',
       title: 'RICE Backlog Extraction',
       icon: ListChecks,
       color: 'from-cyan-500/20 to-cyan-500/5 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
@@ -141,7 +156,7 @@ export function AiAutomationWorkflowGuide({
       {isExpanded && (
         <div className="space-y-5 pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
           {/* STEPPER NAV BAR */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {steps.map((step) => {
               const IconComp = step.icon
               const isActive = activeStep === step.id
@@ -227,10 +242,12 @@ export function AiAutomationWorkflowGuide({
                   {activeStep === 2 &&
                     'Treat AI-generated strategy as a strong draft. Edit the defensive moats and pillars to match your specific context.'}
                   {activeStep === 3 &&
-                    'Ensure the "Now" horizon strictly focuses on high-confidence bets that address immediate market needs.'}
+                    'Review the AI-generated OKRs with stakeholders. They form the bridge between your high-level strategy and roadmap execution.'}
                   {activeStep === 4 &&
-                    'Before finalizing the PRD, review the AI-generated edge cases to see if any complex scenarios were missed.'}
+                    'Ensure the "Now" horizon strictly focuses on high-confidence bets that address immediate market needs and align to your OKRs.'}
                   {activeStep === 5 &&
+                    'Before finalizing the PRD, review the AI-generated edge cases to see if any complex scenarios were missed.'}
+                  {activeStep === 6 &&
                     'Always manually review the AI-estimated RICE scores with your engineering lead before starting the sprint.'}
                 </p>
               </div>
@@ -248,10 +265,10 @@ export function AiAutomationWorkflowGuide({
               </button>
 
               <div className="flex items-center gap-2">
-                {activeStep < 5 ? (
+                {activeStep < 6 ? (
                   <button
                     type="button"
-                    onClick={() => setActiveStep((prev) => Math.min(5, prev + 1))}
+                    onClick={() => setActiveStep((prev) => Math.min(6, prev + 1))}
                     className="px-4 py-1.5 rounded-xl bg-violet-600 text-white text-xs font-bold shadow-md hover:bg-violet-700 transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <span>Next Stage: Step {activeStep + 1}</span>

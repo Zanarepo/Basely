@@ -1,20 +1,15 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import {
   X,
   Briefcase,
-  Layers,
-  DollarSign,
-  Calendar,
-  Loader2,
   ShieldAlert,
+  Loader2,
 } from 'lucide-react'
-import { updateProject } from '@/lib/projects/actions'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import { useProjectEdit } from './hooks/useProjectEdit'
 
-type ProjectType = {
+export type ProjectType = {
   id: string
   name: string
   clientName: string | null
@@ -59,121 +54,25 @@ export function ProjectEditModal({
   onClose,
   project,
 }: ProjectEditModalProps) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-
-  const [name, setName] = useState('')
-  const [clientName, setClientName] = useState('')
-  const [description, setDescription] = useState('')
-  const [methodology, setMethodology] = useState<typeof METHODOLOGIES[number]>('Waterfall')
-  const [currency, setCurrency] = useState('USD')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [workingDays, setWorkingDays] = useState<number[]>([1, 2, 3, 4, 5])
-  const [dailyHours, setDailyHours] = useState(8)
-  const [allowTeamScheduleEdits, setAllowTeamScheduleEdits] = useState(false)
-
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (project) {
-      setName(project.name)
-      setClientName(project.clientName || '')
-      setDescription(project.description || '')
-      setMethodology(project.methodology)
-      setCurrency(project.currency)
-      setStartDate(project.startDate || '')
-      setEndDate(project.endDate || '')
-      setWorkingDays(project.calendarConfig?.working_days || [1, 2, 3, 4, 5])
-      setDailyHours(project.calendarConfig?.daily_hours || 8)
-      setAllowTeamScheduleEdits(project.allow_team_schedule_edits || false)
-    }
-    setErrorMsg(null)
-  }, [project, open])
+  const {
+    isPending,
+    name, setName,
+    clientName, setClientName,
+    description, setDescription,
+    methodology, setMethodology,
+    currency, setCurrency,
+    startDate, setStartDate,
+    endDate, setEndDate,
+    workingDays,
+    dailyHours, setDailyHours,
+    allowTeamScheduleEdits,
+    errorMsg,
+    handleDayToggle,
+    handleSubmit,
+    handleToggleAutoSave
+  } = useProjectEdit(project, open, onClose)
 
   if (!open || !project) return null
-
-  const handleDayToggle = (dayValue: number) => {
-    setWorkingDays((prev) =>
-      prev.includes(dayValue)
-        ? prev.filter((d) => d !== dayValue)
-        : [...prev, dayValue].sort()
-    )
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrorMsg(null)
-
-    if (!name.trim()) {
-      setErrorMsg('Project name is required')
-      return
-    }
-
-    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-      setErrorMsg('End date must be on or after start date')
-      return
-    }
-
-    if (workingDays.length === 0) {
-      setErrorMsg('Please select at least one working day')
-      return
-    }
-
-    startTransition(async () => {
-      const result = await updateProject(project.id, {
-        name,
-        clientName: clientName.trim() || null,
-        description: description.trim() || null,
-        methodology,
-        currency,
-        startDate: startDate || null,
-        endDate: endDate || null,
-        calendarConfig: {
-          working_days: workingDays,
-          daily_hours: dailyHours,
-        },
-        allowTeamScheduleEdits,
-      })
-
-      if (!result.ok) {
-        setErrorMsg(result.error)
-        return
-      }
-
-      router.refresh()
-      onClose()
-    })
-  }
-
-  const handleToggleAutoSave = (newVal: boolean) => {
-    setAllowTeamScheduleEdits(newVal)
-    startTransition(async () => {
-      const result = await updateProject(project.id, {
-        name,
-        clientName: clientName.trim() || null,
-        description: description.trim() || null,
-        methodology,
-        currency,
-        startDate: startDate || null,
-        endDate: endDate || null,
-        calendarConfig: {
-          working_days: workingDays,
-          daily_hours: dailyHours,
-        },
-        allowTeamScheduleEdits: newVal,
-      })
-
-      if (!result.ok) {
-        setErrorMsg(result.error)
-        // revert on failure
-        setAllowTeamScheduleEdits(!newVal)
-        return
-      }
-
-      router.refresh()
-    })
-  }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -215,165 +114,164 @@ export function ProjectEditModal({
 
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 min-h-0 overflow-y-auto px-6 space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="edit-name" className="auth-label">
-              Project Name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="edit-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={isPending}
-              className="auth-input pl-4"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="edit-client" className="auth-label">
-              Client Name
-            </label>
-            <input
-              id="edit-client"
-              type="text"
-              value={clientName}
-              onChange={(e) => setClientName(e.target.value)}
-              disabled={isPending}
-              className="auth-input pl-4"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="edit-description" className="auth-label">
-              Description
-            </label>
-            <textarea
-              id="edit-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={isPending}
-              className="auth-input pl-4 py-3 min-h-[70px] resize-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="edit-methodology" className="auth-label">
-                Methodology
-              </label>
-              <EnterpriseSelect
-                value={methodology}
-                onChange={(val) => setMethodology(val as any)}
-                disabled={isPending}
-                options={[...METHODOLOGIES]}
-                className="w-full"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="edit-currency" className="auth-label">
-                Currency
-              </label>
-              <EnterpriseSelect
-                value={currency}
-                onChange={(val) => setCurrency(val as string)}
-                disabled={isPending}
-                options={CURRENCIES.map((c) => ({ value: c.code, label: `${c.code} (${c.symbol})` }))}
-                className="w-full"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="edit-start" className="auth-label">
-                Start Date
-              </label>
-              <input
-                id="edit-start"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                disabled={isPending}
-                className="auth-input pl-4"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="edit-end" className="auth-label">
-                End Date
-              </label>
-              <input
-                id="edit-end"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                disabled={isPending}
-                className="auth-input pl-4"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <span className="auth-label block">Working Days</span>
-            <div className="flex flex-wrap gap-2">
-              {DAYS_OF_WEEK.map((d) => {
-                const active = workingDays.includes(d.value)
-                return (
-                  <button
-                    key={d.value}
-                    type="button"
-                    onClick={() => handleDayToggle(d.value)}
-                    disabled={isPending}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                      active
-                        ? 'bg-violet-500/20 text-violet-500 border-violet-500/35'
-                        : 'bg-app-muted-surface text-app-muted border-app-border hover:bg-app-hover'
-                    }`}
-                  >
-                    {d.name}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="edit-hours" className="auth-label">
-              Daily Work Hours
-            </label>
-            <input
-              id="edit-hours"
-              type="number"
-              min="1"
-              max="24"
-              value={dailyHours}
-              onChange={(e) => setDailyHours(parseInt(e.target.value) || 8)}
-              disabled={isPending}
-              className="auth-input pl-4"
-            />
-          </div>
-
-          <div className="pt-4 mt-6 border-t border-app-border space-y-4">
-            <h3 className="text-sm font-semibold text-app-fg mb-4">Advanced Settings</h3>
-            <div className="flex items-center justify-between p-4 bg-app-surface border border-app-border rounded-xl">
-              <div>
-                <div className="text-sm font-medium text-app-fg">Allow Team Schedule Edits</div>
-                <div className="text-xs text-app-muted mt-1">If enabled, team members assigned as "Responsible" can adjust task durations and dates.</div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
+              <div className="space-y-2">
+                <label htmlFor="edit-name" className="auth-label">
+                  Project Name <span className="text-rose-500">*</span>
+                </label>
                 <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={allowTeamScheduleEdits}
-                  onChange={(e) => handleToggleAutoSave(e.target.checked)}
+                  id="edit-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   disabled={isPending}
+                  className="auth-input pl-4"
                 />
-                <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
-              </label>
-            </div>
-          </div>
+              </div>
 
-        </div>
+              <div className="space-y-2">
+                <label htmlFor="edit-client" className="auth-label">
+                  Client Name
+                </label>
+                <input
+                  id="edit-client"
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  disabled={isPending}
+                  className="auth-input pl-4"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="edit-description" className="auth-label">
+                  Description
+                </label>
+                <textarea
+                  id="edit-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  disabled={isPending}
+                  className="auth-input pl-4 py-3 min-h-[70px] resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="edit-methodology" className="auth-label">
+                    Methodology
+                  </label>
+                  <EnterpriseSelect
+                    value={methodology}
+                    onChange={(val) => setMethodology(val as any)}
+                    disabled={isPending}
+                    options={[...METHODOLOGIES]}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="edit-currency" className="auth-label">
+                    Currency
+                  </label>
+                  <EnterpriseSelect
+                    value={currency}
+                    onChange={(val) => setCurrency(val as string)}
+                    disabled={isPending}
+                    options={CURRENCIES.map((c) => ({ value: c.code, label: `${c.code} (${c.symbol})` }))}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="edit-start" className="auth-label">
+                    Start Date
+                  </label>
+                  <input
+                    id="edit-start"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    disabled={isPending}
+                    className="auth-input pl-4"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="edit-end" className="auth-label">
+                    End Date
+                  </label>
+                  <input
+                    id="edit-end"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    disabled={isPending}
+                    className="auth-input pl-4"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <span className="auth-label block">Working Days</span>
+                <div className="flex flex-wrap gap-2">
+                  {DAYS_OF_WEEK.map((d) => {
+                    const active = workingDays.includes(d.value)
+                    return (
+                      <button
+                        key={d.value}
+                        type="button"
+                        onClick={() => handleDayToggle(d.value)}
+                        disabled={isPending}
+                        className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                          active
+                            ? 'bg-violet-500/20 text-violet-500 border-violet-500/35'
+                            : 'bg-app-muted-surface text-app-muted border-app-border hover:bg-app-hover'
+                        }`}
+                      >
+                        {d.name}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="edit-hours" className="auth-label">
+                  Daily Work Hours
+                </label>
+                <input
+                  id="edit-hours"
+                  type="number"
+                  min="1"
+                  max="24"
+                  value={dailyHours}
+                  onChange={(e) => setDailyHours(parseInt(e.target.value) || 8)}
+                  disabled={isPending}
+                  className="auth-input pl-4"
+                />
+              </div>
+
+              <div className="pt-4 mt-6 border-t border-app-border space-y-4">
+                <h3 className="text-sm font-semibold text-app-fg mb-4">Advanced Settings</h3>
+                <div className="flex items-center justify-between p-4 bg-app-surface border border-app-border rounded-xl">
+                  <div>
+                    <div className="text-sm font-medium text-app-fg">Allow Team Schedule Edits</div>
+                    <div className="text-xs text-app-muted mt-1">If enabled, team members assigned as "Responsible" can adjust task durations and dates.</div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={allowTeamScheduleEdits}
+                      onChange={(e) => handleToggleAutoSave(e.target.checked)}
+                      disabled={isPending}
+                    />
+                    <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
 
             <div className="shrink-0 flex items-center justify-end gap-3 border-t border-app-border px-6 py-4 mt-2 bg-app-surface-solid/80">
               <button

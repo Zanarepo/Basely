@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { Loader2, AlertCircle } from 'lucide-react'
 
 import { GanttTimelineCanvas } from './GanttTimelineCanvas'
@@ -15,6 +15,8 @@ import { WbsElementSidePanel } from '../wbs/WbsElementSidePanel'
 import { updateWbsElement } from '@/lib/wbs/actions'
 import { getTerminology } from '@/utils/terminology'
 import type { WbsElement } from '@/lib/wbs/constants'
+import type { Iteration } from '@/lib/releases/types'
+import { createClient } from '@/utils/supabase/client'
 
 type GanttWorkspaceProps = {
   projectId: string
@@ -22,6 +24,7 @@ type GanttWorkspaceProps = {
   workspaceMembers: any[]
   currentUserId: string
   currentUserName: string
+  methodology?: string | null
 }
 
 const ROW_HEIGHT = 48
@@ -32,6 +35,7 @@ export default function GanttWorkspace({
   workspaceMembers,
   currentUserId,
   currentUserName,
+  methodology = 'Agile',
 }: GanttWorkspaceProps) {
   const {
     loading,
@@ -61,6 +65,7 @@ export default function GanttWorkspace({
     refetchData,
   } = useGanttData(projectId)
 
+  const terms = getTerminology(methodology)
   const [activeElementId, setActiveElementId] = useState<string | null>(null)
   const activeElement = elements.find((el) => el.id === activeElementId) || null
 
@@ -70,6 +75,130 @@ export default function GanttWorkspace({
   const [isCpmModalOpen, setIsCpmModalOpen] = useState(false)
   const [isScheduleSheetOpen, setIsScheduleSheetOpen] = useState(false)
   const [showSidebar, setShowSidebar] = useState(true)
+  const [scopeFilter, setScopeFilter] = useState<string>('all')
+  const [iterations, setIterations] = useState<Iteration[]>([])
+
+  useEffect(() => {
+    const fetchIterations = async () => {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('iterations')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('sequence_number', { ascending: true })
+
+      if (data) {
+        setIterations(
+          data.map((i: any) => ({
+            id: i.id,
+            projectId: i.project_id,
+            name: i.name,
+            sequenceNumber: i.sequence_number,
+            startDate: i.start_date,
+            endDate: i.end_date,
+            labelOverride: i.label_override || null,
+            createdAt: i.created_at,
+            updatedAt: i.updated_at,
+          }))
+        )
+      }
+    }
+    fetchIterations()
+  }, [projectId])
+
+  const activeIteration = useMemo(() => {
+    if (!iterations || iterations.length === 0) return null
+    const now = new Date()
+    const current = iterations.find((i) => new Date(i.startDate) <= now && new Date(i.endDate) >= now)
+    return current || iterations[0]
+  }, [iterations])
+
+  const [hideCompleted, setHideCompleted] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`gantt_hide_completed_${projectId}`)
+      return saved ? JSON.parse(saved) : false
+    }
+    return false
+  })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`gantt_hide_completed_${projectId}`, JSON.stringify(hideCompleted))
+    }
+  }, [projectId, hideCompleted])
+
+  const isCompletedStatus = (status?: string | null) => {
+    if (!status) return false
+    const s = status.toLowerCase()
+    return s === 'complete' || s === 'completed' || s === 'done'
+  }
+
+  const completedCount = useMemo(() => {
+    return elements.filter((e) => isCompletedStatus(e.status)).length
+  }, [elements])
+
+  // Filter visibleElements based on scopeFilter & hideCompleted
+  const scopedVisibleElements = useMemo(() => {
+    let baseList = visibleElements
+
+    if (scopeFilter !== 'all') {
+      const matchSet = new Set<string>()
+
+      if (scopeFilter === 'active') {
+        if (activeIteration) {
+          elements.forEach((e) => {
+            if (e.iterationId === activeIteration.id || e.iteration_id === activeIteration.id) {
+              matchSet.add(e.id)
+            }
+          })
+        }
+      } else if (scopeFilter === 'backlog') {
+        elements.forEach((e) => {
+          if (!e.iterationId && !e.iteration_id) matchSet.add(e.id)
+        })
+      } else if (scopeFilter === 'lookahead') {
+        const now = new Date()
+        const cutoff = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000)
+        elements.forEach((e) => {
+          if (!e.createdAt || new Date(e.createdAt) <= cutoff) matchSet.add(e.id)
+        })
+      } else {
+        elements.forEach((e) => {
+          if (e.iterationId === scopeFilter || e.iteration_id === scopeFilter) matchSet.add(e.id)
+        })
+      }
+
+      // Include ancestors of matching nodes to preserve tree structure
+      const includedIds = new Set<string>()
+      matchSet.forEach((id) => {
+        let curr: string | null = id
+        while (curr) {
+          includedIds.add(curr)
+          const node = elements.find((el) => el.id === curr)
+          curr = node?.parentId || null
+        }
+      })
+
+      baseList = visibleElements.filter((el) => includedIds.has(el.id))
+    }
+
+    if (hideCompleted) {
+      baseList = baseList.filter((el) => !isCompletedStatus(el.status))
+    }
+
+    return baseList
+  }, [visibleElements, elements, scopeFilter, activeIteration, hideCompleted])
+
+  // Filter elements and activities passed to canvas to match scopedVisibleElements
+  const scopedElements = useMemo(() => {
+    const visibleIds = new Set(scopedVisibleElements.map(e => e.id))
+    return elements.filter(e => visibleIds.has(e.id))
+  }, [elements, scopedVisibleElements])
+
+  const scopedActivities = useMemo(() => {
+    const visibleIds = new Set(scopedVisibleElements.map(e => e.id))
+    return activities.filter(a => visibleIds.has(a.wbsElementId) || visibleIds.has(a.id))
+  }, [activities, scopedVisibleElements])
 
   // Scroll Sync Refs
   const leftScrollRef = useRef<HTMLDivElement>(null)
@@ -83,7 +212,6 @@ export default function GanttWorkspace({
   }
 
   const handleExportSnap = () => {
-    // We keep this simple logic in the workspace component
     window.print()
   }
 
@@ -149,6 +277,15 @@ export default function GanttWorkspace({
         onExportChart={handleExportSnap}
         showSidebar={showSidebar}
         setShowSidebar={setShowSidebar}
+        iterations={iterations}
+        scopeFilter={scopeFilter}
+        setScopeFilter={setScopeFilter}
+        methodology={methodology}
+        filteredCount={scopedVisibleElements.filter((e) => e.isWorkPackage).length}
+        workPackagesTerm={terms.workPackages}
+        hideCompleted={hideCompleted}
+        onToggleHideCompleted={() => setHideCompleted((prev) => !prev)}
+        completedCount={completedCount}
       />
 
       {/* Unified Gantt Board Panel (Split view) */}
@@ -156,7 +293,7 @@ export default function GanttWorkspace({
         {/* Left Side: WBS Tree list columns */}
         {showSidebar && (
           <GanttSidebar
-            visibleElements={visibleElements}
+            visibleElements={scopedVisibleElements}
             wbsCodes={wbsCodes}
             elementLevels={elementLevels}
             expandedNodeIds={expandedNodeIds}
@@ -175,8 +312,8 @@ export default function GanttWorkspace({
           className="flex-1 overflow-x-auto overflow-y-auto"
         >
           <GanttTimelineCanvas
-            elements={elements}
-            activities={activities}
+            elements={scopedElements}
+            activities={scopedActivities}
             dependencies={dependencies}
             timelineStart={timelineDates.start}
             timelineEnd={timelineDates.end}

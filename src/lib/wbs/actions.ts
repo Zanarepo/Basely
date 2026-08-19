@@ -27,7 +27,7 @@ export async function getWbsElements(projectId: string): Promise<
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('wbs_elements')
-    .select('*, activities(duration), raci_assignments(*, stakeholder:stakeholders(*, profiles(full_name, email))), cost_accounts(id, budgeted_total, estimation_method)')
+    .select('*, activities(duration), raci_assignments(*, stakeholder:stakeholders(*, profiles(full_name, email))), cost_accounts(id, budgeted_total, estimation_method), product_backlog_items(id, primary_okr_id, okr:okr_objectives(id, title))')
     .eq('project_id', projectId)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
@@ -47,6 +47,16 @@ export async function getWbsElements(projectId: string): Promise<
       } else if (!Array.isArray(d.cost_accounts)) {
         cost = Number(d.cost_accounts.budgeted_total);
         estimationMethod = d.cost_accounts.estimation_method;
+      }
+    }
+
+    let directOkrId = undefined;
+    let directOkrTitle = undefined;
+    if (d.product_backlog_items && d.product_backlog_items.length > 0) {
+      const pbi = d.product_backlog_items[0];
+      if (pbi.okr) {
+        directOkrId = pbi.okr.id;
+        directOkrTitle = pbi.okr.title;
       }
     }
 
@@ -84,8 +94,27 @@ export async function getWbsElements(projectId: string): Promise<
         roleType: r.role_type,
         stakeholder: r.stakeholder
       })) || [],
+      okrId: directOkrId,
+      okrTitle: directOkrTitle,
     }
   })
+
+  // Second pass: inherit OKRs from parents
+  const idMap = new Map<string, WbsElement>(mapped.map(item => [item.id, item]));
+  for (const item of mapped) {
+    if (!item.okrId && item.parentId) {
+      // Traverse up to find an OKR
+      let current = idMap.get(item.parentId);
+      while (current) {
+        if (current.okrId) {
+          item.okrId = current.okrId;
+          item.okrTitle = current.okrTitle;
+          break;
+        }
+        current = current.parentId ? idMap.get(current.parentId) : undefined;
+      }
+    }
+  }
 
   return { ok: true, data: mapped }
 }

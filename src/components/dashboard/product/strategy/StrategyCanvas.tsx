@@ -5,6 +5,11 @@ import type { ProductStrategy, StrategicPillar, CompetitiveMoat } from '@/lib/pr
 import { getProductStrategy, saveProductStrategy } from '@/lib/product-strategy/actions'
 import { PillarEditor } from './PillarEditor'
 import { MoatMatrix } from './MoatMatrix'
+import { DifferentiationEditor } from './DifferentiationEditor'
+import { StrategicBetsEditor } from './StrategicBetsEditor'
+import { ProductPrinciplesEditor } from './ProductPrinciplesEditor'
+import { ProductGoalsEditor } from './ProductGoalsEditor'
+import StructuredEditableField from '@/components/dashboard/documents/components/StructuredEditableField'
 import { createClient } from '@/utils/supabase/client'
 import { Compass, Save, CheckCircle2, Loader2, Globe, Sparkles, Zap, Plus, Trash2, Layers } from 'lucide-react'
 
@@ -69,6 +74,17 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
     setIsDirty(true)
   }
 
+  // Auto-Save Debounce Effect
+  useEffect(() => {
+    if (!isDirty || !strategy || !hasEditAccess || saving) return
+
+    const timer = setTimeout(() => {
+      handleSave()
+    }, 2000) // 2 seconds debounce
+
+    return () => clearTimeout(timer)
+  }, [strategy, isDirty, hasEditAccess, saving])
+
   const handleSave = async () => {
     if (!strategy || !hasEditAccess) return
     setSaving(true)
@@ -80,6 +96,10 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
       value_proposition: strategy.value_proposition,
       strategic_pillars: strategy.strategic_pillars,
       competitive_moats: strategy.competitive_moats,
+      differentiation: strategy.differentiation,
+      strategic_bets: strategy.strategic_bets,
+      product_principles: strategy.product_principles,
+      product_goals: strategy.product_goals,
       custom_attributes: strategy.custom_attributes
     })
 
@@ -177,46 +197,44 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
         </div>
       )}
 
-      {/* Primary Canvas Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* North Star Vision (Full or 2 Col) */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-3 flex flex-col justify-between">
+      {/* Primary Canvas Layout */}
+      <div className="space-y-6">
+        {/* North Star Vision */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-3">
           <div>
             <div className="flex items-center space-x-2 text-violet-600 dark:text-violet-400 font-bold text-sm uppercase tracking-wider">
               <Sparkles className="w-4 h-4" />
               <span>North Star Vision Statement</span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-400 mt-1 mb-3">
               What transformative future are we engineering over the next 3 to 5 years?
             </p>
-            <textarea
-              rows={4}
-              disabled={!hasEditAccess}
+            <StructuredEditableField
               value={strategy.vision_statement || ''}
-              onChange={(e) => handleFieldChange('vision_statement', e.target.value)}
-              placeholder="e.g. To revolutionize Enterprise delivery by creating an AI-agentic ecosystem where product strategy and engineering execution merge effortlessly..."
-              className="w-full mt-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white font-serif text-base leading-relaxed focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all resize-y"
+              onChange={(val) => handleFieldChange('vision_statement', val)}
+              title="North Star Vision"
+              hasEditAccess={hasEditAccess}
+              placeholder="e.g. To revolutionize Enterprise delivery by creating an AI-agentic ecosystem..."
             />
           </div>
         </div>
 
         {/* Target Market Segmentation */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-3 flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-3">
           <div>
             <div className="flex items-center space-x-2 text-violet-600 dark:text-violet-400 font-bold text-sm uppercase tracking-wider">
               <Globe className="w-4 h-4" />
               <span>Target Market Segmentation</span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-400 mt-1 mb-3">
               Which high-value customer tiers (TAM/SAM) are we aggressively serving?
             </p>
-            <textarea
-              rows={4}
-              disabled={!hasEditAccess}
+            <StructuredEditableField
               value={strategy.target_market || ''}
-              onChange={(e) => handleFieldChange('target_market', e.target.value)}
+              onChange={(val) => handleFieldChange('target_market', val)}
+              title="Target Market Segmentation"
+              hasEditAccess={hasEditAccess}
               placeholder="e.g. Enterprise PMOs and SaaS technology firms managing cross-functional technical teams..."
-              className="w-full mt-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white text-sm leading-relaxed focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all resize-y"
             />
           </div>
         </div>
@@ -228,16 +246,15 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
           <Zap className="w-4 h-4 fill-violet-600 text-violet-600 dark:fill-violet-400 dark:text-violet-400" />
           <span>Core Value Proposition & Differentiating Advantage</span>
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-3">
           Why do customers choose this solution over established market alternatives? What is our unmatched competitive leverage?
         </p>
-        <textarea
-          rows={3}
-          disabled={!hasEditAccess}
+        <StructuredEditableField
           value={strategy.value_proposition || ''}
-          onChange={(e) => handleFieldChange('value_proposition', e.target.value)}
-          placeholder="e.g. Traditional project software separates product strategy from engineering tasks. Our solution unifies discovery and execution into a live relational database with real-time generative documentation."
-          className="w-full mt-3 p-4 rounded-xl border border-violet-200 dark:border-violet-800/40 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium text-sm leading-relaxed focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all resize-y shadow-inner"
+          onChange={(val) => handleFieldChange('value_proposition', val)}
+          title="Value Proposition"
+          hasEditAccess={hasEditAccess}
+          placeholder="e.g. Traditional project software separates product strategy from engineering tasks. Our solution unifies discovery and execution..."
         />
       </div>
 
@@ -259,6 +276,42 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
         />
       </div>
 
+      {/* Competitive Differentiation (Section 11) */}
+      <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6">
+        <DifferentiationEditor
+          items={strategy.differentiation || []}
+          onChange={(items) => handleFieldChange('differentiation', items)}
+          hasEditAccess={hasEditAccess}
+        />
+      </div>
+
+      {/* Strategic Bets (Section 12) */}
+      <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6">
+        <StrategicBetsEditor
+          bets={strategy.strategic_bets || []}
+          onChange={(bets) => handleFieldChange('strategic_bets', bets)}
+          hasEditAccess={hasEditAccess}
+        />
+      </div>
+
+      {/* Product Principles (Section 14) */}
+      <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6">
+        <ProductPrinciplesEditor
+          principles={strategy.product_principles || []}
+          onChange={(principles) => handleFieldChange('product_principles', principles)}
+          hasEditAccess={hasEditAccess}
+        />
+      </div>
+
+      {/* Product Goals (Section 15) */}
+      <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6">
+        <ProductGoalsEditor
+          goals={strategy.product_goals || []}
+          onChange={(goals) => handleFieldChange('product_goals', goals)}
+          hasEditAccess={hasEditAccess}
+        />
+      </div>
+
       {/* Dynamic Custom Strategy Dimensions & Document Columns */}
       <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
@@ -272,35 +325,44 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
         </div>
 
         {strategy.custom_attributes && Object.keys(strategy.custom_attributes).length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-6">
             {Object.entries(strategy.custom_attributes).map(([key, value]) => (
-              <div key={key} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col justify-between group relative transition-all">
+              <div key={key} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-3 relative group">
+                <div className="absolute top-4 right-4 z-20">
+                  {hasEditAccess && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        const updated = { ...(strategy.custom_attributes || {}) }
+                        delete updated[key]
+                        handleFieldChange('custom_attributes', updated)
+                      }}
+                      style={{ cursor: 'pointer' }}
+                      className="text-slate-400 hover:text-red-500 transition-opacity duration-200 p-1 opacity-0 group-hover:opacity-100 focus:opacity-100 bg-white/80 dark:bg-slate-800/80 rounded"
+                      title="Delete Custom Dimension"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
                 <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-                      {key}
-                    </span>
-                    {hasEditAccess && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          const updated = { ...(strategy.custom_attributes || {}) }
-                          delete updated[key]
-                          handleFieldChange('custom_attributes', updated)
-                        }}
-                        style={{ cursor: 'pointer' }}
-                        className="text-slate-400 hover:text-red-500 transition-opacity duration-200 p-1 opacity-0 group-hover:opacity-100 focus:opacity-100"
-                        title="Delete Custom Dimension"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                  <div className="flex items-center space-x-2 text-violet-600 dark:text-violet-400 font-bold text-sm uppercase tracking-wider mb-3">
+                    <Layers className="w-4 h-4" />
+                    <span>{key.replace(/_/g, ' ')}</span>
                   </div>
-                  <p className="text-sm text-slate-800 dark:text-slate-200 mt-2 whitespace-pre-wrap">
-                    {value}
-                  </p>
+                  <StructuredEditableField
+                    value={value}
+                    onChange={(val) => {
+                      const updated = { ...(strategy.custom_attributes || {}) }
+                      updated[key] = val
+                      handleFieldChange('custom_attributes', updated)
+                    }}
+                    title={key.replace(/_/g, ' ')}
+                    hasEditAccess={hasEditAccess}
+                    placeholder={`Enter ${key.replace(/_/g, ' ')} details...`}
+                  />
                 </div>
               </div>
             ))}

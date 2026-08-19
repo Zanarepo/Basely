@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useRef, useEffect } from 'react'
 import { MoreHorizontal, Save, Network, Download, Table } from 'lucide-react'
 

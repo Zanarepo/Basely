@@ -9,6 +9,9 @@ import {
   Check,
   X,
   FileCheck,
+  Target,
+  AlertCircle,
+  UserX,
 } from 'lucide-react'
 import type { WbsNodeRowProps } from './types'
 import { getStatusColor, getProgressColor } from './utils'
@@ -236,7 +239,9 @@ export function WbsNodeRow({
         <div className="flex items-center gap-3 shrink-0 ml-4">
           <div className="flex items-center gap-1.5">
             {isMissingRaci && (
-              <span title="Missing Responsible or Accountable assignment" className="text-amber-500 text-xs cursor-help">⚠️</span>
+              <span title="Missing Responsible or Accountable assignment" className="cursor-help">
+                <UserX className="w-4 h-4 text-amber-500" />
+              </span>
             )}
             {initials && (
               <span
@@ -246,7 +251,20 @@ export function WbsNodeRow({
                 {initials}
               </span>
             )}
+            
+            <div className="w-px h-4 bg-app-border/60 mx-1" />
+
+            {element.okrTitle ? (
+              <span title={`Strategic OKR: ${element.okrTitle}`} className="cursor-help text-indigo-500 hover:text-indigo-600 transition-colors">
+                <Target className="w-3.5 h-3.5" />
+              </span>
+            ) : (
+              <span title="Unaligned Work: No Strategic OKR" className="cursor-help text-rose-400 hover:text-rose-500 transition-colors">
+                <AlertCircle className="w-3.5 h-3.5" />
+              </span>
+            )}
           </div>
+
 
           {/* Status badge */}
           <span

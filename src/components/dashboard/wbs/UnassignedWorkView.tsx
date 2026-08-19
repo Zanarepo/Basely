@@ -7,14 +7,22 @@ type UnassignedWorkViewProps = {
   elements: WbsElement[]
   onSelect: (id: string) => void
   terms: TerminologyDict
+  hideCompleted?: boolean
 }
 
-export function UnassignedWorkView({ elements, onSelect, terms }: UnassignedWorkViewProps) {
+export function UnassignedWorkView({ elements, onSelect, terms, hideCompleted = false }: UnassignedWorkViewProps) {
+  const isCompletedStatus = (status?: string | null) => {
+    if (!status) return false
+    const s = status.toLowerCase()
+    return s === 'complete' || s === 'completed' || s === 'done'
+  }
+
   // Find all work packages that lack a Responsible or Accountable assignment
   // Exclude milestones (duration === 0) — they only appear on Gantt and Status Report
   const unassignedElements = elements.filter(t => {
     if (!t.isWorkPackage) return false
     if (t.duration === 0) return false
+    if (hideCompleted && isCompletedStatus(t.status)) return false
     
     const hasResponsible = t.raciAssignments?.some(a => a.roleType === 'Responsible')
     const hasAccountable = t.raciAssignments?.some(a => a.roleType === 'Accountable')

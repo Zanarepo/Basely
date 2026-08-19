@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Check, Edit2, Save, X, UserCog, Shield, Search } from 'lucide-react'
-import { updateProjectMemberPermissions, bulkUpdateProjectMemberPermissions, UpdatePermissionsPayload } from '@/lib/projects/permissions-actions'
-import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
+import { Edit2, Save, X, Shield, Search } from 'lucide-react'
+import { ToastContainer } from '@/components/dashboard/Toast'
+import { useTeamPermissions } from './hooks/useTeamPermissions'
 
 type WorkspaceMember = {
   userId: string
@@ -29,121 +28,23 @@ interface TeamPermissionsWorkspaceProps {
 }
 
 export default function TeamPermissionsWorkspace({ projectId, workspaceMembers, projectMembersData, hasEditAccess }: TeamPermissionsWorkspaceProps) {
-  const [editingUserId, setEditingUserId] = useState<string | null>(null)
-  const [editState, setEditState] = useState<UpdatePermissionsPayload | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-  const [toasts, setToasts] = useState<ToastMessage[]>([])
-  
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
-
-  const showToast = (type: 'success' | 'error' | 'info', message: string) => {
-    const id = Math.random().toString(36).substr(2, 9)
-    setToasts(prev => [...prev, { id, type, message }])
-  }
-
-  const dismissToast = (id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id))
-  }
-
-  // Map the members together
-  const membersWithPermissions = workspaceMembers.map(wm => {
-    const pm = (projectMembersData || []).find(p => p.user_id === wm.userId)
-    const isAssigned = !!pm
-    return {
-      ...wm,
-      isAssigned,
-      permissions: {
-        can_edit_schedule: pm?.can_edit_schedule || false,
-        can_edit_cost: pm?.can_edit_cost || false,
-        can_edit_risks: pm?.can_edit_risks || false,
-        can_edit_documents: pm?.can_edit_documents || false,
-        project_role_title: pm?.project_role_title || ''
-      }
-    }
-  }).sort((a, b) => Number(b.isAssigned) - Number(a.isAssigned))
-
-  const filteredMembers = membersWithPermissions.filter(m => 
-    m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    m.email.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const toggleSelectUser = (userId: string) => {
-    const next = new Set(selectedUserIds)
-    if (next.has(userId)) next.delete(userId)
-    else next.add(userId)
-    setSelectedUserIds(next)
-  }
-
-  const toggleSelectAll = () => {
-    if (selectedUserIds.size === filteredMembers.length && filteredMembers.length > 0) {
-      setSelectedUserIds(new Set())
-    } else {
-      setSelectedUserIds(new Set(filteredMembers.map(m => m.userId)))
-    }
-  }
-
-  const handleEditClick = (userId: string, currentPerms: UpdatePermissionsPayload) => {
-    if (!hasEditAccess) return
-    setEditingUserId(userId)
-    setEditState({ ...currentPerms })
-  }
-
-  const handleCancel = () => {
-    setEditingUserId(null)
-    setEditState(null)
-  }
-
-  const handleSave = async (userId: string) => {
-    if (!editState || !hasEditAccess) return
-    setIsSaving(true)
-    try {
-      const res = await updateProjectMemberPermissions(projectId, userId, editState)
-      if (res.ok) {
-        showToast('success', 'Permissions updated successfully')
-        setEditingUserId(null)
-        setEditState(null)
-      } else {
-        showToast('error', res.error || 'Failed to update permissions')
-      }
-    } catch (err) {
-      showToast('error', 'An error occurred')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const startBulkEdit = () => {
-    if (!hasEditAccess || selectedUserIds.size === 0) return
-    setEditingUserId('bulk')
-    setEditState({
-      can_edit_schedule: false,
-      can_edit_cost: false,
-      can_edit_risks: false,
-      can_edit_documents: false,
-      project_role_title: ''
-    })
-  }
-
-  const handleBulkSave = async () => {
-    if (!editState || !hasEditAccess || selectedUserIds.size === 0) return
-    setIsSaving(true)
-    try {
-      const res = await bulkUpdateProjectMemberPermissions(projectId, Array.from(selectedUserIds), editState)
-      if (res.ok) {
-        showToast('success', `Permissions updated for ${selectedUserIds.size} members`)
-        setEditingUserId(null)
-        setEditState(null)
-        setSelectedUserIds(new Set())
-      } else {
-        showToast('error', res.error || 'Failed to bulk update permissions')
-      }
-    } catch (err) {
-      showToast('error', 'An error occurred')
-    } finally {
-      setIsSaving(false)
-    }
-  }
+  const {
+    editingUserId,
+    editState, setEditState,
+    isSaving,
+    toasts,
+    dismissToast,
+    searchQuery, setSearchQuery,
+    selectedUserIds,
+    filteredMembers,
+    toggleSelectUser,
+    toggleSelectAll,
+    handleEditClick,
+    handleCancel,
+    handleSave,
+    startBulkEdit,
+    handleBulkSave
+  } = useTeamPermissions(projectId, workspaceMembers, projectMembersData, hasEditAccess)
 
   return (
     <div className="bg-app-surface border border-app-border rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
@@ -214,7 +115,7 @@ export default function TeamPermissionsWorkspace({ projectId, workspaceMembers, 
                 <td className="px-6 py-4">
                   <input 
                     type="text" 
-                    value={editState.project_role_title}
+                    value={editState.project_role_title || ''}
                     onChange={(e) => setEditState({...editState, project_role_title: e.target.value})}
                     placeholder="e.g. Cost Manager"
                     className="w-full bg-app-surface border border-violet-500/30 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-violet-500 shadow-sm"
@@ -296,7 +197,7 @@ export default function TeamPermissionsWorkspace({ projectId, workspaceMembers, 
                     {isEditing ? (
                       <input 
                         type="text" 
-                        value={perms.project_role_title}
+                        value={perms.project_role_title || ''}
                         onChange={(e) => setEditState({...perms, project_role_title: e.target.value})}
                         placeholder="e.g. Cost Manager"
                         className="w-full bg-app-surface border border-app-border rounded-md px-2 py-1 text-sm focus:outline-none focus:border-violet-500"

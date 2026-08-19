@@ -103,174 +103,170 @@ export function KpiScorecard({
   }
 
   return (
-    <div className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden">
-      {/* Top Banner & Category */}
-      <div>
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800/60">
+    <div className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-xs hover:shadow-sm transition-all duration-200 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between overflow-hidden">
+      
+      {/* Left side: Category, Title, Trend & Attributes */}
+      <div className="flex-1 min-w-0 w-full flex flex-col gap-1.5">
+        <div className="flex items-center gap-3 mb-1">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 border border-violet-200/50 dark:border-violet-800/50">
             {categoryLabels[kpi.category] || kpi.category}
           </span>
-          
-          <div className="flex items-center gap-2">
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border uppercase tracking-wider ${statusColors[kpi.status as keyof typeof statusColors] || 'bg-slate-100 text-slate-600'}`}>
-              {kpi.status.replace('_', ' ')}
-            </span>
-
-            {/* Hover-only Edit & Delete actions */}
-            {hasEditAccess && (
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    onEdit(kpi)
-                  }}
-                  style={{ cursor: 'pointer' }}
-                  title="Edit KPI Parameters"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  style={{ cursor: 'pointer' }}
-                  title="Delete KPI"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-                >
-                  {isDeleting ? <Loader2 className="w-4 h-4 animate-spin text-rose-500" /> : <Trash2 className="w-4 h-4" />}
-                </button>
-              </div>
-            )}
-          </div>
+          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${statusColors[kpi.status as keyof typeof statusColors] || 'bg-slate-100 text-slate-600'}`}>
+            {kpi.status.replace('_', ' ')}
+          </span>
         </div>
 
-        {/* KPI Name */}
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight mb-4">
+        <h3 className="text-base font-bold text-slate-900 dark:text-white truncate">
           {kpi.name}
         </h3>
 
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+          <div className="flex items-center gap-1.5">
+            <Activity className="w-3.5 h-3.5 text-violet-500" />
+            Measured {kpi.frequency}
+          </div>
+          
+          <div className="flex items-center gap-1">
+            {kpi.trend_direction === 'up' ? (
+              <span className="inline-flex items-center text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                <TrendingUp className="w-3 h-3 mr-1" /> Trending Up
+              </span>
+            ) : kpi.trend_direction === 'down' ? (
+              <span className="inline-flex items-center text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-1.5 py-0.5 rounded">
+                <TrendingDown className="w-3 h-3 mr-1" /> Trending Down
+              </span>
+            ) : (
+              <span className="inline-flex items-center text-amber-500 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded">
+                <Minus className="w-3 h-3 mr-1" /> Stable
+              </span>
+            )}
+          </div>
+
+          {/* Dynamic Custom Attributes */}
+          {kpi.custom_attributes && Object.keys(kpi.custom_attributes).length > 0 && (
+            <div className="flex items-center gap-2 pl-4 border-l border-slate-200 dark:border-slate-700">
+              {Object.entries(kpi.custom_attributes).map(([key, val]) => (
+                <span key={key} className="inline-flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-300 group/tag">
+                  <strong className="text-slate-400 dark:text-slate-500">{key}:</strong> {val}
+                  {hasEditAccess && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleRemoveAttribute(key, e)}
+                      className="text-slate-300 hover:text-rose-500 opacity-0 group-hover/tag:opacity-100 transition-opacity"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  )}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Quick Add Custom Attribute (Hover only) */}
+        {hasEditAccess && (
+          <div className="mt-1 flex items-center gap-1.5 opacity-0 focus-within:opacity-100 group-hover:opacity-100 transition-opacity">
+            <input
+              type="text"
+              value={newAttrKey}
+              onChange={(e) => setNewAttrKey(e.target.value)}
+              placeholder="Tag Name"
+              className="w-24 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-transparent text-slate-800 dark:text-slate-200 text-[10px] focus:ring-1 focus:ring-violet-500 focus:outline-none"
+            />
+            <input
+              type="text"
+              value={newAttrVal}
+              onChange={(e) => setNewAttrVal(e.target.value)}
+              placeholder="Value"
+              className="w-32 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-transparent text-slate-800 dark:text-slate-200 text-[10px] focus:ring-1 focus:ring-violet-500 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleAddAttribute}
+              disabled={isAddingAttr || !newAttrKey.trim() || !newAttrVal.trim()}
+              className="p-1 bg-slate-100 dark:bg-slate-800 hover:bg-violet-100 dark:hover:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded text-xs transition-colors disabled:opacity-40"
+            >
+              {isAddingAttr ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Right side: Values & Actions */}
+      <div className="flex items-center gap-6 md:gap-8 w-full md:w-auto shrink-0 justify-between md:justify-end border-t md:border-t-0 pt-4 md:pt-0 border-slate-100 dark:border-slate-800">
+        
         {/* Value Dashboard */}
-        <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 mb-4 flex items-center justify-between">
-          <div>
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">CURRENT VALUE</span>
+        <div className="flex items-center gap-6">
+          <div className="text-right">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Current</span>
             {isEditingValue && hasEditAccess ? (
               <div className="flex items-center gap-1">
                 <input
                   type="text"
                   value={inlineValue}
                   onChange={(e) => setInlineValue(e.target.value)}
-                  className="w-24 px-2 py-1 text-sm font-bold bg-white dark:bg-slate-700 border border-violet-500 rounded text-slate-900 dark:text-white focus:outline-none"
+                  className="w-16 px-1.5 py-0.5 text-base font-bold bg-white dark:bg-slate-700 border border-violet-500 rounded text-slate-900 dark:text-white focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleSaveValue}
                   disabled={isUpdatingValue}
-                  style={{ cursor: 'pointer' }}
                   className="p-1 text-white bg-violet-500 hover:bg-violet-600 rounded"
                 >
-                  {isUpdatingValue ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  {isUpdatingValue ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                 </button>
               </div>
             ) : (
               <div
                 onClick={() => hasEditAccess && setIsEditingValue(true)}
-                style={{ cursor: hasEditAccess ? 'pointer' : 'default' }}
-                className="flex items-baseline gap-1.5 group/value"
-                title={hasEditAccess ? "Click to quick-update value without reload" : undefined}
+                className={`flex items-baseline gap-1 group/value justify-end ${hasEditAccess ? 'cursor-pointer hover:opacity-80' : ''}`}
               >
-                <span className="text-2xl font-extrabold text-violet-600 dark:text-violet-400">
+                <span className="text-2xl font-extrabold text-violet-600 dark:text-violet-400 leading-none">
                   {kpi.current_value}
                 </span>
-                <span className="text-xs text-slate-500 uppercase">{kpi.unit === 'percentage' ? '%' : kpi.unit === 'currency' ? '$' : ''}</span>
-                {isUpdatingValue && <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-500 ml-1" />}
+                <span className="text-xs font-bold text-violet-400 uppercase">{kpi.unit === 'percentage' ? '%' : kpi.unit === 'currency' ? '$' : ''}</span>
+                {isUpdatingValue && <Loader2 className="w-3 h-3 animate-spin text-violet-500 ml-1" />}
               </div>
             )}
           </div>
+          
+          <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
 
-          <div className="text-right">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">TARGET VALUE</span>
-            <span className="text-xl font-bold text-slate-700 dark:text-slate-300">
-              {kpi.target_value} <span className="text-xs text-slate-400 uppercase">{kpi.unit === 'percentage' ? '%' : kpi.unit === 'currency' ? '$' : ''}</span>
-            </span>
+          <div className="text-left">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Target</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-bold text-slate-700 dark:text-slate-300 leading-none">
+                {kpi.target_value}
+              </span>
+              <span className="text-xs font-bold text-slate-400 uppercase">{kpi.unit === 'percentage' ? '%' : kpi.unit === 'currency' ? '$' : ''}</span>
+            </div>
           </div>
         </div>
 
-        {/* Frequency & Trend */}
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 mb-4">
-          <div className="flex items-center gap-1.5 font-medium">
-            <Activity className="w-3.5 h-3.5 text-violet-500" />
-            Measured {kpi.frequency}
-          </div>
-          <div className="flex items-center gap-1 font-semibold">
-            {kpi.trend_direction === 'up' ? (
-              <span className="inline-flex items-center text-emerald-500">
-                <TrendingUp className="w-3.5 h-3.5 mr-1" /> Trending Upward
-              </span>
-            ) : kpi.trend_direction === 'down' ? (
-              <span className="inline-flex items-center text-rose-500">
-                <TrendingDown className="w-3.5 h-3.5 mr-1" /> Trending Downward
-              </span>
-            ) : (
-              <span className="inline-flex items-center text-amber-500">
-                <Minus className="w-3.5 h-3.5 mr-1" /> Stable Trend
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Dynamic Custom Attributes / Extra Columns */}
-        {kpi.custom_attributes && Object.keys(kpi.custom_attributes).length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-            {Object.entries(kpi.custom_attributes).map(([key, val]) => (
-              <span key={key} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-violet-200/60 dark:border-violet-900/40 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-2xs group/tag relative">
-                <strong className="text-violet-600 dark:text-violet-400">{key}:</strong> {val}
-                {hasEditAccess && (
-                  <button
-                    type="button"
-                    onClick={(e) => handleRemoveAttribute(key, e)}
-                    style={{ cursor: 'pointer' }}
-                    className="text-slate-400 hover:text-rose-500 ml-1 transition-all opacity-0 group-hover/tag:opacity-100 focus:opacity-100"
-                    title="Remove custom attribute"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </span>
-            ))}
+        {/* Actions (Hover) */}
+        {hasEditAccess && (
+          <div className="flex flex-row md:flex-col items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                onEdit(kpi)
+              }}
+              className="p-1.5 rounded-md text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="p-1.5 rounded-md text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin text-rose-500" /> : <Trash2 className="w-4 h-4" />}
+            </button>
           </div>
         )}
       </div>
-
-      {/* Footer: Quick Add Custom Attribute */}
-      {hasEditAccess && (
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
-          <input
-            type="text"
-            value={newAttrKey}
-            onChange={(e) => setNewAttrKey(e.target.value)}
-            placeholder="New Column (e.g. Source)"
-            className="w-1/2 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] focus:ring-1 focus:ring-violet-500 focus:outline-none"
-          />
-          <input
-            type="text"
-            value={newAttrVal}
-            onChange={(e) => setNewAttrVal(e.target.value)}
-            placeholder="Value (e.g. Snowflake)"
-            className="w-1/2 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] focus:ring-1 focus:ring-violet-500 focus:outline-none"
-          />
-          <button
-            type="button"
-            onClick={handleAddAttribute}
-            disabled={isAddingAttr || !newAttrKey.trim() || !newAttrVal.trim()}
-            style={{ cursor: 'pointer' }}
-            className="px-2 py-1 bg-violet-500 hover:bg-violet-600 text-white rounded-lg text-xs font-semibold shrink-0 transition-colors disabled:opacity-40 inline-flex items-center"
-          >
-            {isAddingAttr ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
-          </button>
-        </div>
-      )}
     </div>
   )
 }

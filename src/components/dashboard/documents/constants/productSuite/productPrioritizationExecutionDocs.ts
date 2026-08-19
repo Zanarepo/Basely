@@ -36,21 +36,4 @@ export const productPrioritizationExecutionDocs: DocumentItem[] = [
       ],
     },
   },
-  {
-    id: 'okr_kpi_performance_report',
-    title: 'OKR & KPI Report Doc',
-    category: 'execution',
-    suite: 'product',
-    icon: BarChart3,
-    description: 'Performance synthesis report on quarterly OKRs & North Star KPIs.',
-    badge: 'Reporting',
-    guide: {
-      purpose: 'Summarizes quarterly progress against key results and telemetry metrics.',
-      audience: 'Leadership, PMO, Product Teams',
-      bestPractices: [
-        'Include qualitative commentary alongside raw KPI trends.',
-        'Document learnings from missed key results.',
-      ],
-    },
-  },
 ]

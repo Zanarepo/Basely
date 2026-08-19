@@ -87,28 +87,79 @@ export async function fetchProjectReleasesData(projectId: string): Promise<{
     // Fetch WBS items and Activities for scope computation and item tagging count
     const { data: rawWbs } = await supabase
       .from('wbs_elements')
-      .select('id, name, code, iteration_id')
+      .select('id, name, code, iteration_id, parent_id, status')
       .eq('project_id', projectId)
 
     const { data: rawActivities } = await supabase
       .from('activities')
-      .select('id, name, wbs_element_id, iteration_id')
+      .select('id, name, wbs_element_id, iteration_id, status')
       .eq('project_id', projectId)
 
+    const isCompletedStatus = (status?: string | null) => {
+      if (!status) return false
+      const s = status.trim().toLowerCase()
+      return s === 'complete' || s === 'completed' || s === 'done' || s === 'closed' || s === 'finished'
+    }
+
+    const isInProgressStatus = (status?: string | null) => {
+      if (!status) return false
+      const s = status.trim().toLowerCase()
+      return s === 'in progress' || s === 'in_progress' || s === 'active' || s === 'doing' || s === 'started'
+    }
+
     const wbsMap = new Map((rawWbs || []).map(w => [w.id, w]))
-    const iterMap = new Map((rawIterations || []).map(i => [i.id, {
-      id: i.id,
-      projectId: i.project_id,
-      name: i.name,
-      sequenceNumber: i.sequence_number,
-      startDate: i.start_date,
-      endDate: i.end_date,
-      labelOverride: i.label_override || null,
-      createdAt: i.created_at,
-      updatedAt: i.updated_at,
-      taggedWbsCount: (rawWbs || []).filter(w => w.iteration_id === i.id).length,
-      taggedActivityCount: (rawActivities || []).filter(a => a.iteration_id === i.id).length,
-    } as Iteration]))
+    const iterMap = new Map((rawIterations || []).map(i => {
+      const taggedWbs = (rawWbs || []).filter(w => w.iteration_id === i.id)
+      const taggedActs = (rawActivities || []).filter(a => a.iteration_id === i.id)
+
+      const totalItems = taggedWbs.length + taggedActs.length
+      const completedWbs = taggedWbs.filter(w => isCompletedStatus(w.status)).length
+      const completedActs = taggedActs.filter(a => isCompletedStatus(a.status)).length
+      const completedCount = completedWbs + completedActs
+
+      const inProgWbs = taggedWbs.filter(w => isInProgressStatus(w.status)).length
+      const inProgActs = taggedActs.filter(a => isInProgressStatus(a.status)).length
+      const inProgressCount = inProgWbs + inProgActs
+
+      const epicNamesSet = new Set<string>()
+      taggedWbs.forEach(w => {
+        const parent = w.parent_id ? wbsMap.get(w.parent_id) : null
+        if (parent) {
+          epicNamesSet.add(parent.name)
+        } else if (w.name) {
+          epicNamesSet.add(w.name)
+        }
+      })
+      taggedActs.forEach(a => {
+        const parent = wbsMap.get(a.wbs_element_id)
+        if (parent) epicNamesSet.add(parent.name)
+      })
+
+      let sprintStatus: 'planned' | 'active' | 'completed' = 'planned'
+      if (totalItems > 0 && completedCount === totalItems) {
+        sprintStatus = 'completed'
+      } else if (completedCount > 0 || inProgressCount > 0) {
+        sprintStatus = 'active'
+      }
+
+      return [i.id, {
+        id: i.id,
+        projectId: i.project_id,
+        name: i.name,
+        sequenceNumber: i.sequence_number,
+        startDate: i.start_date,
+        endDate: i.end_date,
+        labelOverride: i.label_override || null,
+        createdAt: i.created_at,
+        updatedAt: i.updated_at,
+        taggedWbsCount: taggedWbs.length,
+        taggedActivityCount: taggedActs.length,
+        completedCount,
+        inProgressCount,
+        epicNames: Array.from(epicNamesSet),
+        status: sprintStatus
+      } as Iteration]
+    }))
 
     const iterations = Array.from(iterMap.values())
 
@@ -178,6 +229,7 @@ export async function fetchProjectReleasesData(projectId: string): Promise<{
         // Tagged WBS
         ;(rawWbs || []).filter(w => w.iteration_id === iterId).forEach(w => {
           if (!excludedEntityIds.has(w.id)) {
+            const parentEpic = w.parent_id ? wbsMap.get(w.parent_id) : undefined
             autoScopeItems.push({
               id: `wbs_${w.id}`,
               entityId: w.id,
@@ -186,6 +238,9 @@ export async function fetchProjectReleasesData(projectId: string): Promise<{
               code: w.code,
               iterationName: iterName,
               iterationId: iterId,
+              parentEpicId: parentEpic?.id || w.id,
+              parentEpicName: parentEpic?.name || w.name,
+              status: w.status || 'not_started',
               source: 'auto_derived'
             })
           }
@@ -195,6 +250,7 @@ export async function fetchProjectReleasesData(projectId: string): Promise<{
         ;(rawActivities || []).filter(a => a.iteration_id === iterId).forEach(a => {
           if (!excludedEntityIds.has(a.id)) {
             const wbs = wbsMap.get(a.wbs_element_id)
+            const parentEpic = wbs?.parent_id ? wbsMap.get(wbs.parent_id) : wbs
             autoScopeItems.push({
               id: `act_${a.id}`,
               entityId: a.id,
@@ -203,6 +259,9 @@ export async function fetchProjectReleasesData(projectId: string): Promise<{
               code: wbs ? wbs.code : undefined,
               iterationName: iterName,
               iterationId: iterId,
+              parentEpicId: parentEpic?.id,
+              parentEpicName: parentEpic?.name,
+              status: a.status || 'not_started',
               source: 'auto_derived'
             })
           }
@@ -276,7 +335,8 @@ export async function fetchProjectReleasesData(projectId: string): Promise<{
         manualScope,
         readinessItems,
         deploymentPlans,
-        rollbackPlans
+        rollbackPlans,
+        releaseNotes: r.release_notes || r.changelog || null
       }
     })
 
@@ -593,3 +653,172 @@ export async function tagWorkItemToIteration(
   await logProjectActivity(projectId, entityType as any, entityId, 'updated', { iteration_id: iterationId })
   return { ok: true }
 }
+
+/**
+ * Batch tags an entire Epic (parent WBS element) and all its child WBS elements/work packages to an iteration/sprint.
+ */
+export async function tagEpicToIteration(
+  epicId: string,
+  iterationId: string | null,
+  projectId: string
+): Promise<{ ok: boolean; count?: number; error?: string }> {
+  try {
+    const supabase = await createClient()
+
+    // 1. Tag parent Epic
+    const { error: epicErr } = await supabase
+      .from('wbs_elements')
+      .update({ iteration_id: iterationId })
+      .eq('id', epicId)
+      .eq('project_id', projectId)
+
+    if (epicErr) return { ok: false, error: epicErr.message }
+
+    // 2. Fetch and tag all child WBS elements
+    const { data: children, error: childErr } = await supabase
+      .from('wbs_elements')
+      .select('id')
+      .eq('parent_id', epicId)
+      .eq('project_id', projectId)
+
+    let updatedCount = 1
+
+    if (!childErr && children && children.length > 0) {
+      const childIds = children.map(c => c.id)
+      const { error: batchErr } = await supabase
+        .from('wbs_elements')
+        .update({ iteration_id: iterationId })
+        .in('id', childIds)
+
+      if (!batchErr) {
+        updatedCount += childIds.length
+        // Also tag associated activities
+        await supabase
+          .from('activities')
+          .update({ iteration_id: iterationId })
+          .in('wbs_element_id', childIds)
+      }
+    }
+
+    await logProjectActivity(projectId, 'wbs_element' as any, epicId, 'updated', {
+      action: 'tag_epic_to_iteration',
+      iteration_id: iterationId,
+      items_tagged: updatedCount
+    })
+
+    return { ok: true, count: updatedCount }
+  } catch (err: any) {
+    console.error('tagEpicToIteration error:', err)
+    return { ok: false, error: err.message || 'Failed to tag epic to iteration' }
+  }
+}
+
+/**
+ * Uses Praz-AI to generate Release Notes & Deployment Checklists grouped by Epic for a release package.
+ */
+export async function generateAiReleaseNotesAndChecklist(
+  releaseId: string,
+  projectId: string,
+  methodology: string = 'Agile'
+): Promise<{
+  ok: boolean
+  error?: string
+  releaseNotesHtml?: string
+  checklistItems?: Array<{ category: string; itemText: string }>
+}> {
+  try {
+    const { ok, releases, scopeItemsMap } = await fetchProjectReleasesData(projectId)
+    if (!ok || !releases) return { ok: false, error: 'Failed to fetch release details' }
+
+    const release = releases.find(r => r.id === releaseId)
+    if (!release) return { ok: false, error: 'Release not found' }
+
+    const scopeItems = scopeItemsMap?.[releaseId] || []
+    if (scopeItems.length === 0) {
+      return { ok: false, error: 'No scope items found in this release. Link iterations or add scope items first.' }
+    }
+
+    const { generateStructuredJson } = await import('@/lib/ai/ai-provider-router')
+    
+    const isAgile = methodology === 'Agile' || methodology === 'Hybrid'
+    
+    const result = await generateStructuredJson<{
+      release_title: string
+      executive_summary: string
+      features_by_epic: Array<{
+        epic_name: string
+        user_stories_delivered: string[]
+        value_highlight: string
+      }>
+      operations_checklist: Array<{
+        category: 'Database' | 'API & Integration' | 'Security & Auth' | 'Documentation' | 'Quality Assurance'
+        item_text: string
+      }>
+      release_notes_markdown: string
+    }>({
+      systemPrompt: `You are an expert Product Manager & Release Ops Manager in a dual Product/Project management platform.
+Generate a comprehensive Release Notes and Technical Operations Deployment Checklist based on the items in the release scope.
+
+Tailor terminology to ${isAgile ? 'Agile (Release Notes, Epics, User Stories, Features)' : 'Waterfall/Enterprise (Milestone Handover Report, Summary Elements, Work Packages, Deliverables)'}.
+
+Output JSON matching this exact structure:
+{
+  "release_title": "string",
+  "executive_summary": "High-level summary of what this release delivers to customers and business stakeholders.",
+  "features_by_epic": [
+    {
+      "epic_name": "Epic Title",
+      "user_stories_delivered": ["Item 1", "Item 2"],
+      "value_highlight": "Summary of business/user value"
+    }
+  ],
+  "operations_checklist": [
+    {
+      "category": "Database",
+      "item_text": "Verify schema migration scripts for..."
+    }
+  ],
+  "release_notes_markdown": "Full Markdown release notes ready for customer publishing."
+}`,
+      userPrompt: `Release Name: ${release.name}
+Objective: ${release.objective || 'N/A'}
+Scope Items Delivered:
+${scopeItems.map(item => `- [${item.entityType.toUpperCase()}] ${item.title} (Epic: ${item.parentEpicName || 'General'})`).join('\n')}`
+    })
+
+    const supabase = await createClient()
+
+    // Insert generated readiness checklist items into DB
+    if (result.operations_checklist && result.operations_checklist.length > 0) {
+      const readinessRows = result.operations_checklist.map(chk => ({
+        release_id: releaseId,
+        category: chk.category,
+        item_text: chk.item_text,
+        is_checked: false
+      }))
+
+      await supabase.from('release_readiness_items').insert(readinessRows)
+    }
+
+    // Save generated release notes to releases table
+    if (result.release_notes_markdown) {
+      try {
+        await supabase
+          .from('releases')
+          .update({ release_notes: result.release_notes_markdown })
+          .eq('id', releaseId)
+      } catch (e) {}
+    }
+
+    return {
+      ok: true,
+      releaseNotesHtml: result.release_notes_markdown,
+      checklistItems: result.operations_checklist?.map(c => ({ category: c.category, itemText: c.item_text }))
+    }
+
+  } catch (err: any) {
+    console.error('generateAiReleaseNotesAndChecklist error:', err)
+    return { ok: false, error: err.message || 'AI generation failed' }
+  }
+}
+

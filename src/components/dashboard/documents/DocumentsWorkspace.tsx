@@ -127,7 +127,6 @@ export default function DocumentsWorkspace({
                 'market_research_workspace',
                 'competitive_benchmarking_matrix',
                 'competitive_analysis_workspace',
-                'okr_kpi_performance_report',
                 'product_requirements_document',
                 'roadmap_workspace',
                 'product_roadmap_document',
@@ -148,8 +147,7 @@ export default function DocumentsWorkspace({
               {[
                 'strategy_canvas_workspace',
                 'personas_workspace',
-                'north_star_kpis_workspace',
-                'okrs_workspace',
+                'strategic_outcomes_hub',
                 'voc_discovery_workspace',
                 'discovery_insights_document',
                 'prioritization_workspace',

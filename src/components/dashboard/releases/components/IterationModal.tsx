@@ -1,18 +1,25 @@
-'use client'
-
 import React, { useState, useEffect } from 'react'
-import { X, Loader2, Calendar, Hash, Tag } from 'lucide-react'
+import { X, Loader2, Calendar, Hash, Tag, Layers } from 'lucide-react'
 import type { Iteration } from '@/lib/releases/types'
 import { getIterationLabel } from '@/lib/releases/types'
+import type { WbsElement } from '@/lib/wbs/constants'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface IterationModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null) => Promise<any>
+  onSave: (
+    name: string,
+    sequenceNumber: number,
+    startDate: string,
+    endDate: string,
+    labelOverride?: 'sprint' | 'phase' | null,
+    selectedWbsIds?: string[]
+  ) => Promise<any>
   iterationToEdit?: Iteration | null
   projectMethodology?: string | null
   nextSequenceNumber: number
+  availableWbsElements?: WbsElement[]
 }
 
 export function IterationModal({
@@ -22,12 +29,14 @@ export function IterationModal({
   iterationToEdit,
   projectMethodology,
   nextSequenceNumber,
+  availableWbsElements,
 }: IterationModalProps) {
   const [name, setName] = useState('')
   const [sequenceNumber, setSequenceNumber] = useState(1)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [labelOverride, setLabelOverride] = useState<'sprint' | 'phase' | ''>('')
+  const [selectedWbsIds, setSelectedWbsIds] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,6 +50,7 @@ export function IterationModal({
       setStartDate(iterationToEdit.startDate)
       setEndDate(iterationToEdit.endDate)
       setLabelOverride(iterationToEdit.labelOverride || '')
+      setSelectedWbsIds([])
     } else {
       setName(`${defaultLabel} ${nextSequenceNumber}`)
       setSequenceNumber(nextSequenceNumber)
@@ -53,6 +63,7 @@ export function IterationModal({
       setStartDate(today.toISOString().split('T')[0])
       setEndDate(twoWeeks.toISOString().split('T')[0])
       setLabelOverride(isHybrid ? 'sprint' : '')
+      setSelectedWbsIds([])
     }
     setError(null)
   }, [iterationToEdit, nextSequenceNumber, defaultLabel, isHybrid, isOpen])
@@ -81,7 +92,8 @@ export function IterationModal({
       Number(sequenceNumber),
       startDate,
       endDate,
-      labelOverride === '' ? null : (labelOverride as 'sprint' | 'phase')
+      labelOverride === '' ? null : (labelOverride as 'sprint' | 'phase'),
+      selectedWbsIds
     )
     setLoading(false)
 
@@ -93,9 +105,12 @@ export function IterationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150 cursor-pointer"
+      onClick={onClose}
+    >
       <div
-        className="bg-app-card border border-app-border rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
+        className="bg-app-card border border-app-border rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] cursor-default"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-app-border bg-app-surface/50">
@@ -194,6 +209,67 @@ export function IterationModal({
               />
             </div>
           </div>
+
+          {/* Tag Scope Deliverables Checklist */}
+          {availableWbsElements && availableWbsElements.length > 0 && (
+            <div className="space-y-2 pt-2 border-t border-app-border/60">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-app-muted flex items-center gap-1.5 uppercase tracking-wider">
+                  <Layers className="h-3.5 w-3.5 text-purple-500" />
+                  Tag Scope Deliverables ({selectedWbsIds.length} Selected)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedWbsIds.length === availableWbsElements.length) {
+                      setSelectedWbsIds([])
+                    } else {
+                      setSelectedWbsIds(availableWbsElements.map(e => e.id))
+                    }
+                  }}
+                  className="text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
+                >
+                  {selectedWbsIds.length === availableWbsElements.length ? 'Deselect All' : 'Select All'}
+                </button>
+              </div>
+
+              <div className="max-h-36 overflow-y-auto border border-app-border rounded-xl divide-y divide-app-border/50 bg-app-surface/40 p-1">
+                {availableWbsElements.map((el) => {
+                  const isChecked = selectedWbsIds.includes(el.id)
+                  return (
+                    <label
+                      key={el.id}
+                      className="flex items-center justify-between p-2 hover:bg-app-surface transition-colors cursor-pointer rounded-lg text-xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedWbsIds((prev) => [...prev, el.id])
+                            } else {
+                              setSelectedWbsIds((prev) => prev.filter((id) => id !== el.id))
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-purple-600 focus:ring-purple-500 bg-white dark:bg-slate-950 cursor-pointer"
+                        />
+                        <span className="font-semibold text-app-fg truncate">
+                          {el.code ? `[${el.code}] ` : ''}
+                          {el.name}
+                        </span>
+                      </div>
+                      {el.priority && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300">
+                          {el.priority}
+                        </span>
+                      )}
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           <p className="text-xs text-app-muted bg-app-surface/60 p-3 rounded-xl border border-app-border/50">
             <strong>Unified Schema Notice:</strong> Sprints and Phases use an identical underlying data model. Switching your project methodology mid-flight will preserve all iterations and work item mappings without data loss.

@@ -1,4 +1,4 @@
-import { Trash2, CheckSquare } from 'lucide-react'
+import { Trash2, CheckSquare, Target, UserX, AlertCircle } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 
 interface WbsBoardCardProps {
@@ -119,7 +119,8 @@ export function WbsBoardCard({
       <div className="text-sm text-app-fg font-medium leading-snug mb-3">
         {t.name}
       </div>
-      
+
+
       {t.deliverablesData && t.deliverablesData.length > 0 && (
         <div className="flex items-center gap-1.5 mb-1 text-[10px] font-medium text-violet-500/80">
           <CheckSquare className="w-3 h-3" />
@@ -155,33 +156,51 @@ export function WbsBoardCard({
         </div>
       )}
       
-      <div className="flex items-center justify-between mt-auto">
-        <div className="flex items-center gap-1.5">
-          {initials ? (
+      <div className="flex flex-col mt-auto gap-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            {initials ? (
+              <div
+                className="w-6 h-6 rounded-full bg-emerald-500 text-white text-[9px] flex items-center justify-center font-semibold shrink-0"
+                title={`Responsible: ${responsibleName}`}
+              >
+                {initials}
+              </div>
+            ) : (
+              <div className="w-6 h-6 rounded-full border border-dashed border-app-border flex items-center justify-center text-app-subtle text-[10px]" title="No Responsible assigned">
+                +
+              </div>
+            )}
+            {isMissingRaci && (
+              <span title="Missing Responsible or Accountable assignment" className="cursor-help">
+                <UserX className="w-3.5 h-3.5 text-amber-500" />
+              </span>
+            )}
+          </div>
+          
+          {/* Workflow stage progress bar */}
+          <div className="w-16 h-1.5 bg-app-muted-surface rounded-full overflow-hidden" title={`Workflow Stage: ${visibleColIndex + 1} of ${visibleColumnsLength}`}>
             <div
-              className="w-6 h-6 rounded-full bg-emerald-500 text-white text-[9px] flex items-center justify-center font-semibold shrink-0"
-              title={`Responsible: ${responsibleName}`}
-            >
-              {initials}
-            </div>
-          ) : (
-            <div className="w-6 h-6 rounded-full border border-dashed border-app-border flex items-center justify-center text-app-subtle text-[10px]" title="No Responsible assigned">
-              +
-            </div>
-          )}
-          {isMissingRaci && (
-            <span title="Missing Responsible or Accountable assignment" className="text-amber-500 text-xs cursor-help">⚠️</span>
-          )}
+              className="h-full bg-violet-500 rounded-full transition-all duration-300"
+              style={{
+                width: `${Math.round(((visibleColIndex + 1) / visibleColumnsLength) * 100)}%`,
+              }}
+            />
+          </div>
         </div>
-        
-        {/* Workflow stage progress bar */}
-        <div className="w-16 h-1.5 bg-app-muted-surface rounded-full overflow-hidden" title={`Workflow Stage: ${visibleColIndex + 1} of ${visibleColumnsLength}`}>
-          <div
-            className="h-full bg-violet-500 rounded-full transition-all duration-300"
-            style={{
-              width: `${Math.round(((visibleColIndex + 1) / visibleColumnsLength) * 100)}%`,
-            }}
-          />
+
+        <div className="h-px w-full bg-app-border/60" />
+
+        <div className="flex items-center gap-1.5">
+          {t.okrTitle ? (
+            <span title={`Strategic OKR: ${t.okrTitle}`} className="cursor-help text-indigo-500 hover:text-indigo-600 transition-colors">
+              <Target className="w-3.5 h-3.5" />
+            </span>
+          ) : (
+            <span title="Unaligned Work: No Strategic OKR" className="cursor-help text-rose-400 hover:text-rose-500 transition-colors">
+              <AlertCircle className="w-3.5 h-3.5" />
+            </span>
+          )}
         </div>
       </div>
     </div>

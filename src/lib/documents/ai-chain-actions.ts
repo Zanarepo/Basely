@@ -1,8 +1,9 @@
 'use server'
 
 import { createAdminClient } from '@/utils/supabase/admin'
-import { generateTextOutput } from '@/lib/ai/ai-provider-router'
+import { generateStructuredJson } from '@/lib/ai/ai-provider-router'
 import { getSyncDocumentTemplate } from './prd-templates'
+import { upsertStrategyCanvasFromAI } from '@/lib/product-strategy/actions'
 
 /**
  * 1. Synthesize Product Strategy from Market Research — All 28 sections
@@ -53,58 +54,12 @@ Format your output as a JSON object with ALL of the following exact keys. Each v
   "related_documents": "Cross-Referenced Documents: Market Research, Personas, PRD, Roadmap, Business Case links.",
   "approval_board": "Executive Governance Approval Board: | Role | Name | Approval Status | Date |"
 }
-Return ONLY valid JSON without markdown wrapping.`
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.`
 
-    let aiResultText = ''
-    try {
-      aiResultText = await generateTextOutput({
-        systemPrompt,
-        userPrompt: rawResearchText || 'Market Research Summary for SaaS Product.',
-      })
-    } catch (aiErr) {
-      console.warn('[AI Chain Synthesizer] AI provider fallback:', aiErr)
-    }
-
-    let parsedResult: Record<string, string> = {}
-    try {
-      const cleanJsonStr = aiResultText
-        .replace(/```json/g, '')
-        .replace(/```/g, '')
-        .trim()
-      parsedResult = JSON.parse(cleanJsonStr)
-    } catch (parseErr) {
-      console.warn('[AI Chain Synthesizer] JSON parse fallback:', parseErr)
-      parsedResult = {
-        executive_summary: '### Strategic Intent\nDeliver an end-to-end automated product workflow platform linking research to backlog execution.\n\n### Market Opportunity\nThe product management tooling market is valued at $1.2B with 18% CAGR.\n\n### Expected Outcomes\n- 40% improvement in PM productivity\n- 60% reduction in spec creation time\n- $43.2M SOM capture within 3 years',
-        product_vision: '### Vision Statement\nTo become the operating system for high-velocity product teams — where research, strategy, roadmaps, and specs flow seamlessly through a single AI-powered workspace.\n\n### 3-5 Year Horizon\nWithin 3 years, every product team decision is data-informed, every spec is AI-assisted, and every stakeholder has real-time visibility.',
-        product_mission: '### Mission Statement\nAutomate manual PM documentation and eliminate friction between research, strategy, and engineering execution.\n\n### Daily Operational Focus\nEvery feature we build must reduce the time between a product insight and an actionable engineering ticket.',
-        problem_statement: '### Core Problem\nProduct managers spend 4+ hours per week manually formatting and copying specs across disconnected tools.\n\n### Current Situation\nTeams use spreadsheets, docs, and slide decks manually — leading to stale documents and lost context.\n\n### Pain Points\n1. Manual copy-paste between research, strategy, and PRD documents\n2. No traceability from market insight to engineering ticket\n3. Inconsistent templates across teams\n\n### Business Impact\nDelayed launches, engineering rework, and strategic misalignment costing enterprises $500K+/year.',
-        market_opportunity: '### Target Market\nB2B SaaS product teams globally, focused on Series A-D startups and mid-market enterprises.\n\n### Market Size\n| Metric | Value |\n|---|---|\n| TAM | $1.2B |\n| SAM | $288M |\n| SOM | $43.2M |\n\n### Market Trends & Why Now\n- AI/LLM maturity enables 1-click document synthesis\n- Remote work demands better async documentation\n- Growing PM tooling fatigue creates consolidation opportunity',
-        target_customers: '### Primary Persona: Product Manager\n- **Role:** Senior PM / Group PM\n- **Company Size:** 50-500 employees\n- **Key Needs:** Fast spec creation, consistent templates, stakeholder alignment\n- **Pain Points:** Manual documentation, context switching, stale specs\n\n### Secondary Persona: VP of Product\n- **Role:** VP/Director of Product\n- **Key Needs:** Portfolio visibility, strategic alignment, evidence-based decisions\n\n### Ideal Customer Profile (ICP)\nB2B SaaS companies with 3+ PMs, using agile methodology, $5M-$100M ARR.',
-        jobs_to_be_done: '### JTBD Framework\n| Customer Job | Current Solution | Pain | Desired Outcome |\n|---|---|---|---|\n| Define Product Specs | Manual docs + spreadsheets | 4+ hrs/week formatting | 1-click AI spec generation |\n| Align Stakeholders | Slide decks + meetings | Context lost between meetings | Real-time shared workspace |\n| Track Strategy-to-Execution | Separate tools | No traceability | Evidence lineage from research to backlog |\n\n### Primary Job Statement\nWhen I need to ship a new feature, I want to generate complete specs from my research, so I can start engineering grooming immediately.',
-        value_proposition: '### Value Proposition Statement\nFor **product managers** who **struggle with manual documentation**, **our platform** is a **product operating system** that **automates the research-to-backlog workflow**. Unlike **Notion, Confluence, or Productboard**, our product **provides 1-click AI chain synthesis with full evidence lineage**.\n\n### Customer Value Pillars\n1. 10x faster spec creation through AI automation\n2. Full traceability from market research to engineering ticket\n3. Living documents that stay synchronized with project data',
-        product_positioning: '### Positioning Matrix\n| Dimension | Our Product | Productboard | Notion | Jira |\n|---|---|---|---|---|\n| Category | Product Operating System | Product Management | Docs + Wikis | Issue Tracking |\n| Target Customer | PMs at scaling companies | Enterprise PMs | Everyone | Engineering |\n| Primary Benefit | AI workflow automation | Feature prioritization | Flexible docs | Sprint tracking |\n| Key Differentiator | End-to-end AI chain | Customer feedback portal | Template flexibility | Dev ecosystem |',
-        competitive_landscape: '### Competitive Overview\n| Competitor | Strengths | Weaknesses | Market Position |\n|---|---|---|---|\n| Productboard | Strong customer feedback portal | No AI workflow, expensive | Enterprise leader |\n| Notion | Flexible, popular | No PM-specific features | Horizontal docs |\n| Linear | Great DX, fast | Engineering-only | Dev-focused |\n| Aha! | Comprehensive roadmapping | Legacy UX, slow | Traditional PM |\n\n### Competitive Threats\n- Large players (Atlassian, Notion) could add AI PM features\n- AI-native startups could emerge with similar positioning',
-        product_differentiation: '### Key Differentiators\n1. **Proprietary AI Chain Synthesizer:** 1-click generation from Research → Strategy → Roadmap → PRD → Backlog\n2. **Live Document Sync:** Documents stay current with real-time project data\n3. **End-to-End PM Operating System:** Single workspace replacing 4-5 disconnected tools\n\n### Defensibility Profile (Moat Analysis)\n| Moat Type | Strength | Evidence |\n|---|---|---|\n| Technology | High | Proprietary AI chain architecture |\n| Network Effects | Medium | Team collaboration compounds value |\n| Switching Costs | High | Deep integration with project data |\n| Brand | Low (Building) | Early stage, growing reputation |',
-        strategic_bets: '### Strategic Bets\n| # | Strategic Bet | Why It Matters | Expected Outcome | Confidence | Timeline |\n|---|---|---|---|---|---|\n| 1 | AI Workflow Chain | Core differentiator | +40% PM retention | High | Q1-Q2 |\n| 2 | Enterprise SSO & RBAC | Unlocks enterprise deals | 3 Enterprise accounts | High | Q2-Q3 |\n| 3 | Real-time Collaboration | Multiplayer drives adoption | 2x team activation | Medium | Q3-Q4 |\n| 4 | Marketplace Integrations | Ecosystem lock-in | 5 key integrations | Medium | Q4 |',
-        strategic_pillars: '### Pillar 1: Workflow Velocity\n- **Objective:** Reduce PM documentation time by 60%\n- **Key Initiatives:** AI Chain Synthesizer, 1-click generators, smart templates\n- **Success Metrics:** Time-to-first-spec < 10 min, completion rate > 90%\n\n### Pillar 2: Enterprise Governance\n- **Objective:** Meet enterprise security and compliance requirements\n- **Key Initiatives:** SSO/SAML, RBAC, audit logging, data residency\n- **Success Metrics:** SOC2 certification, 3 enterprise customers\n\n### Pillar 3: Evidence-Based Decision Making\n- **Objective:** Connect every product decision to market evidence\n- **Key Initiatives:** Evidence lineage badges, research-to-backlog tracing\n- **Success Metrics:** 80% of PRD sections linked to research evidence',
-        product_principles: '### Guiding Product Principles\n1. **Speed over Perfection:** A good spec generated in 10 seconds beats a perfect one that takes 4 hours\n2. **Evidence over Opinion:** Every product decision should trace back to customer or market data\n3. **Automation over Process:** If a PM does it more than twice, automate it\n4. **Transparency over Silos:** All stakeholders should see the same real-time product truth\n\n### How We Apply Principles\nWhen speed and evidence conflict, we ship fast with a flag to gather evidence post-launch.',
-        product_goals: '### Goals Framework\n| Category | Goal | Baseline | Target | Timeframe |\n|---|---|---|---|---|\n| Business | Monthly Recurring Revenue | $0 | $50K MRR | 12 months |\n| Customer | Weekly Active PM Users | 0 | 500 | 12 months |\n| Product | Spec Generation Completion Rate | N/A | >90% | Q2 |\n| Engineering | Deployment Frequency | Weekly | Daily | Q3 |\n| Retention | Monthly PM Retention | N/A | >85% | Q3 |',
-        metrics_and_kpis: '### North Star Metric\n**Specs Generated Per Week** — directly measures value delivered to PMs.\n\n### Key Performance Indicators\n| KPI | Current | Target | Frequency |\n|---|---|---|---|\n| Specs Generated/Week | 0 | 200 | Weekly |\n| Time-to-First-Spec | N/A | < 10 min | Weekly |\n| Section Completion Rate | N/A | > 90% | Monthly |\n| PM Retention (30-day) | N/A | > 85% | Monthly |\n\n### Guardrail Metrics\n- AI generation error rate < 2%\n- Page load time < 2 seconds',
-        roadmap_themes: '### Roadmap Themes by Quarter\n| Quarter | Strategic Theme | Objective | Major Initiatives |\n|---|---|---|---|\n| Q1 | AI Foundation | Core AI chain synthesizer | Research → Strategy → Roadmap → PRD generators |\n| Q2 | Enterprise Readiness | Security & compliance | SSO, RBAC, audit logging, data export |\n| Q3 | Collaboration & Scale | Multiplayer experience | Real-time editing, comments, notifications |\n| Q4 | Ecosystem & Growth | Platform extensibility | Integrations marketplace, API, webhooks |',
-        prioritization_framework: '### Prioritization Criteria\n| Initiative | Customer Impact | Business Impact | Effort | Strategic Alignment | Priority |\n|---|---|---|---|---|---|\n| AI Chain Synthesizer | High | High | Medium | Pillar 1 ✓ | P0 |\n| Enterprise SSO/RBAC | Medium | High | Medium | Pillar 2 ✓ | P0 |\n| Evidence Lineage Badges | High | Medium | Low | Pillar 3 ✓ | P1 |\n| Real-time Collaboration | High | Medium | High | Pillar 1 ✓ | P1 |\n| Integrations Marketplace | Medium | High | High | Growth ✓ | P2 |',
-        business_model: '### Revenue Model\nSaaS subscription with usage-based AI generation credits.\n\n### Pricing Strategy\n| Tier | Price | Includes |\n|---|---|---|\n| Starter | $0/mo | 3 projects, 10 AI generations/mo |\n| Pro | $29/user/mo | Unlimited projects, 100 AI generations/mo |\n| Enterprise | Custom | SSO, RBAC, unlimited AI, dedicated support |\n\n### Revenue Drivers\n1. Seat expansion within existing accounts\n2. Usage-based AI generation overages\n\n### Expansion Opportunities\n- Enterprise add-ons (audit logging, data residency)\n- Professional services (strategy workshops)',
-        gtm_considerations: '### Go-To-Market Strategy\n**Primary Motion:** Product-Led Growth (PLG) with inside sales expansion.\n\n### Acquisition Channels\n1. Content marketing (PM blogs, templates, guides)\n2. Product Hunt & community launches\n3. Referral program (team invites)\n4. Inside sales for enterprise\n\n### Activation Strategy\nNew users generate their first AI spec within 5 minutes — immediate value.\n\n### Retention & Expansion Loops\n- Team collaboration drives organic seat expansion\n- AI-generated documents create switching costs\n- Template library deepens engagement',
-        assumptions: '### Strategic Assumptions Matrix\n| # | Assumption | Evidence | Confidence | Validation Method |\n|---|---|---|---|---|\n| 1 | PMs want AI-generated specs | User interviews, competitor traction | High | Beta usage data |\n| 2 | LLM quality is sufficient | GPT-4/Claude testing | High | A/B test vs manual specs |\n| 3 | PLG can drive initial adoption | Industry benchmarks | Medium | Conversion funnel analysis |\n| 4 | Enterprise will pay premium | Sales conversations | Medium | Pilot program |\n| 5 | Market consolidation timing is right | Competitor fragmentation | Medium | Trend monitoring |',
-        risks: '### Strategic Risk Register\n| # | Risk | Probability | Impact | Mitigation | Owner |\n|---|---|---|---|---|---|\n| 1 | LLM API cost escalation | Medium | High | Multi-model router, caching | Platform |\n| 2 | Large competitor adds AI PM features | High | High | Speed advantage, deep PM workflow | Product |\n| 3 | AI hallucination in specs | Medium | Medium | Human review step, confidence scoring | AI Team |\n| 4 | Enterprise sales cycle too long | Medium | Medium | PLG bottom-up adoption | Sales |\n| 5 | Data privacy concerns | Low | High | SOC2, data residency, on-prem option | Security |',
-        strategic_dependencies: '### Dependencies Matrix\n| Type | Dependency | Impact | Status | Owner |\n|---|---|---|---|---|\n| Technology | LLM API providers (OpenAI, Anthropic) | High | Active | Platform |\n| Technology | Supabase infrastructure | High | Active | Backend |\n| Business | Enterprise pilot customers | Medium | In Progress | Sales |\n| Partner | Integration partners (Jira, Linear, GitHub) | Medium | Planned | Partnerships |\n| Regulatory | SOC2 Type II certification | High | In Progress | Security |',
-        strategic_decisions: '### Decisions Log\n| Date | Decision | Rationale | Alternatives Considered | Decided By |\n|---|---|---|---|---|\n| Today | AI chain synthesis as core differentiator | Unique in market, high value | Manual templates only | Product Lead |\n| Today | PLG motion first, enterprise second | Faster validation, lower CAC | Enterprise-first | CEO |\n| Today | Multi-model LLM router | Avoid vendor lock-in | Single provider | CTO |',
-        open_questions: '### Open Strategic Questions\n| # | Question | Owner | Due Date | Status | Impact |\n|---|---|---|---|---|---|\n| 1 | Should we build a template marketplace? | Product | TBD | Open | Medium |\n| 2 | Right AI generation credit model? | Business | TBD | Open | High |\n| 3 | Support on-premise for enterprise? | Engineering | TBD | Open | High |\n| 4 | When to invest in mobile? | Product | TBD | Open | Low |',
-        strategy_review: '### Review Cadence\n- **Weekly:** North star metric review, AI quality check\n- **Monthly:** OKR progress, competitive landscape scan\n- **Quarterly:** Full strategy validation\n\n### Core Strategy Validation Questions\n1. Is the problem still worth solving?\n2. Has the competitive landscape shifted?\n3. Are our strategic bets paying off?\n4. Do our metrics show customer value creation?\n5. Are our assumptions still valid?\n6. Should we pivot any strategic pillar?\n7. What new information changes our strategy?',
-        related_documents: '### Cross-Referenced Documents\n- **Market Research Report:** TAM/SAM/SOM analysis, ICP definition, competitive matrix\n- **Customer Personas:** Primary and secondary persona profiles\n- **Product Roadmap:** Now/Next/Later horizon planning\n- **PRD Specifications:** Feature-level requirements and acceptance criteria\n- **Business Case:** Financial projections and ROI analysis\n- **Competitive Analysis:** Detailed competitor benchmarking matrix',
-        approval_board: '### Executive Governance & Approval Board\n| Role | Name | Approval Status | Date |\n|---|---|---|---|\n| Product Manager | TBD | Pending | |\n| Engineering Lead | TBD | Pending | |\n| Business Owner | TBD | Pending | |\n| Executive Sponsor | TBD | Pending | |\n\n### Approval Criteria\n- Strategy aligns with company mission and vision\n- Financial projections are defensible\n- Resource requirements are feasible\n- Risk mitigations are adequate',
-      }
-    }
+    const parsedResult = await generateStructuredJson<Record<string, string>>({
+      systemPrompt,
+      userPrompt: rawResearchText || 'Market Research Summary for SaaS Product.',
+    })
 
     // Map to standard_product_strategy keys for backward compatibility
     const standardStrategyMappings: Record<string, string> = {
@@ -121,6 +76,9 @@ Return ONLY valid JSON without markdown wrapping.`
       __prd_template_variant: strategyVariant,
       __section_order: JSON.stringify(syncTpl.section_definitions.map((s: any) => s.key)),
     }
+
+    // Sync to live product_strategies table & Strategy Canvas Studio
+    await upsertStrategyCanvasFromAI(projectId, parsedResult)
 
     const { data: existing } = await adminSupabase
       .from('generated_documents')
@@ -205,45 +163,12 @@ Format your output as a JSON object with the following exact keys matching Roadm
   "risks_and_assumptions": "Strategic Risks & Assumptions Matrix.",
   "metrics_and_outcomes": "Key Product Metrics & Target Customer Outcomes."
 }
-Return ONLY valid JSON without markdown wrapping.`
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.`
 
-    let aiResultText = ''
-    try {
-      aiResultText = await generateTextOutput({
-        systemPrompt,
-        userPrompt: rawStrategyText || 'Product Strategy Summary.',
-      })
-    } catch (aiErr) {
-      console.warn('[AI Chain Synthesizer] AI provider fallback:', aiErr)
-    }
-
-    let parsedResult: Record<string, string> = {}
-    try {
-      const cleanJsonStr = aiResultText
-        .replace(/```json/g, '')
-        .replace(/```/g, '')
-        .trim()
-      parsedResult = JSON.parse(cleanJsonStr)
-    } catch (parseErr) {
-      console.warn('[AI Chain Synthesizer] JSON parse fallback:', parseErr)
-      parsedResult = {
-        now_horizon: 'NOW (Q1): Core AI Chain Synthesizer, SSO Authentication, and TAM Calculator.',
-        next_horizon: 'NEXT (Q2): Advanced Evidence Lineage Badges and Custom Exporter Templates.',
-        later_horizon: 'LATER (Q3/Q4): Multi-Tenant Edge Infrastructure & Autonomous Agent Workflows.',
-        exploring_horizon: 'EXPLORING: Natural language database queries & mobile companion app.',
-        roadmap_purpose: 'Align engineering and leadership on strategic feature sequencing over the next 12 months.',
-        product_vision: 'Become the operating system for high-velocity product management teams.',
-        strategic_objectives: '| ID | Objective | Outcome |\n|---|---|---|\n| SO-01 | Workflow Velocity | -60% Grooming Time |',
-        roadmap_themes: '| Theme | Description |\n|---|---|\n| AI Automation | 1-click spec generation |',
-        roadmap_overview: '| Initiative | Theme | Q1 | Q2 | Q3 | Q4 |\n|---|---|---|---|---|---|\n| AI Chain | AI Automation | ● | | | |',
-        detailed_initiatives: 'RI-001: AI Chain Synthesizer — 1-click end-to-end document generator.',
-        quarterly_breakdown: 'Q1: AI Chain & TAM Calculator | Q2: Enterprise SSO & RBAC | Q3: Edge Sync',
-        initiative_prioritization: '| Initiative | Impact | Effort | Priority |\n|---|---|---|---|\n| AI Chain | High | Medium | P0 |',
-        roadmap_dependencies: '| Initiative | Dependency | Status |\n|---|---|---|\n| AI Chain | Supabase Admin Client | Complete |',
-        risks_and_assumptions: 'Risk: LLM API rate limits under high concurrency. Mitigation: Local Redis caching layer.',
-        metrics_and_outcomes: '+40% weekly PM retention; 25% activation lift.',
-      }
-    }
+    const parsedResult = await generateStructuredJson<Record<string, string>>({
+      systemPrompt,
+      userPrompt: rawStrategyText || 'Product Strategy Summary.',
+    })
 
     const roadmapVariant = 'now_next_later'
     const syncTpl = getSyncDocumentTemplate('roadmap_workspace', roadmapVariant)
@@ -345,53 +270,12 @@ Format your output as a JSON object with the following exact keys. Each value mu
   "decisions_log": "| Date | Decision | Rationale | Decided By |\\n|---|---|---|---|\\n| [Date] | [Decision] | [Why] | [Owner] |",
   "related_documents_approvals": "### Approval Matrix\\n| Role | Name | Status | Date |\\n|---|---|---|---|\\n| PM | [Name] | Pending | |\\n\\n### Related Docs\\n- Strategy, Roadmap, Research"
 }
-Return ONLY valid JSON without markdown wrapping.`
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.`
 
-    let aiResultText = ''
-    try {
-      aiResultText = await generateTextOutput({
-        systemPrompt,
-        userPrompt: rawRoadmapText || 'Product Roadmap Summary.',
-      })
-    } catch (aiErr) {
-      console.warn('[AI Chain Synthesizer] AI provider fallback:', aiErr)
-    }
-
-    let parsedResult: Record<string, string> = {}
-    try {
-      const cleanJsonStr = aiResultText
-        .replace(/```json/g, '')
-        .replace(/```/g, '')
-        .trim()
-      parsedResult = JSON.parse(cleanJsonStr)
-    } catch (parseErr) {
-      console.warn('[AI Chain Synthesizer] JSON parse fallback:', parseErr)
-      parsedResult = {
-        executive_summary: '### 1.1 Feature Overview\nAutomate end-to-end product requirements generation from market research to backlog execution.\n\n### 1.2 Problem Statement\n> Product managers spend 4+ hours per week manually formatting and copying specs.\n\n### 1.3 Opportunity\nEliminating this friction improves PM velocity by 60%.',
-        goals_objectives: '### 2.1 Feature Goals\n1. Reduce PRD creation time from 4 hours to under 10 minutes\n2. Achieve 90%+ section completeness on first generation\n\n### 2.2 Success Criteria\n- [ ] 1-click generates all 23 PRD sections\n- [ ] Content is contextually relevant\n\n### 2.3 Non-Goals\n- Custom webhooks in V1\n- Manual document translation',
-        user_personas: '### Primary Persona: Product Manager\n- **Needs:** Fast spec generation, consistent formatting\n- **Pain Points:** Manual copy-paste, context switching\n\n### Secondary Persona: Engineering Lead\n- **Needs:** Clear requirements, testable AC\n- **Pain Points:** Ambiguous specs, missing edge cases',
-        user_stories: '### US-01 — AI PRD Generation\n**As a** Product Manager **I want to** generate a complete PRD from my roadmap **So that** I can start grooming immediately\n\n### US-02 — Section Editing\n**As a** Product Lead **I want to** edit any AI-generated section inline **So that** I can refine specs\n\n### US-03 — Evidence Lineage\n**As a** VP of Product **I want to** trace PRD requirements back to research **So that** I can validate alignment',
-        functional_requirements: '### FR-01: 1-Click PRD Generation\n**Description:** System generates all 23 PRD sections from roadmap\n- The system shall parse all roadmap sections as input\n- The system shall generate markdown content for every section\n\n### FR-02: Real-time Persistence\n- The system shall save to Supabase immediately\n- The system shall merge with existing content',
-        user_flow: '### Primary Flow\n1. User navigates to Product Roadmap\n2. User clicks "Generate PRD Specs"\n3. System synthesizes all 23 sections\n4. User switches to PRD to review\n\n### Alternative Flow\n1. If roadmap is empty, system uses defaults\n\n### Error Flow\n1. If AI fails, system shows error toast with retry',
-        ui_ux_requirements: '### Screens Required\n- PRD Document View with 23 collapsible sections\n- Section Editor with markdown preview\n- Loading State: Skeleton loaders\n- Empty State: Placeholder prompts\n\n### Design Guidelines\n- Consistent section numbering (1-23)\n- Rich markdown rendering',
-        business_rules: '| ID | Business Rule |\n|---|---|\n| BR-01 | Only project members can generate PRD content |\n| BR-02 | AI generation merges, never overwrites |\n| BR-03 | Section order follows enterprise template |',
-        data_requirements: '### Inputs & Validation\n| Field | Type | Required | Rule |\n|---|---|---|---|\n| project_id | UUID | Yes | Must exist in projects |\n| roadmap_content | JSONB | Yes | At least 1 section |\n\n### Output & Data Changes\n- Updates `generated_documents.free_text_content` JSONB\n- Sets `document_type` = `product_requirements_document`',
-        permissions_access_control: '| User Role | View | Create | Edit | Delete | Approve |\n|---|:---:|:---:|:---:|:---:|:---:|\n| Admin | ✓ | ✓ | ✓ | ✓ | ✓ |\n| PM | ✓ | ✓ | ✓ | ✗ | ✓ |\n| Engineer | ✓ | ✗ | ✗ | ✗ | ✗ |\n| Viewer | ✓ | ✗ | ✗ | ✗ | ✗ |',
-        notifications_channels: '### Triggers\n- PRD generated successfully\n- PRD section edited by collaborator\n\n### Channels\n- In-app toast notifications\n- Email digest (optional)',
-        non_functional_requirements: '### Performance\n- PRD generation < 15 seconds\n- Page load < 2 seconds\n\n### Security\n- RLS policies enforce project-level access\n\n### Accessibility\n- WCAG AA compliance',
-        analytics_tracking: '### Events\n| Event | Trigger | Properties |\n|---|---|---|\n| `prd_generated` | PRD synthesis completes | project_id, section_count |\n| `prd_section_edited` | User edits section | section_key, edit_length |\n\n### Key Metrics\n- PRD adoption rate > 60%\n- Sections edited post-generation < 5',
-        acceptance_criteria: '### AC-01: Full Section Population\n**Given** a roadmap with content **When** user clicks "Generate PRD Specs" **Then** all 23 sections contain content\n\n### AC-02: Empty Roadmap Fallback\n**Given** an empty roadmap **When** user clicks generate **Then** system produces defaults',
-        edge_cases: 'The system must handle:\n- Empty roadmap input (use defaults)\n- Long content (truncate to token limit)\n- Concurrent requests (debounce)\n- Network timeout (retry with backoff)\n- Malformed AI JSON (use fallback)',
-        technical_considerations: '### Frontend\n- React + ReactMarkdown rendering\n- Structured section editors with rich text toolbar\n\n### Backend\n- Next.js Server Actions with Supabase Admin Client\n- Multi-model LLM router\n\n### Infrastructure\n- Supabase Postgres with JSONB\n- Row Level Security (RLS)',
-        qa_testing_requirements: '### Testing Suites\n- [ ] Unit tests for JSON parsing\n- [ ] Integration tests for persistence\n- [ ] E2E tests for generation workflow\n- [ ] Regression tests for template keys\n\n### UAT Criteria\n- All 23 sections visually populated\n- Content is contextually relevant',
-        sprint_scope: '### In Scope\n- AI-powered 23-section PRD generation\n- Supabase persistence and merge\n- Section-level inline editing\n\n### Out of Scope\n- PDF/DOCX export in V1\n\n### Checklist\n- [ ] AI prompt complete\n- [ ] Backend deployed\n- [ ] Frontend verified\n- [ ] All 23 sections populate',
-        dependencies_risks: '| Type | Description | Impact | Mitigation | Owner |\n|---|---|---|---|---|\n| Dependency | LLM API availability | High | Multi-model fallback | Platform |\n| Dependency | Supabase Admin Client | Medium | Connection pooling | Backend |\n| Risk | AI hallucination | Medium | Human review step | Product |',
-        definition_of_done: 'Done when:\n- [ ] All 23 PRD sections generate\n- [ ] Content persists to Supabase\n- [ ] Existing content merges without loss\n- [ ] Fallback activates on AI failure\n- [ ] All AC pass\n- [ ] Code reviewed and merged',
-        open_questions: '| # | Question | Owner | Due | Status |\n|---|---|---|---|---|\n| 1 | Support partial regeneration? | PM | TBD | Open |\n| 2 | Max token budget for AI? | Engineering | TBD | Open |',
-        decisions_log: '| Date | Decision | Rationale | Decided By |\n|---|---|---|---|\n| Today | Use enterprise_full_prd (23 sections) | Maximum coverage | Product Lead |',
-        related_documents_approvals: '### Approval Matrix\n| Role | Name | Status | Date |\n|---|---|---|---|\n| PM | TBD | Pending | |\n| Tech Lead | TBD | Pending | |\n| QA Lead | TBD | Pending | |\n\n### Related Documents\n- Product Strategy\n- Product Roadmap\n- Market Research Report',
-      }
-    }
+    const parsedResult = await generateStructuredJson<Record<string, string>>({
+      systemPrompt,
+      userPrompt: rawRoadmapText || 'Product Roadmap Summary.',
+    })
 
     // Map to standard_prd keys for backward compatibility
     const standardPrdMappings: Record<string, string> = {
@@ -457,5 +341,284 @@ Return ONLY valid JSON without markdown wrapping.`
   } catch (err: any) {
     console.error('[synthesizePrdFromRoadmap Error]:', err)
     return { ok: false, error: err.message || 'Failed to synthesize PRD' }
+  }
+}
+
+/**
+ * 4. Generate OKRs from Product Strategy
+ */
+export async function generateOkrsFromStrategy(
+  projectId: string,
+  organizationId: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+    const now = new Date().toISOString()
+
+    // 1. Fetch Strategy
+    const { data: strategy, error: stratErr } = await adminSupabase
+      .from('product_strategies')
+      .select('*')
+      .eq('project_id', projectId)
+      .single()
+
+    if (stratErr || !strategy) return { ok: false, error: 'Product Strategy not found. Please complete the Strategy Canvas first.' }
+
+    // 2. Prepare Context for AI
+    const context = `
+      Vision: ${strategy.vision_statement}
+      Target Market: ${strategy.target_market}
+      Goals: ${JSON.stringify(strategy.product_goals || [])}
+      Pillars: ${JSON.stringify(strategy.strategic_pillars || [])}
+      Bets: ${JSON.stringify(strategy.strategic_bets || [])}
+    `
+
+    const systemPrompt = `You are a Chief Strategy Officer. Generate 3-5 high-impact OKRs (Objectives and Key Results) based on the provided Product Strategy context.
+    Format your output as a JSON object with a single key "objectives" containing an array of objects:
+    {
+      "objectives": [
+        {
+          "title": "Objective Title",
+          "description": "Why this matters",
+          "timeframe": "Q3 2026",
+          "key_results": [
+            {
+              "title": "Key Result Title",
+              "target_value": "Numeric target (e.g., 500000)",
+              "unit": "USD, %, Users, etc."
+            }
+          ]
+        }
+      ]
+    }
+    CRITICAL: Return ONLY strictly valid JSON.`
+
+    const parsedResult = await generateStructuredJson<{
+      objectives: {
+        title: string
+        description: string
+        timeframe: string
+        key_results: { title: string; target_value: string; unit: string }[]
+      }[]
+    }>({
+      systemPrompt,
+      userPrompt: context,
+    })
+
+    if (!parsedResult.objectives || parsedResult.objectives.length === 0) {
+      return { ok: false, error: 'Failed to generate objectives' }
+    }
+
+    // 3. Insert into DB
+    for (const obj of parsedResult.objectives) {
+      const { data: insertedObj, error: objErr } = await adminSupabase
+        .from('okr_objectives')
+        .insert({
+          organization_id: organizationId,
+          project_id: projectId,
+          title: obj.title,
+          description: obj.description,
+          timeframe: obj.timeframe,
+          progress: 0,
+          status: 'on_track',
+          created_at: now,
+          updated_at: now
+        })
+        .select('id')
+        .single()
+
+      if (objErr || !insertedObj) continue
+
+      const krsToInsert = obj.key_results.map(kr => ({
+        objective_id: insertedObj.id,
+        title: kr.title,
+        baseline_value: '0',
+        target_value: kr.target_value,
+        current_value: '0',
+        progress: 0,
+        confidence_score: 5,
+        unit: kr.unit,
+        status: 'on_track',
+        created_at: now,
+        updated_at: now
+      }))
+
+      if (krsToInsert.length > 0) {
+        await adminSupabase.from('okr_key_results').insert(krsToInsert)
+      }
+    }
+
+    return { ok: true }
+  } catch (err: any) {
+    console.error('[generateOkrsFromStrategy Error]:', err)
+    return { ok: false, error: err.message || 'Failed to generate OKRs' }
+  }
+}
+
+/**
+ * 5. Auto Align Roadmap to OKRs
+ */
+export async function autoAlignRoadmapToOkrs(
+  projectId: string
+): Promise<{ ok: boolean; alignedCount?: number; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+
+    // 1. Fetch OKRs
+    const { data: okrs } = await adminSupabase
+      .from('okr_objectives')
+      .select('id, title, description')
+      .eq('project_id', projectId)
+
+    if (!okrs || okrs.length === 0) return { ok: false, error: 'No OKRs found to align with.' }
+
+    // 2. Fetch Backlog Items without an OKR
+    const { data: backlogItems } = await adminSupabase
+      .from('product_backlog_items')
+      .select('id, title, description')
+      .eq('project_id', projectId)
+      .is('primary_okr_id', null)
+
+    if (!backlogItems || backlogItems.length === 0) return { ok: false, error: 'No orphaned roadmap items to align.' }
+
+    const systemPrompt = `You are an AI Product Operations Manager.
+    Your job is to match Product Backlog Items to the most appropriate Strategic OKR.
+    
+    OKRs Available:
+    ${JSON.stringify(okrs)}
+
+    Backlog Items to align:
+    ${JSON.stringify(backlogItems)}
+
+    Return a JSON object with a single key "alignments" containing an array of mappings:
+    {
+      "alignments": [
+        {
+          "backlog_item_id": "item-id",
+          "okr_id": "okr-id"
+        }
+      ]
+    }
+    CRITICAL: Only match items if there is a reasonable strategic fit. It's okay to omit an item if it doesn't fit any OKR.`
+
+    const parsedResult = await generateStructuredJson<{
+      alignments: { backlog_item_id: string; okr_id: string }[]
+    }>({
+      systemPrompt,
+      userPrompt: 'Align these backlog items to the OKRs.',
+    })
+
+    if (!parsedResult.alignments || parsedResult.alignments.length === 0) {
+      return { ok: true, alignedCount: 0 }
+    }
+
+    let count = 0
+    // 3. Update DB
+    for (const alignment of parsedResult.alignments) {
+      if (!alignment.okr_id || !alignment.backlog_item_id) continue
+      const { error } = await adminSupabase
+        .from('product_backlog_items')
+        .update({ primary_okr_id: alignment.okr_id })
+        .eq('id', alignment.backlog_item_id)
+      
+      if (!error) count++
+    }
+
+    return { ok: true, alignedCount: count }
+  } catch (err: any) {
+    console.error('[autoAlignRoadmapToOkrs Error]:', err)
+    return { ok: false, error: err.message || 'Failed to auto align roadmap.' }
+  }
+}
+
+
+/**
+ * 6. Generate North Star & Growth Levers from Strategy
+ */
+export async function generateNorthStarFromStrategy(
+  projectId: string,
+  organizationId: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+    const now = new Date().toISOString()
+
+    // 1. Fetch Strategy
+    const { data: strategy, error: stratErr } = await adminSupabase
+      .from('product_strategies')
+      .select('*')
+      .eq('project_id', projectId)
+      .single()
+
+    if (stratErr || !strategy) return { ok: false, error: 'Product Strategy not found. Please complete the Strategy Canvas first.' }
+
+    // 2. Prepare Context for AI
+    const context = `
+      Vision: ${strategy.vision_statement}
+      Target Market: ${strategy.target_market}
+      Goals: ${JSON.stringify(strategy.product_goals || [])}
+      Pillars: ${JSON.stringify(strategy.strategic_pillars || [])}
+      Bets: ${JSON.stringify(strategy.strategic_bets || [])}
+    `
+
+    const systemPrompt = `You are a Chief Strategy Officer and Growth Expert.
+    Based on the provided Product Strategy context, define ONE primary "North Star" quantitative metric, and 3-4 supporting "Growth Levers" (e.g. acquisition, activation, retention, revenue, efficiency).
+    
+    Format your output as a JSON object with a single key "metrics" containing an array of objects. The first object MUST be the North Star.
+    {
+      "metrics": [
+        {
+          "name": "Metric Name",
+          "category": "north_star | acquisition | activation | retention | revenue | efficiency",
+          "current_value": "Current numeric string (e.g. '0')",
+          "target_value": "Target numeric string (e.g. '10000')",
+          "unit": "percentage | currency | number",
+          "frequency": "daily | weekly | monthly | quarterly | yearly"
+        }
+      ]
+    }
+    CRITICAL: Return ONLY strictly valid JSON.`
+
+    const parsedResult = await generateStructuredJson<{
+      metrics: {
+        name: string
+        category: 'north_star' | 'acquisition' | 'activation' | 'retention' | 'revenue' | 'efficiency'
+        current_value: string
+        target_value: string
+        unit: 'percentage' | 'currency' | 'number'
+        frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
+      }[]
+    }>({
+      systemPrompt,
+      userPrompt: context,
+    })
+
+    if (!parsedResult.metrics || parsedResult.metrics.length === 0) {
+      return { ok: false, error: 'Failed to generate metrics' }
+    }
+
+    // 3. Insert into DB
+    const kpisToInsert = parsedResult.metrics.map(m => ({
+      organization_id: organizationId,
+      project_id: projectId,
+      name: m.name,
+      category: m.category,
+      current_value: m.current_value,
+      target_value: m.target_value,
+      unit: m.unit,
+      frequency: m.frequency,
+      status: 'on_track',
+      trend_direction: 'stable',
+      created_at: now,
+      updated_at: now
+    }))
+
+    const { error: insertErr } = await adminSupabase.from('product_kpis').insert(kpisToInsert)
+    if (insertErr) return { ok: false, error: insertErr.message }
+
+    return { ok: true }
+  } catch (err: any) {
+    console.error('[generateNorthStarFromStrategy Error]:', err)
+    return { ok: false, error: err.message || 'Failed to generate North Star metrics' }
   }
 }
