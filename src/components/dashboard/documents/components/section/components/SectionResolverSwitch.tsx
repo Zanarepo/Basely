@@ -1,5 +1,5 @@
 import React from 'react'
-import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
+import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/types'
 import StructuredEditableField from '../../StructuredEditableField'
 import WbsDictionaryResolver from '../../../resolvers/WbsDictionaryResolver'
 import RaciMatrixResolver from '../../../resolvers/RaciMatrixResolver'
@@ -18,6 +18,8 @@ import { BudgetBaselineResolver } from '../../../resolvers/BudgetBaselineResolve
 import { IssueLogResolver } from '../../../resolvers/IssueLogResolver'
 import { ScheduleDocumentResolver } from '../../../resolvers/ScheduleDocumentResolver'
 import { ChangeManagementPlanResolver } from '../../../resolvers/ChangeManagementPlanResolver'
+import { HandoverDeliverablesResolver } from '../../../resolvers/HandoverDeliverablesResolver'
+import { HandoverOwnersResolver } from '../../../resolvers/HandoverOwnersResolver'
 import { ProjectManagementPlanResolver } from '../../../resolvers/ProjectManagementPlanResolver'
 import { ProductStrategyResolver } from '../../../resolvers/ProductStrategyResolver'
 import { OkrKpiReportResolver } from '../../../resolvers/OkrKpiReportResolver'
@@ -153,6 +155,24 @@ export function SectionResolverSwitch({
         sectionKey={section.key}
         periodEnd={new Date(isSnapshot ? (generatedDoc?.period_end || new Date()) : new Date())}
         frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.change_management : undefined}
+      />
+    )
+  }
+  if (section.source === 'closure.deliverables_table') {
+    return (
+      <HandoverDeliverablesResolver
+        projectId={projectId}
+        sectionKey={section.key}
+        frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.deliverables_table : undefined}
+      />
+    )
+  }
+  if (section.source === 'closure.ongoing_owners') {
+    return (
+      <HandoverOwnersResolver
+        projectId={projectId}
+        sectionKey={section.key}
+        frozenData={isSnapshot ? (generatedDoc?.frozen_data as any)?.ongoing_owners : undefined}
       />
     )
   }

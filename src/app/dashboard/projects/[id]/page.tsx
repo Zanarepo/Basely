@@ -2,27 +2,29 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import dynamic from 'next/dynamic'
 import { ArrowLeft, Briefcase, Workflow, CalendarRange, Clock, Lock } from 'lucide-react'
-import { WbsPlanningWorkspace } from '@/components/dashboard/wbs/WbsPlanningWorkspace'
-import GanttWorkspace from '@/components/dashboard/gantt/GanttWorkspace'
-import { ReleasesWorkspace } from '@/components/dashboard/releases/ReleasesWorkspace'
-import CostWorkspace from '@/components/dashboard/cost/CostWorkspace'
-import StakeholderWorkspace from '@/components/dashboard/stakeholders/StakeholderWorkspace'
-import RiskRegisterWorkspace from '@/components/dashboard/risks/RiskRegisterWorkspace'
-import DocumentsWorkspace from '@/components/dashboard/documents/DocumentsWorkspace'
-import TeamPermissionsWorkspace from '@/components/dashboard/team/TeamPermissionsWorkspace'
-import { ActionItemsTracker } from '@/components/dashboard/action-items/ActionItemsTracker'
-import { ProjectTeamRoster } from '@/components/dashboard/ProjectTeamRoster'
 import { ProjectWizardModal } from '@/components/dashboard/ProjectWizardModal'
 import { ProjectIntegrationsMenu } from '@/components/dashboard/projects/ProjectIntegrationsMenu'
 import { FeatureAppLauncher } from '@/components/dashboard/projects/FeatureAppLauncher'
 import { LivePresenceWrapper } from '@/components/dashboard/presence/LivePresenceWrapper'
-import ProjectDashboardWorkspace from '@/components/dashboard/projects/ProjectDashboardWorkspace'
 import ProjectNavigationTabs from '@/components/dashboard/projects/ProjectNavigationTabs'
 import { LifecycleStatusBadge } from '@/components/dashboard/projects/lifecycle/components/LifecycleStatusBadge'
-import RaidWorkspace from '@/components/dashboard/risks/raid/RaidWorkspace'
-import AdrWorkspace from '@/components/dashboard/projects/adr/AdrWorkspace'
-import SkillsMatrixTable from '@/components/dashboard/team/capacity/SkillsMatrixTable'
+
+// Lazy load heavy workspace components
+const WbsPlanningWorkspace = dynamic(() => import('@/components/dashboard/wbs/WbsPlanningWorkspace').then(mod => mod.WbsPlanningWorkspace))
+const GanttWorkspace = dynamic(() => import('@/components/dashboard/gantt/GanttWorkspace'))
+const ReleasesWorkspace = dynamic(() => import('@/components/dashboard/releases/ReleasesWorkspace').then(mod => mod.ReleasesWorkspace))
+const CostWorkspace = dynamic(() => import('@/components/dashboard/cost/CostWorkspace'))
+const StakeholderWorkspace = dynamic(() => import('@/components/dashboard/stakeholders/StakeholderWorkspace'))
+const RiskRegisterWorkspace = dynamic(() => import('@/components/dashboard/risks/RiskRegisterWorkspace'))
+const DocumentsWorkspace = dynamic(() => import('@/components/dashboard/documents/DocumentsWorkspace'))
+const TeamPermissionsWorkspace = dynamic(() => import('@/components/dashboard/team/TeamPermissionsWorkspace'))
+const ActionItemsTracker = dynamic(() => import('@/components/dashboard/action-items/ActionItemsTracker').then(mod => mod.ActionItemsTracker))
+const ProjectDashboardWorkspace = dynamic(() => import('@/components/dashboard/projects/ProjectDashboardWorkspace'))
+const RaidWorkspace = dynamic(() => import('@/components/dashboard/risks/raid/RaidWorkspace'))
+const AdrWorkspace = dynamic(() => import('@/components/dashboard/projects/adr/AdrWorkspace'))
+const SkillsMatrixTable = dynamic(() => import('@/components/dashboard/team/capacity/SkillsMatrixTable'))
 import { FeatureGateScreen } from '@/components/dashboard/billing'
 import { getOrganizationSubscription } from '@/lib/organizations/tier-logic'
 import { getOrganizationFeatures, getOrganizationAiEnabled } from '@/lib/organizations/tier-access'
