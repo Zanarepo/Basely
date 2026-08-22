@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getProductStrategy, saveProductStrategy } from '@/lib/product-strategy/actions'
+import { getProductStrategy, saveProductStrategy } from '@/lib/product-strategy/strategy-actions'
 import type { CompetitiveMoat } from '@/lib/product-strategy/types'
 import { CompetitorFeature } from '../constants/types'
 import { DEFAULT_COMPETITIVE_FEATURES } from '../constants/defaultFeatures'

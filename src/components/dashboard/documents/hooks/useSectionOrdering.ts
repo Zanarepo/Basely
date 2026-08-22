@@ -72,8 +72,7 @@ export function useSectionOrdering({
     const sectionKey =
       'custom_sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6)
 
-    startTransition(() => {
-      setFreeText((prev) => {
+    setFreeText((prev) => {
         const next = { ...prev }
         const currentCustom = (() => {
           try {
@@ -102,12 +101,11 @@ export function useSectionOrdering({
           currentOrder.push(sectionKey)
         }
 
-        next['__section_order'] = JSON.stringify(currentOrder)
-        return next
-      })
-      if (!titleOverride && setNewSectionTitle) setNewSectionTitle('')
-      setIsDirty(true)
+      next['__section_order'] = JSON.stringify(currentOrder)
+      return next
     })
+    if (!titleOverride && setNewSectionTitle) setNewSectionTitle('')
+    setIsDirty(true)
     onShowToast('success', `Added new custom section "${sectionTitle}"`)
   }
 
@@ -127,9 +125,8 @@ export function useSectionOrdering({
     const newKey = 'custom_sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6)
     const contentToCopy = freeText[sourceKey] || ''
 
-    startTransition(() => {
-      setFreeText((prev) => {
-        const next = { ...prev }
+    setFreeText((prev) => {
+      const next = { ...prev }
 
         // 1. Add to custom sections registry
         const currentCustom = (() => {
@@ -174,9 +171,8 @@ export function useSectionOrdering({
 
         next['__section_order'] = JSON.stringify(currentOrder)
         return next
-      })
-      setIsDirty(true)
     })
+    setIsDirty(true)
     onShowToast('success', `Duplicated "${originalTitle}"`)
   }
 
@@ -193,9 +189,8 @@ export function useSectionOrdering({
     const sectionTitle = sourceTitleOverrides[key] || targetSec?.title || 'Section'
     const isCustom = Boolean(targetSec?.isCustom || key.startsWith('custom_sec_'))
 
-    startTransition(() => {
-      setFreeText((prev) => {
-        const next = { ...prev }
+    setFreeText((prev) => {
+      const next = { ...prev }
 
         // 1. Save into __removed_sections_meta with timestamp for 24hr auto-purge
         const currentMeta: Record<string, any> = (() => {
@@ -250,17 +245,15 @@ export function useSectionOrdering({
         }
 
         return next
-      })
-      setIsDirty(true)
     })
+    setIsDirty(true)
     onShowToast('success', `Moved "${sectionTitle}" to Removed Sections (Restorable for 24h)`)
   }
 
   // Rename a section header title
   const handleSectionTitleChange = (key: string, newTitle: string) => {
-    startTransition(() => {
-      setFreeText((prev) => {
-        const next = { ...prev }
+    setFreeText((prev) => {
+      const next = { ...prev }
         const currentOverrides = (() => {
           try {
             return prev['__section_title_overrides']
@@ -272,19 +265,17 @@ export function useSectionOrdering({
         })()
 
         currentOverrides[key] = newTitle
-        next['__section_title_overrides'] = JSON.stringify(currentOverrides)
-        return next
-      })
-      setIsDirty(true)
+      next['__section_title_overrides'] = JSON.stringify(currentOverrides)
+      return next
     })
+    setIsDirty(true)
     onShowToast('success', 'Section title updated')
   }
 
   // Restore a soft-removed section
   const handleRestoreSection = (key: string) => {
-    startTransition(() => {
-      setFreeText((prev) => {
-        const next = { ...prev }
+    setFreeText((prev) => {
+      const next = { ...prev }
 
         // Remove from __deleted_section_keys
         try {
@@ -309,17 +300,15 @@ export function useSectionOrdering({
         }
 
         return next
-      })
-      setIsDirty(true)
     })
+    setIsDirty(true)
     onShowToast('success', 'Section restored')
   }
 
   // Permanently delete a section from trash immediately
   const handlePermanentDeleteSection = (key: string) => {
-    startTransition(() => {
-      setFreeText((prev) => {
-        const next = { ...prev }
+    setFreeText((prev) => {
+      const next = { ...prev }
 
         // If custom section, delete its text content and custom registry entry
         delete next[key]
@@ -349,22 +338,19 @@ export function useSectionOrdering({
         }
 
         return next
-      })
-      setIsDirty(true)
     })
+    setIsDirty(true)
     onShowToast('success', 'Permanently deleted section')
   }
 
   // Clear all soft-removed sections from trash immediately
   const handleClearAllRemovedSections = () => {
-    startTransition(() => {
-      setFreeText((prev) => {
-        const next = { ...prev }
-        delete next['__removed_sections_meta']
-        return next
-      })
-      setIsDirty(true)
+    setFreeText((prev) => {
+      const next = { ...prev }
+      delete next['__removed_sections_meta']
+      return next
     })
+    setIsDirty(true)
     onShowToast('success', 'Cleared all removed sections')
   }
 

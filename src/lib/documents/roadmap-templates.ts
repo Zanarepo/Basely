@@ -1,4 +1,4 @@
-import type { DocumentSectionDef } from './actions'
+import type { DocumentSectionDef } from './types'
 
 export interface RoadmapTemplateVariant {
   id: string

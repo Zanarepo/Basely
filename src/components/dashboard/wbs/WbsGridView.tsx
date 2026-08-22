@@ -56,6 +56,8 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
     })
   }
 
+  const metrics = useWbsGridMetrics(gridData)
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 min-h-[300px]">
@@ -96,7 +98,6 @@ export function WbsGridView({ projectId, elements, workspaceMembers, onSelect, s
 
   const isAllSelected = visibleGridData.length > 0 && visibleGridData.every((item) => selectedIds.includes(item.id))
 
-  const metrics = useWbsGridMetrics(gridData)
 
   return (
     <div className="h-[600px] overflow-auto w-full">

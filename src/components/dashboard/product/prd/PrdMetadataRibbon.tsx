@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import type { Persona, OkrObjective, ProductRequirementsDoc } from '@/lib/product-strategy/types'
-import { getPersonas, getOkrObjectives } from '@/lib/product-strategy/actions'
+import { getPersonas } from '@/lib/product-strategy/persona-actions'
+import { getOkrObjectives } from '@/lib/product-strategy/okr-actions'
 import { getPrdMetadata, upsertPrdMetadata } from '@/lib/product-discovery/actions'
 import { FileText, User, Target, Link2, Loader2, Check, Palette } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'

@@ -73,7 +73,7 @@ export default function DocumentCenterHeader({
               onClick={() => onSuiteChange('project')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                 activeSuite === 'project'
-                  ? 'bg-indigo-600 text-white shadow-md'
+                  ? 'bg-violet-600 text-white shadow-md'
                   : 'text-app-muted hover:text-app-fg'
               }`}
             >

@@ -58,4 +58,5 @@ export type WbsElement = {
   estimationMethod?: 'analogous' | 'parametric' | 'bottom_up'
   okrId?: string | null
   okrTitle?: string | null
+  isSaving?: boolean
 }

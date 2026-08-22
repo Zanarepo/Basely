@@ -1,4 +1,4 @@
-import { Trash2, CheckSquare, Target, UserX, AlertCircle } from 'lucide-react'
+import { Trash2, CheckSquare, Target, UserX, AlertCircle, AlertTriangle, Loader2 } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 
 interface WbsBoardCardProps {
@@ -64,7 +64,7 @@ export function WbsBoardCard({
   return (
     <div
       onClick={() => onSelect(t.id)}
-      draggable={canDragTask}
+      draggable={canDragTask && !t.isSaving}
       onDragStart={(e) => onDragStart(e, t.id, colName)}
       onDragOver={(e) => onDragOverTask(e, t.id)}
       onDragLeave={onDragLeaveTask}
@@ -77,9 +77,10 @@ export function WbsBoardCard({
       data-board-column={colName}
       className={`group/task group relative bg-app-surface border rounded-xl p-3.5 sm:p-3 shadow-xs transition-all duration-200 select-none touch-pan-y
         ${isResponsible ? 'border-violet-400 ring-1 ring-violet-400/50 bg-violet-50/30 dark:bg-violet-500/5' : 'border-app-border'}
-        ${canDragTask ? 'cursor-grab active:cursor-grabbing hover:border-violet-400 hover:shadow-md' : 'cursor-pointer hover:border-slate-300'}
+        ${canDragTask && !t.isSaving ? 'cursor-grab active:cursor-grabbing hover:border-violet-400 hover:shadow-md' : 'cursor-pointer hover:border-slate-300'}
         ${draggedTaskId === t.id ? 'opacity-40 border-dashed scale-95 bg-violet-500/5' : ''}
         ${dragOverTaskId === t.id ? 'border-t-2 border-t-violet-500 transform translate-y-1 shadow-lg' : ''}
+        ${t.isSaving ? 'opacity-70 pointer-events-none' : ''}
       `}
     >
       <div className="flex items-center justify-between mb-2">
@@ -155,6 +156,13 @@ export function WbsBoardCard({
           {t.priority}
         </div>
       )}
+
+      {t.status === 'In Review' && (
+        <div className="mb-3 w-max px-2 py-1 rounded-md text-[10px] font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20 flex items-center gap-1.5 shadow-sm shadow-rose-500/5">
+          <AlertTriangle className="w-3 h-3" />
+          Review Required
+        </div>
+      )}
       
       <div className="flex flex-col mt-auto gap-2.5">
         <div className="flex items-center justify-between">
@@ -203,6 +211,15 @@ export function WbsBoardCard({
           )}
         </div>
       </div>
+
+      {t.isSaving && (
+        <div className="absolute inset-0 bg-app-surface/60 backdrop-blur-[1px] rounded-xl flex flex-col items-center justify-center z-10 transition-all">
+          <Loader2 className="w-6 h-6 text-violet-500 animate-spin mb-2" />
+          <span className="text-[10px] font-bold text-violet-600 animate-pulse bg-violet-500/10 px-2 py-0.5 rounded-full border border-violet-500/20">
+            CHECKING GATE...
+          </span>
+        </div>
+      )}
     </div>
   )
 }

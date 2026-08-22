@@ -60,6 +60,22 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
   const [isTeamsConfigured, setIsTeamsConfigured] = useState(false)
   const [isGoogleChatConfigured, setIsGoogleChatConfigured] = useState(false)
   const [isCalendarConfigured, setIsCalendarConfigured] = useState(false)
+  const [hideErpDev, setHideErpDev] = useState(false)
+
+  useEffect(() => {
+    // Check initial state
+    setHideErpDev(localStorage.getItem('PZ_HIDE_ERP_DEV') === 'true')
+    
+    // Listen for cross-component toggle
+    const handleToggle = (e: Event) => {
+      const customEvent = e as CustomEvent
+      if (customEvent.detail?.key === 'PZ_HIDE_ERP_DEV') {
+        setHideErpDev(customEvent.detail.value)
+      }
+    }
+    window.addEventListener('pz-feature-toggle', handleToggle)
+    return () => window.removeEventListener('pz-feature-toggle', handleToggle)
+  }, [])
 
   useEffect(() => {
     if (!isOpen || selectedApp !== null) return
@@ -290,19 +306,21 @@ export function ProjectIntegrationsMenu({ projectId }: { projectId: string }) {
                   </div>
 
                   {/* ERP / Accounting Integration Card */}
-                  <div 
-                    onClick={() => setSelectedApp('erp')}
-                    className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-violet-500 hover:shadow-md transition-all"
-                  >
-                    <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <Database className="h-6 w-6 text-emerald-500" />
+                  {!hideErpDev && (
+                    <div 
+                      onClick={() => setSelectedApp('erp')}
+                      className="group relative flex flex-col items-center text-center p-6 bg-white dark:bg-app-surface border border-app-border rounded-xl cursor-pointer hover:border-violet-500 hover:shadow-md transition-all"
+                    >
+                      <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <Database className="h-6 w-6 text-emerald-500" />
+                      </div>
+                      <h3 className="text-base font-bold text-app-fg mb-1">ERP & Accounting</h3>
+                      <p className="text-xs text-app-muted mb-4">Connect QuickBooks, NetSuite, SAP, and Xero ledgers</p>
+                      <div className="mt-auto px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-violet-50 group-hover:text-violet-600 dark:group-hover:bg-violet-500/20 dark:group-hover:text-violet-400 transition-colors">
+                        Configure
+                      </div>
                     </div>
-                    <h3 className="text-base font-bold text-app-fg mb-1">ERP & Accounting</h3>
-                    <p className="text-xs text-app-muted mb-4">Connect QuickBooks, NetSuite, SAP, and Xero ledgers</p>
-                    <div className="mt-auto px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-app-hover text-app-muted group-hover:bg-violet-50 group-hover:text-violet-600 dark:group-hover:bg-violet-500/20 dark:group-hover:text-violet-400 transition-colors">
-                      Configure
-                    </div>
-                  </div>
+                  )}
                 </div>
               ) : selectedApp === 'slack' ? (
                 <ProjectSlackSettings projectId={projectId} />

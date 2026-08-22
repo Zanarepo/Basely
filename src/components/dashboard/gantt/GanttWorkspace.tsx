@@ -12,11 +12,15 @@ import { useGanttData } from '@/lib/schedule/useGanttData'
 import { useGanttPresence } from './useGanttPresence'
 import { LiveCursorsOverlay } from '../wbs/workspace/LiveCursorsOverlay'
 import { WbsElementSidePanel } from '../wbs/WbsElementSidePanel'
-import { updateWbsElement } from '@/lib/wbs/actions'
+import { updateWbsElement } from '@/lib/wbs/core-actions'
 import { getTerminology } from '@/utils/terminology'
 import type { WbsElement } from '@/lib/wbs/constants'
 import type { Iteration } from '@/lib/releases/types'
 import { createClient } from '@/utils/supabase/client'
+import { PendingCRsBanner } from './components/PendingCRsBanner'
+import { GanttContextMenu } from './components/GanttContextMenu'
+import { GanttInitiateCRModal } from './components/GanttInitiateCRModal'
+import { usePendingChangeRequests } from './hooks/usePendingChangeRequests'
 
 type GanttWorkspaceProps = {
   projectId: string
@@ -77,6 +81,15 @@ export default function GanttWorkspace({
   const [showSidebar, setShowSidebar] = useState(true)
   const [scopeFilter, setScopeFilter] = useState<string>('all')
   const [iterations, setIterations] = useState<Iteration[]>([])
+
+  // CR Integration state
+  const { pendingCRs, approvedCRs } = usePendingChangeRequests(projectId)
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; taskName: string; elementId: string } | null>(null)
+  const [isCRModalOpen, setIsCRModalOpen] = useState(false)
+  const [crTaskName, setCrTaskName] = useState('')
+  const [crToast, setCrToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+
+  const approvedCRDescriptions = useMemo(() => approvedCRs.map((cr) => cr.description), [approvedCRs])
 
   useEffect(() => {
     const fetchIterations = async () => {
@@ -255,8 +268,22 @@ export default function GanttWorkspace({
         </div>
       )}
 
+      {/* CR Toast overlay */}
+      {crToast && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[300] shadow-lg flex items-center gap-3 px-4 py-3 rounded-2xl animate-fade-in border ${
+          crToast.type === 'success'
+            ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+            : 'bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+        }`}>
+          <span className="text-xs font-bold">{crToast.msg}</span>
+        </div>
+      )}
+
       {/* Live Cursors Overlay */}
       <LiveCursorsOverlay activeUsers={activeUsers} showCursors={showCursors} />
+
+      {/* Pending CRs Banner */}
+      <PendingCRsBanner count={pendingCRs.length} projectId={projectId} />
 
       {/* Gantt Header Toolbar */}
       <GanttToolbar
@@ -302,6 +329,7 @@ export default function GanttWorkspace({
             onSelectElement={setActiveElementId}
             scrollRef={leftScrollRef}
             rowHeight={ROW_HEIGHT}
+            approvedCRDescriptions={approvedCRDescriptions}
           />
         )}
 
@@ -330,6 +358,10 @@ export default function GanttWorkspace({
             acquireLock={acquireLock}
             releaseLock={releaseLock}
             onSelectElement={setActiveElementId}
+            onContextMenu={(e, row) => {
+              const taskName = row?.element?.name || row?.activity?.name || 'Task'
+              setContextMenu({ x: e.clientX, y: e.clientY, taskName, elementId: row?.element?.id || '' })
+            }}
           />
         </div>
       </div>
@@ -350,6 +382,32 @@ export default function GanttWorkspace({
         dependencies={dependencies}
         wbsCodes={wbsCodes}
         elementLevels={elementLevels}
+      />
+
+      {/* Right-click context menu on Gantt bars */}
+      {contextMenu && (
+        <GanttContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          taskName={contextMenu.taskName}
+          onInitiateCR={() => {
+            setCrTaskName(contextMenu.taskName)
+            setIsCRModalOpen(true)
+          }}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {/* CR Modal initiated from Gantt right-click */}
+      <GanttInitiateCRModal
+        isOpen={isCRModalOpen}
+        onClose={() => setIsCRModalOpen(false)}
+        projectId={projectId}
+        taskName={crTaskName}
+        onShowToast={(type, msg) => {
+          setCrToast({ type, msg })
+          setTimeout(() => setCrToast(null), 3500)
+        }}
       />
 
       <WbsElementSidePanel

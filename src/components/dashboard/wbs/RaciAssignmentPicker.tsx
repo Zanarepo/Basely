@@ -1,19 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
-import { createClient } from '@/utils/supabase/client'
 import { Search, Check, ChevronDown, User, Users, Loader2 } from 'lucide-react'
-import { assignRaciRole, removeRaciRole, replaceAccountableRole, getProjectRaciStakeholders } from '@/lib/wbs/actions'
 import type { RaciRoleType, RaciAssignment } from '@/lib/wbs/constants'
-import type { ActionResponse } from '@/lib/wbs/actions'
-
-type Stakeholder = {
-  id: string
-  name: string
-  organization_type: 'internal' | 'external'
-  linked_user_id?: string | null
-  profiles?: { full_name: string | null; email: string | null } | any
-}
+import { useRaciAssignmentPicker } from './hooks/useRaciAssignmentPicker'
 
 type RaciAssignmentPickerProps = {
   projectId: string
@@ -36,131 +25,28 @@ export function RaciAssignmentPicker({
   callerRole,
   callerUserId,
 }: RaciAssignmentPickerProps) {
-  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([])
-  const [loading, setLoading] = useState(true)
-  const [openRole, setOpenRole] = useState<RaciRoleType | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [localAssignments, setLocalAssignments] = useState<RaciAssignment[]>(assignments)
-
-  useEffect(() => {
-    setLocalAssignments(assignments)
-  }, [assignments])
-
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  const supabase = createClient()
-
-  useEffect(() => {
-    async function loadStakeholders() {
-      try {
-        const data = await getProjectRaciStakeholders(projectId)
-        if (data) setStakeholders(data)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadStakeholders()
-  }, [projectId])
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpenRole(null)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  const filteredStakeholders = useMemo(() => {
-    if (!searchQuery) return stakeholders
-    const query = searchQuery.toLowerCase()
-    return stakeholders.filter(s =>
-      s.name.toLowerCase().includes(query) ||
-      (s.profiles?.full_name?.toLowerCase().includes(query)) ||
-      (s.profiles?.email?.toLowerCase().includes(query))
-    )
-  }, [stakeholders, searchQuery])
-
-  const availableStakeholders = useMemo(() => {
-    return filteredStakeholders
-  }, [filteredStakeholders])
-
-  const canEditRole = (role: RaciRoleType, stakeholderId: string) => {
-    if (callerRole === 'Team Member') {
-      const stakeholder = stakeholders.find(s => s.id === stakeholderId)
-      return stakeholder?.linked_user_id === callerUserId
-    }
-    if (hasEditAccess) return true
-    return false
-  }
-
-  const handleToggleAssignment = async (stakeholderId: string, roleType: RaciRoleType) => {
-    if (!canEditRole(roleType, stakeholderId) || isUpdating) return
-    setIsUpdating(true)
-
-    // Optimistic UI Update
-    const existing = localAssignments.find(a => a.stakeholderId === stakeholderId && a.roleType === roleType)
-    const stakeholder = stakeholders.find(s => s.id === stakeholderId)
-
-    let newAssignments = [...localAssignments]
-    if (existing) {
-      newAssignments = newAssignments.filter(a => !(a.stakeholderId === stakeholderId && a.roleType === roleType))
-    } else {
-      if (roleType === 'Accountable') {
-        const currentA = localAssignments.find(a => a.roleType === 'Accountable')
-        if (currentA && currentA.stakeholderId !== stakeholderId) {
-          if (!window.confirm('This will replace the currently Accountable stakeholder. Proceed?')) {
-            setIsUpdating(false)
-            return
-          }
-        }
-        newAssignments = newAssignments.filter(a => a.roleType !== 'Accountable')
-      }
-      newAssignments.push({
-        id: `temp-${Date.now()}`,
-        wbsElementId,
-        stakeholderId,
-        roleType,
-        stakeholder: stakeholder as any
-      })
-    }
-    setLocalAssignments(newAssignments)
-
-    try {
-      let res: ActionResponse
-
-      if (existing) {
-        res = await removeRaciRole(projectId, wbsElementId, stakeholderId, roleType)
-      } else {
-        if (roleType === 'Accountable') {
-          res = await replaceAccountableRole(projectId, wbsElementId, stakeholderId)
-        } else {
-          res = await assignRaciRole(projectId, wbsElementId, stakeholderId, roleType)
-        }
-      }
-
-      if (!res.ok) {
-        setLocalAssignments(assignments) // Revert on failure
-        const errorStr = String(res.error)
-        if (errorStr.includes('violates row-level security policy') || errorStr.includes('42501')) {
-           onShowToast('error', 'You can only assign yourself as Responsible for this task.')
-        } else {
-           onShowToast('error', res.error || 'Failed to update RACI assignment')
-        }
-      } else {
-        onAssignmentChanged?.()
-      }
-    } catch (err) {
-      setLocalAssignments(assignments) // Revert on failure
-      onShowToast('error', 'An unexpected error occurred')
-    } finally {
-      setIsUpdating(false)
-    }
-  }
+  const {
+    loading,
+    openRole,
+    setOpenRole,
+    searchQuery,
+    setSearchQuery,
+    isUpdating,
+    localAssignments,
+    dropdownRef,
+    availableStakeholders,
+    canEditRole,
+    handleToggleAssignment
+  } = useRaciAssignmentPicker({
+    projectId,
+    wbsElementId,
+    assignments,
+    hasEditAccess,
+    onAssignmentChanged,
+    onShowToast,
+    callerRole,
+    callerUserId
+  })
 
   const renderRoleSection = (role: RaciRoleType, title: string, description: string, colorClass: string) => {
     const roleAssignments = localAssignments.filter(a => a.roleType === role)
@@ -259,9 +145,14 @@ export function RaciAssignmentPicker({
                         className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg hover:bg-app-hover transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <div className="flex items-center gap-2">
-                          {s.organization_type === 'internal' ? <User className="w-3.5 h-3.5 text-violet-400" /> : <Users className="w-3.5 h-3.5 text-emerald-400" />}
-                          <span className="text-app-fg font-medium truncate max-w-[160px]">{name}</span>
-                          <span className="text-xs text-app-muted px-1.5 py-0.5 rounded bg-app-bg">
+                          {s.organization_type === 'internal' ? <User className="w-3.5 h-3.5 text-violet-400 shrink-0" /> : <Users className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                          <div className="flex flex-col">
+                            <span className="text-app-fg font-medium truncate max-w-[160px]">{name}</span>
+                            <span className="text-xs text-app-subtle truncate max-w-[160px]">
+                              {s.role_title || s.sub_category || s.organization_type}
+                            </span>
+                          </div>
+                          <span className="text-[10px] uppercase font-bold text-app-muted px-1.5 py-0.5 rounded bg-app-bg ml-1">
                             {s.organization_type}
                           </span>
                         </div>

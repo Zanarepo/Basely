@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
-import { dispatchNotification, sendDirectEmail } from '@/lib/notifications/actions'
+import { dispatchNotification, sendDirectEmail } from '@/lib/notifications/dispatch'
 import { headers } from 'next/headers'
 
 export interface ProjectSignoffRecord {

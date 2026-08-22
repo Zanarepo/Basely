@@ -1,5 +1,6 @@
 import { useState, useEffect, TransitionStartFunction } from 'react'
-import { DocumentTemplate, GeneratedDocument, saveGeneratedDocument, regenerateDocument } from '@/lib/documents/actions'
+import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/types'
+import { saveGeneratedDocument, regenerateDocument } from '@/lib/documents/core-mutations'
 import { fetchAutoFillText } from '../engine/autoFillDataFetcher'
 
 interface UseDocumentPersistenceParams {
@@ -39,7 +40,7 @@ export function useDocumentPersistence({
 
   // Real-time debounced auto-save (saves 1s after user stops typing)
   useEffect(() => {
-    if (!isDirty || isPending || isSnapshot || isReadOnlyTemplate) return
+    if (!isDirty || isSnapshot || isReadOnlyTemplate) return
 
     const timer = setTimeout(() => {
       handleSave()
@@ -47,21 +48,17 @@ export function useDocumentPersistence({
 
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [freeText, isDirty, isPending, isSnapshot, isReadOnlyTemplate])
+  }, [freeText, isDirty, isSnapshot, isReadOnlyTemplate])
 
-  const handleSave = () => {
-    startTransition(async () => {
-      const customTemplateId = template.id
-      const result = await saveGeneratedDocument(projectId, template.document_type, freeText, false, undefined, undefined, customTemplateId)
-      if (result.ok) {
-        setIsDirty(false)
-        onShowToast('success', 'Document saved successfully')
-        if (onSaveSuccess) onSaveSuccess()
-      } else {
-        console.error('[DocumentEngine Error] Failed to save document:', result.error)
-        onShowToast('error', result.error || 'Failed to save document')
-      }
-    })
+  const handleSave = async () => {
+    const customTemplateId = template.id
+    const result = await saveGeneratedDocument(projectId, template.document_type, freeText, false, undefined, undefined, customTemplateId)
+    if (result.ok) {
+      setIsDirty(false)
+    } else {
+      console.error('[DocumentEngine Error] Failed to save document:', result.error)
+      onShowToast('error', result.error || 'Failed to auto-save document')
+    }
   }
 
   const handleRegenerate = () => {
@@ -84,6 +81,7 @@ export function useDocumentPersistence({
       if (result.ok) {
         setIsDirty(false)
         onShowToast('success', 'Data-bound sections refreshed to latest project data')
+        if (onSaveSuccess) onSaveSuccess()
       } else {
         onShowToast('error', result.error || 'Failed to regenerate document')
       }

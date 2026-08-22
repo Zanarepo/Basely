@@ -191,7 +191,7 @@ export async function fetchAutoFillText(projectId: string, sectionSource: string
       text = '• No releases defined in this project.'
     } else {
       if (src === 'release.scope') {
-        const { fetchProjectReleasesData } = await import('@/lib/releases/actions')
+        const { fetchProjectReleasesData } = await import('@/lib/releases/release-actions')
         const releaseData = await fetchProjectReleasesData(projectId)
         const scopeItems = (releaseData.scopeItemsMap?.[release.id] || []).filter(s => s.source !== 'excluded')
         

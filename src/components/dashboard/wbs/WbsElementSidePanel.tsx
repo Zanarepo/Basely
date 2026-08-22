@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { X, Settings2, Loader2, Save, AlertCircle } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 import { WbsBasicDetails } from './sidepanel/WbsBasicDetails'
@@ -174,6 +175,9 @@ export function WbsElementSidePanel({
                 }}
                 onAutoSavePriority={(val) => {
                   if (element?.id) onSave(element.id, { priority: val })
+                }}
+                onAutoSaveStatus={async (val) => {
+                  if (element?.id) await onSave(element.id, { status: val })
                 }}
                 canAssignMembers={canAssignMembers}
                 callerRole={callerRole}

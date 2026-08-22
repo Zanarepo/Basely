@@ -4,7 +4,7 @@ export interface DocumentItem {
   id: string
   title: string
   category: 'initiation' | 'planning' | 'execution' | 'closure' | 'strategy' | 'requirements' | 'prioritization'
-  suite: 'product' | 'project'
+  suite: 'product' | 'project' | 'common'
   icon: React.ElementType
   description: string
   guide: {

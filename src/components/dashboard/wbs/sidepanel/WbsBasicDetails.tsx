@@ -39,6 +39,7 @@ type WbsBasicDetailsProps = {
   onAutoSaveUserStories?: (items: ChecklistItem[]) => void
   onAutoSaveEdgeCases?: (items: ChecklistItem[]) => void
   onAutoSavePriority?: (val: string | null) => void
+  onAutoSaveStatus?: (val: WbsStatus) => Promise<void> | void
   terms: TerminologyDict
 }
 
@@ -58,23 +59,28 @@ export function WbsBasicDetails({
   saving,
   customStatuses,
   onAddCustomStatus,
+  canAssignMembers,
+  callerRole,
+  callerUserId,
   onAutoSaveDeliverables,
   onAutoSaveCriteria,
   onAutoSaveUserStories,
   onAutoSaveEdgeCases,
   onAutoSavePriority,
+  onAutoSaveStatus,
   terms
 }: WbsBasicDetailsProps) {
   const [isAddingStatus, setIsAddingStatus] = useState(false)
   const [newStatusName, setNewStatusName] = useState('')
   const [isScopeOpen, setIsScopeOpen] = useState(false)
   const [isGeneratingAi, setIsGeneratingAi] = useState(false)
+  const [isAutoSavingStatus, setIsAutoSavingStatus] = useState(false)
 
   const handleAiGenerateScope = async () => {
     if (!name.trim()) return
     setIsGeneratingAi(true)
     try {
-      const { generateScopeDetailsWithAiAction } = await import('@/lib/wbs/actions')
+      const { generateScopeDetailsWithAiAction } = await import('@/lib/wbs/ai-actions')
       const result = await generateScopeDetailsWithAiAction(name, description)
 
       if (result.ok && result.data) {
@@ -176,16 +182,31 @@ export function WbsBasicDetails({
                </div>
              </div>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 relative">
               <EnterpriseSelect
                 value={status}
-                onChange={(val) => setStatus(val as WbsStatus)}
+                onChange={async (val) => {
+                  setStatus(val as WbsStatus)
+                  if (onAutoSaveStatus) {
+                    setIsAutoSavingStatus(true)
+                    try {
+                      await onAutoSaveStatus(val as WbsStatus)
+                    } finally {
+                      setIsAutoSavingStatus(false)
+                    }
+                  }
+                }}
                 options={customStatuses}
-                disabled={!hasEditAccess || saving}
+                disabled={!hasEditAccess || saving || isAutoSavingStatus}
                 size="lg"
                 placeholder="Select status..."
               />
-              {hasEditAccess && !saving && (
+              {isAutoSavingStatus && (
+                <div className="absolute right-10 top-1/2 -translate-y-1/2 flex items-center bg-app-surface-solid px-2">
+                  <Loader2 className="w-4 h-4 text-violet-500 animate-spin" />
+                </div>
+              )}
+              {hasEditAccess && !saving && !isAutoSavingStatus && (
                 <button
                   type="button"
                   onClick={() => setIsAddingStatus(true)}

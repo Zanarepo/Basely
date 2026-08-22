@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Sparkles, ArrowRight, Loader2, Compass, CheckCircle2 } from 'lucide-react'
 import { synthesizeRoadmapFromStrategy } from '@/lib/documents/ai-chain-actions'
+import { AiHoverBannerWrapper } from '../AiHoverBannerWrapper'
 
 interface StrategyChainBannerProps {
   projectId: string
@@ -40,8 +41,40 @@ export default function StrategyChainBanner({
   }
 
   return (
-    <div className="mb-6 p-4 rounded-2xl border border-violet-500/30 bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-indigo-500/10 dark:from-violet-950/30 dark:via-purple-950/30 dark:to-indigo-950/30 shadow-2xs transition-all relative overflow-hidden">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <AiHoverBannerWrapper
+      widthClass="w-[420px]"
+      trigger={
+        <div className="flex items-center gap-2">
+          {isDone && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20 text-xs shadow-sm">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Roadmap Generated!</span>
+            </div>
+          )}
+
+          <button
+            type="button"
+            style={{ cursor: 'pointer' }}
+            disabled={isSynthesizing}
+            onClick={handleSynthesize}
+            className="inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-md bg-violet-600/10 hover:bg-violet-600/20 text-violet-600 dark:text-violet-400 border border-violet-600/20 font-bold text-xs transition-all shadow-sm disabled:opacity-50"
+          >
+            {isSynthesizing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Praz-AI Generating Roadmap...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>{isDone ? 'Re-generate' : 'Generate Product Roadmap'}</span>
+              </>
+            )}
+          </button>
+        </div>
+      }
+    >
+      <div className="bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-white dark:to-slate-900 border border-violet-500/20 px-5 py-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xl backdrop-blur-md">
         {/* Left Column: Title & Description */}
         <div className="flex items-center gap-3.5 min-w-0">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20 shrink-0">
@@ -61,38 +94,7 @@ export default function StrategyChainBanner({
             </p>
           </div>
         </div>
-
-        {/* Right Column: Action Button */}
-        <div className="shrink-0 w-full sm:w-auto flex items-center gap-2">
-          {isDone && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-500/30 text-xs shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>Roadmap Generated!</span>
-            </div>
-          )}
-
-          <button
-            type="button"
-            style={{ cursor: 'pointer' }}
-            disabled={isSynthesizing}
-            onClick={handleSynthesize}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold text-xs transition-all shadow-md shadow-violet-500/20 cursor-pointer disabled:opacity-50"
-          >
-            {isSynthesizing ? (
-              <>
-                <Loader2 className="w-4 h-4 text-white animate-spin" />
-                <span>Praz-AI Generating Roadmap...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 text-violet-200" />
-                <span>{isDone ? 'Re-generate' : 'Generate Product Roadmap'}</span>
-                <ArrowRight className="w-3.5 h-3.5 opacity-80" />
-              </>
-            )}
-          </button>
-        </div>
       </div>
-    </div>
+    </AiHoverBannerWrapper>
   )
 }

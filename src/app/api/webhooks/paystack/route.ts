@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PaystackAdapter } from '@/lib/payments/paystack-adapter'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { enforceDowngradeLocks, invalidateSubscriptionCache } from '@/lib/organizations/tier-logic'
-import { sendDirectEmail } from '@/lib/notifications/actions'
+import { sendDirectEmail } from '@/lib/notifications/dispatch'
 
 export async function POST(req: NextRequest) {
   try {

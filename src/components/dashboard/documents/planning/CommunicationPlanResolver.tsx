@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react'
 import { getCommunicationPlanEntries, CommunicationPlanEntry } from '@/lib/planning/actions'
-import { getAvailableDocumentTypes } from '@/lib/documents/actions'
-import { Loader2 } from 'lucide-react'
+import { getAvailableDocumentTypes } from '@/lib/documents/core-queries'
+import { Mail, MessageSquare, Video, Loader2 } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 
 interface CommunicationPlanResolverProps {
   projectId: string
@@ -36,7 +37,7 @@ export function CommunicationPlanResolver({ projectId, sectionKey }: Communicati
   }, [projectId])
 
   if (isLoading) {
-    return <div className="p-4 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-app-muted" /></div>
+    return <DocumentLoader message="Loading Communication Plan..." />
   }
 
   if (entries.length === 0) {

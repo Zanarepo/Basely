@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { FileText, Plus, Trash2, Edit3, Settings } from 'lucide-react'
 import { CustomDocumentTemplate, getCustomTemplates, saveCustomTemplate, deleteCustomTemplate } from '@/lib/documents/template-actions'
 import TemplateBuilderForm from './TemplateBuilderForm'
-import { DocumentSectionDef } from '@/lib/documents/actions'
+import { DocumentSectionDef } from '@/lib/documents/types'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 

@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react'
 import type { ProductKpi } from '@/lib/product-strategy/types'
-import { getProductKpis } from '@/lib/product-strategy/actions'
+import { getProductKpis } from '@/lib/product-strategy/kpi-actions'
 import { KpiScorecard } from './KpiScorecard'
 import { KpiBuilderModal } from './KpiBuilderModal'
 import { GenerateNorthStarButton } from './GenerateNorthStarButton'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
-import { Target, Plus, Loader2, RefreshCw, Compass, TrendingUp } from 'lucide-react'
+import { TrendingUp, Plus, Filter, Search, Loader2, Target, RefreshCw, Compass } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 
 interface NorthStarDashboardProps {
   organizationId: string
@@ -154,12 +155,7 @@ export function NorthStarDashboard({
 
       {/* Content Area */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            Loading quantitative growth matrix and levers...
-          </span>
-        </div>
+        <DocumentLoader message="Loading quantitative growth matrix and levers..." />
       ) : kpis.length === 0 ? (
         <div className="bg-slate-50 dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center max-w-2xl mx-auto my-10 space-y-4">
           <div className="w-12 h-12 bg-violet-500/10 rounded-full flex items-center justify-center mx-auto text-violet-500">

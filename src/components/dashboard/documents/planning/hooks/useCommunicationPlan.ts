@@ -6,7 +6,7 @@ import {
   autoPopulateCommunicationPlan,
   CommunicationPlanEntry 
 } from '@/lib/planning/actions'
-import { getAvailableDocumentTypes } from '@/lib/documents/actions'
+import { getAvailableDocumentTypes } from '@/lib/documents/core-queries'
 
 export function useCommunicationPlan(projectId: string) {
   const [entries, setEntries] = useState<CommunicationPlanEntry[]>([])

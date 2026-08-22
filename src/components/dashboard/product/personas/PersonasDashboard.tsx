@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import type { Persona } from '@/lib/product-strategy/types'
-import { getPersonas, deletePersona } from '@/lib/product-strategy/actions'
+import { getPersonas, deletePersona } from '@/lib/product-strategy/persona-actions'
 import { PersonaCard } from './PersonaCard'
 import { PersonaBuilderModal } from './PersonaBuilderModal'
 import { createClient } from '@/utils/supabase/client'
 import { Plus, Users, Filter, Search, Loader2 } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 import { PmDiscoveryWorkflowGuide } from '../discovery/PmDiscoveryWorkflowGuide'
 
 interface PersonasDashboardProps {
@@ -179,10 +180,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
 
       {/* Personas Grid */}
       {loading ? (
-        <div className="flex items-center justify-center py-20 text-slate-400">
-          <Loader2 className="w-8 h-8 animate-spin mr-3 text-violet-500" />
-          <span className="text-sm font-medium">Loading target customer personas...</span>
-        </div>
+        <DocumentLoader message="Loading target customer personas..." />
       ) : filteredPersonas.length === 0 ? (
         <div className="text-center py-16 bg-white dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 p-6">
           <Users className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />

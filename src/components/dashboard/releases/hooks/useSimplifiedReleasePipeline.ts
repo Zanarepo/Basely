@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import type { Release, ReleaseScopeItem } from '@/lib/releases/types'
 import { getDualLabels } from '@/lib/releases/epic-link-constants'
-import { generateAiReleaseNotesAndChecklist } from '@/lib/releases/actions'
+import { generateAiReleaseNotesAndChecklist } from '@/lib/releases/ai-actions'
 
 export const isStatusCompleted = (status?: string | null): boolean => {
   if (!status) return false

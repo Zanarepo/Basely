@@ -13,6 +13,7 @@ import { useWbsPlanning } from './workspace/useWbsPlanning'
 import { WbsToolbar } from './workspace/WbsToolbar'
 import { WbsImportModal } from './WbsImportModal'
 import { RaciMatrixView } from './RaciMatrixView'
+import { QualityGateModal } from './QualityGateModal'
 import { IterationModal } from '@/components/dashboard/releases/components/IterationModal'
 import { getTerminology, ProjectMethodology } from '@/utils/terminology'
 import { useWbsBoard } from './workspace/useWbsBoard'
@@ -87,6 +88,8 @@ export function WbsPlanningWorkspace({
     selectAll,
     clearSelection,
     handleBulkDelete,
+    qualityGateState,
+    setQualityGateState
   } = useWbsPlanning(projectId, hasEditAccess, callerRole, callerUserId)
 
   const { columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility } = useWbsBoard(projectId, elements)
@@ -128,6 +131,21 @@ export function WbsPlanningWorkspace({
   return (
     <div className="space-y-6 relative">
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      {qualityGateState.isOpen && (
+        <QualityGateModal
+          projectId={projectId}
+          elementId={qualityGateState.elementId}
+          standards={qualityGateState.standards}
+          category={qualityGateState.category}
+          onClose={() => setQualityGateState({ ...qualityGateState, isOpen: false })}
+          onSuccess={() => {
+            showToast('success', 'Quality gate passed. Task marked complete.')
+            setQualityGateState({ ...qualityGateState, isOpen: false })
+            loadElements()
+          }}
+        />
+      )}
 
       {/* Toolbar header */}
       <WbsToolbar
@@ -288,10 +306,15 @@ export function WbsPlanningWorkspace({
 
             {currentView === 'raci' && (
               <RaciMatrixView 
-                projectId={projectId}
+                projectId={projectId} 
                 elements={filteredSortedElements}
                 expandedNodeIds={expandedNodeIds}
                 onToggleExpand={handleToggleExpand}
+                organizationId={organizationId}
+                tier={tier}
+                aiEnabled={aiEnabled}
+                onShowToast={showToast}
+                onAssignmentsCompleted={loadElements}
               />
             )}
 

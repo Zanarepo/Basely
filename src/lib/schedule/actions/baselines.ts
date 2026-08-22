@@ -2,7 +2,7 @@
 
 import { createAdminClient } from '@/utils/supabase/admin'
 import { createClient } from '@/utils/supabase/server'
-import { dispatchNotification } from '@/lib/notifications/actions'
+import { dispatchNotification } from '@/lib/notifications/dispatch'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
 import type { ActionResponse } from './types'
 

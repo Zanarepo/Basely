@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import type { Persona } from '@/lib/product-strategy/types'
 import { Trash2, Edit3, User, Briefcase, Target, Frown, Wrench, Sparkles, Loader2 } from 'lucide-react'
 import { autoGenerateBacklogFromPersona } from '@/lib/product-backlog/actions'
-import { autoEnrichPersonaFromInsights } from '@/lib/product-strategy/actions'
+import { autoEnrichPersonaFromInsights } from '@/lib/product-strategy/persona-actions'
 import { toast } from 'sonner'
 
 interface PersonaCardProps {

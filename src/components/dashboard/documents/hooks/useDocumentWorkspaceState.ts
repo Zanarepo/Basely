@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useUserPersona } from '@/hooks/use-user-persona'
 import { PRODUCT_SUITE_DOCS, PROJECT_SUITE_DOCS, DocumentItem } from '../constants/documentDefinitions'
@@ -26,6 +26,20 @@ export function useDocumentWorkspaceState() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [activeSnapshotId, setActiveSnapshotId] = useState<string | null>(null)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
+
+  useEffect(() => {
+    const handleTabChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ tab: string }>
+      if (customEvent.detail?.tab) {
+        setSelectedDocId(customEvent.detail.tab)
+      }
+    }
+
+    window.addEventListener('document-tab-change', handleTabChange)
+    return () => {
+      window.removeEventListener('document-tab-change', handleTabChange)
+    }
+  }, [])
 
   const currentSuiteDocs = activeSuite === 'product' ? PRODUCT_SUITE_DOCS : PROJECT_SUITE_DOCS
 

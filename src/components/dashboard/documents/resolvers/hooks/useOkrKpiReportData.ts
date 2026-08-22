@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { getProductKpis, getOkrObjectives } from '@/lib/product-strategy/actions'
+import { getProductKpis } from '@/lib/product-strategy/kpi-actions'
+import { getOkrObjectives } from '@/lib/product-strategy/okr-actions'
 import type { ProductKpi, OkrObjective } from '@/lib/product-strategy/types'
 
 export interface OkrKpiReportSummary {

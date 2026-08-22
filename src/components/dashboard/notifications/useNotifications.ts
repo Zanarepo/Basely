@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, AppNotification } from '@/lib/notifications/actions'
+import { AppNotification } from '@/lib/notifications/types'
+import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '@/lib/notifications/inbox-actions'
 import { createClient } from '@/utils/supabase/client'
 
 export function useNotifications() {

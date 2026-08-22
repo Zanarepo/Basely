@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { tagWorkItemToIteration, tagEpicToIteration } from '@/lib/releases/actions'
+import { tagWorkItemToIteration, tagEpicToIteration } from '@/lib/releases/iteration-actions'
 
 export interface UseEpicIterationTaggingProps {
   projectId: string

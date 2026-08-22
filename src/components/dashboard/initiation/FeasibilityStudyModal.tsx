@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { X, Save } from 'lucide-react'
+import { X, Save, MousePointer2 } from 'lucide-react'
 import { BusinessCase, FeasibilityStudy, createFeasibilityStudy, updateFeasibilityStudy } from '@/lib/initiation/actions'
+import { useAutoGenerateFeasibility } from './hooks/useAutoGenerateFeasibility'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface FeasibilityStudyModalProps {
   open: boolean
@@ -23,6 +25,17 @@ export function FeasibilityStudyModal({ open, onClose, organizationId, callerUse
   const [financialAssessment, setFinancialAssessment] = useState(initialData?.financial_assessment || '')
   const [operationalAssessment, setOperationalAssessment] = useState(initialData?.operational_assessment || '')
   const [overallRecommendation, setOverallRecommendation] = useState(initialData?.overall_recommendation || '')
+
+  const { isGenerating, handleAutoGenerate } = useAutoGenerateFeasibility({
+    organizationId,
+    onShowToast,
+    onSuggestionReceived: (suggestion) => {
+      setTechnicalAssessment(suggestion.technical_assessment)
+      setFinancialAssessment(suggestion.financial_assessment)
+      setOperationalAssessment(suggestion.operational_assessment)
+      setOverallRecommendation(suggestion.overall_recommendation)
+    }
+  })
 
   if (!open) return null
 
@@ -88,18 +101,29 @@ export function FeasibilityStudyModal({ open, onClose, organizationId, callerUse
             </div>
 
             <div>
-              <label className="auth-label">Link to Business Case (Optional)</label>
-              <select
+              <div className="flex items-center justify-between mb-1">
+                <label className="auth-label mb-0">Link to Business Case (Optional)</label>
+                {businessCaseId && (
+                  <button
+                    type="button"
+                    onClick={() => handleAutoGenerate(businessCaseId)}
+                    disabled={isGenerating || isPending}
+                    className="cursor-pointer px-2 py-1 rounded-md text-[11px] font-bold bg-violet-600/10 hover:bg-violet-600/20 text-violet-600 dark:text-violet-400 border border-violet-600/20 transition-all disabled:opacity-50 flex items-center gap-1"
+                  >
+                    <MousePointer2 className="w-3 h-3" />
+                    {isGenerating ? 'Generating...' : 'Generate with Praz-AI'}
+                  </button>
+                )}
+              </div>
+              <EnterpriseSelect
                 value={businessCaseId}
-                onChange={e => setBusinessCaseId(e.target.value)}
-                className="auth-input"
-                disabled={isPending}
-              >
-                <option value="">None (Standalone Study)</option>
-                {businessCases.map(bc => (
-                  <option key={bc.id} value={bc.id}>{bc.name}</option>
-                ))}
-              </select>
+                onChange={setBusinessCaseId}
+                options={[
+                  { value: '', label: 'None (Standalone Study)' },
+                  ...businessCases.map(bc => ({ value: bc.id, label: bc.name }))
+                ]}
+                disabled={isPending || isGenerating}
+              />
             </div>
 
             <div>

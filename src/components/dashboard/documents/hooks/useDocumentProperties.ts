@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getProjectOrOrgMembers, saveGeneratedDocument } from '@/lib/documents/actions'
-import { fetchProjectReleasesData } from '@/lib/releases/actions'
+import { getProjectOrOrgMembers } from '@/lib/documents/core-queries'
+import { saveGeneratedDocument } from '@/lib/documents/core-mutations'
+import { fetchProjectReleasesData } from '@/lib/releases/release-actions'
 
 export interface DocumentProperties {
   status: 'draft' | 'in_review' | 'approved' | 'changes_requested' | 'archived'

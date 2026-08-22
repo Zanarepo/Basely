@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { generateOkrsFromStrategy } from '@/lib/documents/ai-chain-actions'
+import { generateOkrsFromStrategy, generateOkrsFromProject } from '@/lib/documents/ai-chain-actions'
 
 export function useGenerateOkrs(
   organizationId: string, 
@@ -9,15 +9,17 @@ export function useGenerateOkrs(
 ) {
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (source: 'strategy' | 'project' = 'strategy') => {
     setIsGenerating(true)
-    showToast('Praz-AI is analyzing Strategy Canvas to generate OKRs...', 'info')
+    showToast(`Praz-AI is analyzing ${source === 'strategy' ? 'Strategy Canvas' : 'Project Documents'} to generate OKRs...`, 'info')
     
     try {
-      const { ok, error } = await generateOkrsFromStrategy(projectId, organizationId)
+      const { ok, error } = source === 'strategy' 
+        ? await generateOkrsFromStrategy(projectId, organizationId)
+        : await generateOkrsFromProject(projectId, organizationId)
       
       if (ok) {
-        showToast('Strategic OKRs successfully generated!', 'success')
+        showToast(`${source === 'strategy' ? 'Strategic' : 'Project'} OKRs successfully generated!`, 'success')
         onSuccess()
       } else {
         showToast(error || 'Failed to generate OKRs', 'error')

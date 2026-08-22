@@ -2,37 +2,67 @@
 
 import React, { useEffect, useState } from 'react'
 import { getQualityManagementPlan, QualityManagementPlan, QualityStandard } from '@/lib/planning/quality-actions'
-import { CheckSquare, FileText } from 'lucide-react'
+import { generateQualityPlanFromWbs } from '@/lib/planning/ai-quality-actions'
+import { CheckSquare, FileText, Sparkles, Loader2 } from 'lucide-react'
+import StructuredEditableField from '@/components/dashboard/documents/components/StructuredEditableField'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { markdownComponents } from '@/components/dashboard/documents/components/structured/markdownComponents'
 
 export function QualityManagementPlanResolver({ projectId }: { projectId: string }) {
   const [plan, setPlan] = useState<QualityManagementPlan | null>(null)
   const [standards, setStandards] = useState<QualityStandard[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isGenerating, setIsGenerating] = useState(false)
+
+  const fetchPlan = async () => {
+    setIsLoading(true)
+    const res = await getQualityManagementPlan(projectId)
+    if (!res.error) {
+      if (res.plan) setPlan(res.plan)
+      if (res.standards) setStandards(res.standards)
+    }
+    setIsLoading(false)
+  }
 
   useEffect(() => {
-    const fetchPlan = async () => {
-      const res = await getQualityManagementPlan(projectId)
-      if (!res.error) {
-        if (res.plan) setPlan(res.plan)
-        if (res.standards) setStandards(res.standards)
-      }
-      setIsLoading(false)
-    }
     fetchPlan()
   }, [projectId])
+
+  const handleGenerateAI = async () => {
+    setIsGenerating(true)
+    const res = await generateQualityPlanFromWbs(projectId)
+    if (res.ok) {
+      await fetchPlan()
+    } else {
+      alert(res.error || 'Failed to generate plan')
+    }
+    setIsGenerating(false)
+  }
 
   if (isLoading) return <div className="p-4 text-sm text-app-muted">Loading quality plan...</div>
 
   return (
     <div className="space-y-6">
-      <div className="bg-app-surface border border-app-border rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-app-border bg-app-surface/50">
-          <h3 className="text-sm font-semibold text-app-fg">Quality Review Cadence</h3>
-        </div>
-        <div className="p-4 text-sm text-app-fg">
-          {plan?.review_cadence || <span className="text-app-muted italic">No cadence defined</span>}
-        </div>
+      <div className="flex items-center justify-end">
+        <button
+          onClick={handleGenerateAI}
+          disabled={isGenerating}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-md transition-colors disabled:opacity-50"
+        >
+          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          {isGenerating ? 'Analyzing WBS...' : 'Auto-Generate via AI'}
+        </button>
       </div>
+
+      <div className="space-y-8">
+        <StructuredEditableField
+          value={plan?.review_cadence || ''}
+          onChange={() => {}}
+          title="Quality Review Cadence"
+          hasEditAccess={false}
+          documentType="quality_plan"
+        />
 
       <div className="bg-app-surface border border-app-border rounded-lg shadow-sm overflow-hidden">
         <div className="p-4 border-b border-app-border bg-app-surface/50">
@@ -55,11 +85,16 @@ export function QualityManagementPlanResolver({ projectId }: { projectId: string
                     </span>
                   )}
                 </div>
-                <div className="text-sm text-app-fg whitespace-pre-wrap">{std.criterion_text}</div>
+                <div className="text-sm text-app-fg prose prose-sm prose-invert max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                    {std.criterion_text}
+                  </ReactMarkdown>
+                </div>
               </div>
             ))
           )}
         </div>
+      </div>
       </div>
     </div>
   )

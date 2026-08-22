@@ -70,7 +70,7 @@ export default function ActiveDocumentHeader({
               onClick={() => onSuiteChange('project')}
               className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeSuite === 'project'
-                  ? 'bg-indigo-600 text-white shadow-xs'
+                  ? 'bg-violet-600 text-white shadow-xs'
                   : 'text-app-muted hover:text-app-fg'
               }`}
             >

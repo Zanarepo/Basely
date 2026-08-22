@@ -4,7 +4,7 @@ import { createAdminClient } from '@/utils/supabase/admin'
 import { createClient } from '@/utils/supabase/server'
 import { getStaffSession, requireSuperadmin } from '@/lib/backoffice/auth'
 import { revalidatePath } from 'next/cache'
-import { sendDirectEmail } from '@/lib/notifications/actions'
+import { sendDirectEmail } from '@/lib/notifications/dispatch'
 
 export async function inviteInternalStaff(email: string, role: string, mode: 'link' | 'email') {
   try {

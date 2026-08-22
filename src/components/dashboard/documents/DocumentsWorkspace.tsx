@@ -109,12 +109,13 @@ export default function DocumentsWorkspace({
             <div className="bg-app-surface border border-app-border rounded-3xl p-6 min-h-[500px] shadow-xs">
               {[
                 'charter',
+                'scope_statement',
+                'project_management_plan',
                 'wbs_dictionary',
                 'raci',
                 'status_report',
                 'stakeholder_register',
                 'risk_register',
-                'project_management_plan',
                 'issue_log',
                 'schedule_document',
                 'budget_baseline',
@@ -132,17 +133,17 @@ export default function DocumentsWorkspace({
                 'product_roadmap_document',
                 'product_roadmap',
               ].includes(selectedDocId) && (
-                <ProjectDocument
-                  key={selectedDocId + (activeSnapshotId || 'draft')}
-                  documentType={selectedDocId}
-                  projectId={projectId}
-                  projectContext={projectContext}
-                  hasEditAccess={hasEditAccess}
-                  onShowToast={addToast}
-                  isSnapshot={!!activeSnapshotId}
-                  snapshotId={activeSnapshotId || undefined}
-                />
-              )}
+                  <ProjectDocument
+                    key={selectedDocId + (activeSnapshotId || 'draft')}
+                    documentType={selectedDocId}
+                    projectId={projectId}
+                    projectContext={projectContext}
+                    hasEditAccess={hasEditAccess}
+                    onShowToast={addToast}
+                    isSnapshot={!!activeSnapshotId}
+                    snapshotId={activeSnapshotId || undefined}
+                  />
+                )}
 
               {[
                 'strategy_canvas_workspace',
@@ -153,13 +154,13 @@ export default function DocumentsWorkspace({
                 'prioritization_workspace',
                 'release_checklist_workspace',
               ].includes(selectedDocId) && (
-                <ProductDocumentsRouter
-                  documentType={selectedDocId}
-                  projectId={projectId}
-                  projectContext={projectContext}
-                  hasEditAccess={hasEditAccess}
-                />
-              )}
+                  <ProductDocumentsRouter
+                    documentType={selectedDocId}
+                    projectId={projectId}
+                    projectContext={projectContext}
+                    hasEditAccess={hasEditAccess}
+                  />
+                )}
 
               {[
                 'closure_report',
@@ -168,14 +169,14 @@ export default function DocumentsWorkspace({
                 'post_implementation_review',
                 'signoff_board',
               ].includes(selectedDocId) && (
-                <ClosureDocumentsRouter
-                  documentType={selectedDocId as ClosureDocType}
-                  projectId={projectId}
-                  hasEditAccess={hasEditAccess}
-                  currentLifecycle={projectContext?.lifecycle_status || 'Execution'}
-                  onShowToast={addToast}
-                />
-              )}
+                  <ClosureDocumentsRouter
+                    documentType={selectedDocId as ClosureDocType}
+                    projectId={projectId}
+                    hasEditAccess={hasEditAccess}
+                    currentLifecycle={projectContext?.lifecycle_status || 'Execution'}
+                    onShowToast={addToast}
+                  />
+                )}
 
               {['meeting_minutes', 'change_requests', 'deliverables'].includes(selectedDocId) && (
                 <ExecutionDocumentsRouter
@@ -188,27 +189,28 @@ export default function DocumentsWorkspace({
               )}
 
               {[
-                'scope_statement',
                 'communication_plan',
                 'quality_management_plan',
                 'procurement_plan',
               ].includes(selectedDocId) && (
-                <PlanningDocumentsRouter
-                  documentType={selectedDocId as PlanningDocType}
-                  projectId={projectId}
-                  hasEditAccess={hasEditAccess}
-                  onShowToast={addToast}
-                />
-              )}
+                  <PlanningDocumentsRouter
+                    documentType={selectedDocId as PlanningDocType}
+                    projectId={projectId}
+                    hasEditAccess={hasEditAccess}
+                    onShowToast={addToast}
+                  />
+                )}
             </div>
           </div>
         ) : (
           /* HUB OVERVIEW CATEGORY GRID */
-          <DocumentCardGrid
-            activeSuite={activeSuite}
-            filteredDocs={filteredDocs}
-            onSelectDoc={setSelectedDocId}
-          />
+          <div className="space-y-6">
+            <DocumentCardGrid
+              activeSuite={activeSuite}
+              filteredDocs={filteredDocs}
+              onSelectDoc={setSelectedDocId}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -1,6 +1,6 @@
 'use server'
 
-import { getWbsElements } from '@/lib/wbs/actions'
+import { getWbsElements } from '@/lib/wbs/core-actions'
 import { getRaidEntries } from '@/lib/raid/actions'
 import { checkProjectFeatureAccess } from '@/lib/organizations/tier-logic'
 import { createClient } from '@/utils/supabase/server'

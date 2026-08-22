@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { WbsElement } from '@/lib/wbs/constants'
-import { getWbsElements } from '@/lib/wbs/actions'
+import { getWbsElements } from '@/lib/wbs/core-actions'
 
 // Import extracted hooks
 import { useWbsToasts } from './hooks/useWbsToasts'
@@ -40,6 +40,17 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean, caller
 
   // 1. Toasts
   const { toasts, showToast, dismissToast } = useWbsToasts()
+
+  const [qualityGateState, setQualityGateState] = useState<{
+    isOpen: boolean
+    elementId: string
+    standards: any[]
+    category: string
+  }>({ isOpen: false, elementId: '', standards: [], category: '' })
+
+  const handleQualityGateRequired = (elementId: string, standards: any[], category: string) => {
+    setQualityGateState({ isOpen: true, elementId, standards, category })
+  }
 
   // 2. Selection & UI State
   const {
@@ -93,7 +104,8 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean, caller
     showToast,
     loadElements,
     callerRole,
-    callerUserId
+    callerUserId,
+    onQualityGateRequired: handleQualityGateRequired
   })
 
   return {
@@ -101,6 +113,8 @@ export function useWbsPlanning(projectId: string, hasEditAccess: boolean, caller
     loading,
     error,
     isPending: mutations.isPending,
+    qualityGateState,
+    setQualityGateState,
     activeElementId,
     setActiveElementId,
     expandedNodeIds,

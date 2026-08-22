@@ -3,7 +3,7 @@ import { getFullProjectExportData, logDocumentExport } from '@/lib/documents/exp
 import { generatePdfExport } from '@/lib/documents/exporters/pdfExporter'
 import { generateDocxExport } from '@/lib/documents/exporters/docxExporter'
 import { generateExcelExport } from '@/lib/documents/exporters/xlsxExporter'
-import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
+import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/types'
 
 interface UseDocumentExportsProps {
   projectId: string

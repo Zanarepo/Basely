@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
+import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/types'
 import StructuredEditableField from './StructuredEditableField'
 import { SectionHeaderToolbar } from './section/components/SectionHeaderToolbar'
 import { SectionResolverSwitch } from './section/components/SectionResolverSwitch'

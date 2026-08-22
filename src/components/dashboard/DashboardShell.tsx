@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { DashboardSidebar } from './DashboardSidebar'
 import { CreateWorkspaceModal } from './CreateWorkspaceModal'
-import { WorkspaceProvider, type Workspace } from './WorkspaceContext'
+import { WorkspaceProvider, type Workspace } from '@/components/dashboard/WorkspaceContext'
 import { GlobalSearchOverlay } from './GlobalSearchOverlay'
 import { Menu, Search, LayoutDashboard } from 'lucide-react'
 import { useWorkspaceTier } from '@/hooks/use-workspace-tier'

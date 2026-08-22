@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { upsertRaidEntry, type RaidLogEntry, type RaidCategory, type RaidStatus, type RaidPriority } from '@/lib/raid/actions'
-import { getWbsElements } from '@/lib/wbs/actions'
+import { getWbsElements } from '@/lib/wbs/core-actions'
 import type { WbsElement } from '@/lib/wbs/constants'
 
 export function useRaidItemModal(

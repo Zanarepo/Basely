@@ -9,6 +9,7 @@ import { useAutoAlignRoadmap } from './hooks/useAutoAlignRoadmap'
 import { AutoAlignButton } from './components/AutoAlignButton'
 
 import { updateRoadmapHorizon } from '@/lib/product-roadmap/actions'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 
 export function RoadmapDashboard({ projectId }: { projectId: string }) {
   const [items, setItems] = useState<any[]>([])
@@ -89,12 +90,7 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
   }
 
   if (isLoading && items.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 space-y-3 min-h-[300px]">
-        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-        <span className="text-xs text-app-muted font-medium animate-pulse">Loading Kanban items...</span>
-      </div>
-    )
+    return <DocumentLoader message="Loading Kanban items..." />
   }
 
   const horizons = ['Now', 'Next', 'Later']

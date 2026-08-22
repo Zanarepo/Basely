@@ -72,7 +72,7 @@ export function useBudgetBaselineData(projectId: string, periodEnd?: Date, froze
       // 2. Fetch WBS Elements (prioritize work packages, but load all with budgets)
       const { data: wbsElements } = await supabase
         .from('wbs_elements')
-        .select('id, name, code, budget, is_work_package')
+        .select('id, name, code, is_work_package')
         .eq('project_id', projectId)
         .order('code', { ascending: true })
 
@@ -115,7 +115,7 @@ export function useBudgetBaselineData(projectId: string, periodEnd?: Date, froze
         const ca = costAccounts.find(c => c.wbs_element_id === w.id)
         const itemPhases = ca ? timePhases.filter(t => t.cost_account_id === ca.id) : []
 
-        const budgetValue = ca ? Number(ca.budgeted_total) : Number(w.budget || 0)
+        const budgetValue = ca ? Number(ca.budgeted_total) : 0
 
         return {
           id: w.id,

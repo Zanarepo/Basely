@@ -10,6 +10,8 @@ import TimePhasingView from './TimePhasingView'
 import BaselineManager from './BaselineManager'
 import ActualsView from './ActualsView'
 import { useSearchParams } from 'next/navigation'
+import WbsToBaselinesChainBanner from '@/components/dashboard/documents/components/chain/WbsToBaselinesChainBanner'
+import { AiResourceEstimatorBanner } from './AiResourceEstimatorBanner'
 
 type CostWorkspaceProps = {
   projectId: string
@@ -192,7 +194,13 @@ export default function CostWorkspace({ projectId, hasEditAccess, methodology }:
       {/* Main Content Area */}
       <div className="min-h-[500px]">
         {currentView === 'estimation' && (
-          <CostEstimationView 
+          <>
+            <WbsToBaselinesChainBanner 
+              projectId={projectId} 
+              onShowToast={(type, msg) => alert(msg)}
+              onSuccess={refresh} 
+            />
+            <CostEstimationView 
             projectId={projectId} 
             wbsCostData={wbsCostData} 
             resourceRates={resourceRates}
@@ -202,10 +210,13 @@ export default function CostWorkspace({ projectId, hasEditAccess, methodology }:
             onDataChange={refresh}
             terms={terms}
           />
+          </>
         )}
         {currentView === 'resources' && (
-          <ResourceRatesManager 
-            projectId={projectId} 
+          <>
+            <AiResourceEstimatorBanner projectId={projectId} onComplete={refresh} />
+            <ResourceRatesManager 
+              projectId={projectId} 
             resourceRates={resourceRates} 
             projectCurrency={projectCurrency}
             globalOverhead={globalOverhead}
@@ -214,6 +225,7 @@ export default function CostWorkspace({ projectId, hasEditAccess, methodology }:
             hasEditAccess={hasEditAccess}
             onDataChange={refresh}
           />
+          </>
         )}
         {currentView === 'timephasing' && (
           <TimePhasingView 

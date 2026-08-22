@@ -3,23 +3,6 @@ import { DocumentItem } from '../types'
 
 export const productPrioritizationExecutionDocs: DocumentItem[] = [
   {
-    id: 'prioritization_workspace',
-    title: 'RICE & Value Matrix',
-    category: 'prioritization',
-    suite: 'product',
-    icon: SlidersHorizontal,
-    description: 'Scoring framework evaluating Reach, Impact, Confidence & Effort.',
-    badge: 'Prioritization',
-    guide: {
-      purpose: 'Ranks feature ideas objectively based on return on investment and engineering effort.',
-      audience: 'Product Managers, Engineering Leads',
-      bestPractices: [
-        'Standardize Confidence scores using real research data vs gut feeling.',
-        'Re-evaluate Effort estimates with engineering leads before final scoring.',
-      ],
-    },
-  },
-  {
     id: 'release_checklist_workspace',
     title: 'Release Launch Checklist',
     category: 'execution',

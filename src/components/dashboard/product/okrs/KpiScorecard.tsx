@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import type { ProductKpi } from '@/lib/product-strategy/types'
-import { updateProductKpi, deleteProductKpi } from '@/lib/product-strategy/actions'
+import { updateProductKpi, deleteProductKpi } from '@/lib/product-strategy/kpi-actions'
 import { Edit2, Trash2, TrendingUp, TrendingDown, Minus, Loader2, Plus, X, Check, Activity } from 'lucide-react'
 
 interface KpiScorecardProps {

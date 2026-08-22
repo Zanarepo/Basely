@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useCommunicationPlan } from './hooks/useCommunicationPlan'
 import { Save, Plus, Trash2, Pencil, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 import { createClient } from '@/utils/supabase/client'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
@@ -103,12 +104,7 @@ export function CommunicationPlanEditor({
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-app-muted">
-        <Loader2 className="w-6 h-6 animate-spin mr-2" />
-        Loading Communication Plan...
-      </div>
-    )
+    return <DocumentLoader message="Loading Communication Plan..." />
   }
 
   if (error && entries.length === 0) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { DocumentSectionDef } from '@/lib/documents/actions'
+import { DocumentSectionDef } from '@/lib/documents/types'
 import { useTemplateBuilder } from './hooks/useTemplateBuilder'
 import { Trash2, GripVertical, Plus, Save, ChevronUp, ChevronDown } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'

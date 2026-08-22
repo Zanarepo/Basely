@@ -21,7 +21,7 @@ import {
   LifeBuoy,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
-import { useWorkspace } from './WorkspaceContext'
+import { useWorkspace } from '@/components/dashboard/WorkspaceContext'
 import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createClient } from '@/utils/supabase/client'
@@ -52,9 +52,28 @@ export function DashboardSidebar({
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isFooterOpen, setIsFooterOpen] = useState(false)
+  const [hideErpDev, setHideErpDev] = useState(false)
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null)
   const { isPlatformStaff } = usePlatformStaff()
 
   useEffect(() => {
+    // Clear loading state when navigation completes
+    setNavigatingTo(null)
+  }, [pathname])
+
+  useEffect(() => {
+    // Check initial state
+    setHideErpDev(localStorage.getItem('PZ_HIDE_ERP_DEV') === 'true')
+    
+    // Listen for cross-component toggle
+    const handleToggle = (e: Event) => {
+      const customEvent = e as CustomEvent
+      if (customEvent.detail?.key === 'PZ_HIDE_ERP_DEV') {
+        setHideErpDev(customEvent.detail.value)
+      }
+    }
+    window.addEventListener('pz-feature-toggle', handleToggle)
+
     const handleResize = () => setIsMobile(window.innerWidth < 768)
     handleResize()
     window.addEventListener('resize', handleResize)
@@ -68,6 +87,7 @@ export function DashboardSidebar({
     return () => {
       window.clearTimeout(timeoutId)
       window.removeEventListener('resize', handleResize)
+      window.removeEventListener('pz-feature-toggle', handleToggle)
     }
   }, [])
 
@@ -94,6 +114,13 @@ export function DashboardSidebar({
     router.push('/login')
   }
 
+  const handleNavigate = (href: string) => {
+    if (pathname === href) return // don't load if already there
+    setNavigatingTo(href)
+    if (onCloseMobile) onCloseMobile()
+    router.push(href)
+  }
+
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     // Approvals requires governance.approval_workflows (Enterprise only)
@@ -102,9 +129,7 @@ export function DashboardSidebar({
     { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
   ]
 
-  if (activeWorkspace.role === 'Admin' && tier !== 'free') {
-    navItems.push({ href: '/dashboard/settings/templates', label: 'Templates', icon: Settings })
-  }
+
 
   if (!mounted) {
     return (
@@ -268,28 +293,36 @@ export function DashboardSidebar({
                 {!effectivelyCollapsed && <span className="text-sm font-semibold">Sign out</span>}
               </button>
 
-              {(activeWorkspace.role === 'Admin' || activeWorkspace.role === 'Owner') && tier === 'enterprise' && (
+              {(activeWorkspace.role === 'Admin' || activeWorkspace.role === 'Owner') && tier === 'enterprise' && !hideErpDev && (
                 <>
-                  <Link
-                    href="/dashboard/settings/integrations"
+                  <button
+                    onClick={() => handleNavigate('/dashboard/settings/integrations')}
                     title={effectivelyCollapsed ? 'ERP Connectors' : undefined}
                     className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-violet-500 hover:bg-violet-500/10 border border-transparent transition-all cursor-pointer ${
                       effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
                     }`}
                   >
-                    <Database className="h-5 w-5 shrink-0" />
+                    {navigatingTo === '/dashboard/settings/integrations' ? (
+                      <Loader2 className="h-5 w-5 shrink-0 animate-spin text-violet-500" />
+                    ) : (
+                      <Database className="h-5 w-5 shrink-0" />
+                    )}
                     {!effectivelyCollapsed && <span className="text-sm font-medium">ERP Connectors</span>}
-                  </Link>
-                  <Link
-                    href="/dashboard/settings/developers"
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('/dashboard/settings/developers')}
                     title={effectivelyCollapsed ? 'Developers' : undefined}
                     className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-violet-500 hover:bg-violet-500/10 border border-transparent transition-all cursor-pointer ${
                       effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
                     }`}
                   >
-                    <Terminal className="h-5 w-5 shrink-0" />
+                    {navigatingTo === '/dashboard/settings/developers' ? (
+                      <Loader2 className="h-5 w-5 shrink-0 animate-spin text-violet-500" />
+                    ) : (
+                      <Terminal className="h-5 w-5 shrink-0" />
+                    )}
                     {!effectivelyCollapsed && <span className="text-sm font-medium">Developers</span>}
-                  </Link>
+                  </button>
                 </>
               )}
 

@@ -1,4 +1,4 @@
-import { Layers, Users, CheckCircle2, Compass, Clock, BarChart3, SlidersHorizontal } from 'lucide-react'
+import { Layers, Users, Compass, Clock, BarChart3, SlidersHorizontal } from 'lucide-react'
 import { DocumentItem } from '../types'
 
 export const planningDocs: DocumentItem[] = [
@@ -33,23 +33,6 @@ export const planningDocs: DocumentItem[] = [
       bestPractices: [
         'Establish standard templates for weekly status updates.',
         'Specify explicit escalation channels for project emergencies.',
-      ],
-    },
-  },
-  {
-    id: 'quality_management_plan',
-    title: 'Quality Management Plan',
-    category: 'planning',
-    suite: 'project',
-    icon: CheckCircle2,
-    description: 'Quality standards, QA/QC audit protocols, inspection checklists, and metrics.',
-    badge: 'Planning',
-    guide: {
-      purpose: 'Ensures project deliverables meet defined quality standards and regulatory compliance.',
-      audience: 'QA Leads, Inspectors, PMO',
-      bestPractices: [
-        'Define measurable Quality Metrics (e.g. defect rate < 1%).',
-        'Schedule regular peer reviews and QA audits.',
       ],
     },
   },

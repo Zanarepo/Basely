@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import DocumentEngine from '../documents/DocumentEngine'
-import { getDocumentTemplate, DocumentTemplate } from '@/lib/documents/actions'
+import { DocumentTemplate } from '@/lib/documents/types'
+import { getDocumentTemplate } from '@/lib/documents/core-queries'
 import { X } from 'lucide-react'
 
 interface InitiationDocumentViewerProps {

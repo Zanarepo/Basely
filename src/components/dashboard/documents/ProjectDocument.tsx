@@ -1,15 +1,28 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import DocumentEngine from './DocumentEngine'
-import { getDocumentTemplate, getGeneratedDocument, updateDocumentTemplateId, DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
+import dynamic from 'next/dynamic'
+import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/types'
+import { getDocumentTemplate, getGeneratedDocument } from '@/lib/documents/core-queries'
+import { updateDocumentTemplateId } from '@/lib/documents/core-mutations'
 import { getSyncDocumentTemplate } from '@/lib/documents/prd-templates'
 import { getCustomTemplates, CustomDocumentTemplate } from '@/lib/documents/template-actions'
 import { FileText, LayoutTemplate, ArrowRight, Loader2 } from 'lucide-react'
-import { PrdTemplateSelectorModal } from '@/components/dashboard/product/prd/PrdTemplateSelectorModal'
-import { StrategyTemplateSelectorModal } from '@/components/dashboard/product/strategy/templates/components/StrategyTemplateSelectorModal'
-import { RoadmapTemplateSelectorModal } from '@/components/dashboard/product/roadmap/templates/components/RoadmapTemplateSelectorModal'
-import { MarketResearchTemplateSelectorModal } from '@/components/dashboard/product/market-research/templates/components/MarketResearchTemplateSelectorModal'
+
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
+
+// Lazy-load heavy components to avoid compiling them all upfront
+const DocumentEngine = dynamic(() => import('./DocumentEngine'), { ssr: false })
+const PrdTemplateSelectorModal = dynamic(() => import('@/components/dashboard/product/prd/PrdTemplateSelectorModal').then(m => m.PrdTemplateSelectorModal), { ssr: false })
+const StrategyTemplateSelectorModal = dynamic(() => import('@/components/dashboard/product/strategy/templates/components/StrategyTemplateSelectorModal').then(m => m.StrategyTemplateSelectorModal), { ssr: false })
+const RoadmapTemplateSelectorModal = dynamic(() => import('@/components/dashboard/product/roadmap/templates/components/RoadmapTemplateSelectorModal').then(m => m.RoadmapTemplateSelectorModal), { ssr: false })
+const MarketResearchTemplateSelectorModal = dynamic(() => import('@/components/dashboard/product/market-research/templates/components/MarketResearchTemplateSelectorModal').then(m => m.MarketResearchTemplateSelectorModal), { ssr: false })
+const CharterTemplateSelectorModal = dynamic(() => import('@/components/dashboard/project/charters/components/CharterTemplateSelectorModal').then(m => m.CharterTemplateSelectorModal), { ssr: false })
+const StakeholderTemplateSelectorModal = dynamic(() => import('@/components/dashboard/project/stakeholders/components/StakeholderTemplateSelectorModal').then(m => m.StakeholderTemplateSelectorModal), { ssr: false })
+const RiskTemplateSelectorModal = dynamic(() => import('@/components/dashboard/project/risks/components/RiskTemplateSelectorModal').then(m => m.RiskTemplateSelectorModal), { ssr: false })
+const ScopeStatementTemplateSelectorModal = dynamic(() => import('@/components/dashboard/documents/components/ScopeStatementTemplateSelectorModal').then(m => m.ScopeStatementTemplateSelectorModal), { ssr: false })
+const ChangeManagementTemplateSelectorModal = dynamic(() => import('@/components/dashboard/documents/components/ChangeManagementTemplateSelectorModal').then(m => m.ChangeManagementTemplateSelectorModal), { ssr: false })
+const HandoverTemplateSelectorModal = dynamic(() => import('@/components/dashboard/documents/components/HandoverTemplateSelectorModal').then(m => m.HandoverTemplateSelectorModal), { ssr: false })
 
 interface ProjectDocumentProps {
   documentType: string
@@ -42,42 +55,62 @@ export default function ProjectDocument({
   const [isStrategyModalOpen, setIsStrategyModalOpen] = useState(false)
   const [isRoadmapModalOpen, setIsRoadmapModalOpen] = useState(false)
   const [isMarketResearchModalOpen, setIsMarketResearchModalOpen] = useState(false)
+  const [isCharterModalOpen, setIsCharterModalOpen] = useState(false)
+  const [isStakeholderModalOpen, setIsStakeholderModalOpen] = useState(false)
+  const [isRiskModalOpen, setIsRiskModalOpen] = useState(false)
+  const [isScopeStatementModalOpen, setIsScopeStatementModalOpen] = useState(false)
+  const [isChangeManagementModalOpen, setIsChangeManagementModalOpen] = useState(false)
+  const [isHandoverModalOpen, setIsHandoverModalOpen] = useState(false)
   const orgId = projectContext?.organization_id || ''
 
   useEffect(() => {
     let isMounted = true
     setIsLoading(true)
 
+    // Resolve template synchronously first so UI appears instantly
+    const isMarketResearchType =
+      documentType === 'market_research_report' ||
+      documentType === 'market_research_workspace' ||
+      documentType === 'competitive_analysis_workspace' ||
+      documentType === 'competitive_benchmarking_matrix'
+
+    const fallbackTemplateId =
+      documentType === 'product_strategy_document' ? 'standard_product_strategy' :
+      documentType === 'product_requirements_document' ? 'standard_prd' :
+      documentType === 'charter' ? 'enterprise_project_charter' :
+      documentType === 'stakeholder_register' ? 'default_stakeholder_register' :
+      documentType === 'risk_register' ? 'standard_risk_register' :
+      documentType === 'scope_statement' ? 'standard_scope_statement' :
+      documentType === 'change_management_plan' ? 'standard_change_management' :
+      documentType === 'handover_document' ? 'standard_handover' :
+      (documentType === 'roadmap_workspace' || documentType === 'product_roadmap_document' || documentType === 'product_roadmap') ? 'now_next_later' :
+      isMarketResearchType ? (documentType === 'competitive_analysis_workspace' || documentType === 'competitive_benchmarking_matrix' ? 'competitive_analysis_matrix' : 'master_market_research') :
+      undefined
+
+    // Show the default template immediately while data loads
+    const initialTpl = getSyncDocumentTemplate(documentType, fallbackTemplateId)
+    setTemplate(initialTpl)
+
     async function load() {
       try {
-        // Fetch generated document draft in background
-        const doc = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
+        // Fire both calls in parallel instead of sequentially
+        const [doc, customTemplates] = await Promise.all([
+          getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId),
+          (hasEditAccess && !isSnapshot) ? getCustomTemplates(orgId, documentType) : Promise.resolve([])
+        ])
         if (!isMounted) return
 
-        // Resolve exact template variant selection BEFORE setting template state
-        const isMarketResearchType =
-          documentType === 'market_research_report' ||
-          documentType === 'market_research_workspace' ||
-          documentType === 'competitive_analysis_workspace' ||
-          documentType === 'competitive_benchmarking_matrix'
+        // Refine template if the saved doc has a different variant
+        const activeTemplateId = doc?.free_text_content?.['__prd_template_variant'] || doc?.custom_template_id || fallbackTemplateId
+        if (activeTemplateId !== fallbackTemplateId) {
+          const refinedTpl = getSyncDocumentTemplate(documentType, activeTemplateId)
+          setTemplate(refinedTpl)
+        }
 
-        const activeTemplateId = doc?.free_text_content?.['__prd_template_variant'] || doc?.custom_template_id || (
-          documentType === 'product_strategy_document' ? 'standard_product_strategy' :
-          documentType === 'product_requirements_document' ? 'standard_prd' :
-          (documentType === 'roadmap_workspace' || documentType === 'product_roadmap_document' || documentType === 'product_roadmap') ? 'now_next_later' :
-          isMarketResearchType ? (documentType === 'competitive_analysis_workspace' || documentType === 'competitive_benchmarking_matrix' ? 'competitive_analysis_matrix' : 'master_market_research') :
-          undefined
-        )
-        const tpl = getSyncDocumentTemplate(documentType, activeTemplateId)
-        setTemplate(tpl)
         setGeneratedDoc(doc)
 
-        if (!doc && hasEditAccess && !isSnapshot) {
-          const customTemplates = await getCustomTemplates(orgId, documentType)
-          if (!isMounted) return
-          if (customTemplates.length > 0) {
-            setAvailableCustomTemplates(customTemplates)
-          }
+        if (!doc && customTemplates.length > 0) {
+          setAvailableCustomTemplates(customTemplates)
         }
       } catch (err) {
         console.error('Error loading document draft:', err)
@@ -121,6 +154,9 @@ export default function ProjectDocument({
     setIsStrategyModalOpen(false)
     setIsRoadmapModalOpen(false)
     setIsMarketResearchModalOpen(false)
+    setIsCharterModalOpen(false)
+    setIsStakeholderModalOpen(false)
+    setIsRiskModalOpen(false)
     const res = await updateDocumentTemplateId(projectId, documentType, variantId)
     if (res.ok) {
       const refreshed = await getGeneratedDocument(projectId, documentType, isSnapshot, snapshotId)
@@ -143,6 +179,28 @@ export default function ProjectDocument({
       setIsPrdModalOpen(true)
     } else if (documentType === 'product_strategy_document') {
       setIsStrategyModalOpen(true)
+    } else if (documentType === 'charter') {
+      setIsCharterModalOpen(true)
+    } else if (documentType === 'stakeholder_register') {
+      setIsStakeholderModalOpen(true)
+    } else if (documentType === 'risk_register') {
+      setIsRiskModalOpen(true)
+      return
+    }
+
+    if (documentType === 'scope_statement') {
+      setIsScopeStatementModalOpen(true)
+      return
+    }
+
+    if (documentType === 'change_management_plan') {
+      setIsChangeManagementModalOpen(true)
+      return
+    }
+
+    if (documentType === 'handover_document') {
+      setIsHandoverModalOpen(true)
+      return
     } else if (documentType === 'roadmap_workspace' || documentType === 'product_roadmap_document' || documentType === 'product_roadmap') {
       setIsRoadmapModalOpen(true)
     } else if (isMarketResearchType) {
@@ -158,14 +216,7 @@ export default function ProjectDocument({
   }
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 space-y-3 min-h-[400px]">
-        <div className="p-3 bg-violet-500/10 rounded-2xl border border-violet-500/20 shadow-xs">
-          <Loader2 className="w-6 h-6 text-violet-500 animate-spin" />
-        </div>
-        <p className="text-xs font-semibold text-app-muted animate-pulse">Loading document workspace...</p>
-      </div>
-    )
+    return <DocumentLoader message="Loading document workspace..." />
   }
 
   if (needsTemplateSelection) {
@@ -267,6 +318,48 @@ export default function ProjectDocument({
         isOpen={isMarketResearchModalOpen}
         currentTemplateId={template.id}
         onClose={() => setIsMarketResearchModalOpen(false)}
+        onSelectTemplate={handleSelectTemplateVariant}
+      />
+
+      <CharterTemplateSelectorModal
+        isOpen={isCharterModalOpen}
+        currentTemplateId={template.id}
+        onClose={() => setIsCharterModalOpen(false)}
+        onSelectTemplate={handleSelectTemplateVariant}
+      />
+
+      <StakeholderTemplateSelectorModal
+        isOpen={isStakeholderModalOpen}
+        currentTemplateId={template.id}
+        onClose={() => setIsStakeholderModalOpen(false)}
+        onSelectTemplate={handleSelectTemplateVariant}
+      />
+
+      <RiskTemplateSelectorModal
+        isOpen={isRiskModalOpen}
+        currentTemplateId={template.id}
+        onClose={() => setIsRiskModalOpen(false)}
+        onSelectTemplate={handleSelectTemplateVariant}
+      />
+
+      <ScopeStatementTemplateSelectorModal
+        isOpen={isScopeStatementModalOpen}
+        currentTemplateId={template.id}
+        onClose={() => setIsScopeStatementModalOpen(false)}
+        onSelectTemplate={handleSelectTemplateVariant}
+      />
+
+      <ChangeManagementTemplateSelectorModal
+        isOpen={isChangeManagementModalOpen}
+        currentTemplateId={template.id}
+        onClose={() => setIsChangeManagementModalOpen(false)}
+        onSelectTemplate={handleSelectTemplateVariant}
+      />
+
+      <HandoverTemplateSelectorModal
+        isOpen={isHandoverModalOpen}
+        currentTemplateId={template.id}
+        onClose={() => setIsHandoverModalOpen(false)}
         onSelectTemplate={handleSelectTemplateVariant}
       />
     </>

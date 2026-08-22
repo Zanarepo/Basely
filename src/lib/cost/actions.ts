@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import type { EstimationMethod } from './types'
-import { dispatchNotification } from '@/lib/notifications/actions'
+import { dispatchNotification } from '@/lib/notifications/dispatch'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
 
 export async function saveCostEstimate(

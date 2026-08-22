@@ -50,16 +50,6 @@ export function ClosureDocumentsRouter({
           onShowToast={onShowToast}
         />
       )
-    case 'handover_document':
-      return (
-        <HandoverViewer
-          projectId={projectId}
-          hasEditAccess={hasEditAccess}
-          currentLifecycle={lifecycle}
-          onOpenLifecycleModal={onOpenLifecycleModal}
-          onShowToast={onShowToast}
-        />
-      )
     case 'post_implementation_review':
       return (
         <PostImplementationReviewViewer

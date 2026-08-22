@@ -1,34 +1,45 @@
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
-import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
-import DocumentHistoryModal from './DocumentHistoryModal'
+import dynamic from 'next/dynamic'
+import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/types'
 import { useDocumentExports } from './engine/useDocumentExports'
 import DocumentHeader from './components/DocumentHeader'
 import DocumentSection from './components/DocumentSection'
 import InlineSectionInserter from './components/InlineSectionInserter'
-import ReferenceDocumentsSection from './components/ReferenceDocumentsSection'
-import FloatingReferenceLinksWidget from './components/FloatingReferenceLinksWidget'
-import RegenConfirmModal from './components/RegenConfirmModal'
-import SnapshotModal from './components/SnapshotModal'
-import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
 import { useSectionOrdering } from './hooks/useSectionOrdering'
 import { useDocumentSections } from './hooks/useDocumentSections'
 import { useDocumentPersistence } from './hooks/useDocumentPersistence'
 import DocumentStatsRibbon from './components/DocumentStatsRibbon'
 import DocumentPropertiesHeader from './components/DocumentPropertiesHeader'
-import PrdToRiceAutomationBanner from './components/rice-automation/PrdToRiceAutomationBanner'
-import DocumentApprovalBanner from './components/DocumentApprovalBanner'
-import DocumentTableOfContents from './components/DocumentTableOfContents'
-import CustomSectionBuilder from './components/CustomSectionBuilder'
-import RemovedSectionsTrashPanel from './components/RemovedSectionsTrashPanel'
-import MarketResearchChainBanner from './components/chain/MarketResearchChainBanner'
-import StrategyChainBanner from './components/chain/StrategyChainBanner'
-import RoadmapChainBanner from './components/chain/RoadmapChainBanner'
-import { RoadmapDashboard } from '@/components/dashboard/product/roadmap/RoadmapDashboard'
-import { CompetitiveIntelligenceDashboard } from '@/components/dashboard/product/strategy/CompetitiveIntelligenceDashboard'
 import { Compass, Kanban, FileText, Globe, Table } from 'lucide-react'
 
+// Lazy-load heavy components that aren't needed for initial render
+const DocumentHistoryModal = dynamic(() => import('./DocumentHistoryModal'), { ssr: false })
+const ReferenceDocumentsSection = dynamic(() => import('./components/ReferenceDocumentsSection'), { ssr: false })
+const FloatingReferenceLinksWidget = dynamic(() => import('./components/FloatingReferenceLinksWidget'), { ssr: false })
+const RegenConfirmModal = dynamic(() => import('./components/RegenConfirmModal'), { ssr: false })
+const SnapshotModal = dynamic(() => import('./components/SnapshotModal'), { ssr: false })
+const CommentThread = dynamic(() => import('@/components/dashboard/collaboration/CommentThread').then(m => m.CommentThread), { ssr: false })
+const PrdToRiceAutomationBanner = dynamic(() => import('./components/rice-automation/PrdToRiceAutomationBanner'), { ssr: false })
+const DocumentApprovalBanner = dynamic(() => import('./components/DocumentApprovalBanner'), { ssr: false })
+const DocumentTableOfContents = dynamic(() => import('./components/DocumentTableOfContents'), { ssr: false })
+const CustomSectionBuilder = dynamic(() => import('./components/CustomSectionBuilder'), { ssr: false })
+const RemovedSectionsTrashPanel = dynamic(() => import('./components/RemovedSectionsTrashPanel'), { ssr: false })
+const MarketResearchChainBanner = dynamic(() => import('./components/chain/MarketResearchChainBanner'), { ssr: false })
+const StrategyChainBanner = dynamic(() => import('./components/chain/StrategyChainBanner'), { ssr: false })
+const RoadmapChainBanner = dynamic(() => import('./components/chain/RoadmapChainBanner'), { ssr: false })
+const RiskRegisterChainBanner = dynamic(() => import('./components/chain/RiskRegisterChainBanner'), { ssr: false })
+const CharterInitiationBanner = dynamic(() => import('./components/CharterInitiationBanner'), { ssr: false })
+const ScopeInitiationBanner = dynamic(() => import('./components/ScopeInitiationBanner'), { ssr: false })
+const ScopeToRiceAutomationBanner = dynamic(() => import('./components/rice-automation/ScopeToRiceAutomationBanner'), { ssr: false })
+const WbsToBaselinesChainBanner = dynamic(() => import('./components/chain/WbsToBaselinesChainBanner'), { ssr: false })
+const PmPlanSynthesisChainBanner = dynamic(() => import('./components/chain/PmPlanSynthesisChainBanner'), { ssr: false })
+const RoadmapDashboard = dynamic(() => import('@/components/dashboard/product/roadmap/RoadmapDashboard').then(m => m.RoadmapDashboard), { ssr: false })
+const CompetitiveIntelligenceDashboard = dynamic(() => import('@/components/dashboard/product/strategy/CompetitiveIntelligenceDashboard').then(m => m.CompetitiveIntelligenceDashboard), { ssr: false })
+const AiStatusReportBanner = dynamic(() => import('./components/execution/AiStatusReportBanner').then(m => m.AiStatusReportBanner), { ssr: false })
+const AiClosureSynthesisBanner = dynamic(() => import('./components/closure/AiClosureSynthesisBanner').then(m => m.AiClosureSynthesisBanner), { ssr: false })
+const AiStakeholderRegisterBanner = dynamic(() => import('./components/chain/AiStakeholderRegisterBanner'), { ssr: false })
 interface DocumentEngineProps {
   projectId: string
   projectContext: any
@@ -358,6 +369,93 @@ export default function DocumentEngine({
                 freeText={freeText}
                 onShowToast={onShowToast}
                 isSnapshot={isSnapshot}
+              />
+            )}
+
+            {/* Dedicated Charter Initiation AI Banner */}
+            {template.id === 'standard_risk_register' && !isSnapshot && hasEditAccess && (
+              <RiskRegisterChainBanner
+                projectId={projectId}
+                onShowToast={onShowToast}
+                onSuccess={onSaveSuccess}
+              />
+            )}
+            
+            {template.document_type === 'stakeholder_register' && !isSnapshot && hasEditAccess && (
+              <AiStakeholderRegisterBanner
+                projectId={projectId}
+                organizationId={projectContext?.organization_id || ''}
+                template={template}
+                onGenerated={(data) => {
+                  setFreeText(prev => ({...prev, ...data}))
+                  setIsDirty(true)
+                }}
+                onShowToast={onShowToast}
+              />
+            )}
+
+            {template.document_type === 'charter' && !isSnapshot && hasEditAccess && (
+              <CharterInitiationBanner
+                projectId={projectId}
+                organizationId={projectContext?.organization_id || ''}
+                template={template}
+                onGenerated={(data) => setFreeText(prev => ({...prev, ...data}))}
+                onShowToast={onShowToast}
+              />
+            )}
+
+            {/* Dedicated Scope Initiation AI Banner */}
+            {template.document_type === 'scope_statement' && !isSnapshot && hasEditAccess && (
+              <div className="flex flex-wrap items-center gap-3">
+                <ScopeInitiationBanner
+                  projectId={projectId}
+                  organizationId={projectContext?.organization_id || ''}
+                  template={template}
+                  onGenerated={(data) => setFreeText(prev => ({...prev, ...data}))}
+                  onShowToast={onShowToast}
+                />
+                <ScopeToRiceAutomationBanner
+                  projectId={projectId}
+                  organizationId={projectContext?.organization_id || ''}
+                  freeText={freeText}
+                  onShowToast={onShowToast}
+                  isSnapshot={isSnapshot}
+                />
+              </div>
+            )}
+
+            {/* Baselines Generator Banner */}
+            {(template.document_type === 'budget_baseline' || template.document_type === 'schedule_document') && !isSnapshot && hasEditAccess && (
+              <WbsToBaselinesChainBanner
+                projectId={projectId}
+                onShowToast={onShowToast}
+              />
+            )}
+
+            {/* PM Plan Synthesizer Banner */}
+            {template.document_type === 'project_management_plan' && !isSnapshot && hasEditAccess && (
+              <PmPlanSynthesisChainBanner
+                projectId={projectId}
+                onShowToast={onShowToast}
+              />
+            )}
+
+            {/* Status Report Generator Banner */}
+            {template.document_type === 'status_report' && !isSnapshot && hasEditAccess && (
+              <AiStatusReportBanner
+                projectId={projectId}
+                onGenerated={(data) => setFreeText(prev => ({ ...prev, ...data }))}
+                onShowToast={onShowToast}
+              />
+            )}
+
+            {/* Closure Document Generator Banner */}
+            {(template.document_type === 'lessons_learned' || template.document_type === 'post_implementation_review') && !isSnapshot && hasEditAccess && (
+              <AiClosureSynthesisBanner
+                projectId={projectId}
+                docType={template.document_type}
+                onGenerated={(data) => setFreeText(prev => ({ ...prev, ...data }))}
+                onShowToast={onShowToast}
               />
             )}
 

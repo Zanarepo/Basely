@@ -19,6 +19,7 @@ type GanttTimelineBarsProps = {
   onStartDrawLink: (e: React.PointerEvent, row: any, rowHeight: number, headerHeight: number, edge: 'start' | 'end') => void
   onAnchorPointerUp: (e: React.PointerEvent, row: any) => void
   onSelectElement?: (id: string) => void
+  onContextMenu?: (e: React.MouseEvent, row: any) => void
   wasJustDragging?: () => boolean
 }
 
@@ -39,6 +40,7 @@ export function GanttTimelineBars({
   onStartDrawLink,
   onAnchorPointerUp,
   onSelectElement,
+  onContextMenu,
   wasJustDragging,
 }: GanttTimelineBarsProps) {
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -109,6 +111,10 @@ export function GanttTimelineBars({
                 if (!isSummary) onPointerDown(e, row, 'move')
               }}
               onPointerUp={(e) => onAnchorPointerUp(e, row)}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                onContextMenu?.(e, row)
+              }}
               onDoubleClick={(e) => {
                 e.stopPropagation()
                 onSelectElement?.(row.element.id)

@@ -1,4 +1,4 @@
-import { DocumentTemplate } from '@/lib/documents/actions'
+import { DocumentTemplate } from '@/lib/documents/types'
 
 interface UseDocumentSectionsParams {
   template: DocumentTemplate

@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react'
 import type { OkrObjective, OkrKeyResult } from '@/lib/product-strategy/types'
-import { getOkrObjectives } from '@/lib/product-strategy/actions'
+import { getOkrObjectives } from '@/lib/product-strategy/okr-actions'
 import { OkrObjectiveCard } from './OkrObjectiveCard'
 import { OkrBuilderModal } from './OkrBuilderModal'
-import { Target, Plus, Loader2, RefreshCw, Layers } from 'lucide-react'
+import { Target, Plus, Search, Filter, Loader2, ArrowUpDown, RefreshCw, Layers } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 import { useGenerateOkrs } from './hooks/useGenerateOkrs'
-import { GenerateOkrsButton } from './components/GenerateOkrsButton'
+import { GenerateOkrsDropdown } from './components/GenerateOkrsDropdown'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
 
 interface OkrDashboardProps {
@@ -168,7 +169,7 @@ export function OkrDashboard({
 
           {hasEditAccess && (
             <>
-              <GenerateOkrsButton
+              <GenerateOkrsDropdown
                 isGenerating={isGenerating}
                 onGenerate={handleGenerate}
                 disabled={loading || refreshing}
@@ -189,12 +190,7 @@ export function OkrDashboard({
 
       {/* Content Tree */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            Loading hierarchical Objectives and Key Results...
-          </span>
-        </div>
+        <DocumentLoader message="Loading hierarchical Objectives and Key Results..." />
       ) : objectives.length === 0 ? (
         <div className="bg-slate-50 dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center max-w-2xl mx-auto my-10 space-y-4">
           <div className="w-12 h-12 bg-violet-500/10 rounded-full flex items-center justify-center mx-auto text-violet-500">

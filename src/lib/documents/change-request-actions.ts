@@ -13,7 +13,6 @@ export async function createStandaloneChangeRequest(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
 
-  // Verify the org doesn't have approval workflows enabled
   const { data: project } = await supabase
     .from('projects')
     .select('organization_id')
@@ -21,9 +20,15 @@ export async function createStandaloneChangeRequest(
     .single()
 
   if (project) {
-    const hasApprovalWorkflows = (await checkFeatureAccess(project.organization_id, 'governance.approval_workflows')).allowed
-    if (hasApprovalWorkflows) {
-      return { success: false, error: 'Your organization uses Approval Workflows. Please submit a formal approval request instead of logging a standalone change.' }
+    // Only block if they actually have active approval policies enabled
+    const { data: activePolicies } = await supabase
+      .from('approval_policies')
+      .select('id')
+      .eq('organization_id', project.organization_id)
+      .eq('enabled', true)
+
+    if (activePolicies && activePolicies.length > 0) {
+      return { success: false, error: 'Your organization has active Approval Workflows. Please submit a formal approval request instead of logging a standalone change.' }
     }
   }
 
@@ -93,4 +98,16 @@ export async function deleteStandaloneChangeRequest(
   }
 
   return { success: true }
+}
+
+export async function escalateRiskToChangeRequest(
+  projectId: string,
+  riskId: string,
+  riskTitle: string,
+  riskMitigation: string
+): Promise<{ success: boolean; error?: string }> {
+  const description = `Risk Mitigation: ${riskTitle}`
+  const rationale = `Automatically escalated from Risk.\n\nRisk Mitigation Strategy:\n${riskMitigation || 'No specific strategy provided.'}`
+  
+  return await createStandaloneChangeRequest(projectId, description, rationale, 'pending')
 }

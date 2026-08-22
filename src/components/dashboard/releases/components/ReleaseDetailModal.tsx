@@ -12,6 +12,7 @@ import { ReleasePromotionGate } from './ReleasePromotionGate'
 import ReleaseMetricsTab from './metrics/ReleaseMetricsTab'
 import { GtmRolloutPanel } from '@/components/dashboard/product/gtm/GtmRolloutPanel'
 import { getTerminology } from '@/utils/terminology'
+import { LessonsLearnedEditor } from '@/components/dashboard/documents/closure/LessonsLearnedEditor'
 import type { Release, Iteration, ReleaseScopeItem, ReleaseStatus } from '@/lib/releases/types'
 
 import { SimplifiedReleasePipeline } from './SimplifiedReleasePipeline'
@@ -84,7 +85,7 @@ export function ReleaseDetailModal({
   onDeleteRollbackStep,
   onRefresh
 }: ReleaseDetailModalProps) {
-  const [activeView, setActiveView] = useState<'pipeline' | 'metrics' | 'gtm_rollouts'>('pipeline')
+  const [activeView, setActiveView] = useState<'pipeline' | 'metrics' | 'gtm_rollouts' | 'retrospective'>('pipeline')
   const [gateOpen, setGateOpen] = useState(false)
 
   if (!isOpen || !release) return null
@@ -185,6 +186,17 @@ export function ReleaseDetailModal({
               >
                 📣 GTM Launch Channels
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveView('retrospective')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  activeView === 'retrospective'
+                    ? 'bg-purple-600 text-white shadow-sm font-extrabold'
+                    : 'text-app-muted hover:text-app-fg'
+                }`}
+              >
+                🧠 Continuous Improvement
+              </button>
             </div>
           </div>
         </div>
@@ -217,6 +229,15 @@ export function ReleaseDetailModal({
 
           {activeView === 'gtm_rollouts' && (
             <GtmRolloutPanel releaseId={release.id} />
+          )}
+
+          {activeView === 'retrospective' && (
+            <LessonsLearnedEditor
+              projectId={release.projectId}
+              hasEditAccess={hasEditAccess}
+              currentLifecycle="Executing" // Bypass gating via releaseId
+              releaseId={release.id}
+            />
           )}
         </div>
       </div>

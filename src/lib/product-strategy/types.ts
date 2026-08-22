@@ -75,6 +75,8 @@ export interface ProductStrategy {
   strategic_bets?: StrategicBet[]
   product_principles?: ProductPrinciple[]
   product_goals?: ProductGoal[]
+  strategic_risks?: any[]
+  execution_moats?: any[]
   custom_attributes?: Record<string, string>
   created_by: string | null
   created_at: string

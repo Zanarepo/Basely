@@ -3,7 +3,7 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { generateStructuredJson } from '@/lib/ai/ai-provider-router'
 import { getSyncDocumentTemplate } from './prd-templates'
-import { upsertStrategyCanvasFromAI } from '@/lib/product-strategy/actions'
+import { upsertStrategyCanvasFromAI } from '@/lib/product-strategy/strategy-actions'
 
 /**
  * 1. Synthesize Product Strategy from Market Research — All 28 sections
@@ -620,5 +620,405 @@ export async function generateNorthStarFromStrategy(
   } catch (err: any) {
     console.error('[generateNorthStarFromStrategy Error]:', err)
     return { ok: false, error: err.message || 'Failed to generate North Star metrics' }
+  }
+}
+
+/**
+ * 7. Synthesize Lessons Learned (Retrospective)
+ */
+export async function synthesizeLessonsLearned(
+  projectId: string,
+  releaseId: string | null,
+  rawNotes: string
+): Promise<{ ok: boolean; insights?: any[]; id?: string; error?: string }> {
+  try {
+    const systemPrompt = `You are a Continuous Improvement Engine.
+    Analyze the provided raw Post-Implementation Review (Retrospective) notes from a recent software release.
+    Synthesize these notes into actionable, systemic insights (both positive 'moats/advantages' and negative 'risks/issues').
+    
+    Format your output as JSON:
+    {
+      "insights": [
+        {
+          "category": "risk | moat | process_improvement",
+          "summary": "Brief summary of the insight",
+          "description": "Detailed explanation",
+          "action_item": "What should be done differently next time or added to strategy?"
+        }
+      ]
+    }`
+
+    const parsedResult = await generateStructuredJson<{
+      insights: { category: string; summary: string; description: string; action_item: string }[]
+    }>({
+      systemPrompt,
+      userPrompt: `Raw Retro Notes:\n${rawNotes}`
+    })
+
+    if (!parsedResult.insights) return { ok: false, error: 'Failed to synthesize insights' }
+
+    const adminSupabase = createAdminClient()
+    
+    let lessonId = ''
+    
+    if (releaseId) {
+      const { data: existing } = await adminSupabase
+        .from('product_lessons_learned')
+        .select('id')
+        .eq('release_id', releaseId)
+        .order('created_at', { ascending: false }).limit(1).maybeSingle()
+        
+      if (existing) {
+        await adminSupabase.from('product_lessons_learned').update({
+          raw_notes: rawNotes,
+          synthesized_insights: parsedResult.insights,
+          status: 'synthesized',
+          updated_at: new Date().toISOString()
+        }).eq('id', existing.id)
+        lessonId = existing.id
+      } else {
+        const { data: inserted } = await adminSupabase.from('product_lessons_learned').insert({
+          project_id: projectId,
+          release_id: releaseId,
+          raw_notes: rawNotes,
+          synthesized_insights: parsedResult.insights,
+          status: 'synthesized'
+        }).select('id').single()
+        lessonId = inserted?.id || ''
+      }
+    } else {
+       const { data: existing } = await adminSupabase
+         .from('product_lessons_learned')
+         .select('id')
+         .eq('project_id', projectId)
+         .is('release_id', null)
+         .order('created_at', { ascending: false }).limit(1).maybeSingle()
+
+       if (existing) {
+         await adminSupabase.from('product_lessons_learned').update({
+           raw_notes: rawNotes,
+           synthesized_insights: parsedResult.insights,
+           status: 'synthesized',
+           updated_at: new Date().toISOString()
+         }).eq('id', existing.id)
+         lessonId = existing.id
+       } else {
+         const { data: inserted } = await adminSupabase.from('product_lessons_learned').insert({
+            project_id: projectId,
+            raw_notes: rawNotes,
+            synthesized_insights: parsedResult.insights,
+            status: 'synthesized'
+          }).select('id').single()
+          lessonId = inserted?.id || ''
+       }
+    }
+
+    return { ok: true, insights: parsedResult.insights, id: lessonId }
+  } catch (err: any) {
+    console.error('[synthesizeLessonsLearned Error]:', err)
+    return { ok: false, error: err.message || 'Failed to synthesize lessons.' }
+  }
+}
+
+/**
+ * 8. Propose Strategy Updates from Lessons
+ */
+export async function proposeStrategyUpdates(
+  projectId: string,
+  lessonsLearnedId: string,
+  insights?: any[]
+): Promise<{ ok: boolean; proposedRisks?: any[]; proposedMoats?: any[]; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+    
+    let fetchedInsights = insights
+    
+    if (!fetchedInsights && lessonsLearnedId && lessonsLearnedId !== 'temp') {
+      const { data: lesson } = await adminSupabase
+        .from('product_lessons_learned')
+        .select('synthesized_insights')
+        .eq('id', lessonsLearnedId)
+        .single()
+      fetchedInsights = lesson?.synthesized_insights
+    }
+    
+    if (!fetchedInsights || !fetchedInsights.length) return { ok: false, error: 'No insights found to propose updates from.' }
+    
+    const { data: strategy } = await adminSupabase
+      .from('product_strategies')
+      .select('strategic_risks, execution_moats')
+      .eq('project_id', projectId)
+      .single()
+      
+    const currentRisks = strategy?.strategic_risks || []
+    const currentMoats = strategy?.execution_moats || []
+
+    const systemPrompt = `You are a Chief Strategy Officer.
+    Review the synthesized Retrospective insights and the CURRENT Product Strategy Risks and Moats.
+    Propose NEW strategic risks and execution moats to append to the Strategy based ONLY on the new insights.
+    Do not duplicate existing risks/moats. If an insight doesn't warrant a strategy update, ignore it.
+    
+    Format your output as JSON:
+    {
+      "proposed_risks": [
+        { "title": "...", "description": "...", "mitigation_strategy": "..." }
+      ],
+      "proposed_moats": [
+        { "title": "...", "description": "...", "impact": "..." }
+      ]
+    }`
+
+    const parsedResult = await generateStructuredJson<{
+      proposed_risks: any[];
+      proposed_moats: any[];
+    }>({
+      systemPrompt,
+      userPrompt: `CURRENT RISKS:\n${JSON.stringify(currentRisks)}\n\nCURRENT MOATS:\n${JSON.stringify(currentMoats)}\n\nNEW INSIGHTS:\n${JSON.stringify(fetchedInsights)}`
+    })
+
+    return { 
+      ok: true, 
+      proposedRisks: parsedResult.proposed_risks || [], 
+      proposedMoats: parsedResult.proposed_moats || [] 
+    }
+  } catch (err: any) {
+    console.error('[proposeStrategyUpdates Error]:', err)
+    return { ok: false, error: err.message || 'Failed to propose updates.' }
+  }
+}
+
+/**
+ * 8. Generate OKRs from Project Charter / Scope Statement
+ */
+export async function generateOkrsFromProject(
+  projectId: string,
+  organizationId: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+    const now = new Date().toISOString()
+
+    // 1. Fetch Project Documents (Charter or Scope Statement)
+    const { data: projectDocs, error: docErr } = await adminSupabase
+      .from('generated_documents')
+      .select('document_type, free_text_content')
+      .eq('project_id', projectId)
+      .eq('is_snapshot', false)
+      .in('document_type', ['project_charter', 'scope_statement'])
+      .order('created_at', { ascending: false })
+
+    if (docErr || !projectDocs || projectDocs.length === 0) {
+      return { ok: false, error: 'No Project Charter or Scope Statement found. Please complete project initiation first.' }
+    }
+
+    // Use the most recent/relevant document
+    const bestDoc = projectDocs.find(d => d.document_type === 'project_charter') || projectDocs[0]
+    const content = bestDoc.free_text_content as Record<string, string> || {}
+
+    // Prepare Context for AI
+    const rawText = Object.entries(content)
+      .filter(([k]) => !k.startsWith('__'))
+      .map(([k, v]) => `[${k.replace(/_/g, ' ').toUpperCase()}]\n${v}`)
+      .join('\n\n')
+
+    const context = `Source Document: ${bestDoc.document_type === 'project_charter' ? 'Project Charter' : 'Scope Statement'}\n\n${rawText.substring(0, 10000)}`
+
+    const systemPrompt = `You are a Project Management Executive. Generate 3-5 high-impact OKRs (Objectives and Key Results) based on the provided Project Document context (Charter or Scope).
+    Focus on project delivery success, budget, timeline, and scope objectives.
+    Format your output as a JSON object with a single key "objectives" containing an array of objects:
+    {
+      "objectives": [
+        {
+          "title": "Objective Title",
+          "description": "Why this matters for the project",
+          "timeframe": "Q3 2026",
+          "key_results": [
+            {
+              "title": "Key Result Title",
+              "target_value": "Numeric target (e.g., 100, 0, 50000)",
+              "unit": "%, Days, USD, etc."
+            }
+          ]
+        }
+      ]
+    }
+    CRITICAL: Return ONLY strictly valid JSON.`
+
+    const parsedResult = await generateStructuredJson<{
+      objectives: {
+        title: string
+        description: string
+        timeframe: string
+        key_results: { title: string; target_value: string; unit: string }[]
+      }[]
+    }>({
+      systemPrompt,
+      userPrompt: context,
+    })
+
+    if (!parsedResult.objectives || parsedResult.objectives.length === 0) {
+      return { ok: false, error: 'Failed to generate project objectives' }
+    }
+
+    // 3. Insert into DB
+    for (const obj of parsedResult.objectives) {
+      const { data: insertedObj, error: objErr } = await adminSupabase
+        .from('okr_objectives')
+        .insert({
+          organization_id: organizationId,
+          project_id: projectId,
+          title: obj.title,
+          description: obj.description,
+          timeframe: obj.timeframe,
+          progress: 0,
+          status: 'on_track',
+          created_at: now,
+          updated_at: now
+        })
+        .select('id')
+        .single()
+
+      if (objErr || !insertedObj) continue
+
+      const krsToInsert = obj.key_results.map(kr => ({
+        objective_id: insertedObj.id,
+        title: kr.title,
+        baseline_value: '0',
+        target_value: kr.target_value,
+        current_value: '0',
+        progress: 0,
+        confidence_score: 5,
+        unit: kr.unit,
+        status: 'on_track',
+        created_at: now,
+        updated_at: now
+      }))
+
+      if (krsToInsert.length > 0) {
+        await adminSupabase.from('okr_key_results').insert(krsToInsert)
+      }
+    }
+
+    return { ok: true }
+  } catch (err: any) {
+    console.error('[generateOkrsFromProject Error]:', err)
+    return { ok: false, error: err.message || 'An unexpected error occurred generating Project OKRs.' }
+  }
+}
+
+/**
+ * 4. Synthesize Risk Register from Charter and Scope
+ */
+export async function synthesizeRiskRegisterFromCharterAndScope(
+  projectId: string
+): Promise<{ ok: boolean; documentId?: string; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+    const now = new Date().toISOString()
+
+    // Fetch Charter and Scope documents
+    const { data: documents } = await adminSupabase
+      .from('generated_documents')
+      .select('document_type, free_text_content')
+      .eq('project_id', projectId)
+      .in('document_type', ['charter', 'scope_statement'])
+      .eq('is_snapshot', false)
+
+    if (!documents || documents.length === 0) {
+      return { ok: false, error: 'Project Charter and Scope Statement are missing.' }
+    }
+
+    const charterDoc = documents.find(d => d.document_type === 'charter')
+    const scopeDoc = documents.find(d => d.document_type === 'scope_statement')
+
+    let combinedContext = ''
+    if (charterDoc?.free_text_content) {
+      combinedContext += `--- PROJECT CHARTER ---\n${JSON.stringify(charterDoc.free_text_content)}\n\n`
+    }
+    if (scopeDoc?.free_text_content) {
+      combinedContext += `--- SCOPE STATEMENT ---\n${JSON.stringify(scopeDoc.free_text_content)}\n\n`
+    }
+
+    if (combinedContext.length < 100) {
+      return { ok: false, error: 'Not enough content in the Charter or Scope Statement.' }
+    }
+
+    const systemPrompt = `You are Praz-AI, an expert Risk Manager. Your task is to generate a comprehensive Risk Register document for a project based on its Project Charter and Scope Statement.
+Identify potential threats by looking for aggressive timelines, ambiguous scope items, complex deliverables, or external dependencies.
+
+Format your output as a JSON object with ALL of the following exact keys corresponding to the standard risk register sections. Each value must be a rich markdown string:
+{
+  "purpose": "1 paragraph explaining the purpose of this risk register in the context of the project goals.",
+  "risk_management_approach": "Overview of the proactive risk management process steps and methodology.",
+  "risk_assessment_matrix": "Markdown table explaining Probability (1-5) and Impact (1-5) scales, and the resulting priority matrix.",
+  "risk_register": "A detailed Markdown table of identified risks: | Risk ID | Category | Description | Probability | Impact | Score | Mitigation | Owner |",
+  "top_project_risks": "Detailed breakdown of the top 3-5 most critical risks identified, and why they matter.",
+  "risk_response_strategies": "Outline of Avoid, Mitigate, Transfer, Accept strategies applied to the top risks.",
+  "risk_monitoring": "How risks will be tracked and reviewed throughout the project lifecycle.",
+  "risk_escalation_process": "Clear escalation paths and thresholds based on risk priority.",
+  "risk_review_schedule": "Frequency and format of risk reviews (e.g., Weekly Project Status Meetings).",
+  "approval": "Approval sign-off table: | Role | Name | Date | Status |"
+}
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.`
+
+    const parsedResult = await generateStructuredJson<Record<string, string>>({
+      systemPrompt,
+      userPrompt: `DOCUMENTS TO ANALYZE:\n${combinedContext.substring(0, 20000)}`,
+    })
+
+    const templateVariantId = 'standard_risk_register'
+    const syncTpl = getSyncDocumentTemplate('risk_register', templateVariantId)
+
+    const freeTextPayload: Record<string, string> = {
+      ...parsedResult,
+      __prd_template_variant: templateVariantId,
+      __section_order: JSON.stringify(syncTpl.section_definitions.map((s: any) => s.key)),
+    }
+
+    // Upsert the risk register document
+    const { data: existing } = await adminSupabase
+      .from('generated_documents')
+      .select('id, free_text_content')
+      .eq('project_id', projectId)
+      .eq('document_type', 'risk_register')
+      .eq('is_snapshot', false)
+      .maybeSingle()
+
+    if (existing) {
+      const mergedFreeText = {
+        ...(existing.free_text_content as Record<string, string> || {}),
+        ...freeTextPayload,
+      }
+      const { error } = await adminSupabase
+        .from('generated_documents')
+        .update({
+          free_text_content: mergedFreeText,
+          updated_at: now,
+        })
+        .eq('id', existing.id)
+
+      if (error) throw error
+      return { ok: true, documentId: existing.id }
+    } else {
+      const { data: newDoc, error } = await adminSupabase
+        .from('generated_documents')
+        .insert({
+          project_id: projectId,
+          document_type: 'risk_register',
+          document_title: 'Risk Register',
+          free_text_content: freeTextPayload,
+          is_snapshot: false,
+          created_at: now,
+          updated_at: now
+        })
+        .select('id')
+        .single()
+
+      if (error) throw error
+      return { ok: true, documentId: newDoc.id }
+    }
+  } catch (err: any) {
+    console.error('[synthesizeRiskRegisterFromCharterAndScope Error]:', err)
+    return { ok: false, error: err.message || 'Failed to synthesize Risk Register.' }
   }
 }

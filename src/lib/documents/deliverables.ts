@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { submitProjectSignoff } from '@/lib/projects/signoff-actions'
-import { sendDirectEmail } from '@/lib/notifications/actions'
+import { sendDirectEmail } from '@/lib/notifications/dispatch'
 
 export type DeliverableItem = {
   id: string

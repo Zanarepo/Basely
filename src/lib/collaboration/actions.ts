@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
-import { dispatchNotification } from '@/lib/notifications/actions'
+import { dispatchNotification } from '@/lib/notifications/dispatch'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
 
 export type Comment = {

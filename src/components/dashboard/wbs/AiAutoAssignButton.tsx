@@ -1,9 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { Sparkles, Loader2, Info } from 'lucide-react'
-import { suggestAssigneeWithAiAction } from '@/lib/wbs/ai-assignment-actions'
-import { assignRaciRole } from '@/lib/wbs/actions'
+import { useAiAutoAssign } from './hooks/useAiAutoAssign'
 
 export type AiAutoAssignButtonProps = {
   organizationId: string
@@ -24,43 +22,23 @@ export function AiAutoAssignButton({
   onAssignmentChanged,
   onShowToast
 }: AiAutoAssignButtonProps) {
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [suggestion, setSuggestion] = useState<{ rationale: string; id: string } | null>(null)
+  const {
+    isGenerating,
+    suggestion,
+    handleAiSuggest,
+    isAllowed,
+    isFree,
+    isPremium
+  } = useAiAutoAssign({
+    organizationId,
+    projectId,
+    wbsElementId,
+    tier,
+    aiEnabled,
+    onAssignmentChanged,
+    onShowToast
+  })
 
-  const handleAiSuggest = async () => {
-    setIsGenerating(true)
-    setSuggestion(null)
-    try {
-      const res = await suggestAssigneeWithAiAction(organizationId, projectId, wbsElementId)
-      if (!res.ok || !res.data) {
-        onShowToast('error', res.error || 'Failed to generate Praz-AI suggestion.')
-        setIsGenerating(false)
-        return
-      }
-
-      setSuggestion({ rationale: res.data.rationale, id: res.data.suggestedStakeholderId })
-      
-      // Auto apply as Responsible
-      const applyRes = await assignRaciRole(projectId, wbsElementId, res.data.suggestedStakeholderId, 'Responsible')
-      if (!applyRes.ok) {
-        onShowToast('error', applyRes.error || 'Failed to apply the suggested role.')
-      } else {
-        onShowToast('success', 'Praz-AI successfully suggested and applied a Responsible assignee.')
-        if (onAssignmentChanged) onAssignmentChanged()
-      }
-    } catch (err: any) {
-      onShowToast('error', err.message || 'Unknown error occurred.')
-    } finally {
-      setIsGenerating(false)
-    }
-  }
-
-  // Same gating logic as ADR
-  const isEnterprise = tier === 'enterprise'
-  const isPremium = tier === 'premium'
-  const isAllowed = isEnterprise || (isPremium && aiEnabled)
-  const isFree = tier === 'free'
-  
   return (
     <div className="flex flex-col gap-2 mb-4 w-full">
       <div className="relative group w-full flex">

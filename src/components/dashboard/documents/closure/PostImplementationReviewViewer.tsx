@@ -1,8 +1,10 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { resolvePIRData, PostImplementationReviewData } from '@/lib/documents/resolvers/handover-and-pir-resolver'
 import { lockPIRSchedule, getPIRSchedule } from '@/lib/documents/resolvers/pir-actions'
+import { saveGeneratedDocument } from '@/lib/documents/core-mutations'
+import { AiClosureSynthesisBanner } from '../components/closure/AiClosureSynthesisBanner'
 import { LifecycleGatingBanner } from './LifecycleGatingBanner'
 import type { ProjectLifecycleStatus } from '@/lib/projects/lifecycle-types'
 import { 
@@ -43,6 +45,7 @@ export function PostImplementationReviewViewer({
   const [customReviewDate, setCustomReviewDate] = useState<string>('')
   const [saving, setSaving] = useState(false)
   const [lockedDate, setLockedDate] = useState<string | null>(null)
+  const initialLoadDone = useRef(false)
 
   // PIR specifically requires 'Closed' status per Phase 11 PRD Section 5.3
   const isUnlocked = currentLifecycle === 'Closed'
@@ -76,6 +79,30 @@ export function PostImplementationReviewViewer({
     loadData()
     return () => { isMounted = false }
   }, [projectId, isUnlocked, onShowToast])
+
+  // Auto-save: debounce 1.5s after text changes
+  useEffect(() => {
+    if (!initialLoadDone.current) {
+      if (outcomeText || roiText) initialLoadDone.current = true
+      return
+    }
+    if (!hasEditAccess || saving) return
+
+    const timer = setTimeout(async () => {
+      try {
+        const freeText: Record<string, string> = {
+          outcome_assessment: outcomeText,
+          roi_and_business_impact: roiText
+        }
+        await saveGeneratedDocument(projectId, 'post_implementation_review', freeText, false)
+      } catch (err) {
+        console.error('PIR auto-save failed:', err)
+      }
+    }, 1500)
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [outcomeText, roiText])
 
   if (!isUnlocked) {
     return (
@@ -171,6 +198,18 @@ export function PostImplementationReviewViewer({
           )}
         </div>
       </div>
+
+      {hasEditAccess && (
+        <AiClosureSynthesisBanner
+          projectId={projectId}
+          docType="post_implementation_review"
+          onGenerated={(data: Record<string, string>) => {
+            if (data.outcome_assessment) setOutcomeText(data.outcome_assessment)
+            if (data.roi_and_business_impact) setRoiText(data.roi_and_business_impact)
+          }}
+          onShowToast={onShowToast}
+        />
+      )}
 
       {/* Delayed Review Scheduling Controls (Responsive) */}
       <div className="p-4 sm:p-5 bg-violet-500/5 border border-violet-500/20 rounded-2xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">

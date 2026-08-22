@@ -10,7 +10,7 @@ import {
   Link2,
   Mail,
 } from 'lucide-react'
-import { useWorkspace } from '../WorkspaceContext'
+import { useWorkspace } from '@/components/dashboard/WorkspaceContext'
 import { generateInviteLink } from '@/lib/invitations/actions'
 import { INVITE_ROLES, type InviteRole } from '@/lib/invitations/constants'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'

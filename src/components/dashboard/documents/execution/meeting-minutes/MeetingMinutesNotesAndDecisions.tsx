@@ -47,7 +47,7 @@ export function MeetingMinutesNotesAndDecisions({
           {hasEditAccess && (
             <button
               onClick={addDecision}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-app-bg border border-app-border hover:bg-gray-50 dark:hover:bg-app-hover rounded-md transition-colors text-xs font-bold text-app-fg shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-app-bg border border-app-border hover:bg-gray-50 dark:hover:bg-app-hover rounded-md transition-colors text-xs font-bold text-app-fg shadow-sm cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" /> Add Decision
             </button>
@@ -78,7 +78,7 @@ export function MeetingMinutesNotesAndDecisions({
                     {hasEditAccess && (
                       <button
                         onClick={() => removeDecision(d.id)}
-                        className="p-3 text-app-muted hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-3 text-app-muted hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

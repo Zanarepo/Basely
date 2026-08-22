@@ -7,6 +7,7 @@ import { BusinessCaseModal } from './BusinessCaseModal'
 import { FeasibilityStudyModal } from './FeasibilityStudyModal'
 import { InitiationDocumentViewer } from './InitiationDocumentViewer'
 import { ToastContainer, type ToastMessage } from '../Toast'
+import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
 interface InitiationWorkspaceProps {
   organizationId: string
@@ -179,23 +180,25 @@ export default function InitiationWorkspace({
                   </p>
                   
                   
-                  <div className="flex justify-between text-xs text-app-muted mt-auto pt-3 border-t border-app-border items-center">
-                    <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-3 text-xs text-app-muted mt-auto pt-3 border-t border-app-border">
+                    <div className="flex flex-col gap-1 w-full">
                       <span>Cost: {bc.estimated_cost ? `$${bc.estimated_cost.toLocaleString()}` : 'N/A'}</span>
-                      <span>Benefit: {bc.estimated_benefit || 'N/A'}</span>
+                      <span className="line-clamp-2" title={bc.estimated_benefit || 'N/A'}>Benefit: {bc.estimated_benefit || 'N/A'}</span>
                     </div>
                     {isAdminOrPM && (
-                      <select 
-                        className="auth-input text-xs py-1 px-2 h-auto" 
-                        value={bc.project_id || ''}
-                        onChange={(e) => handleLinkBcToProject(bc.id, e.target.value)}
-                        disabled={isPending}
-                      >
-                        <option value="">-- Link Project --</option>
-                        {projects.map(p => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
+                      <div className="w-full">
+                        <EnterpriseSelect 
+                          size="sm"
+                          value={bc.project_id || ''}
+                          onChange={(val) => handleLinkBcToProject(bc.id, val)}
+                          disabled={isPending}
+                          placeholder="-- Link Project --"
+                          options={[
+                            { value: '', label: '-- Link Project --' },
+                            ...projects.map(p => ({ value: p.id, label: p.name }))
+                          ]}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -263,20 +266,21 @@ export default function InitiationWorkspace({
                     {fs.overall_recommendation || 'No recommendation provided.'}
                   </p>
 
-                  <div className="flex justify-between text-xs text-app-muted mt-auto pt-3 border-t border-app-border items-center">
-                    <span></span>
+                  <div className="flex flex-col gap-3 text-xs text-app-muted mt-auto pt-3 border-t border-app-border">
                     {isAdminOrPM && (
-                      <select 
-                        className="auth-input text-xs py-1 px-2 h-auto" 
-                        value={fs.project_id || ''}
-                        onChange={(e) => handleLinkFsToProject(fs.id, e.target.value)}
-                        disabled={isPending}
-                      >
-                        <option value="">-- Link Project --</option>
-                        {projects.map(p => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
+                      <div className="w-full">
+                        <EnterpriseSelect 
+                          size="sm"
+                          value={fs.project_id || ''}
+                          onChange={(val) => handleLinkFsToProject(fs.id, val)}
+                          disabled={isPending}
+                          placeholder="-- Link Project --"
+                          options={[
+                            { value: '', label: '-- Link Project --' },
+                            ...projects.map(p => ({ value: p.id, label: p.name }))
+                          ]}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>

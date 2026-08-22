@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
-import { dispatchNotification } from '@/lib/notifications/actions'
+import { dispatchNotification } from '@/lib/notifications/dispatch'
 
 /**
  * Side-effect hook that runs after a change request is created.

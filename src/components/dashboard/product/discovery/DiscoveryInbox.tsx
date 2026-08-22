@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import type { DiscoveryInsight, Persona } from '@/lib/product-strategy/types'
-import { getPersonas } from '@/lib/product-strategy/actions'
+import { getPersonas } from '@/lib/product-strategy/persona-actions'
 import { useDiscoveryInsights } from './hooks/useDiscoveryInsights'
 import { DiscoveryInsightCard } from './DiscoveryInsightCard'
 import { DiscoveryInsightModal } from './DiscoveryInsightModal'
@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   Archive
 } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 
 import { PmDiscoveryWorkflowGuide } from './PmDiscoveryWorkflowGuide'
 
@@ -196,10 +197,7 @@ export function DiscoveryInbox({ organizationId, projectId, hasEditAccess = true
 
       {/* Insights List */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Loading Discovery Insights...</span>
-        </div>
+        <DocumentLoader message="Loading Discovery Inbox..." />
       ) : filtered.length === 0 ? (
         <div className="py-20 flex flex-col items-center justify-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
           <Inbox className="w-10 h-10 text-slate-300 dark:text-slate-600" />

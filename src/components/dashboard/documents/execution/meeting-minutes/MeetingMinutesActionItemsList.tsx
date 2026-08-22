@@ -44,7 +44,7 @@ export function MeetingMinutesActionItemsList({
         {hasEditAccess && (
           <button
             onClick={onOpenSpawnModal}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors text-sm font-bold shadow-md shrink-0 whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors text-sm font-bold shadow-md shrink-0 whitespace-nowrap cursor-pointer"
           >
             <Plus className="w-4 h-4" /> New Action Item
           </button>
@@ -100,7 +100,7 @@ export function MeetingMinutesActionItemsList({
                   <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400">
                     UNSAVED
                   </span>
-                  <button onClick={() => removePendingActionItem(item.id)} className="p-2 text-app-muted hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" title="Remove action item">
+                  <button onClick={() => removePendingActionItem(item.id)} className="p-2 text-app-muted hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" title="Remove action item">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

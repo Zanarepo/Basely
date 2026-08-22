@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { bulkImportWbsElements } from '@/lib/wbs/actions'
+import { bulkImportWbsElements } from '@/lib/wbs/core-actions'
 
 export type ImportSummary = {
   success: number

@@ -1,12 +1,6 @@
 import { useTransition } from 'react'
 import type { WbsElement, WbsStatus } from '@/lib/wbs/constants'
-import {
-  createWbsElement,
-  updateWbsElement,
-  deleteWbsElement,
-  updateWbsSortOrders,
-  bulkDeleteWbsElements,
-} from '@/lib/wbs/actions'
+import { createWbsElement, updateWbsElement, deleteWbsElement, updateWbsSortOrders, bulkDeleteWbsElements } from '@/lib/wbs/core-actions'
 
 interface UseWbsMutationsProps {
   projectId: string
@@ -24,6 +18,7 @@ interface UseWbsMutationsProps {
   loadElements: () => Promise<void>
   callerRole?: string
   callerUserId?: string
+  onQualityGateRequired?: (elementId: string, standards: any[], category: string) => void
 }
 
 export function useWbsMutations({
@@ -41,7 +36,8 @@ export function useWbsMutations({
   showToast,
   loadElements,
   callerRole,
-  callerUserId
+  callerUserId,
+  onQualityGateRequired
 }: UseWbsMutationsProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -249,17 +245,32 @@ export function useWbsMutations({
     }
 
     saveSnapshot(elements)
-    const updatedList = elements.map((el) => (el.id === id ? { ...el, ...updates } : el))
+    // Only show the blocking loading indicator when moving to 'Complete' since that's when the modal might pop up
+    const isCheckingGate = updates.status === 'Complete'
+    const updatedList = elements.map((el) => (el.id === id ? { ...el, ...updates, isSaving: isCheckingGate } : el))
     setElements(updatedList)
 
     const result = await updateWbsElement(id, projectId, updates)
+    
     if (result.ok) {
       showToast('success', 'WBS Dictionary details updated')
+      const finalUpdatedList = updatedList.map((el) => (el.id === id ? { ...el, isSaving: false } : el))
+      setElements(finalUpdatedList)
       if (updates.status !== undefined) {
-        propagateStatusToParents(id, updatedList)
+        propagateStatusToParents(id, finalUpdatedList)
       }
       return true
     } else {
+      if (result.error === 'QUALITY_GATE_REQUIRED') {
+        if (onQualityGateRequired) {
+          onQualityGateRequired(id, (result as any).qualityStandards, (result as any).category)
+        } else {
+          showToast('error', 'Quality gate sign-off is required, but modal is not configured.')
+        }
+        // Rollback optimistic update
+        loadElements()
+        return false
+      }
       handleErrorToast('Could not save details', result.error)
       loadElements()
       return false

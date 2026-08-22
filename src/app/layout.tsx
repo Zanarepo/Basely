@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { Toaster } from 'sonner'
@@ -57,7 +58,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script id="theme-init" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-full flex flex-col bg-app-bg text-app-fg">
         <GlobalBanner announcement={announcement} />

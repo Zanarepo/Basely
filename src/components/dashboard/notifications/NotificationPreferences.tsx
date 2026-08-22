@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/notifications/actions'
+import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/notifications/preferences-actions'
 import { Loader2, Mail, Hash, Save, BellRing } from 'lucide-react'
 
 export function NotificationPreferences() {

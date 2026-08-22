@@ -7,6 +7,7 @@ import { EffortImpactScatterPlot } from './EffortImpactScatterPlot'
 import { ProductBacklogItem } from '@/lib/product-strategy/types'
 import { getBacklogItems, upsertBacklogItem } from '@/lib/product-backlog/actions'
 import { Loader2, Plus } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
 import { PmDiscoveryWorkflowGuide } from '../discovery/PmDiscoveryWorkflowGuide'
 
@@ -73,11 +74,7 @@ export function PrioritizationDashboard({
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-      </div>
-    )
+    return <DocumentLoader message="Loading RICE Prioritization Engine..." />
   }
 
   return (

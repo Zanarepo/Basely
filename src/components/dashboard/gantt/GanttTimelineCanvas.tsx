@@ -29,6 +29,7 @@ type GanttTimelineCanvasProps = {
   acquireLock?: (activityId: string) => void
   releaseLock?: (activityId: string) => void
   onSelectElement?: (id: string) => void
+  onContextMenu?: (e: React.MouseEvent, row: any) => void
 }
 
 const ROW_HEIGHT = 48
@@ -53,6 +54,7 @@ export function GanttTimelineCanvas({
   acquireLock,
   releaseLock,
   onSelectElement,
+  onContextMenu,
 }: GanttTimelineCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -271,6 +273,7 @@ export function GanttTimelineCanvas({
           onAnchorPointerUp={handleAnchorPointerUp as any}
           onSelectElement={onSelectElement}
           wasJustDragging={wasJustDragging}
+          onContextMenu={onContextMenu}
         />
 
       </div>

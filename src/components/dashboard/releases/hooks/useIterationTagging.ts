@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { tagWorkItemToIteration as serverTagWorkItem } from '@/lib/releases/actions'
+import { tagWorkItemToIteration as serverTagWorkItem } from '@/lib/releases/iteration-actions'
 import { createClient } from '@/utils/supabase/client'
 import type { Iteration } from '@/lib/releases/types'
 

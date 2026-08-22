@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { FileText, Save, RefreshCw, Download, History, FileSpreadsheet, File, LayoutTemplate, MoreHorizontal, Check, Loader2, Pencil } from 'lucide-react'
-import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/actions'
+import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/types'
 
 interface DocumentHeaderProps {
   template: DocumentTemplate
@@ -185,7 +185,7 @@ export default function DocumentHeader({
           </button>
         )}
 
-        {(hasEditAccess || generatedDoc) && !isSnapshot && (
+        {(hasEditAccess || generatedDoc) && !isSnapshot && template.document_type !== 'status_report' && (
           <button
             type="button"
             onClick={(e) => {

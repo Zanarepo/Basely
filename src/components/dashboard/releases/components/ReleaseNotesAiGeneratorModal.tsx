@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { Sparkles, X, Check, Copy, AlertCircle, Loader2, FileText, ClipboardList } from 'lucide-react'
-import { generateAiReleaseNotesAndChecklist } from '@/lib/releases/actions'
 import { getDualLabels } from '@/lib/releases/epic-link-constants'
+import { useReleaseNotesAiGenerator } from '../hooks/useReleaseNotesAiGenerator'
 
 export interface ReleaseNotesAiGeneratorModalProps {
   isOpen: boolean
@@ -24,42 +24,24 @@ export function ReleaseNotesAiGeneratorModal({
   methodology = 'Agile',
   onGenerated,
 }: ReleaseNotesAiGeneratorModalProps) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [releaseNotes, setReleaseNotes] = useState<string | null>(null)
-  const [checklistCount, setChecklistCount] = useState<number>(0)
-  const [copied, setCopied] = useState(false)
+  const {
+    loading,
+    error,
+    releaseNotes,
+    checklistCount,
+    copied,
+    handleGenerate,
+    handleCopy
+  } = useReleaseNotesAiGenerator({
+    releaseId,
+    projectId,
+    methodology: methodology || 'Agile',
+    onGenerated
+  })
 
   const labels = getDualLabels(methodology)
 
   if (!isOpen) return null
-
-  const handleGenerate = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await generateAiReleaseNotesAndChecklist(releaseId, projectId, methodology || 'Agile')
-      if (!res.ok) {
-        setError(res.error || 'Failed to generate AI release notes')
-        return
-      }
-      setReleaseNotes(res.releaseNotesHtml || null)
-      setChecklistCount(res.checklistItems?.length || 0)
-      onGenerated?.()
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleCopy = () => {
-    if (releaseNotes) {
-      navigator.clipboard.writeText(releaseNotes)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">

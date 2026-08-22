@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import type { DiscoveryInsight, Persona } from '@/lib/product-strategy/types'
 import { X, Loader2, Lightbulb, Plus, Check } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
-import { createPersona } from '@/lib/product-strategy/actions'
+import { createPersona } from '@/lib/product-strategy/persona-actions'
 import { toast } from 'sonner'
 
 interface DiscoveryInsightModalProps {

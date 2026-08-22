@@ -1,12 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import {
-  getProjectOrOrgMembers,
-  saveGeneratedDocument,
-  dispatchReviewerAssignmentNotification,
-  dispatchStatusChangeNotificationToPM,
-} from '@/lib/documents/actions'
+import { getProjectOrOrgMembers } from '@/lib/documents/core-queries'
+import { saveGeneratedDocument } from '@/lib/documents/core-mutations'
+import { dispatchReviewerAssignmentNotification, dispatchStatusChangeNotificationToPM } from '@/lib/documents/notifications'
 
 export interface ReviewerApproval {
   id: string

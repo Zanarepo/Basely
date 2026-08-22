@@ -184,7 +184,7 @@ export default function IssueList({
                         setScrollToComments(true)
                         setIsFormOpen(true)
                       }}
-                      className="p-2 text-app-muted hover:text-violet-400 hover:bg-app-surface border border-transparent hover:border-app-border rounded-lg transition-all"
+                      className="p-2 text-app-muted hover:text-violet-400 hover:bg-app-surface border border-transparent hover:border-app-border rounded-lg transition-all cursor-pointer"
                       title="View Comments"
                     >
                       <MessageSquare className="h-4 w-4" />
@@ -199,7 +199,7 @@ export default function IssueList({
                             setScrollToComments(false)
                             setIsFormOpen(true)
                           }}
-                          className="p-2 text-app-muted hover:text-violet-500 hover:bg-violet-500/10 rounded-lg transition-colors"
+                          className="p-2 text-app-muted hover:text-violet-500 hover:bg-violet-500/10 rounded-lg transition-colors cursor-pointer"
                           title="Edit Issue"
                         >
                           <Edit2 className="h-4 w-4" />
@@ -207,7 +207,7 @@ export default function IssueList({
                         <button
                           onClick={() => handleDelete(issue.id, issue.title)}
                           disabled={deletingId === issue.id}
-                          className="p-2 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                          className="p-2 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
                           title="Delete Issue"
                         >
                           <Trash2 className={`h-4 w-4 ${deletingId === issue.id ? 'animate-pulse' : ''}`} />

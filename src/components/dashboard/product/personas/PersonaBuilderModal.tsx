@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import type { Persona } from '@/lib/product-strategy/types'
-import { createPersona, updatePersona } from '@/lib/product-strategy/actions'
+import { createPersona, updatePersona } from '@/lib/product-strategy/persona-actions'
 import { X, Save, Check, Plus, Trash2, Loader2 } from 'lucide-react'
 
 interface PersonaBuilderModalProps {

@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react'
 import { useScopeStatement } from './hooks/useScopeStatement'
-import { getWbsElements } from '@/lib/wbs/actions'
+import { getWbsElements } from '@/lib/wbs/core-actions'
 import { WbsElement } from '@/lib/wbs/constants'
-import { Save, Loader2, AlertCircle } from 'lucide-react'
+import { AlertCircle, Plus, Check, Loader2, Save, X, Lightbulb, Link, Wand2 } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 
 interface ScopeStatementEditorProps {
   projectId: string
@@ -79,12 +80,7 @@ export function ScopeStatementEditor({
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-app-muted">
-        <Loader2 className="w-6 h-6 animate-spin mr-2" />
-        Loading Scope Statement...
-      </div>
-    )
+    return <DocumentLoader message="Loading Scope Statement..." />
   }
 
   if (error && !data) {

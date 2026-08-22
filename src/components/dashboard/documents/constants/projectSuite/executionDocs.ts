@@ -37,23 +37,6 @@ export const executionDocs: DocumentItem[] = [
     },
   },
   {
-    id: 'status_report',
-    title: 'New Status Report',
-    category: 'execution',
-    suite: 'project',
-    icon: BarChart3,
-    description: 'Milestone progress, EVM metrics (CPI/SPI), budget variance & RAID log highlights.',
-    badge: 'Execution',
-    guide: {
-      purpose: 'Provides leadership with a transparent update on schedule, budget, risks, and milestones.',
-      audience: 'Steering Committee, Executives, PMO',
-      bestPractices: [
-        'Highlight Schedule Performance Index (SPI) and Cost Performance Index (CPI).',
-        'Include top 3 open risks with mitigation plans.',
-      ],
-    },
-  },
-  {
     id: 'meeting_minutes',
     title: 'Meeting Minutes',
     category: 'execution',

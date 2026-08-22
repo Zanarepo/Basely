@@ -1,10 +1,16 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Trash2, Pencil, Check, X, FileText, CheckSquare, Save, Loader2 } from 'lucide-react'
+import { Check, Edit2, Loader2, Plus, Save, Trash2, ShieldCheck, AlertCircle, Pencil, X, FileText, CheckSquare, Sparkles } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 import { useQualityManagementPlan } from './hooks/useQualityManagementPlan'
 import { QualityStandard } from '@/lib/planning/quality-actions'
+import { generateQualityPlanFromWbs } from '@/lib/planning/ai-quality-actions'
 import { QualityStandardForm } from './QualityStandardForm'
+import StructuredEditableField from '@/components/dashboard/documents/components/StructuredEditableField'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { markdownComponents } from '@/components/dashboard/documents/components/structured/markdownComponents'
 
 export function QualityManagementPlanEditor({ 
   projectId,
@@ -15,13 +21,32 @@ export function QualityManagementPlanEditor({
   hasEditAccess?: boolean
   onShowToast?: (type: 'error' | 'success' | 'info', msg: string) => void
 }) {
-  const { plan, standards, isLoading, error, isSaving, savePlanDetails, saveStandard, removeStandard } = useQualityManagementPlan(projectId)
+  const { plan, standards, isLoading, error, isSaving, savePlanDetails, saveStandard, removeStandard, refresh } = useQualityManagementPlan(projectId)
   
   const [editingPlan, setEditingPlan] = useState(false)
   const [draftCadence, setDraftCadence] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
   
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedStandard, setSelectedStandard] = useState<QualityStandard | null>(null)
+
+  const handleGenerateAI = async () => {
+    setIsGenerating(true)
+    const res = await generateQualityPlanFromWbs(projectId)
+    if (res.ok) {
+      onShowToast?.('success', 'Generated successfully!')
+      refresh()
+    } else {
+      onShowToast?.('error', res.error || 'Failed to generate plan')
+    }
+    setIsGenerating(false)
+  }
+
+  useEffect(() => {
+    if (plan) {
+      setDraftCadence(plan.review_cadence || '')
+    }
+  }, [plan])
 
   useEffect(() => {
     if (error) {
@@ -30,11 +55,7 @@ export function QualityManagementPlanEditor({
   }, [error, onShowToast])
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center p-12">
-        <Loader2 className="w-8 h-8 animate-spin text-app-muted" />
-      </div>
-    )
+    return <DocumentLoader message="Loading Quality Management Plan..." />
   }
 
   const handleSavePlan = async () => {
@@ -53,11 +74,6 @@ export function QualityManagementPlanEditor({
     setIsModalOpen(false)
   }
 
-  const startEditPlan = () => {
-    setDraftCadence(plan?.review_cadence || '')
-    setEditingPlan(true)
-  }
-
   const startEditStandard = (std: QualityStandard) => {
     setSelectedStandard(std)
     setIsModalOpen(true)
@@ -70,53 +86,43 @@ export function QualityManagementPlanEditor({
 
   return (
     <div className="space-y-6">
-      <div className="bg-app-surface border border-app-border rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-app-border flex items-center justify-between group">
-          <div>
-            <h3 className="text-sm font-semibold text-app-fg">Quality Review Cadence</h3>
-            <p className="text-xs text-app-muted mt-1">How often the project quality will be formally audited</p>
-          </div>
-          {hasEditAccess && !editingPlan && (
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-bold text-app-fg tracking-tight">Quality Management Plan</h2>
+          <p className="text-sm text-app-muted">Define the criteria and frequency for quality audits.</p>
+        </div>
+        
+        {hasEditAccess && (
+          <div className="flex items-center gap-3">
             <button
-              onClick={startEditPlan}
-              className="opacity-0 group-hover:opacity-100 p-1.5 text-app-muted hover:text-violet-500 rounded-md transition-all cursor-pointer"
-              title="Edit Cadence"
+              onClick={handleGenerateAI}
+              disabled={isGenerating || isSaving}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
             >
-              <Pencil className="w-4 h-4" />
+              {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              Auto-Generate via AI
             </button>
-          )}
-        </div>
-        <div className="p-4">
-          {editingPlan ? (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={draftCadence}
-                onChange={(e) => setDraftCadence(e.target.value)}
-                placeholder="e.g. Monthly, End of Phase..."
-                className="flex-1 bg-app-bg border border-app-border rounded px-3 py-1.5 text-sm text-app-fg focus:outline-none focus:border-violet-500"
-              />
-              <button
-                onClick={handleSavePlan}
-                disabled={isSaving}
-                className="p-1.5 text-emerald-500 hover:bg-emerald-500/10 rounded cursor-pointer transition-colors disabled:opacity-50"
-              >
-                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-              </button>
-              <button
-                onClick={() => setEditingPlan(false)}
-                className="p-1.5 text-app-muted hover:text-app-fg rounded cursor-pointer transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="text-sm text-app-fg">
-              {plan?.review_cadence || <span className="text-app-muted italic">No cadence defined</span>}
-            </div>
-          )}
-        </div>
+            <button
+              onClick={handleSavePlan}
+              disabled={isSaving || isGenerating}
+              className="flex items-center gap-2 bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Changes
+            </button>
+          </div>
+        )}
       </div>
+
+      <div className="space-y-8">
+        <StructuredEditableField
+          value={draftCadence}
+          onChange={(val) => setDraftCadence(val)}
+          title="Quality Review Cadence"
+          hasEditAccess={hasEditAccess || false}
+          documentType="quality_plan"
+          placeholder="Describe how often the project quality will be formally audited (e.g. Monthly, End of Phase)..."
+        />
 
       <div className="bg-app-surface border border-app-border rounded-lg shadow-sm overflow-hidden">
         <div className="p-4 border-b border-app-border flex items-center justify-between">
@@ -146,7 +152,7 @@ export function QualityManagementPlanEditor({
             standards.map(std => (
               <div key={std.id} className="group flex items-start justify-between p-4 hover:bg-app-surface/50 transition-colors">
                 <div className="flex-1 mr-4">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-2">
                     {std.is_checklist_item ? (
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                         <CheckSquare className="w-3 h-3" /> Checklist
@@ -157,7 +163,11 @@ export function QualityManagementPlanEditor({
                       </span>
                     )}
                   </div>
-                  <div className="text-sm text-app-fg whitespace-pre-wrap">{std.criterion_text}</div>
+                  <div className="text-sm text-app-fg prose prose-sm prose-invert max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                      {std.criterion_text}
+                    </ReactMarkdown>
+                  </div>
                 </div>
 
                 {hasEditAccess && (
@@ -185,12 +195,13 @@ export function QualityManagementPlanEditor({
           )}
         </div>
       </div>
+      </div>
       
       {isModalOpen && (
-        <QualityStandardForm
+        <QualityStandardForm 
           standard={selectedStandard}
-          onClose={() => setIsModalOpen(false)}
           onSave={handleSaveStandard}
+          onClose={() => setIsModalOpen(false)}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
-import { DocumentSectionDef, DocumentTemplate } from './actions'
+import { DocumentSectionDef, DocumentTemplate } from './types'
 
 export type CustomDocumentTemplate = {
   id: string

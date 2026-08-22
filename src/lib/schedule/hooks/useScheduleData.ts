@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getWbsElements } from '@/lib/wbs/actions'
+import { getWbsElements } from '@/lib/wbs/core-actions'
 import { getScheduleData } from '@/lib/schedule/actions/queries'
 import { getPendingApprovalsForProject } from '@/lib/approvals/actions'
 import type { WbsElement } from '@/lib/wbs/constants'

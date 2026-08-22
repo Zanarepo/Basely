@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getRaidEntries, deleteRaidEntry, type RaidLogEntry, type RaidCategory } from '@/lib/raid/actions'
-import { getWbsElements } from '@/lib/wbs/actions'
+import { getWbsElements } from '@/lib/wbs/core-actions'
 import type { WbsElement } from '@/lib/wbs/constants'
 import { useWbsToasts } from '@/components/dashboard/wbs/workspace/hooks/useWbsToasts'
 

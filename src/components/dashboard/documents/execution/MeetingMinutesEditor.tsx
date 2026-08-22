@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ArrowLeft, MoreVertical, Trash2 } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 import { ActionItemModal } from '@/components/dashboard/action-items/ActionItemModal'
 import { AiMeetingCopilotModal } from './AiMeetingCopilotModal'
 import { useMeetingMinutes } from './meeting-minutes/useMeetingMinutes'
@@ -50,11 +51,7 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
   } = useMeetingMinutes({ projectId, minuteId, hasEditAccess, onBack, onShowToast })
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-      </div>
-    )
+    return <DocumentLoader message="Loading Meeting Details..." />
   }
 
   return (
