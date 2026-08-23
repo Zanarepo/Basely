@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useScopeStatement } from './hooks/useScopeStatement'
 import { getWbsElements } from '@/lib/wbs/core-actions'
 import { WbsElement } from '@/lib/wbs/constants'
@@ -20,7 +20,9 @@ export function ScopeStatementEditor({
 }: ScopeStatementEditorProps) {
   const { data, isLoading, isSaving, error, saveData } = useScopeStatement(projectId)
   const [wbsElements, setWbsElements] = useState<WbsElement[]>([])
-  
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const isMountedRef = useRef(false)
+
   // Local state for the form
   const [formData, setFormData] = useState({
     in_scope_summary: '',
@@ -55,6 +57,49 @@ export function ScopeStatementEditor({
     fetchWbs()
   }, [projectId])
 
+  // Auto-save with debounce (1 second delay)
+  useEffect(() => {
+    // Skip auto-save on initial load to prevent saving empty state
+    if (!isMountedRef.current) {
+      isMountedRef.current = true
+      return
+    }
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+
+    // Set new timeout to save after 1 second of no changes
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await saveData(formData)
+        // Clear error on successful auto-save
+        // Note: We can't directly clear hook's error state, but successful save will override it
+      } catch (err) {
+        // Error will be caught by saveData hook and set in error state
+        console.error('Auto-save failed:', err)
+      }
+    }, 1000)
+
+    // Cleanup timeout on unmount or before next effect run
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [formData, projectId, saveData]) // Re-run when formData or projectId changes
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+      isMountedRef.current = false
+    }
+  }, [])
+
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -63,7 +108,7 @@ export function ScopeStatementEditor({
   const handleWbsToggle = (id: string) => {
     setFormData(prev => {
       const isSelected = prev.anchored_wbs_element_ids.includes(id)
-      const nextIds = isSelected 
+      const nextIds = isSelected
         ? prev.anchored_wbs_element_ids.filter(x => x !== id)
         : [...prev.anchored_wbs_element_ids, id]
       return { ...prev, anchored_wbs_element_ids: nextIds }
@@ -71,6 +116,11 @@ export function ScopeStatementEditor({
   }
 
   const handleSave = async () => {
+    // Clear any pending auto-save to prevent race conditions
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+
     const success = await saveData(formData)
     if (success) {
       onShowToast?.('success', 'Scope Statement saved successfully.')
@@ -83,16 +133,6 @@ export function ScopeStatementEditor({
     return <DocumentLoader message="Loading Scope Statement..." />
   }
 
-  if (error && !data) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 text-rose-500">
-        <AlertCircle className="w-8 h-8 mb-2" />
-        <p>Failed to load Scope Statement</p>
-        <p className="text-sm opacity-80">{error}</p>
-      </div>
-    )
-  }
-
   return (
     <div className="bg-app-surface border border-app-border rounded-xl flex flex-col h-full overflow-hidden shadow-sm">
       <div className="p-4 border-b border-app-border flex justify-between items-center bg-app-bg shrink-0">
@@ -100,7 +140,7 @@ export function ScopeStatementEditor({
           <h2 className="text-lg font-bold text-app-fg tracking-tight">Scope Statement</h2>
           <p className="text-sm text-app-muted">Define the project boundaries, assumptions, and constraints.</p>
         </div>
-        
+
         {hasEditAccess && (
           <button
             onClick={handleSave}
@@ -111,10 +151,30 @@ export function ScopeStatementEditor({
             Save Changes
           </button>
         )}
+
+        {/* Auto-save indicator */}
+        {!hasEditAccess && !isLoading && !isSaving && (
+          <div className="text-xs text-app-muted text-right mt-2">
+            Auto-save enabled
+          </div>
+        )}
       </div>
 
+      {/* Save Error Display - Visible regardless of onShowToast prop */}
+      {error && (
+        <div className="p-4 mb-6 bg-rose-50 border-l-4 border-rose-500 text-rose-700">
+          <div className="flex items-start">
+            <AlertCircle className="mt-1 h-5 w-5 flex-shrink-0" />
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-rose-800">Save Error</h3>
+              <div className="mt-1 text-sm text-rose-700">{error}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="p-6 overflow-y-auto space-y-8 no-scrollbar bg-app-bg/50 flex-1">
-        
+
         <div className="space-y-4">
           <label className="block text-sm font-bold text-app-fg">In-Scope Summary</label>
           <textarea
@@ -187,7 +247,7 @@ export function ScopeStatementEditor({
             />
           </div>
         </div>
-        
+
       </div>
     </div>
   )
