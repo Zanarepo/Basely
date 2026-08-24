@@ -4,6 +4,8 @@ import React from 'react'
 import { Loader2 } from 'lucide-react'
 import { CompetitiveHeaderBanner } from './competitive/components/CompetitiveHeaderBanner'
 import { CompetitiveFeatureTable } from './competitive/components/CompetitiveFeatureTable'
+import { CompetitorPricingMatrix } from './competitive/components/CompetitorPricingMatrix'
+import { CompetitorStrategyMatrix } from './competitive/components/CompetitorStrategyMatrix'
 import { useCompetitiveIntelligence } from './competitive/hooks/useCompetitiveIntelligence'
 import { CompetitiveIntelligenceDashboardProps } from './competitive/constants/types'
 import { MoatMatrix } from './MoatMatrix'
@@ -28,6 +30,12 @@ export function CompetitiveIntelligenceDashboard({
     handleSave,
     handleAddFeature,
     handleDeleteFeature,
+    autoGenerateMatrix,
+    generating,
+    pricing,
+    setPricing,
+    strategies,
+    setStrategies,
   } = useCompetitiveIntelligence({ projectId, organizationId })
 
   if (loading) {
@@ -61,6 +69,26 @@ export function CompetitiveIntelligenceDashboard({
         onAddFeature={handleAddFeature}
         onDeleteFeature={handleDeleteFeature}
         onUpdateFeature={setFeatures}
+        setIsDirty={setIsDirty}
+        onAutoGenerate={autoGenerateMatrix}
+        generating={generating}
+      />
+
+      <CompetitorPricingMatrix
+        pricing={pricing}
+        competitorAName={competitorAName}
+        competitorBName={competitorBName}
+        hasEditAccess={hasEditAccess}
+        onUpdate={setPricing}
+        setIsDirty={setIsDirty}
+      />
+
+      <CompetitorStrategyMatrix
+        strategies={strategies}
+        competitorAName={competitorAName}
+        competitorBName={competitorBName}
+        hasEditAccess={hasEditAccess}
+        onUpdate={setStrategies}
         setIsDirty={setIsDirty}
       />
 

@@ -5,6 +5,176 @@ import { generateStructuredJson } from '@/lib/ai/ai-provider-router'
 import { getSyncDocumentTemplate } from './prd-templates'
 import { upsertStrategyCanvasFromAI } from '@/lib/product-strategy/strategy-actions'
 
+export async function draftMarketResearchFromBusinessCase(
+  projectId: string,
+  organizationId: string,
+  templateVariantId: string
+): Promise<{ ok: boolean; data?: any; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+
+    // Fetch Business Case
+    const { data: bcs } = await adminSupabase
+      .from('business_cases')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    // Fetch Feasibility Study
+    const { data: fss } = await adminSupabase
+      .from('feasibility_studies')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    const businessCase = bcs?.[0]
+    const feasibility = fss?.[0]
+
+    if (!businessCase && !feasibility) {
+      return { ok: false, error: 'A Business Case or Feasibility Study is required to draft Market Research.' }
+    }
+
+    const rawContext = `
+[BUSINESS CASE]
+${businessCase ? JSON.stringify(businessCase, null, 2) : 'N/A'}
+
+[FEASIBILITY STUDY]
+${feasibility ? JSON.stringify(feasibility, null, 2) : 'N/A'}
+`
+
+    const systemPrompt = `You are Praz-AI, a Senior Market Researcher. Synthesize the provided Business Case and Feasibility Study into a comprehensive Market Research document.
+Format your output as a JSON object with ALL of the following exact keys. Each value must be a rich markdown string:
+{
+  "executive_summary": "Summary of research purpose and high-level findings.",
+  "research_purpose": "The core business decision this research will inform.",
+  "market_definition": "Market boundaries and segment definitions.",
+  "tam_sam_som_sizing": "Estimated TAM, SAM, and SOM based on business case assumptions.",
+  "market_growth": "Market growth rate, drivers, and constraints.",
+  "target_customer_research": "Demographics and psychographics of target customers.",
+  "customer_problems": "Core customer pain points to be solved.",
+  "customer_jtbd": "Jobs-to-be-Done (JTBD) framework analysis.",
+  "customer_research_methods": "Proposed methodology for further customer validation.",
+  "customer_research_findings": "Initial assumptions on customer needs.",
+  "competitor_research": "Overview of direct and indirect competitors.",
+  "competitive_gap_analysis": "Where competitors are failing and the gap we can fill.",
+  "pricing_research": "Initial pricing assumptions or benchmarks.",
+  "market_drivers_barriers": "Key enablers and barriers to entry.",
+  "regulatory_environmental": "Regulatory compliance, legal, or environmental factors.",
+  "swot_analysis": "SWOT Analysis: Strengths, Weaknesses, Opportunities, Threats.",
+  "market_opportunities": "Primary areas of opportunity.",
+  "hypotheses_assumptions": "Core hypotheses to test in the market.",
+  "key_insights": "Synthesized insights from the analysis.",
+  "research_conclusions": "Final conclusion on market attractiveness.",
+  "recommendations": "Strategic recommendations for product development.",
+  "strategic_implications": "How this impacts the product roadmap.",
+  "research_to_strategy_mapping": "Mapping of research findings to strategic pillars.",
+  "research_limitations": "Limitations of this initial assessment.",
+  "sources": "Assumed sources or required external data sources.",
+  "research_decision": "Proceed, Pivot, or Kill recommendation based on the data.",
+  "next_steps": "Immediate next steps for the team.",
+  "approval_signoff": "Required executive approvals."
+}
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.
+CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, for sections involving data, sizing, and trends (e.g., tam_sam_som_sizing, market_growth, competitor_research), you MUST include a Google Search link that the user can click to instantly verify your claim. Format: \`[Verify on Google](https://www.google.com/search?q=Your+Search+Query)\`. Never output raw numbers or statistics without a linked search source.`
+
+    const parsedResult = await generateStructuredJson<Record<string, string>>({
+      systemPrompt,
+      userPrompt: rawContext,
+    })
+
+    const freeTextPayload: Record<string, string> = {
+      ...parsedResult,
+      __prd_template_variant: templateVariantId,
+    }
+
+    return { ok: true, data: freeTextPayload }
+  } catch (err: any) {
+    console.error('[draftMarketResearchFromBusinessCase Error]:', err)
+    return { ok: false, error: err.message || 'Failed to draft Market Research' }
+  }
+}
+
+/**
+ * Drafts the Competitive Analysis Matrix document spec based on the Competitive Intelligence matrix data.
+ */
+export async function draftCompetitiveSpecFromMatrix(
+  projectId: string,
+  organizationId: string
+): Promise<{ ok: boolean; data?: any; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+
+    // 1. Fetch the project strategy to get the matrix data
+    const { data: project, error: pErr } = await adminSupabase
+      .from('projects')
+      .select('name, description')
+      .eq('id', projectId)
+      .eq('organization_id', organizationId)
+      .single()
+
+    const { data: strategy } = await adminSupabase
+      .from('product_strategies')
+      .select('target_market, competitive_moats, custom_attributes')
+      .eq('project_id', projectId)
+      .single()
+
+    if (pErr || !project) {
+      return { ok: false, error: 'Failed to fetch project strategy data.' }
+    }
+
+    const attrs = strategy?.custom_attributes || {}
+
+    const rawContext = `
+[PROJECT CONTEXT]
+Product Name: ${project.name || 'Unknown'}
+Description: ${project.description || 'N/A'}
+Target Market: ${strategy?.target_market || 'N/A'}
+
+[COMPETITORS]
+Competitor A: ${attrs.competitor_a_name || 'N/A'}
+Competitor B: ${attrs.competitor_b_name || 'N/A'}
+
+[FEATURE MATRIX]
+${JSON.stringify(attrs.competitive_features || [], null, 2)}
+
+[COMPETITIVE MOATS]
+${JSON.stringify(strategy?.competitive_moats || [], null, 2)}
+`
+
+    const systemPrompt = `You are Praz-AI, a Senior Market Researcher. Synthesize the provided Feature Matrix and Moats into a comprehensive Competitive Analysis Document Spec.
+Format your output as a JSON object with ALL of the following exact keys. Each value must be a rich markdown string:
+{
+  "market_scope": "Define the market and the scope of this competitive analysis.",
+  "direct_competitors": "Detailed overview of the direct competitors identified.",
+  "indirect_competitors": "Overview of potential indirect competitors or substitutes.",
+  "feature_comparison": "A deep-dive textual analysis summarizing the Feature Matrix provided. Highlight areas where we lead, lag, or have a moat.",
+  "pricing_comparison": "Inferred pricing or business model comparison based on the market.",
+  "gtm_comparison": "Inferred Go-to-Market strategies for us vs competitors.",
+  "key_takeaways": "Strategic takeaways and our differentiation edge."
+}
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.
+CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include a Google Search link that the user can click to instantly verify your claim (e.g., [Verify on Google](https://www.google.com/search?q=Your+Search+Query)) for any claims, statistics, market sizes, or references to external data.`
+
+    const parsedResult = await generateStructuredJson<Record<string, string>>({
+      systemPrompt,
+      userPrompt: rawContext,
+    })
+
+    const freeTextPayload: Record<string, string> = {
+      ...parsedResult,
+      __prd_template_variant: 'competitive_analysis_matrix',
+    }
+
+    return { ok: true, data: freeTextPayload }
+  } catch (err: any) {
+    console.error('[draftCompetitiveSpecFromMatrix Error]:', err)
+    return { ok: false, error: err.message || 'Failed to draft Competitive Spec' }
+  }
+}
+
+
 /**
  * 1. Synthesize Product Strategy from Market Research — All 28 sections
  */
@@ -54,7 +224,8 @@ Format your output as a JSON object with ALL of the following exact keys. Each v
   "related_documents": "Cross-Referenced Documents: Market Research, Personas, PRD, Roadmap, Business Case links.",
   "approval_board": "Executive Governance Approval Board: | Role | Name | Approval Status | Date |"
 }
-CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.`
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.
+CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include a Google Search link that the user can click to instantly verify your claim (e.g., [Verify on Google](https://www.google.com/search?q=Your+Search+Query)) for any claims, statistics, market sizes, or references to external data.`
 
     const parsedResult = await generateStructuredJson<Record<string, string>>({
       systemPrompt,
@@ -163,7 +334,8 @@ Format your output as a JSON object with the following exact keys matching Roadm
   "risks_and_assumptions": "Strategic Risks & Assumptions Matrix.",
   "metrics_and_outcomes": "Key Product Metrics & Target Customer Outcomes."
 }
-CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.`
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.
+CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include a Google Search link that the user can click to instantly verify your claim (e.g., [Verify on Google](https://www.google.com/search?q=Your+Search+Query)) for any claims, statistics, market sizes, or references to external data.`
 
     const parsedResult = await generateStructuredJson<Record<string, string>>({
       systemPrompt,
@@ -227,7 +399,110 @@ CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside s
 }
 
 /**
- * 3. Synthesize PRD from Roadmap — All 23 sections
+ * 3. Synthesize Product Strategy from Charter & Scope
+ */
+export async function synthesizeStrategyFromCharterAndScope(
+  projectId: string,
+  organizationId: string,
+  templateVariantId: string
+): Promise<{ ok: boolean; data?: any; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+
+    // Fetch Charter
+    const { data: charter } = await adminSupabase
+      .from('generated_documents')
+      .select('free_text_content')
+      .eq('project_id', projectId)
+      .eq('document_type', 'charter')
+      .eq('is_snapshot', false)
+      .maybeSingle()
+
+    // Fetch Scope Statement
+    const { data: scope } = await adminSupabase
+      .from('generated_documents')
+      .select('free_text_content')
+      .eq('project_id', projectId)
+      .eq('document_type', 'scope_statement')
+      .eq('is_snapshot', false)
+      .maybeSingle()
+
+    if (!charter || !scope) {
+      return { ok: false, error: 'Both Project Charter and Scope Statement are required to draft a strategy.' }
+    }
+
+    const rawContext = `
+[PROJECT CHARTER]
+${JSON.stringify(charter.free_text_content)}
+
+[SCOPE STATEMENT]
+${JSON.stringify(scope.free_text_content)}
+`
+
+    const systemPrompt = `You are Praz-AI, a Chief Product Officer. You will receive a Project Charter (goals and success criteria) and a Scope Statement (strict boundaries and deliverables).
+Synthesize this context into a comprehensive Product Strategy Document.
+Format your output as a JSON object with ALL of the following exact keys. Each value must be a rich markdown string:
+{
+  "executive_summary": "1-2 paragraph executive summary of strategic intent, market opportunity, and target growth goals based on the charter.",
+  "product_vision": "Product Vision Statement aligned with the charter.",
+  "product_mission": "Product Mission Statement: Daily operational mission.",
+  "problem_statement": "Core Customer Problem Statement, current workarounds, and business impact.",
+  "market_opportunity": "Market opportunity analysis.",
+  "target_customers": "Primary and secondary customer personas based on scope constraints.",
+  "jobs_to_be_done": "Customer Jobs-to-be-Done table: | Customer Job | Current Solution | Pain | Desired Outcome |",
+  "value_proposition": "Formal Value Proposition Statement.",
+  "product_positioning": "Product Positioning Matrix.",
+  "competitive_landscape": "Competitive overview table.",
+  "product_differentiation": "Key Differentiators and Defensibility Moats.",
+  "strategic_bets": "Strategic Bets Table aligned with the charter goals.",
+  "strategic_pillars": "Strategic Pillars breakdown.",
+  "product_principles": "Guiding Product Principles.",
+  "product_goals": "Business, Customer, Product Goals Table (must match charter success criteria).",
+  "metrics_and_kpis": "North Star Metric definition plus KPI table.",
+  "roadmap_themes": "Roadmap Themes by Quarter table.",
+  "prioritization_framework": "Feature Prioritization table.",
+  "business_model": "Revenue Model and Pricing Strategy.",
+  "gtm_considerations": "Go-To-Market strategy.",
+  "assumptions": "Strategic Assumptions Matrix.",
+  "risks": "Strategic Risk Register (incorporating scope exclusions).",
+  "strategic_dependencies": "Dependencies Matrix.",
+  "strategic_decisions": "Decisions Log.",
+  "open_questions": "Open Strategic Questions.",
+  "strategy_review": "Review Cadence.",
+  "related_documents": "Cross-Referenced Documents: Charter, Scope Statement.",
+  "approval_board": "Executive Governance Approval Board."
+}
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.
+CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include a Google Search link that the user can click to instantly verify your claim (e.g., [Verify on Google](https://www.google.com/search?q=Your+Search+Query)) for any claims, statistics, market sizes, or references to external data.`
+
+    const parsedResult = await generateStructuredJson<Record<string, string>>({
+      systemPrompt,
+      userPrompt: rawContext,
+    })
+
+    const standardStrategyMappings: Record<string, string> = {
+      strategy_vision: `${parsedResult.product_vision || ''}\n\n**Strategic Pillars:**\n${parsedResult.strategic_pillars || ''}`,
+      executive_commentary: parsedResult.executive_summary || '',
+    }
+
+    const freeTextPayload: Record<string, string> = {
+      ...parsedResult,
+      ...standardStrategyMappings,
+      __prd_template_variant: templateVariantId,
+    }
+
+    // Sync to live product_strategies table & Strategy Canvas Studio
+    await upsertStrategyCanvasFromAI(projectId, parsedResult)
+
+    return { ok: true, data: freeTextPayload }
+  } catch (err: any) {
+    console.error('[synthesizeStrategyFromCharterAndScope Error]:', err)
+    return { ok: false, error: err.message || 'Failed to synthesize Product Strategy' }
+  }
+}
+
+/**
+ * 4. Synthesize PRD from Roadmap — All 23 sections
  */
 export async function synthesizePrdFromRoadmap(
   projectId: string,
@@ -270,7 +545,8 @@ Format your output as a JSON object with the following exact keys. Each value mu
   "decisions_log": "| Date | Decision | Rationale | Decided By |\\n|---|---|---|---|\\n| [Date] | [Decision] | [Why] | [Owner] |",
   "related_documents_approvals": "### Approval Matrix\\n| Role | Name | Status | Date |\\n|---|---|---|---|\\n| PM | [Name] | Pending | |\\n\\n### Related Docs\\n- Strategy, Roadmap, Research"
 }
-CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.`
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.
+CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include a Google Search link that the user can click to instantly verify your claim (e.g., [Verify on Google](https://www.google.com/search?q=Your+Search+Query)) for any claims, statistics, market sizes, or references to external data.`
 
     const parsedResult = await generateStructuredJson<Record<string, string>>({
       systemPrompt,
@@ -959,7 +1235,8 @@ Format your output as a JSON object with ALL of the following exact keys corresp
   "risk_review_schedule": "Frequency and format of risk reviews (e.g., Weekly Project Status Meetings).",
   "approval": "Approval sign-off table: | Role | Name | Date | Status |"
 }
-CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.`
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.
+CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include a Google Search link that the user can click to instantly verify your claim (e.g., [Verify on Google](https://www.google.com/search?q=Your+Search+Query)) for any claims, statistics, market sizes, or references to external data.`
 
     const parsedResult = await generateStructuredJson<Record<string, string>>({
       systemPrompt,

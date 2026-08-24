@@ -185,21 +185,7 @@ export default function DocumentHeader({
           </button>
         )}
 
-        {(hasEditAccess || generatedDoc) && !isSnapshot && template.document_type !== 'status_report' && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              if (!isPending) handleRegenerate()
-            }}
-            style={{ cursor: 'pointer' }}
-            disabled={isPending}
-            className="btn-primary text-xs px-3 py-1.5 inline-flex items-center"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isPending ? 'animate-spin' : ''}`} />
-            {isPending ? 'Regenerating...' : 'Regenerate'}
-          </button>
-        )}
+
 
         {/* More Actions Menu */}
         <div className="relative" ref={menuRef}>

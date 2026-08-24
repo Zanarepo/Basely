@@ -4,6 +4,9 @@ import React, { useEffect, useState } from 'react'
 import type { ProductStrategy, Persona } from '@/lib/product-strategy/types'
 import { createClient } from '@/utils/supabase/client'
 import { Loader2, Sparkles, Users, Globe, ShieldCheck, Award } from 'lucide-react'
+import { CompetitiveFeatureTable } from '@/components/dashboard/product/strategy/competitive/components/CompetitiveFeatureTable'
+import { CompetitorPricingMatrix } from '@/components/dashboard/product/strategy/competitive/components/CompetitorPricingMatrix'
+import { CompetitorStrategyMatrix } from '@/components/dashboard/product/strategy/competitive/components/CompetitorStrategyMatrix'
 
 interface ProductStrategyResolverProps {
   projectId: string
@@ -187,19 +190,87 @@ export function ProductStrategyResolver({ projectId, source }: ProductStrategyRe
       )}
 
       {/* Dynamic Custom Strategy Dimensions */}
-      {strategy.custom_attributes && Object.keys(strategy.custom_attributes).length > 0 && (
-        <div className="space-y-2 pt-2">
-          <h4 className="text-xs font-bold uppercase text-violet-600 dark:text-violet-400 tracking-wider">Additional Custom Dimensions & Columns</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {Object.entries(strategy.custom_attributes).map(([k, v]) => (
-              <div key={k} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
-                <h5 className="font-bold text-xs text-violet-700 dark:text-violet-300 uppercase tracking-wide">{k}</h5>
-                <p className="text-sm text-slate-800 dark:text-slate-200 mt-1 whitespace-pre-wrap">{v}</p>
+      {(() => {
+        const customAttributes = strategy.custom_attributes || {}
+        const competitiveFeatures = customAttributes.competitive_features || customAttributes.COMPETITIVE_FEATURES
+        const competitivePricing = customAttributes.competitive_pricing
+        const competitiveStrategy = customAttributes.competitive_strategy_uvp
+        const competitorA = customAttributes.competitor_a_name || 'Competitor A'
+        const competitorB = customAttributes.competitor_b_name || 'Competitor B'
+
+        const genericAttributes = Object.entries(customAttributes).filter(([k]) => 
+          !['competitive_features', 'COMPETITIVE_FEATURES', 'competitor_a_name', 'competitor_b_name', 'competitive_pricing', 'competitive_strategy_uvp'].includes(k)
+        )
+
+        return (
+          <>
+            {competitiveFeatures && Array.isArray(competitiveFeatures) && (
+              <div className="pt-4">
+                <CompetitiveFeatureTable
+                  features={competitiveFeatures}
+                  competitorAName={competitorA as string}
+                  setCompetitorAName={() => {}}
+                  competitorBName={competitorB as string}
+                  setCompetitorBName={() => {}}
+                  hasEditAccess={false}
+                  onAddFeature={() => {}}
+                  onDeleteFeature={() => {}}
+                  onUpdateFeature={() => {}}
+                  setIsDirty={() => {}}
+                />
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            )}
+
+            {competitivePricing && Array.isArray(competitivePricing) && (
+              <div className="pt-4">
+                <CompetitorPricingMatrix
+                  pricing={competitivePricing}
+                  competitorAName={competitorA as string}
+                  competitorBName={competitorB as string}
+                  hasEditAccess={false}
+                  onUpdate={() => {}}
+                  setIsDirty={() => {}}
+                />
+              </div>
+            )}
+
+            {competitiveStrategy && Array.isArray(competitiveStrategy) && (
+              <div className="pt-4">
+                <CompetitorStrategyMatrix
+                  strategies={competitiveStrategy}
+                  competitorAName={competitorA as string}
+                  competitorBName={competitorB as string}
+                  hasEditAccess={false}
+                  onUpdate={() => {}}
+                  setIsDirty={() => {}}
+                />
+              </div>
+            )}
+
+            {genericAttributes.length > 0 && (
+              <div className="space-y-2 pt-2">
+                <h4 className="text-xs font-bold uppercase text-violet-600 dark:text-violet-400 tracking-wider">Additional Custom Dimensions & Columns</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {genericAttributes.map(([k, v]) => (
+                    <div key={k} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
+                      <h5 className="font-bold text-xs text-violet-700 dark:text-violet-300 uppercase tracking-wide">{k}</h5>
+                      <div className="text-sm text-slate-800 dark:text-slate-200 mt-1 whitespace-pre-wrap">
+                        {typeof v === 'object' ? (
+                          <pre className="text-[10px] overflow-x-auto bg-slate-100 dark:bg-slate-900 p-2 rounded">
+                            {JSON.stringify(v, null, 2)}
+                          </pre>
+                        ) : (
+                          String(v)
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )
+      })()}
     </div>
   )
 }

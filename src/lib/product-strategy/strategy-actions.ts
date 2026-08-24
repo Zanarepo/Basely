@@ -42,6 +42,10 @@ export async function getProductStrategy(projectId: string, organizationId: stri
     return newStrategy as ProductStrategy
   }
 
+  if (data?.custom_attributes) {
+    Object.assign(data, data.custom_attributes)
+  }
+
   return data as ProductStrategy
 }
 
@@ -53,12 +57,40 @@ export async function saveProductStrategy(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Fetch existing first to preserve other custom_attributes
+  const { data: existing } = await supabase
+    .from('product_strategies')
+    .select('custom_attributes')
+    .eq('project_id', projectId)
+    .single()
+
+  const existingAttrs = existing?.custom_attributes || {}
+
+  // Merge payload keys that are not native columns into custom_attributes
+  const {
+    competitor_a_name,
+    competitor_b_name,
+    competitive_features,
+    custom_attributes,
+    ...nativePayload
+  } = payload as any
+
+  const mergedAttrs = {
+    ...existingAttrs,
+    ...(custom_attributes || {}),
+  }
+
+  if (competitor_a_name !== undefined) mergedAttrs.competitor_a_name = competitor_a_name
+  if (competitor_b_name !== undefined) mergedAttrs.competitor_b_name = competitor_b_name
+  if (competitive_features !== undefined) mergedAttrs.competitive_features = competitive_features
+
   const { data, error } = await supabase
     .from('product_strategies')
     .upsert({
       project_id: projectId,
       organization_id: organizationId,
-      ...payload,
+      ...nativePayload,
+      custom_attributes: mergedAttrs,
       created_by: user?.id || null,
       updated_at: new Date().toISOString()
     }, { onConflict: 'project_id' })

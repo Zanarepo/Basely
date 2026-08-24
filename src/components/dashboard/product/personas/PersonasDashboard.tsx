@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import type { Persona } from '@/lib/product-strategy/types'
-import { getPersonas, deletePersona } from '@/lib/product-strategy/persona-actions'
+import { getPersonas, deletePersona, autoExtractPersonasFromStrategy } from '@/lib/product-strategy/persona-actions'
 import { PersonaCard } from './PersonaCard'
 import { PersonaBuilderModal } from './PersonaBuilderModal'
 import { createClient } from '@/utils/supabase/client'
-import { Plus, Users, Filter, Search, Loader2 } from 'lucide-react'
+import { Plus, Users, Filter, Search, Loader2, Sparkles } from 'lucide-react'
 import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 import { PmDiscoveryWorkflowGuide } from '../discovery/PmDiscoveryWorkflowGuide'
 
@@ -24,6 +24,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
   
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPersona, setEditingPersona] = useState<Persona | null>(null)
+  const [isExtracting, setIsExtracting] = useState(false)
 
   const fetchPersonas = useCallback(async () => {
     setLoading(true)
@@ -84,6 +85,20 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
     })
   }
 
+  const handleAutoExtract = async () => {
+    if (!projectId) return
+    setIsExtracting(true)
+    const result = await autoExtractPersonasFromStrategy(organizationId, projectId)
+    setIsExtracting(false)
+    
+    if (result.success) {
+      // The realtime subscription will automatically pick up the new personas and refresh the list
+      alert(`Successfully auto-extracted ${result.count} personas from your strategy documents!`)
+    } else {
+      alert(`Failed to extract personas: ${result.error}`)
+    }
+  }
+
   // Filtering & Search
   const filteredPersonas = personas.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -117,15 +132,29 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
         </div>
 
         {hasEditAccess && (
-          <button
-            type="button"
-            onClick={handleCreateNew}
-            style={{ cursor: 'pointer' }}
-            className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-white bg-violet-500 hover:bg-violet-600 rounded-lg shadow hover:shadow-md transition-all duration-150 shrink-0"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Persona
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {projectId && (
+              <button
+                type="button"
+                onClick={handleAutoExtract}
+                disabled={isExtracting}
+                style={{ cursor: isExtracting ? 'wait' : 'pointer' }}
+                className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg shadow-sm hover:shadow transition-all duration-150 disabled:opacity-50"
+              >
+                {isExtracting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                Auto-Extract Personas
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleCreateNew}
+              style={{ cursor: 'pointer' }}
+              className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-white bg-violet-500 hover:bg-violet-600 rounded-lg shadow hover:shadow-md transition-all duration-150"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Persona
+            </button>
+          </div>
         )}
       </div>
 
@@ -193,15 +222,29 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
               : 'Create your first customer persona or empathy map to establish clear user alignment for project deliverables.'}
           </p>
           {hasEditAccess && !searchTerm && filterScope === 'all' && (
-            <button
-              type="button"
-              onClick={handleCreateNew}
-              style={{ cursor: 'pointer' }}
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-lg shadow transition-colors"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create First Persona
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              {projectId && (
+                <button
+                  type="button"
+                  onClick={handleAutoExtract}
+                  disabled={isExtracting}
+                  style={{ cursor: isExtracting ? 'wait' : 'pointer' }}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg shadow-sm transition-colors disabled:opacity-50"
+                >
+                  {isExtracting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                  Auto-Extract Personas
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleCreateNew}
+                style={{ cursor: 'pointer' }}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-lg shadow transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create First Persona
+              </button>
+            </div>
           )}
         </div>
       ) : (

@@ -71,8 +71,8 @@ export default function FloatingReferenceLinksWidget({
     <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2 animate-fade-in pointer-events-auto">
       {/* Expanded Links Popover Card */}
       {isOpen && (
-        <div className="w-80 sm:w-96 max-h-96 bg-app-surface border border-app-border rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all duration-200 border-violet-500/30">
-          <div className="p-3.5 bg-app-muted-surface border-b border-app-border flex items-center justify-between">
+        <div className="w-80 sm:w-96 max-h-96 bg-white dark:bg-slate-900 border border-app-border rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all duration-200 border-violet-500/30">
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-800 border-b border-app-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded-lg bg-violet-500/10 text-violet-500">
                 <Link2 className="w-4 h-4" />

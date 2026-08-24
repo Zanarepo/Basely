@@ -12,7 +12,8 @@ import { useDocumentSections } from './hooks/useDocumentSections'
 import { useDocumentPersistence } from './hooks/useDocumentPersistence'
 import DocumentStatsRibbon from './components/DocumentStatsRibbon'
 import DocumentPropertiesHeader from './components/DocumentPropertiesHeader'
-import { Compass, Kanban, FileText, Globe, Table } from 'lucide-react'
+import { AlertTriangle, Download, RefreshCw, Save, Clock, ChevronDown, Check, Loader2, Play, FileText, ArrowLeft, MoreHorizontal, Compass, Kanban, Bot, Search, Target, Briefcase, Zap, Sparkles, Table, Globe } from 'lucide-react'
+import { reconcileDocument } from '@/lib/documents/reconcile-actions'
 
 // Lazy-load heavy components that aren't needed for initial render
 const DocumentHistoryModal = dynamic(() => import('./DocumentHistoryModal'), { ssr: false })
@@ -72,6 +73,7 @@ export default function DocumentEngine({
   const [isDirty, setIsDirty] = useState(false)
   const [newSectionTitle, setNewSectionTitle] = useState('')
   const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [isReconciling, setIsReconciling] = useState(false)
   const [roadmapViewMode, setRoadmapViewMode] = useState<'document' | 'kanban'>('document')
   const [competitiveViewMode, setCompetitiveViewMode] = useState<'document' | 'matrix'>('document')
 
@@ -181,6 +183,26 @@ export default function DocumentEngine({
     setIsDirty(true)
   }
 
+  const handleReconcile = async () => {
+    if (!generatedDoc) return
+    setIsReconciling(true)
+    startTransition(async () => {
+      try {
+        const res = await reconcileDocument(generatedDoc.id, projectId)
+        if (!res.success) {
+          onShowToast?.('error', res.error || 'Failed to reconcile document')
+          return
+        }
+        onShowToast?.('success', 'Document successfully reconciled with latest data!')
+        onSaveSuccess?.() // Trigger a re-fetch of the document to get the latest data
+      } catch (err: any) {
+        onShowToast?.('error', err.message || 'Error')
+      } finally {
+        setIsReconciling(false)
+      }
+    })
+  }
+
   return (
     <div className="h-full flex flex-col bg-app-surface border border-app-border rounded-xl shadow-sm overflow-hidden">
       <DocumentHeader
@@ -205,6 +227,30 @@ export default function DocumentEngine({
         customDocumentTitle={freeText['__document_title_override']}
         onDocumentTitleChange={handleDocumentTitleChange}
       />
+
+      {generatedDoc?.is_stale && !isSnapshot && hasEditAccess && (
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-3 bg-orange-50 dark:bg-orange-950/20 border-b border-orange-200 dark:border-orange-900/30">
+          <div className="flex items-start sm:items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5 sm:mt-0" />
+            <div>
+              <p className="text-sm font-semibold text-orange-900 dark:text-orange-200">This document is out of sync with the project's active data workspaces.</p>
+              {generatedDoc.stale_reason && (
+                <p className="text-xs text-orange-700 dark:text-orange-400 mt-0.5">Reason: {generatedDoc.stale_reason}</p>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            style={{ cursor: 'pointer' }}
+            onClick={handleReconcile}
+            disabled={isReconciling}
+            className="shrink-0 inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-orange-700 bg-white dark:bg-orange-900/20 border border-orange-200 dark:border-orange-500/30 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/40 shadow-sm transition-all disabled:opacity-50"
+          >
+            {isReconciling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            Auto-Reconcile with AI
+          </button>
+        </div>
+      )}
 
       {/* Roadmap View Mode Switcher Toggle Bar */}
       {isRoadmapDocument && (
@@ -340,16 +386,28 @@ export default function DocumentEngine({
             {isCompetitiveDocument && (
               <MarketResearchChainBanner
                 projectId={projectId}
+                organizationId={projectContext?.organization_id || ''}
+                templateId={template.id}
                 freeText={freeText}
                 onShowToast={onShowToast}
+                onGenerated={(data) => {
+                  setFreeText(prev => ({...prev, ...data}))
+                  setIsDirty(true)
+                }}
               />
             )}
 
             {template.document_type === 'product_strategy_document' && (
               <StrategyChainBanner
                 projectId={projectId}
+                organizationId={projectContext?.organization_id || ''}
+                templateId={template.id}
                 freeText={freeText}
                 onShowToast={onShowToast}
+                onGenerated={(data) => {
+                  setFreeText(prev => ({...prev, ...data}))
+                  setIsDirty(true)
+                }}
               />
             )}
 
@@ -399,7 +457,10 @@ export default function DocumentEngine({
                 projectId={projectId}
                 organizationId={projectContext?.organization_id || ''}
                 template={template}
-                onGenerated={(data) => setFreeText(prev => ({...prev, ...data}))}
+                onGenerated={(data) => {
+                  setFreeText(prev => ({...prev, ...data}))
+                  setIsDirty(true)
+                }}
                 onShowToast={onShowToast}
               />
             )}
@@ -411,7 +472,10 @@ export default function DocumentEngine({
                   projectId={projectId}
                   organizationId={projectContext?.organization_id || ''}
                   template={template}
-                  onGenerated={(data) => setFreeText(prev => ({...prev, ...data}))}
+                  onGenerated={(data) => {
+                    setFreeText(prev => ({...prev, ...data}))
+                    setIsDirty(true)
+                  }}
                   onShowToast={onShowToast}
                 />
                 <ScopeToRiceAutomationBanner
@@ -444,7 +508,10 @@ export default function DocumentEngine({
             {template.document_type === 'status_report' && !isSnapshot && hasEditAccess && (
               <AiStatusReportBanner
                 projectId={projectId}
-                onGenerated={(data) => setFreeText(prev => ({ ...prev, ...data }))}
+                onGenerated={(data) => {
+                  setFreeText(prev => ({ ...prev, ...data }))
+                  setIsDirty(true)
+                }}
                 onShowToast={onShowToast}
               />
             )}
@@ -454,7 +521,10 @@ export default function DocumentEngine({
               <AiClosureSynthesisBanner
                 projectId={projectId}
                 docType={template.document_type}
-                onGenerated={(data) => setFreeText(prev => ({ ...prev, ...data }))}
+                onGenerated={(data) => {
+                  setFreeText(prev => ({ ...prev, ...data }))
+                  setIsDirty(true)
+                }}
                 onShowToast={onShowToast}
               />
             )}

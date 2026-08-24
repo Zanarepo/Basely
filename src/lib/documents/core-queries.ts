@@ -59,6 +59,8 @@ export async function getGeneratedDocument(
 
   if (error || !data) return null
 
+  console.log(`[getGeneratedDocument] fetched doc ${data.id} for project ${projectId}. is_stale=${data.is_stale}`);
+
   return {
     id: data.id,
     project_id: data.project_id,
@@ -71,6 +73,8 @@ export async function getGeneratedDocument(
     generated_at: data.generated_at,
     created_at: data.created_at,
     updated_at: data.updated_at,
+    is_stale: data.is_stale,
+    stale_reason: data.stale_reason,
   }
 }
 

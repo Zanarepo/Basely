@@ -18,13 +18,13 @@ export function CompetitiveHeaderBanner({
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800 mb-3">
             <Compass className="w-3.5 h-3.5 text-violet-500" />
-            <span>COMPETITIVE BENCHMARKING ENGINE</span>
+            <span>COMPETITIVE BENCHMARK</span>
           </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
-            Competitive Intelligence & Positioning Studio
+            Competitive Analysis Workspace
           </h1>
           <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl font-medium">
-            Deconstruct competitor capabilities, feature parity, pricing tiers, and strategic defensibility moats vs key industry rivals.
+            Compare your product against key competitors to identify feature gaps and strategic advantages.
           </p>
         </div>
 
@@ -45,7 +45,7 @@ export function CompetitiveHeaderBanner({
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4 text-violet-200" />
-                  <span>Save Intelligence Data</span>
+                  <span>Save Matrix</span>
                 </>
               )}
             </button>

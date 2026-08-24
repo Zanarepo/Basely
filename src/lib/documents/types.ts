@@ -27,4 +27,6 @@ export type GeneratedDocument = {
   generated_at: string
   created_at: string
   updated_at: string
+  is_stale?: boolean
+  stale_reason?: string
 }

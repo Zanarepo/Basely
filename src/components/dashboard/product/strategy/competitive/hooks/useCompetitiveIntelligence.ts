@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { getProductStrategy, saveProductStrategy } from '@/lib/product-strategy/strategy-actions'
+import { generateCompetitiveMatrix } from '@/lib/product-strategy/competitive-actions'
 import type { CompetitiveMoat } from '@/lib/product-strategy/types'
-import { CompetitorFeature } from '../constants/types'
-import { DEFAULT_COMPETITIVE_FEATURES } from '../constants/defaultFeatures'
+import { CompetitorFeature, CompetitorPricingItem, CompetitorStrategyItem } from '../constants/types'
+import { DEFAULT_COMPETITIVE_FEATURES, DEFAULT_COMPETITIVE_PRICING, DEFAULT_COMPETITIVE_STRATEGY } from '../constants/defaultFeatures'
 
 interface UseCompetitiveIntelligenceProps {
   projectId: string
@@ -17,12 +18,15 @@ export function useCompetitiveIntelligence({
 }: UseCompetitiveIntelligenceProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [generating, setGenerating] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
 
   const [competitorAName, setCompetitorAName] = useState('Competitor Alpha')
   const [competitorBName, setCompetitorBName] = useState('Competitor Beta')
   const [moats, setMoats] = useState<CompetitiveMoat[]>([])
   const [features, setFeatures] = useState<CompetitorFeature[]>(DEFAULT_COMPETITIVE_FEATURES)
+  const [pricing, setPricing] = useState<CompetitorPricingItem[]>(DEFAULT_COMPETITIVE_PRICING)
+  const [strategies, setStrategies] = useState<CompetitorStrategyItem[]>(DEFAULT_COMPETITIVE_STRATEGY)
 
   useEffect(() => {
     async function loadData() {
@@ -35,6 +39,15 @@ export function useCompetitiveIntelligence({
           }
           if ((strategy as any).competitive_features && Array.isArray((strategy as any).competitive_features)) {
             setFeatures((strategy as any).competitive_features)
+          }
+          if ((strategy as any).custom_attributes) {
+            const custom = (strategy as any).custom_attributes
+            if (custom.competitive_pricing && Array.isArray(custom.competitive_pricing)) {
+              setPricing(custom.competitive_pricing)
+            }
+            if (custom.competitive_strategy_uvp && Array.isArray(custom.competitive_strategy_uvp)) {
+              setStrategies(custom.competitive_strategy_uvp)
+            }
           }
           if ((strategy as any).competitor_a_name) {
             setCompetitorAName((strategy as any).competitor_a_name)
@@ -57,9 +70,13 @@ export function useCompetitiveIntelligence({
     try {
       await saveProductStrategy(projectId, organizationId, {
         competitive_moats: moats,
-        competitive_features: features,
         competitor_a_name: competitorAName,
         competitor_b_name: competitorBName,
+        custom_attributes: {
+          competitive_features: features,
+          competitive_pricing: pricing,
+          competitive_strategy_uvp: strategies
+        }
       } as any)
       setIsDirty(false)
     } catch (err) {
@@ -87,6 +104,43 @@ export function useCompetitiveIntelligence({
     setIsDirty(true)
   }
 
+  const autoGenerateMatrix = async () => {
+    setGenerating(true)
+    try {
+      const result = await generateCompetitiveMatrix(projectId, organizationId)
+      if (result.success && result.features) {
+        if (result.competitorA) setCompetitorAName(result.competitorA)
+        if (result.competitorB) setCompetitorBName(result.competitorB)
+        setFeatures(result.features)
+        
+        if (result.pricing) setPricing(result.pricing)
+        if (result.strategy) setStrategies(result.strategy)
+        if (result.moats) setMoats(result.moats)
+        
+        // Auto-save the AI generated data so it persists on refresh
+        await saveProductStrategy(projectId, organizationId, {
+          competitor_a_name: result.competitorA || competitorAName,
+          competitor_b_name: result.competitorB || competitorBName,
+          custom_attributes: {
+            competitive_features: result.features,
+            competitive_pricing: result.pricing || pricing,
+            competitive_strategy_uvp: result.strategy || strategies
+          },
+          competitive_moats: result.moats || moats
+        } as any)
+        
+        setIsDirty(false)
+      } else {
+        throw new Error(result.error || 'Failed to auto-generate matrix')
+      }
+    } catch (err) {
+      console.error('[Competitive Intelligence Auto-Generate Error]:', err)
+      throw err // Allow UI to catch and show toast
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   return {
     loading,
     saving,
@@ -103,5 +157,11 @@ export function useCompetitiveIntelligence({
     handleSave,
     handleAddFeature,
     handleDeleteFeature,
+    autoGenerateMatrix,
+    generating,
+    pricing,
+    setPricing,
+    strategies,
+    setStrategies,
   }
 }

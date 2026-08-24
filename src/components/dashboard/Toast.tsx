@@ -38,11 +38,12 @@ function ToastItem({
   onDismiss: () => void
 }) {
   useEffect(() => {
+    const duration = toast.type === 'error' ? 8000 : 4000
     const timer = setTimeout(() => {
       onDismiss()
-    }, 4000)
+    }, duration)
     return () => clearTimeout(timer)
-  }, [onDismiss])
+  }, [onDismiss, toast.type])
 
   return (
     <div

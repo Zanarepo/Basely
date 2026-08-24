@@ -177,13 +177,25 @@ export default function ProjectDocument({
 
     if (documentType === 'product_requirements_document') {
       setIsPrdModalOpen(true)
-    } else if (documentType === 'product_strategy_document') {
+      return
+    }
+    
+    if (documentType === 'product_strategy_document') {
       setIsStrategyModalOpen(true)
-    } else if (documentType === 'charter') {
+      return
+    }
+    
+    if (documentType === 'charter') {
       setIsCharterModalOpen(true)
-    } else if (documentType === 'stakeholder_register') {
+      return
+    }
+    
+    if (documentType === 'stakeholder_register') {
       setIsStakeholderModalOpen(true)
-    } else if (documentType === 'risk_register') {
+      return
+    }
+    
+    if (documentType === 'risk_register') {
       setIsRiskModalOpen(true)
       return
     }
@@ -201,13 +213,19 @@ export default function ProjectDocument({
     if (documentType === 'handover_document') {
       setIsHandoverModalOpen(true)
       return
-    } else if (documentType === 'roadmap_workspace' || documentType === 'product_roadmap_document' || documentType === 'product_roadmap') {
-      setIsRoadmapModalOpen(true)
-    } else if (isMarketResearchType) {
-      setIsMarketResearchModalOpen(true)
-    } else {
-      handleShowSelector()
     }
+    
+    if (documentType === 'roadmap_workspace' || documentType === 'product_roadmap_document' || documentType === 'product_roadmap') {
+      setIsRoadmapModalOpen(true)
+      return
+    }
+    
+    if (isMarketResearchType) {
+      setIsMarketResearchModalOpen(true)
+      return
+    }
+    
+    handleShowSelector()
   }
 
   const handleDocumentSaved = async () => {

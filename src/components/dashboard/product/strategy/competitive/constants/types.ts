@@ -14,3 +14,19 @@ export interface CompetitiveIntelligenceDashboardProps {
   organizationId: string
   hasEditAccess?: boolean
 }
+
+export interface CompetitorPricingItem {
+  id: string
+  dimensionName: string // e.g., Pricing Model, Starting Price, Average ACV
+  ourProduct: string
+  competitorA: string
+  competitorB: string
+}
+
+export interface CompetitorStrategyItem {
+  id: string
+  dimensionName: string // e.g., Primary UVP, Target ICP Focus, Go-To-Market Motion
+  ourProduct: string
+  competitorA: string
+  competitorB: string
+}

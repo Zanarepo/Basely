@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
+import { markDocumentsStale } from '../documents/reconcile-actions'
 import type { Persona } from './types'
 
 export async function getPersonas(organizationId: string, projectId?: string): Promise<Persona[]> {
@@ -43,7 +44,9 @@ export async function createPersona(payload: Partial<Persona>): Promise<{ ok: bo
 
   if (payload.project_id) {
     await logProjectActivity(payload.project_id, 'persona' as any, data.id, 'created', { name: data.name, role: data.role_title })
+    await markDocumentsStale(payload.project_id, payload.organization_id || '', 'Personas document was manually updated.')
     revalidatePath(`/dashboard/projects/${payload.project_id}`)
+    revalidatePath('/dashboard', 'layout')
   }
   
   return { ok: true, data: data as Persona }
@@ -66,7 +69,9 @@ export async function updatePersona(id: string, payload: Partial<Persona>): Prom
 
   if (data?.project_id) {
     await logProjectActivity(data.project_id, 'persona' as any, data.id, 'updated', { name: data.name })
+    await markDocumentsStale(data.project_id, data.organization_id || '', 'Personas document was manually updated.')
     revalidatePath(`/dashboard/projects/${data.project_id}`)
+    revalidatePath('/dashboard', 'layout')
   }
 
   return { ok: true, data: data as Persona }
@@ -87,7 +92,9 @@ export async function deletePersona(id: string, projectId?: string | null): Prom
 
   if (projectId) {
     await logProjectActivity(projectId, 'persona' as any, id, 'deleted', {})
+    await markDocumentsStale(projectId, '', 'A persona was deleted from the document.')
     revalidatePath(`/dashboard/projects/${projectId}`)
+    revalidatePath('/dashboard', 'layout')
   }
 
   return { ok: true }
@@ -184,6 +191,112 @@ Output exactly this JSON structure:
 
   } catch (error: any) {
     console.error('❌ [Persona Enrich] Error:', error)
+    return { success: false, error: error.message || 'An unexpected error occurred.' }
+  }
+}
+
+export async function autoExtractPersonasFromStrategy(
+  organizationId: string,
+  projectId: string
+): Promise<{ success: boolean; error?: string; count?: number }> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    // 1. Fetch relevant strategy documents
+    const { data: docs, error: dErr } = await supabase
+      .from('generated_documents')
+      .select('document_type, free_text_content')
+      .eq('project_id', projectId)
+      .eq('is_snapshot', false)
+      .in('document_type', [
+        'product_strategy_document', 
+        'market_research_report', 
+        'market_research_workspace',
+        'charter',
+        'business_case',
+        'feasibility_study'
+      ])
+      .order('created_at', { ascending: false })
+
+    if (dErr) return { success: false, error: dErr.message }
+    if (!docs || docs.length === 0) {
+      return { success: false, error: 'No Strategy or Project Initiation documents found. Please generate a Market Research, Project Charter, or Business Case document first.' }
+    }
+
+    // Combine contents
+    const combinedContent = docs
+      .map(d => `[${d.document_type.toUpperCase()}]\n${JSON.stringify(d.free_text_content)}`)
+      .join('\n\n')
+
+    // 2. Check for Praz-AI availability
+    const hasAiKey = Boolean(process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_API_KEY || process.env.OPENAI_API_KEY)
+    if (!hasAiKey) {
+      return { success: false, error: 'Praz-AI features are not configured. Please add an API key.' }
+    }
+
+    // 3. Generate JSON using Praz-AI
+    const { generateStructuredJson } = await import('@/lib/ai/ai-provider-router')
+    
+    console.log(`🤖 [Persona Extract] Analyzing ${docs.length} documents for ${projectId}`)
+    
+    const result = await generateStructuredJson<{
+      personas: Array<{
+        name: string
+        role_title: string
+        jtbd_statement: string
+        motivations: string
+        pain_points: string
+      }>
+    }>({
+      systemPrompt: `You are an expert Product Manager and UX Researcher. 
+Your task is to extract Target Market Segmentation and Persona data from the provided Product Strategy and Market Research documents.
+Identify both Primary and Secondary personas mentioned in the text. For each persona, infer or extract their core Jobs To Be Done (JTBD), motivations, and pain points based on the document context.
+
+Output exactly this JSON structure:
+{
+  "personas": [
+    {
+      "name": "Persona Name (e.g. Enterprise Executive)",
+      "role_title": "Job Role (e.g. VP of Sales)",
+      "jtbd_statement": "When I am [context], I want to [motivation], so I can [expected outcome].",
+      "motivations": "3-4 concise sentences summarizing what drives this persona.",
+      "pain_points": "3-4 concise sentences summarizing their biggest frustrations and problems."
+    }
+  ]
+}`,
+      userPrompt: `STRATEGY & RESEARCH DOCUMENTS:\n\n${combinedContent}`
+    })
+
+    if (!result.personas || result.personas.length === 0) {
+      return { success: false, error: 'No personas could be identified from the provided documents.' }
+    }
+
+    // 4. Insert into database
+    const insertPayload = result.personas.map(p => ({
+      ...p,
+      organization_id: organizationId,
+      project_id: projectId,
+      created_by: user.id
+    }))
+
+    const { error: insertErr } = await supabase
+      .from('personas')
+      .insert(insertPayload)
+
+    if (insertErr) return { success: false, error: insertErr.message }
+
+    await logProjectActivity(projectId, 'persona' as any, 'bulk', 'created', { note: `Auto-extracted ${result.personas.length} personas from strategy docs` })
+    await markDocumentsStale(projectId, organizationId, 'Personas were auto-extracted from strategy.')
+    revalidatePath(`/dashboard/projects/${projectId}`)
+    revalidatePath('/dashboard', 'layout')
+
+    return { success: true, count: result.personas.length }
+
+  } catch (error: any) {
+    console.error('❌ [Persona Extract] Error:', error)
     return { success: false, error: error.message || 'An unexpected error occurred.' }
   }
 }

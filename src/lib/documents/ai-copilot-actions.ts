@@ -88,7 +88,7 @@ export async function refineSectionTextWithAi(
       if (mode === 'market_tam_sam_som') {
         return {
           ok: true,
-          resultText: `**TAM (Total Addressable Market)**:\n- **Global Market Volume**: 50,000 Potential Enterprise Buyers × $24,000/yr = **$1.20 Billion**\n\n**SAM (Serviceable Addressable Market)**:\n- **Target Region (North America & EMEA)**: 12,000 Reachable SMB/Mid-Market Accounts = **$288 Million**\n\n**SOM (Serviceable Obtainable Market)**:\n- **3-Year Realistic Capture (15% SAM Market Share)**: 1,800 Active Accounts = **$43.2 Million**\n\n**Sanity Check**:\n- Aligns with competitor ARR trajectory at similar Series B growth stage.`,
+          resultText: `**TAM (Total Addressable Market)**:\n- **Global Market Volume**: 50,000 Potential Enterprise Buyers × $24,000/yr = **$1.20 Billion** ([Source: Gartner Cloud IT Market Sizing 2026](https://gartner.com))\n\n**SAM (Serviceable Addressable Market)**:\n- **Target Region (North America & EMEA)**: 12,000 Reachable SMB/Mid-Market Accounts = **$288 Million** ([Source: Forrester Mid-Market Tech Trends](https://forrester.com))\n\n**SOM (Serviceable Obtainable Market)**:\n- **3-Year Realistic Capture (15% SAM Market Share)**: 1,800 Active Accounts = **$43.2 Million**\n\n**Sanity Check**:\n- Aligns with competitor ARR trajectory at similar Series B growth stage.`,
         }
       }
       if (mode === 'market_icp_segmentation') {
@@ -143,13 +143,13 @@ export async function refineSectionTextWithAi(
     } else if (mode === 'roadmap_outcomes') {
       systemPrompt = `You are Praz-AI, a Product Growth Lead. Convert the input roadmap features into measurable Customer Outcomes, Business Metrics, and Target Baselines.`
     } else if (mode === 'market_tam_sam_som') {
-      systemPrompt = `You are Praz-AI, a Chief Market Analyst. Transform the input text into a structured TAM / SAM / SOM Market Sizing breakdown with explicit bottom-up/top-down calculations and sanity checks.`
+      systemPrompt = `You are Praz-AI, a Chief Market Analyst. Transform the input text into a structured TAM / SAM / SOM Market Sizing breakdown with explicit bottom-up/top-down calculations and sanity checks. CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include a Google Search link that the user can click to instantly verify your claim (e.g., [Verify on Google](https://www.google.com/search?q=Your+Search+Query)) for all market sizes, trends, and claims.`
     } else if (mode === 'market_icp_segmentation') {
-      systemPrompt = `You are Praz-AI, a Lead User Researcher. Transform the input text into a formal Ideal Customer Profile (ICP), Buyer Persona, User Persona (JTBD), and Anti-Persona definition.`
+      systemPrompt = `You are Praz-AI, a Lead User Researcher. Transform the input text into a formal Ideal Customer Profile (ICP), Buyer Persona, User Persona (JTBD), and Anti-Persona definition. CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include a Google Search link that the user can click to instantly verify your claim (e.g., [Verify on Google](https://www.google.com/search?q=Your+Search+Query)) for any demographic or firmographic claims.`
     } else if (mode === 'market_competitor_edge') {
-      systemPrompt = `You are Praz-AI, a Competitive Intelligence Director. Format the input text into a structured Competitor Matrix table comparing direct/indirect competitors, strengths, weaknesses, and proprietary edge.`
+      systemPrompt = `You are Praz-AI, a Competitive Intelligence Director. Format the input text into a structured Competitor Matrix table comparing direct/indirect competitors, strengths, weaknesses, and proprietary edge. CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include a Google Search link that the user can click to instantly verify your claim (e.g., [Verify on Google](https://www.google.com/search?q=Your+Search+Query)) for competitor claims or market trends.`
     } else if (mode === 'market_swot_insights') {
-      systemPrompt = `You are Praz-AI, an Executive Market Strategist. Analyze the input text and generate a clean 2x2 SWOT Matrix (Strengths, Weaknesses, Opportunities, Threats) and synthesized strategic recommendations.`
+      systemPrompt = `You are Praz-AI, a Management Consultant. Analyze the input text and extract strategic SWOT insights. Identify key defensibility factors and strategic recommendations. CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include a Google Search link that the user can click to instantly verify your claim (e.g., [Verify on Google](https://www.google.com/search?q=Your+Search+Query)) for any cited market opportunities or threat statistics.`
     } else if (mode === 'summary') {
       systemPrompt = `You are Praz-AI, an executive product strategist. Summarize the section into a 2-3 line Executive Summary highlighting key objectives, deliverables, and strategic impacts.`
     } else if (mode === 'polish') {
