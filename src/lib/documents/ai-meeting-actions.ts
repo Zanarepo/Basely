@@ -48,9 +48,6 @@ export async function extractMeetingNotesWithAiAction(
     const isEnterprise = sub.tierId === 'enterprise'
     const isPremium = sub.tierId === 'premium'
 
-    if (!isEnterprise && !isPremium) {
-      return { ok: false, error: 'Meeting Praz-AI is only available on Premium and Enterprise plans.' }
-    }
 
     if (isPremium) {
       const aiEnabled = await getOrganizationAiEnabled(organizationId)

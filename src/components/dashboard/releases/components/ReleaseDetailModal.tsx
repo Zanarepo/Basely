@@ -21,6 +21,7 @@ interface ReleaseDetailModalProps {
   isOpen: boolean
   onClose: () => void
   release: Release | null
+  organizationId: string
   methodology?: string | null
   hasEditAccess: boolean
   scopeItems: ReleaseScopeItem[]
@@ -63,6 +64,7 @@ export function ReleaseDetailModal({
   isOpen,
   onClose,
   release,
+  organizationId,
   methodology,
   hasEditAccess,
   scopeItems,
@@ -234,6 +236,7 @@ export function ReleaseDetailModal({
           {activeView === 'retrospective' && (
             <LessonsLearnedEditor
               projectId={release.projectId}
+              organizationId={organizationId}
               hasEditAccess={hasEditAccess}
               currentLifecycle="Executing" // Bypass gating via releaseId
               releaseId={release.id}

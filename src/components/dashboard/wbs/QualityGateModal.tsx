@@ -18,6 +18,7 @@ interface QualityGateModalProps {
   category: string
   onClose: () => void
   onSuccess: () => void
+  onExceptionRaised?: () => void
 }
 
 export function QualityGateModal({
@@ -26,7 +27,8 @@ export function QualityGateModal({
   standards,
   category,
   onClose,
-  onSuccess
+  onSuccess,
+  onExceptionRaised
 }: QualityGateModalProps) {
   const [statuses, setStatuses] = useState<Record<string, { status: 'met' | 'na'; reason?: string }>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -78,7 +80,8 @@ export function QualityGateModal({
       const res = await raiseQualityException(projectId, elementId, exceptionReason)
 
       if (res.ok) {
-        onClose() // Exception raised, task remains at 99%, modal closes
+        if (onExceptionRaised) onExceptionRaised()
+        else onClose()
       } else {
         setErrorMsg(res.error || 'Failed to raise exception')
       }

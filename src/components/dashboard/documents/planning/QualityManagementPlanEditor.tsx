@@ -11,13 +11,17 @@ import StructuredEditableField from '@/components/dashboard/documents/components
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { markdownComponents } from '@/components/dashboard/documents/components/structured/markdownComponents'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 export function QualityManagementPlanEditor({ 
   projectId,
+  organizationId,
   hasEditAccess,
   onShowToast
 }: { 
   projectId: string
+  organizationId: string
   hasEditAccess?: boolean
   onShowToast?: (type: 'error' | 'success' | 'info', msg: string) => void
 }) {
@@ -29,11 +33,17 @@ export function QualityManagementPlanEditor({
   
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedStandard, setSelectedStandard] = useState<QualityStandard | null>(null)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const handleGenerateAI = async () => {
+    if (isGenerating || isChecking) return
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
+
     setIsGenerating(true)
     const res = await generateQualityPlanFromWbs(projectId)
     if (res.ok) {
+      await recordUsage('generations')
       onShowToast?.('success', 'Generated successfully!')
       refresh()
     } else {
@@ -204,6 +214,7 @@ export function QualityManagementPlanEditor({
           onClose={() => setIsModalOpen(false)}
         />
       )}
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

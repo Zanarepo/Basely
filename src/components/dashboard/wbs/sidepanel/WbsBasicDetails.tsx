@@ -4,6 +4,8 @@ import type { WbsStatus, ChecklistItem } from '@/lib/wbs/constants'
 import { WbsChecklist } from './WbsChecklist'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 import { TerminologyDict } from '@/utils/terminology'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 type WbsBasicDetailsProps = {
   name: string
@@ -41,6 +43,7 @@ type WbsBasicDetailsProps = {
   onAutoSavePriority?: (val: string | null) => void
   onAutoSaveStatus?: (val: WbsStatus) => Promise<void> | void
   terms: TerminologyDict
+  organizationId: string
 }
 
 export function WbsBasicDetails({
@@ -68,16 +71,21 @@ export function WbsBasicDetails({
   onAutoSaveEdgeCases,
   onAutoSavePriority,
   onAutoSaveStatus,
-  terms
+  terms,
+  organizationId
 }: WbsBasicDetailsProps) {
   const [isAddingStatus, setIsAddingStatus] = useState(false)
   const [newStatusName, setNewStatusName] = useState('')
   const [isScopeOpen, setIsScopeOpen] = useState(false)
   const [isGeneratingAi, setIsGeneratingAi] = useState(false)
   const [isAutoSavingStatus, setIsAutoSavingStatus] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const handleAiGenerateScope = async () => {
-    if (!name.trim()) return
+    if (!name.trim() || isGeneratingAi || isChecking) return
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
+
     setIsGeneratingAi(true)
     try {
       const { generateScopeDetailsWithAiAction } = await import('@/lib/wbs/ai-actions')
@@ -104,6 +112,7 @@ export function WbsBasicDetails({
           setAcceptanceCriteriaData(newCrit)
           onAutoSaveCriteria?.(newCrit)
         }
+        await recordUsage('generations')
       } else {
         console.error('Failed to generate scope details:', result.error)
       }
@@ -380,6 +389,7 @@ export function WbsBasicDetails({
           </div>
         )}
       </div>
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </>
   )
 }

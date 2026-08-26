@@ -44,7 +44,7 @@ export function ChangeRequestItem({ entry, onUpdateStatus, isManager, onDelete }
           )}
         </div>
         <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full capitalize ${getStatusBadge()}`}>
-          {entry.outcome}
+          {entry.outcome.replace(/_/g, ' ')}
         </span>
       </div>
 

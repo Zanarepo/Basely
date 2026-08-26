@@ -10,7 +10,7 @@ import {
 } from '@/lib/workspace/member-actions'
 import { deleteWorkspace } from '@/lib/workspace/actions'
 
-export type WorkspaceRole = 'Admin' | 'PM' | 'Team Member' | 'Viewer'
+export type WorkspaceRole = 'Admin' | 'PM' | 'Team Member' | 'Sponsor' | 'Viewer'
 
 export function useWorkspaceMembers(organizationId: string) {
   const router = useRouter()

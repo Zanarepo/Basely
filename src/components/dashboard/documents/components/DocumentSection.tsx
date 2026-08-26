@@ -210,6 +210,7 @@ export default function DocumentSection({
                 isDataBound={section.type === 'data_bound'}
                 placeholder={section.placeholder}
                 documentType={template.document_type}
+                organizationId={projectContext?.organization_id}
               />
             </div>
           )}

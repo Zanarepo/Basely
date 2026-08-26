@@ -70,6 +70,13 @@ export async function approveRequest(requestId: string, comment?: string) {
     } else if (actionType === 'schedule_baseline') {
       await approveScheduleBaseline(requestId, request, payload, comment)
       return { ok: true }
+    } else if (actionType === 'change_request') {
+      const { error: crErr } = await supabase
+        .from('change_request_log_entries')
+        .update({ outcome: 'approved' })
+        .eq('id', payload.log_entry_id)
+      
+      if (crErr) throw crErr
     } else {
       return { ok: false, error: 'Unsupported action type' }
     }
@@ -94,13 +101,13 @@ export async function approveRequest(requestId: string, comment?: string) {
       triggerType: 'approval_update',
       referenceEntityType: 'approval_request',
       referenceEntityId: requestId,
-      projectId: payload.baseline?.project_id,
+      projectId: payload.baseline?.project_id || payload.project_id,
       contentSummary: `Your ${actionType.replace('_', ' ')} request was approved.`,
       emailContext: {
         subject: 'Baseline Request Approved',
         title: 'Baseline Approved',
         message: `Your request for a ${actionType.replace('_', ' ')} has been approved by an admin.`,
-        actionUrl: `/dashboard/projects/${payload.baseline?.project_id}?tab=cost`
+        actionUrl: `/dashboard/projects/${payload.baseline?.project_id || payload.project_id}?tab=${actionType === 'change_request' ? 'documents' : 'cost'}`
       }
     })
 
@@ -119,8 +126,9 @@ export async function approveRequest(requestId: string, comment?: string) {
       )
     }
 
-    if (payload.baseline?.project_id) {
-      await logProjectActivity(payload.baseline.project_id, 'approval_request', requestId, 'approved', { action_type: actionType, comment: comment || '' })
+    const actProjectId = payload.baseline?.project_id || payload.project_id
+    if (actProjectId) {
+      await logProjectActivity(actProjectId, 'approval_request', requestId, 'approved', { action_type: actionType, comment: comment || '' })
     }
 
     revalidatePath('/dashboard')
@@ -169,9 +177,16 @@ export async function rejectRequest(requestId: string, comment?: string) {
         subject: 'Baseline Request Rejected',
         title: 'Baseline Rejected',
         message: `Your request has been rejected. Reason: ${comment || 'No reason provided.'}`,
-        actionUrl: `/dashboard/projects/${request.payload?.baseline?.project_id}?tab=${(request.approval_policies as any)?.action_type === 'schedule_baseline' ? 'gantt' : 'cost'}`
+        actionUrl: `/dashboard/projects/${request.payload?.baseline?.project_id || request.payload?.project_id}?tab=${(request.approval_policies as any)?.action_type === 'schedule_baseline' ? 'gantt' : 'cost'}`
       }
     })
+
+    if ((request.approval_policies as any)?.action_type === 'change_request' && request.payload?.log_entry_id) {
+      await supabase
+        .from('change_request_log_entries')
+        .update({ outcome: 'rejected' })
+        .eq('id', request.payload.log_entry_id)
+    }
 
     // Log governance event
     if ((request.approval_policies as any)?.organization_id) {
@@ -188,8 +203,9 @@ export async function rejectRequest(requestId: string, comment?: string) {
       )
     }
 
-    if (request.payload?.baseline?.project_id) {
-      await logProjectActivity(request.payload.baseline.project_id, 'approval_request', requestId, 'rejected', { 
+    const reqProjectId = request.payload?.baseline?.project_id || request.payload?.project_id
+    if (reqProjectId) {
+      await logProjectActivity(reqProjectId, 'approval_request', requestId, 'rejected', { 
         action_type: (request.approval_policies as any)?.action_type, 
         comment: comment || '' 
       })

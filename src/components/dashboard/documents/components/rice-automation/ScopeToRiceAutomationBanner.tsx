@@ -5,6 +5,7 @@ import { Sparkles, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useScopeToRiceAutomation } from './useScopeToRiceAutomation'
 import PrdToRiceModal from '../PrdToRiceModal'
 import { AiHoverBannerWrapper } from '../AiHoverBannerWrapper'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 interface ScopeToRiceAutomationBannerProps {
   projectId: string
@@ -27,6 +28,7 @@ export default function ScopeToRiceAutomationBanner({
     isModalOpen,
     setIsModalOpen,
     handleGenerateRiceBacklog,
+    UpgradePromptModalProps
   } = useScopeToRiceAutomation({
     projectId,
     organizationId,
@@ -106,6 +108,7 @@ export default function ScopeToRiceAutomationBanner({
         items={generatedItems}
         projectId={projectId}
       />
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </>
   )
 }

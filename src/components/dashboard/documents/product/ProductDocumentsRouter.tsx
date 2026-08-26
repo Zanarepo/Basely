@@ -90,6 +90,7 @@ export function ProductDocumentsRouter({
       <div className="h-full overflow-y-auto pr-2">
         <RoadmapDashboard
           projectId={projectId}
+          organizationId={organizationId}
         />
       </div>
     )
@@ -112,6 +113,7 @@ export function ProductDocumentsRouter({
       <div className="h-full overflow-y-auto pr-2">
         <ReleasesWorkspace
           projectId={projectId}
+          organizationId={organizationId}
           hasEditAccess={hasEditAccess}
         />
       </div>

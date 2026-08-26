@@ -6,6 +6,8 @@ import { markdownComponents } from './structured/markdownComponents'
 import StructuredFieldToolbar from './structured/StructuredFieldToolbar'
 import SectionReferenceLinksBar from './structured/SectionReferenceLinksBar'
 import { refineSectionTextWithAi, AiCopilotMode } from '@/lib/documents/ai-copilot-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 interface StructuredEditableFieldProps {
   value: string
@@ -15,6 +17,7 @@ interface StructuredEditableFieldProps {
   isDataBound?: boolean
   placeholder?: string
   documentType?: string
+  organizationId?: string
 }
 
 export default function StructuredEditableField({
@@ -23,7 +26,8 @@ export default function StructuredEditableField({
   title,
   hasEditAccess,
   placeholder,
-  documentType
+  documentType,
+  organizationId
 }: StructuredEditableFieldProps) {
   // Coerce value to string once — AI chain actions may store objects in JSONB
   const safeValue = typeof value === 'string' ? value : (value == null ? '' : String(value))
@@ -31,6 +35,7 @@ export default function StructuredEditableField({
   const [isEditing, setIsEditing] = useState(!safeValue)
   const [fontSize, setFontSize] = useState<'text-xs' | 'text-sm' | 'text-base' | 'text-lg'>('text-sm')
   const [isAiLoading, setIsAiLoading] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId || '')
 
   const {
     textareaRef,
@@ -44,14 +49,26 @@ export default function StructuredEditableField({
   } = useRichTextFormatting(safeValue, onChange, isEditing)
 
   const handleRunAiCopilot = async (mode: AiCopilotMode, customInstruction?: string) => {
-    if (isAiLoading) return
+    if (isAiLoading || isChecking) return
     setIsAiLoading(true)
+
+    // Timeout safety net: if anything hangs, clear loading after 45s
+    const timeoutId = setTimeout(() => setIsAiLoading(false), 45_000)
+
     try {
+      const allowed = await checkLimit('max_ai_basic_actions')
+      if (!allowed) return
+
       const res = await refineSectionTextWithAi(safeValue, mode, customInstruction)
       if (res.ok && res.resultText) {
         onChange(res.resultText)
+        // Fire-and-forget: don't await so it never blocks the loading state
+        await recordUsage('basic_actions')
       }
+    } catch {
+      // errors are swallowed; loading state is always cleared below
     } finally {
+      clearTimeout(timeoutId)
       setIsAiLoading(false)
     }
   }
@@ -76,6 +93,7 @@ export default function StructuredEditableField({
         isAiLoading={isAiLoading}
         documentType={documentType}
         sectionTitle={title}
+        organizationId={organizationId}
       />
 
       {/* Editor or Markdown View */}
@@ -105,6 +123,7 @@ export default function StructuredEditableField({
 
       {/* Section Bottom Links Bar */}
       <SectionReferenceLinksBar value={value} />
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { generateCharterFromInitiation } from '@/lib/documents/charter-actions'
 import { DocumentTemplate } from '@/lib/documents/types'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
 
 interface UseAutoGenerateCharterProps {
   projectId: string
@@ -18,10 +19,15 @@ export function useAutoGenerateCharter({
   onGenerated
 }: UseAutoGenerateCharterProps) {
   const [isGenerating, setIsGenerating] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const handleAutoGenerate = async () => {
+    if (isGenerating || isChecking) return
     setIsGenerating(true)
     try {
+      const allowed = await checkLimit('max_ai_generations')
+      if (!allowed) return
+
       // Use the active template ID or fallback to the enterprise default
       const templateId = template?.id || 'enterprise_project_charter'
       
@@ -29,6 +35,7 @@ export function useAutoGenerateCharter({
       
       if (res.success && res.data) {
         onGenerated(res.data)
+        await recordUsage('generations')
         onShowToast('success', 'Project Charter successfully generated from Initiation documents!')
       } else {
         onShowToast('error', res.error || 'Failed to auto-generate charter.')
@@ -43,6 +50,7 @@ export function useAutoGenerateCharter({
 
   return {
     isGenerating,
-    handleAutoGenerate
+    handleAutoGenerate,
+    UpgradePromptModalProps
   }
 }

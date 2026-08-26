@@ -172,6 +172,7 @@ export default function DocumentsWorkspace({
                   <ClosureDocumentsRouter
                     documentType={selectedDocId as ClosureDocType}
                     projectId={projectId}
+                    organizationId={projectContext?.organization_id || ''}
                     hasEditAccess={hasEditAccess}
                     currentLifecycle={projectContext?.lifecycle_status || 'Execution'}
                     onShowToast={addToast}
@@ -182,6 +183,7 @@ export default function DocumentsWorkspace({
                 <ExecutionDocumentsRouter
                   documentType={selectedDocId as ExecutionDocType}
                   projectId={projectId}
+                  organizationId={projectContext?.organization_id || ''}
                   hasEditAccess={hasEditAccess}
                   isManager={isManager}
                   onShowToast={addToast}
@@ -196,6 +198,7 @@ export default function DocumentsWorkspace({
                   <PlanningDocumentsRouter
                     documentType={selectedDocId as PlanningDocType}
                     projectId={projectId}
+                    organizationId={projectContext?.organization_id || ''}
                     hasEditAccess={hasEditAccess}
                     onShowToast={addToast}
                   />

@@ -30,6 +30,8 @@ type ProjectType = {
     working_days: number[]
     daily_hours: number
   }
+  pendingStakeholders?: { email: string; name: string; role_title: string }[]
+  allow_team_schedule_edits: boolean
 }
 
 type WorkspaceMember = {
@@ -227,7 +229,7 @@ export function ProjectCard({
         <div className="flex items-center justify-between gap-3 mb-2 min-h-[28px]">
           <span className="text-sm font-medium text-app-muted inline-flex items-center gap-1.5">
             <Users className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
-            Assigned team ({project.assignedMembers.length})
+            Assigned team ({project.assignedMembers.length + (project.pendingStakeholders?.length || 0)})
           </span>
 
           {showManageTeam ? (
@@ -243,7 +245,7 @@ export function ProjectCard({
         </div>
 
         <div className="flex flex-wrap gap-1.5 min-h-[28px] items-center">
-          {project.assignedMembers.length === 0 ? (
+          {(project.assignedMembers.length === 0 && (!project.pendingStakeholders || project.pendingStakeholders.length === 0)) ? (
             <span className="text-sm text-app-subtle italic">No team members assigned</span>
           ) : (
             project.assignedMembers.map((userId) => {
@@ -266,6 +268,24 @@ export function ProjectCard({
               )
             })
           )}
+          {/* Render pending stakeholders */}
+          {project.pendingStakeholders?.map((stakeholder, idx) => {
+            const initials = stakeholder.name
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .substring(0, 2)
+              .toUpperCase()
+            return (
+              <span
+                key={`pending-${idx}`}
+                title={`${stakeholder.name} (${stakeholder.role_title} - Pending Invite)`}
+                className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-orange-500/10 text-orange-700 dark:text-orange-400 text-[10px] font-bold border border-orange-500/20 border-dashed"
+              >
+                {initials}
+              </span>
+            )
+          })}
         </div>
       </div>
     </article>

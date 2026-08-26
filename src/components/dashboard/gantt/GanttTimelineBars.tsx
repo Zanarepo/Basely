@@ -47,7 +47,7 @@ export function GanttTimelineBars({
 
   return (
     <div
-      className="absolute left-0 right-0 bottom-0 z-20"
+      className="absolute left-0 right-0 bottom-0 z-20 pointer-events-none"
       style={{ top: `${headerHeight}px` }}
     >
       {rowData.map((row) => {
@@ -102,7 +102,7 @@ export function GanttTimelineBars({
             {/* Task Bar / Milestone / Summary */}
             <div
               id={row.activity ? `bar-${row.activity.id}` : undefined}
-              className={`absolute group flex items-center transition-shadow cursor-pointer ${hasEditAccess && !isSummary && !isLockedByOther ? 'hover:ring-2 hover:ring-violet-500/50' : ''
+              className={`absolute group flex items-center transition-shadow cursor-pointer pointer-events-auto ${hasEditAccess && !isSummary && !isLockedByOther ? 'hover:ring-2 hover:ring-violet-500/50' : ''
                 } ${isLockedByOther ? 'opacity-50 pointer-events-none' : ''}`}
               onPointerEnter={(e) => onItemHover(e, row)}
               onPointerLeave={() => onItemLeave()}
@@ -198,13 +198,17 @@ export function GanttTimelineBars({
                       style={{ width: `${row.percentComplete}%` }}
                     />
                   )}
-                  {(row.activity?.constraintType !== 'As Soon As Possible' || isLockedByOther) && (
-                    <Lock className={`w-3 h-3 absolute top-1.5 left-2 z-10 ${isLockedByOther ? 'text-amber-400' : 'text-white/70'}`} />
-                  )}
-                  {/* CPM Badge for critical path tasks */}
-                  {isCritical && (
-                    <span className="absolute top-0.5 right-1 text-[7px] font-bold text-white/90 leading-none tracking-wide select-none pointer-events-none drop-shadow-sm">CPM</span>
-                  )}
+                  {/* Icons Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-between px-1 z-10 pointer-events-none overflow-hidden gap-1">
+                    {(row.activity?.constraintType !== 'As Soon As Possible' || isLockedByOther) ? (
+                      <Lock className={`w-3 h-3 shrink-0 ${isLockedByOther ? 'text-amber-400' : 'text-white/70'}`} />
+                    ) : <div />}
+                    
+                    {/* CPM Badge for critical path tasks */}
+                    {isCritical && (
+                      <span className="text-[7px] font-bold text-white/90 leading-none tracking-wide select-none drop-shadow-sm shrink-0">CPM</span>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -280,24 +284,6 @@ export function GanttTimelineBars({
                 </>
               )}
             </div>
-
-            {/* Label outside the bar */}
-            <span
-              className="absolute text-[11px] font-semibold text-app-fg mt-1 pointer-events-none opacity-0 group-hover/row:opacity-100 transition-opacity duration-500"
-              style={{ left: `${startX + width + 12}px`, top: '16px' }}
-            >
-              {isMilestone ? (
-                <>
-                  <span className="text-amber-500">Milestone</span>
-                  {(() => {
-                    const parent = row.element.parentId ? elements.find((el: any) => el.id === row.element.parentId) : null
-                    return parent ? <span className="text-app-subtle ml-1">({parent.name})</span> : null
-                  })()}
-                </>
-              ) : (
-                row.element.name
-              )}
-            </span>
           </div>
         )
       })}

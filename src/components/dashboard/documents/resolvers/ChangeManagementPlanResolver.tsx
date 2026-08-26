@@ -21,13 +21,16 @@ export function ChangeManagementPlanResolver({
     approvalThresholds,
     escalationProcess,
     rolesDescription,
+    costThreshold,
+    scheduleThresholdDays,
     isEnterpriseTier,
     approvalPolicies,
     loading,
     saving,
     error,
     savePlan,
-    refetch
+    refetch,
+    currencySymbol
   } = useChangeManagementPlanData(projectId, periodEnd, frozenData)
 
   if (loading) {
@@ -64,10 +67,13 @@ export function ChangeManagementPlanResolver({
         approvalThresholds={approvalThresholds}
         escalationProcess={escalationProcess}
         rolesDescription={rolesDescription}
+        costThreshold={costThreshold}
+        scheduleThresholdDays={scheduleThresholdDays}
         isEnterpriseTier={isEnterpriseTier}
         approvalPolicies={approvalPolicies}
         saving={saving}
         onSave={savePlan}
+        currencySymbol={currencySymbol}
       />
     </div>
   )

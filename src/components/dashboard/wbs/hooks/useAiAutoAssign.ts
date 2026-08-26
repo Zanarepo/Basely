@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { suggestAssigneeWithAiAction } from '@/lib/wbs/ai-assignment-actions'
 import { assignRaciRole } from '@/lib/wbs/raci-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
 
 interface UseAiAutoAssignProps {
   organizationId: string
@@ -23,10 +24,20 @@ export function useAiAutoAssign({
 }: UseAiAutoAssignProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [suggestion, setSuggestion] = useState<{ rationale: string; id: string } | null>(null)
+  
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const handleAiSuggest = async () => {
+    if (isGenerating || isChecking) return
+    
     setIsGenerating(true)
     setSuggestion(null)
+
+    const allowed = await checkLimit('max_ai_basic_actions')
+    if (!allowed) {
+      setIsGenerating(false)
+      return
+    }
     try {
       const res = await suggestAssigneeWithAiAction(organizationId, projectId, wbsElementId)
       if (!res.ok || !res.data) {
@@ -58,6 +69,7 @@ export function useAiAutoAssign({
         }
 
         onShowToast('success', 'Praz-AI successfully suggested and applied RACI assignments.')
+        await recordUsage('basic_actions')
         if (onAssignmentChanged) onAssignmentChanged()
       }
     } catch (err: any) {
@@ -67,18 +79,10 @@ export function useAiAutoAssign({
     }
   }
 
-  // Same gating logic as ADR
-  const isEnterprise = tier === 'enterprise'
-  const isPremium = tier === 'premium'
-  const isAllowed = isEnterprise || (isPremium && aiEnabled)
-  const isFree = tier === 'free'
-
   return {
     isGenerating,
     suggestion,
     handleAiSuggest,
-    isAllowed,
-    isFree,
-    isPremium
+    UpgradePromptModalProps
   }
 }

@@ -10,8 +10,9 @@ import { AutoAlignButton } from './components/AutoAlignButton'
 
 import { updateRoadmapHorizon } from '@/lib/product-roadmap/actions'
 import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
-export function RoadmapDashboard({ projectId }: { projectId: string }) {
+export function RoadmapDashboard({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const [items, setItems] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
@@ -22,8 +23,9 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
     setToasts(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, message }])
   }, [])
 
-  const { isAligning, handleAlign } = useAutoAlignRoadmap(
+  const { isAligning, handleAlign, UpgradePromptModalProps } = useAutoAlignRoadmap(
     projectId,
+    organizationId,
     () => loadData(),
     showToast
   )
@@ -195,6 +197,7 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
           )
         })}
       </div>
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

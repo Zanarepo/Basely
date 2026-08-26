@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react'
 import type { Persona } from '@/lib/product-strategy/types'
-import { Trash2, Edit3, User, Briefcase, Target, Frown, Wrench, Sparkles, Loader2 } from 'lucide-react'
+import { Loader2, Sparkles, Target, Briefcase, User, Edit3, Trash2, Frown, Wrench } from 'lucide-react'
 import { autoGenerateBacklogFromPersona } from '@/lib/product-backlog/actions'
 import { autoEnrichPersonaFromInsights } from '@/lib/product-strategy/persona-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 import { toast } from 'sonner'
 
 interface PersonaCardProps {
@@ -18,8 +20,14 @@ export function PersonaCard({ persona, onEdit, onDelete, hasEditAccess = true }:
   const [isHovered, setIsHovered] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isEnriching, setIsEnriching] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(persona.organization_id)
 
   const handleGenerateBacklog = async () => {
+    if (isGenerating || isEnriching || isChecking) return
+
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
+
     if (!persona.project_id) {
       toast.error('Cannot generate backlog for org-level personas without a specific project context.')
       return
@@ -32,6 +40,7 @@ export function PersonaCard({ persona, onEdit, onDelete, hasEditAccess = true }:
       const res = await autoGenerateBacklogFromPersona(persona.id, persona.project_id, persona.organization_id)
       
       if (res.success) {
+        await recordUsage('generations')
         toast.success(`Successfully generated ${res.count} backlog items!`, {
           id: toastId,
           description: 'They have been added to your Prioritization Matrix and Product Backlog.'
@@ -47,6 +56,11 @@ export function PersonaCard({ persona, onEdit, onDelete, hasEditAccess = true }:
   }
 
   const handleEnrichPersona = async () => {
+    if (isEnriching || isGenerating || isChecking) return
+
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
+
     setIsEnriching(true)
     const toastId = toast.loading('Analyzing linked customer insights...')
     
@@ -54,6 +68,7 @@ export function PersonaCard({ persona, onEdit, onDelete, hasEditAccess = true }:
       const res = await autoEnrichPersonaFromInsights(persona.id, persona.organization_id)
       
       if (res.success) {
+        await recordUsage('generations')
         toast.success('Persona enriched successfully!', {
           id: toastId,
           description: 'Jobs To Be Done and Pain Points have been updated based on insights.'
@@ -245,6 +260,7 @@ export function PersonaCard({ persona, onEdit, onDelete, hasEditAccess = true }:
         <span>{persona.project_id ? 'Project Scoped' : 'Org Shared Persona'}</span>
         <span>Updated {new Date(persona.updated_at || persona.created_at).toLocaleDateString()}</span>
       </div>
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

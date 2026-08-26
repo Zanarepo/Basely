@@ -18,6 +18,7 @@ interface UseWbsMutationsProps {
   loadElements: () => Promise<void>
   callerRole?: string
   callerUserId?: string
+  tier: string
   onQualityGateRequired?: (elementId: string, standards: any[], category: string) => void
 }
 
@@ -37,6 +38,7 @@ export function useWbsMutations({
   loadElements,
   callerRole,
   callerUserId,
+  tier,
   onQualityGateRequired
 }: UseWbsMutationsProps) {
   const [isPending, startTransition] = useTransition()
@@ -245,8 +247,8 @@ export function useWbsMutations({
     }
 
     saveSnapshot(elements)
-    // Only show the blocking loading indicator when moving to 'Complete' since that's when the modal might pop up
-    const isCheckingGate = updates.status === 'Complete'
+    // Only show the blocking loading indicator when moving to 'Complete' since that's when the modal might pop up, and ONLY for enterprise
+    const isCheckingGate = tier === 'enterprise' && updates.status === 'Complete'
     const updatedList = elements.map((el) => (el.id === id ? { ...el, ...updates, isSaving: isCheckingGate } : el))
     setElements(updatedList)
 

@@ -328,20 +328,21 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       ) : (
         <ReleasesWorkspace
           projectId={project.id}
+          organizationId={project.organization_id || 'default_org'}
           hasEditAccess={hasScheduleEditAccess}
           methodology={project.methodology}
         />
       ))}
 
-      {activeTab === 'cost' && canViewCost && (!orgFeatures['cost.actuals_tracking'] ? (
-        <FeatureGateScreen featureName="Budget & Cost" description="Earned Value Management, resource rate configuration, and actual cost tracking. Available on the Premium plan." canUpgrade={canUpgrade} />
-      ) : (
+      {activeTab === 'cost' && canViewCost && (
         <CostWorkspace
           projectId={project.id}
           hasEditAccess={hasCostEditAccess}
           methodology={project.methodology}
+          canUpgrade={canUpgrade}
+          isPremium={orgFeatures['cost.actuals_tracking']}
         />
-      ))}
+      )}
 
       {activeTab === 'stakeholders' && (!orgFeatures['accountability.raci'] ? (
         <FeatureGateScreen featureName="Stakeholders" description="Map stakeholders, their influence, interest and communication plans. Available on the Premium plan." canUpgrade={canUpgrade} />
@@ -363,16 +364,14 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       ))}
 
-      {activeTab === 'documents' && (!orgFeatures['documentation.engine'] ? (
-        <FeatureGateScreen featureName="Documents" description="Live document engine, project charters, status reports, and custom templates. Available on the Premium plan." canUpgrade={canUpgrade} />
-      ) : (
+      {activeTab === 'documents' && (
         <DocumentsWorkspace
           projectId={project.id}
           projectContext={project}
           hasEditAccess={hasDocumentsEditAccess}
           isManager={isManager}
         />
-      ))}
+      )}
 
       {activeTab === 'action_items' && (!orgFeatures['accountability.raci'] ? (
         <FeatureGateScreen featureName="Action Items" description="Track cross-cutting action items, owners and due dates across your project team. Available on the Premium plan." canUpgrade={canUpgrade} />
@@ -416,16 +415,16 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       ))}
 
-      {activeTab === 'capacity' && (!orgFeatures['pm.adr_skills_raid'] ? (
-        <FeatureGateScreen featureName="Skills & Capacity Matrix" description="Visualise your team's skills and available capacity across the project lifecycle. Available on the Premium plan." canUpgrade={canUpgrade} />
-      ) : (
+      {activeTab === 'capacity' && (
         <SkillsMatrixTable
           projectId={project.id}
           organizationId={project.organization_id || 'default_org'}
           methodology={project.methodology}
           workspaceMembers={workspaceMembers}
+          isPremium={orgFeatures['pm.adr_skills_raid']}
+          canUpgrade={canUpgrade}
         />
-      ))}
+      )}
     </div>
   )
 }

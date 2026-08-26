@@ -1,5 +1,5 @@
 import React from 'react'
-import { FileText, Target, Layers, Search, Route } from 'lucide-react'
+import { FileText, Target, Layers, Search, Route, BrainCircuit } from 'lucide-react'
 
 interface DocumentCenterHeaderProps {
   activeSuite: 'product' | 'project'
@@ -44,11 +44,11 @@ export default function DocumentCenterHeader({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-black text-app-fg tracking-tight flex items-center gap-2.5">
-            <FileText className="w-6 h-6 text-violet-500" />
-            <span>Document Center</span>
+            <BrainCircuit className="w-6 h-6 text-violet-500" />
+            <span>Intelligence Hub</span>
           </h1>
           <p className="text-xs text-app-muted">
-            Enterprise document suite for product strategy, PRDs, roadmaps, and project governance.
+            Centralized AI workspace for product strategy, intelligent roadmaps, and automated project governance.
           </p>
         </div>
 

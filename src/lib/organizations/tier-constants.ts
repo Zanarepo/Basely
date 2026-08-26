@@ -22,6 +22,11 @@ export const FEATURE_TO_MIN_TIER: Record<string, TierId> = {
   'pm.adr_skills_raid': 'premium',
   'releases.management': 'premium',
 
+  // AI Premium Features
+  'ai.synthesis_chains': 'premium',
+  'ai.execution_reporting': 'premium',
+  'ai.advanced_prioritization': 'premium',
+
   // Enterprise Tier (Governance & Integrations)
   'governance.granular_rbac': 'enterprise',
   'governance.approval_workflows': 'enterprise',
@@ -30,6 +35,10 @@ export const FEATURE_TO_MIN_TIER: Record<string, TierId> = {
   'integrations.api_webhooks': 'enterprise',
   'integrations.cloud_calendar': 'enterprise',
   'integrations.erp_connector': 'enterprise',
+
+  // AI Enterprise Features
+  'ai.governance_scanner': 'enterprise',
+  'ai.cross_project_alignment': 'enterprise',
 }
 
 export const LEGACY_FEATURE_MAP: Record<string, string> = {
@@ -49,7 +58,31 @@ export const TIER_HIERARCHY: Record<TierId, number> = {
 }
 
 export const USAGE_LIMITS: Record<TierId, Record<string, number>> = {
-  'free': { max_seats: 3, max_active_projects: 3, max_workspaces: 1 },
-  'premium': { max_seats: -1, max_active_projects: -1, max_workspaces: -1 },
-  'enterprise': { max_seats: -1, max_active_projects: -1, max_workspaces: -1 },
+  'free': { 
+    max_seats: 3, 
+    max_active_projects: 3, 
+    max_workspaces: 1,
+    max_ai_generations: 5,
+    max_ai_basic_actions: 5,
+    max_ai_meetings: 1,
+    max_ai_pipeline_runs: 1
+  },
+  'premium': { 
+    max_seats: -1, 
+    max_active_projects: -1, 
+    max_workspaces: -1,
+    max_ai_generations: -1,
+    max_ai_basic_actions: -1,
+    max_ai_meetings: -1,
+    max_ai_pipeline_runs: -1
+  },
+  'enterprise': { 
+    max_seats: -1, 
+    max_active_projects: -1, 
+    max_workspaces: -1,
+    max_ai_generations: -1,
+    max_ai_basic_actions: -1,
+    max_ai_meetings: -1,
+    max_ai_pipeline_runs: -1
+  },
 }

@@ -3,18 +3,22 @@
 import React, { useState } from 'react'
 import { X, Sparkles, Loader2 } from 'lucide-react'
 import { extractMeetingNotesWithAiAction, ExtractedMeetingData } from '@/lib/documents/ai-meeting-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 interface AiMeetingCopilotModalProps {
   isOpen: boolean
   onClose: () => void
   projectId: string
+  organizationId: string
   onExtractionComplete: (data: ExtractedMeetingData) => void
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
 }
 
-export function AiMeetingCopilotModal({ isOpen, onClose, projectId, onExtractionComplete, onShowToast }: AiMeetingCopilotModalProps) {
+export function AiMeetingCopilotModal({ isOpen, onClose, projectId, organizationId, onExtractionComplete, onShowToast }: AiMeetingCopilotModalProps) {
   const [rawNotes, setRawNotes] = useState('')
   const [isExtracting, setIsExtracting] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   if (!isOpen) return null
 
@@ -24,11 +28,16 @@ export function AiMeetingCopilotModal({ isOpen, onClose, projectId, onExtraction
       return
     }
 
+    if (isExtracting || isChecking) return
+    const allowed = await checkLimit('max_ai_meetings')
+    if (!allowed) return
+
     setIsExtracting(true)
     const res = await extractMeetingNotesWithAiAction(projectId, rawNotes)
     setIsExtracting(false)
 
     if (res.ok && res.data) {
+      await recordUsage('meetings')
       onShowToast?.('success', 'Successfully extracted meeting details!')
       onExtractionComplete(res.data)
       setRawNotes('')
@@ -87,7 +96,7 @@ export function AiMeetingCopilotModal({ isOpen, onClose, projectId, onExtraction
           <button
             onClick={handleExtract}
             disabled={isExtracting || !rawNotes.trim()}
-            className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-all font-semibold text-sm shadow-md flex items-center gap-2 disabled:opacity-50"
+            className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-all font-semibold text-sm shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isExtracting ? (
               <>
@@ -103,6 +112,7 @@ export function AiMeetingCopilotModal({ isOpen, onClose, projectId, onExtraction
           </button>
         </div>
       </div>
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

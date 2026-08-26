@@ -216,7 +216,7 @@ export function InviteTeamModal({ open, onClose }: InviteTeamModalProps) {
                 options={INVITE_ROLES.map((r) => ({
                   value: r,
                   label: r,
-                  description: r === 'PM' ? 'Project & team management access' : r === 'Viewer' ? 'Read-only viewing access' : 'Standard member team collaboration access'
+                  description: r === 'PM' ? 'Project & team management access' : r === 'Viewer' ? 'Read-only viewing access' : r === 'Sponsor' ? 'Executive approval and oversight' : 'Standard member team collaboration access'
                 }))}
               />
             </div>

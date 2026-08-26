@@ -2,6 +2,7 @@
 
 import { useRef, useMemo } from 'react'
 import type { Activity, Dependency } from '@/lib/schedule/cpm'
+import type { DependencyLineStyle } from './dependencyPathUtils'
 
 import { useGanttCanvasInteraction } from './useGanttCanvasInteraction'
 import { getTimelineHeaders, GanttTimelineHeader } from './GanttTimelineHeader'
@@ -10,7 +11,7 @@ import { GanttTimelineDependencies } from './GanttTimelineDependencies'
 import { GanttTimelineBars } from './GanttTimelineBars'
 import { GanttTimelineTooltip } from './GanttTimelineTooltip'
 
-type GanttTimelineCanvasProps = {
+export type GanttTimelineCanvasProps = {
   elements: any[] // WBS flat elements sorted by sortOrder
   activities: Activity[]
   dependencies: Dependency[]
@@ -30,6 +31,10 @@ type GanttTimelineCanvasProps = {
   releaseLock?: (activityId: string) => void
   onSelectElement?: (id: string) => void
   onContextMenu?: (e: React.MouseEvent, row: any) => void
+  showAllDependencies?: boolean
+  hoveredTaskId?: string | null
+  setHoveredTaskId?: (id: string | null) => void
+  dependencyStyle?: DependencyLineStyle
 }
 
 const ROW_HEIGHT = 48
@@ -55,6 +60,10 @@ export function GanttTimelineCanvas({
   releaseLock,
   onSelectElement,
   onContextMenu,
+  showAllDependencies = false,
+  hoveredTaskId = null,
+  setHoveredTaskId,
+  dependencyStyle = 'curved',
 }: GanttTimelineCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -253,6 +262,9 @@ export function GanttTimelineCanvas({
           hasEditAccess={hasEditAccess}
           onDeleteDependency={onDeleteDependency}
           timelineStart={timelineStart}
+          showAllDependencies={showAllDependencies}
+          hoveredTaskId={hoveredTaskId}
+          dependencyStyle={dependencyStyle}
         />
 
         <GanttTimelineBars
@@ -267,8 +279,14 @@ export function GanttTimelineCanvas({
           elements={elements}
           lockedActivities={lockedActivities}
           onPointerDown={handlePointerDown}
-          onItemHover={handleItemHover}
-          onItemLeave={() => setHoveredItem(null)}
+          onItemHover={(e, row) => {
+            handleItemHover(e, row)
+            if (setHoveredTaskId) setHoveredTaskId(row.activity?.id || null)
+          }}
+          onItemLeave={() => {
+            setHoveredItem(null)
+            if (setHoveredTaskId) setHoveredTaskId(null)
+          }}
           onStartDrawLink={handleStartDrawLink}
           onAnchorPointerUp={handleAnchorPointerUp as any}
           onSelectElement={onSelectElement}

@@ -59,7 +59,7 @@ export function SectionResolverSwitch({
     return <CommunicationPlanResolver projectId={projectId} />
   }
   if (section.resolver === 'quality_management_plan_data') {
-    return <QualityManagementPlanResolver projectId={projectId} />
+    return <QualityManagementPlanResolver projectId={projectId} organizationId={projectContext?.organization_id || ''} />
   }
   if (section.resolver === 'procurement_plan_entries') {
     return <ProcurementPlanResolver projectId={projectId} />

@@ -15,6 +15,7 @@ export interface ClosureDocumentsRouterProps {
   projectId: string
   hasEditAccess: boolean
   currentLifecycle?: string
+  organizationId: string
   onOpenLifecycleModal?: () => void
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
 }
@@ -22,6 +23,7 @@ export interface ClosureDocumentsRouterProps {
 export function ClosureDocumentsRouter({
   documentType,
   projectId,
+  organizationId,
   hasEditAccess,
   currentLifecycle = 'Execution',
   onOpenLifecycleModal,
@@ -44,6 +46,7 @@ export function ClosureDocumentsRouter({
       return (
         <LessonsLearnedEditor
           projectId={projectId}
+          organizationId={organizationId}
           hasEditAccess={hasEditAccess}
           currentLifecycle={lifecycle}
           onOpenLifecycleModal={onOpenLifecycleModal}
@@ -54,6 +57,7 @@ export function ClosureDocumentsRouter({
       return (
         <PostImplementationReviewViewer
           projectId={projectId}
+          organizationId={organizationId}
           hasEditAccess={hasEditAccess}
           currentLifecycle={lifecycle}
           onOpenLifecycleModal={onOpenLifecycleModal}

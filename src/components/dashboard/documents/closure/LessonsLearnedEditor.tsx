@@ -26,6 +26,7 @@ import { toast } from 'sonner'
 
 export interface LessonsLearnedEditorProps {
   projectId: string
+  organizationId: string
   hasEditAccess: boolean
   currentLifecycle: ProjectLifecycleStatus
   onOpenLifecycleModal?: () => void
@@ -35,6 +36,7 @@ export interface LessonsLearnedEditorProps {
 
 export function LessonsLearnedEditor({
   projectId,
+  organizationId,
   hasEditAccess,
   currentLifecycle,
   onOpenLifecycleModal,

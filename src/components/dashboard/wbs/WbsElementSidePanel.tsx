@@ -183,6 +183,7 @@ export function WbsElementSidePanel({
                 callerRole={callerRole}
                 callerUserId={callerUserId}
                 terms={terms}
+                organizationId={organizationId}
               />
 
               {element?.projectId && element?.id && (

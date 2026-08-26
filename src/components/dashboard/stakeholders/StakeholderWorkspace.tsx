@@ -81,14 +81,14 @@ export default function StakeholderWorkspace({
             <div className="flex items-center gap-3">
             <button
               onClick={() => setIsImportModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-app-surface hover:bg-app-hover border border-app-border text-app-fg text-sm font-semibold rounded-lg shadow-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-app-surface hover:bg-app-hover border border-app-border text-app-fg text-sm font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
             >
               <Upload className="h-4 w-4" />
               Import CSV
             </button>
             <button
               onClick={() => setIsFormOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
             >
               <Plus className="h-4 w-4" />
               Add Stakeholder

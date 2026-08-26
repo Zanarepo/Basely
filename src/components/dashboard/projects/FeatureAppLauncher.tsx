@@ -56,7 +56,7 @@ const ALL_FEATURES: FeatureApp[] = [
   { id: 'releases', label: 'Releases', description: 'Iterations and deployments', icon: Rocket, colorClass: 'text-orange-400', bgClass: 'bg-orange-500/10', path: 'releases' },
   { id: 'stakeholders', label: 'Stakeholders', description: 'Manage project people', icon: UsersRound, colorClass: 'text-pink-400', bgClass: 'bg-pink-500/10', path: 'stakeholders' },
   { id: 'risks', label: 'Risks', description: 'Risk register', icon: AlertTriangle, colorClass: 'text-red-400', bgClass: 'bg-red-500/10', path: 'risks' },
-  { id: 'documents', label: 'Documents', description: 'Files and attachments', icon: Files, colorClass: 'text-slate-300', bgClass: 'bg-slate-500/10', path: 'documents' },
+  { id: 'documents', label: 'Intelligence Hub', description: 'Strategy, Automations & Docs', icon: BrainCircuit, colorClass: 'text-slate-300', bgClass: 'bg-slate-500/10', path: 'documents' },
 ]
 
 export function FeatureAppLauncher({ projectId, currentTier = 'free' }: { projectId?: string, currentTier?: string }) {

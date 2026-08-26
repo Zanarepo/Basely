@@ -209,3 +209,30 @@ export async function saveMemberCapacity(data: Partial<MemberCapacityAllocation>
   }
   return { ok: true, data: returnedRow }
 }
+
+export async function removeMemberCapacity(projectId: string, userId: string) {
+  const supabase = await createClient()
+
+  // Find the allocation id first
+  const { data: alloc } = await supabase
+    .from('member_capacity_allocations')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('user_id', userId)
+    .single()
+
+  if (alloc) {
+    const { error } = await supabase
+      .from('member_capacity_allocations')
+      .delete()
+      .eq('id', alloc.id)
+
+    if (error) {
+      console.error('Error deleting member capacity:', error)
+      return { ok: false, error: error.message }
+    }
+  }
+
+  revalidatePath(`/dashboard/projects/${projectId}/team`)
+  return { ok: true }
+}

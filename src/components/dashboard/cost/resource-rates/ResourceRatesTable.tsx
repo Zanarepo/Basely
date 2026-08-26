@@ -15,6 +15,7 @@ interface ResourceRatesTableProps {
   handleSelectAll: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleBulkDelete: () => void
   setIsImporting: (val: boolean) => void
+  canImportCsv?: boolean
   isCreating: boolean
   startCreate: () => void
   editingId: string | null
@@ -45,6 +46,7 @@ export function ResourceRatesTable({
   handleSelectAll,
   handleBulkDelete,
   setIsImporting,
+  canImportCsv,
   isCreating,
   startCreate,
   editingId,
@@ -89,16 +91,18 @@ export function ResourceRatesTable({
                   Delete Selected ({selectedIds.length})
                 </button>
               )}
-              <button
-                onClick={() => setIsImporting(true)}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 bg-app-muted-surface hover:bg-app-hover border border-app-border text-app-fg rounded-lg text-sm font-medium transition-colors shrink-0"
-              >
-                <Upload className="w-4 h-4" />
-                Import CSV
-              </button>
+              {canImportCsv && (
+                <button
+                  onClick={() => setIsImporting(true)}
+                  className="flex items-center justify-center gap-2 px-3 py-1.5 bg-app-muted-surface hover:bg-app-hover border border-app-border text-app-fg rounded-lg text-sm font-medium transition-colors shrink-0 cursor-pointer"
+                >
+                  <Upload className="w-4 h-4" />
+                  Import CSV
+                </button>
+              )}
               <button
                 onClick={startCreate}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-medium transition-colors shrink-0"
+                className="flex items-center justify-center gap-2 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-medium transition-colors shrink-0 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Add Resource

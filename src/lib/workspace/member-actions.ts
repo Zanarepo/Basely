@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { logGovernanceEvent } from '@/lib/governance/actions'
 
-const WORKSPACE_ROLES = ['Admin', 'PM', 'Team Member', 'Viewer'] as const
+const WORKSPACE_ROLES = ['Admin', 'PM', 'Team Member', 'Sponsor', 'Viewer'] as const
 type WorkspaceRole = (typeof WORKSPACE_ROLES)[number]
 export type UpdateWorkspaceRoleResult = { ok: true } | { ok: false; error: string }
 

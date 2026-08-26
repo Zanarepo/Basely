@@ -10,6 +10,7 @@ import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 import { useGenerateOkrs } from './hooks/useGenerateOkrs'
 import { GenerateOkrsDropdown } from './components/GenerateOkrsDropdown'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 interface OkrDashboardProps {
   organizationId: string
@@ -31,7 +32,7 @@ export function OkrDashboard({
     setToasts(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, message }])
   }
 
-  const { isGenerating, handleGenerate } = useGenerateOkrs(
+  const { isGenerating, handleGenerate, UpgradePromptModalProps } = useGenerateOkrs(
     organizationId,
     projectId,
     () => fetchOkrs(true),
@@ -246,6 +247,7 @@ export function OkrDashboard({
         onSavedObjective={handleSavedObjective}
         onSavedKeyResult={handleSavedKeyResult}
       />
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

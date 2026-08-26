@@ -5,8 +5,8 @@ import { CollapsibleSection } from './team/CollapsibleSection'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 import { useWorkspaceMembers, WorkspaceRole } from './hooks/useWorkspaceMembers'
 
-const OWNER_ROLES = ['Admin', 'PM', 'Team Member', 'Viewer'] as const
-const ADMIN_ROLES = ['PM', 'Team Member', 'Viewer'] as const
+const OWNER_ROLES = ['Admin', 'PM', 'Team Member', 'Sponsor', 'Viewer'] as const
+const ADMIN_ROLES = ['PM', 'Team Member', 'Sponsor', 'Viewer'] as const
 
 export type WorkspaceMember = {
   userId: string

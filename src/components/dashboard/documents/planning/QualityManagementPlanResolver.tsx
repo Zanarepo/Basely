@@ -8,8 +8,10 @@ import StructuredEditableField from '@/components/dashboard/documents/components
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { markdownComponents } from '@/components/dashboard/documents/components/structured/markdownComponents'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
-export function QualityManagementPlanResolver({ projectId }: { projectId: string }) {
+export function QualityManagementPlanResolver({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const [plan, setPlan] = useState<QualityManagementPlan | null>(null)
   const [standards, setStandards] = useState<QualityStandard[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -29,10 +31,17 @@ export function QualityManagementPlanResolver({ projectId }: { projectId: string
     fetchPlan()
   }, [projectId])
 
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
+
   const handleGenerateAI = async () => {
+    if (isGenerating || isChecking) return
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
+
     setIsGenerating(true)
     const res = await generateQualityPlanFromWbs(projectId)
     if (res.ok) {
+      await recordUsage('generations')
       await fetchPlan()
     } else {
       alert(res.error || 'Failed to generate plan')
@@ -95,6 +104,7 @@ export function QualityManagementPlanResolver({ projectId }: { projectId: string
           )}
         </div>
       </div>
+      <UpgradePromptModal {...UpgradePromptModalProps} />
       </div>
     </div>
   )

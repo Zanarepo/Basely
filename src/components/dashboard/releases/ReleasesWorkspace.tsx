@@ -13,12 +13,14 @@ import type { Iteration, Release, ReleaseStatus } from '@/lib/releases/types'
 
 interface ReleasesWorkspaceProps {
   projectId: string
+  organizationId: string
   hasEditAccess: boolean
   methodology?: string | null
 }
 
 export function ReleasesWorkspace({
   projectId,
+  organizationId,
   hasEditAccess,
   methodology = 'Agile',
 }: ReleasesWorkspaceProps) {
@@ -379,6 +381,7 @@ export function ReleasesWorkspace({
         onClose={() => setDetailModalOpen(false)}
         release={selectedRelease ? releases.find(r => r.id === selectedRelease.id) || selectedRelease : null}
         methodology={methodology}
+        organizationId={organizationId}
         hasEditAccess={hasEditAccess}
         scopeItems={selectedRelease ? (scopeItemsMap[selectedRelease.id] || []) : []}
         availableWorkItems={availableWorkItems}

@@ -83,6 +83,9 @@ export default function GanttWorkspace({
   const [iterations, setIterations] = useState<Iteration[]>([])
 
   // CR Integration state
+  const [showAllDependencies, setShowAllDependencies] = useState(false)
+  const [dependencyStyle, setDependencyStyle] = useState<'curved' | 'orthogonal'>('curved')
+  const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null)
   const { pendingCRs, approvedCRs } = usePendingChangeRequests(projectId)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; taskName: string; elementId: string } | null>(null)
   const [isCRModalOpen, setIsCRModalOpen] = useState(false)
@@ -313,6 +316,10 @@ export default function GanttWorkspace({
         hideCompleted={hideCompleted}
         onToggleHideCompleted={() => setHideCompleted((prev) => !prev)}
         completedCount={completedCount}
+        showAllDependencies={showAllDependencies}
+        setShowAllDependencies={setShowAllDependencies}
+        dependencyStyle={dependencyStyle}
+        setDependencyStyle={setDependencyStyle}
       />
 
       {/* Unified Gantt Board Panel (Split view) */}
@@ -362,6 +369,10 @@ export default function GanttWorkspace({
               const taskName = row?.element?.name || row?.activity?.name || 'Task'
               setContextMenu({ x: e.clientX, y: e.clientY, taskName, elementId: row?.element?.id || '' })
             }}
+            showAllDependencies={showAllDependencies}
+            dependencyStyle={dependencyStyle}
+            hoveredTaskId={hoveredTaskId}
+            setHoveredTaskId={setHoveredTaskId}
           />
         </div>
       </div>

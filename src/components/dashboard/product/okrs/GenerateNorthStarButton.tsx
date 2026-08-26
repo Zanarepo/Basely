@@ -3,6 +3,7 @@
 import React from 'react'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { useGenerateNorthStar } from './hooks/useGenerateNorthStar'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 interface GenerateNorthStarButtonProps {
   organizationId: string
   projectId: string
@@ -11,7 +12,7 @@ interface GenerateNorthStarButtonProps {
 }
 
 export function GenerateNorthStarButton({ organizationId, projectId, onGenerated, showToast }: GenerateNorthStarButtonProps) {
-  const { isGenerating, handleGenerate } = useGenerateNorthStar(
+  const { isGenerating, handleGenerate, UpgradePromptModalProps } = useGenerateNorthStar(
     organizationId,
     projectId,
     onGenerated,
@@ -19,6 +20,7 @@ export function GenerateNorthStarButton({ organizationId, projectId, onGenerated
   )
 
   return (
+    <>
     <button
       type="button"
       onClick={handleGenerate}
@@ -33,5 +35,7 @@ export function GenerateNorthStarButton({ organizationId, projectId, onGenerated
       )}
       {isGenerating ? 'Generating...' : 'Auto-Generate from Strategy'}
     </button>
+    <UpgradePromptModal {...UpgradePromptModalProps} />
+    </>
   )
 }

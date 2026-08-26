@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { GeneratedRiceItem } from '@/lib/documents/prd-to-rice-actions'
 import { convertScopeToRiceBacklog } from '@/lib/documents/scope-to-rice-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
 
 interface UseScopeToRiceAutomationProps {
   projectId: string
@@ -18,12 +19,18 @@ export function useScopeToRiceAutomation({
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedItems, setGeneratedItems] = useState<GeneratedRiceItem[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const handleGenerateRiceBacklog = async () => {
+    if (isGenerating || isChecking) return
+
     if (!freeText || Object.keys(freeText).length === 0) {
       onShowToast('error', 'Scope Statement is empty. Generate or write it first.')
       return
     }
+
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
 
     setIsGenerating(true)
     try {
@@ -31,6 +38,7 @@ export function useScopeToRiceAutomation({
       if (res.ok && res.items) {
         setGeneratedItems(res.items)
         setIsModalOpen(true)
+        await recordUsage('generations')
         onShowToast('success', `Successfully generated ${res.items.length} backlog epics/features!`)
       } else {
         onShowToast('error', res.error || 'Failed to generate RICE backlog items.')
@@ -48,6 +56,7 @@ export function useScopeToRiceAutomation({
     generatedItems,
     isModalOpen,
     setIsModalOpen,
-    handleGenerateRiceBacklog
+    handleGenerateRiceBacklog,
+    UpgradePromptModalProps
   }
 }

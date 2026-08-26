@@ -14,6 +14,8 @@ import DocumentStatsRibbon from './components/DocumentStatsRibbon'
 import DocumentPropertiesHeader from './components/DocumentPropertiesHeader'
 import { AlertTriangle, Download, RefreshCw, Save, Clock, ChevronDown, Check, Loader2, Play, FileText, ArrowLeft, MoreHorizontal, Compass, Kanban, Bot, Search, Target, Briefcase, Zap, Sparkles, Table, Globe } from 'lucide-react'
 import { reconcileDocument } from '@/lib/documents/reconcile-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 // Lazy-load heavy components that aren't needed for initial render
 const DocumentHistoryModal = dynamic(() => import('./DocumentHistoryModal'), { ssr: false })
@@ -141,6 +143,8 @@ export default function DocumentEngine({
     setNewSectionTitle
   })
 
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(projectContext?.organization_id || '')
+
   // Document persistence hook (saving, auto-save, snapshots, regeneration, auto-fill)
   const {
     showRegenConfirm,
@@ -184,7 +188,11 @@ export default function DocumentEngine({
   }
 
   const handleReconcile = async () => {
-    if (!generatedDoc) return
+    if (!generatedDoc || isReconciling || isChecking) return
+
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
+
     setIsReconciling(true)
     startTransition(async () => {
       try {
@@ -193,6 +201,7 @@ export default function DocumentEngine({
           onShowToast?.('error', res.error || 'Failed to reconcile document')
           return
         }
+        await recordUsage('generations')
         onShowToast?.('success', 'Document successfully reconciled with latest data!')
         onSaveSuccess?.() // Trigger a re-fetch of the document to get the latest data
       } catch (err: any) {
@@ -338,7 +347,7 @@ export default function DocumentEngine({
       {isRoadmapDocument && (
         <div className={`flex-1 overflow-y-auto p-6 lg:p-10 bg-app-bg ${roadmapViewMode === 'kanban' ? 'block' : 'hidden'}`}>
           <div className="max-w-7xl mx-auto bg-app-surface border border-app-border rounded-2xl shadow-sm p-6 md:p-8">
-            <RoadmapDashboard projectId={projectId} />
+            <RoadmapDashboard projectId={projectId} organizationId={projectContext?.organization_id || ''} />
           </div>
         </div>
       )}
@@ -414,6 +423,7 @@ export default function DocumentEngine({
             {isRoadmapDocument && (
               <RoadmapChainBanner
                 projectId={projectId}
+                organizationId={projectContext?.organization_id || ''}
                 freeText={freeText}
                 onShowToast={onShowToast}
               />
@@ -434,6 +444,7 @@ export default function DocumentEngine({
             {template.id === 'standard_risk_register' && !isSnapshot && hasEditAccess && (
               <RiskRegisterChainBanner
                 projectId={projectId}
+                organizationId={projectContext?.organization_id || ''}
                 onShowToast={onShowToast}
                 onSuccess={onSaveSuccess}
               />
@@ -492,6 +503,7 @@ export default function DocumentEngine({
             {(template.document_type === 'budget_baseline' || template.document_type === 'schedule_document') && !isSnapshot && hasEditAccess && (
               <WbsToBaselinesChainBanner
                 projectId={projectId}
+                organizationId={projectContext?.organization_id || ''}
                 onShowToast={onShowToast}
               />
             )}
@@ -500,6 +512,7 @@ export default function DocumentEngine({
             {template.document_type === 'project_management_plan' && !isSnapshot && hasEditAccess && (
               <PmPlanSynthesisChainBanner
                 projectId={projectId}
+                organizationId={projectContext?.organization_id || ''}
                 onShowToast={onShowToast}
               />
             )}
@@ -508,6 +521,7 @@ export default function DocumentEngine({
             {template.document_type === 'status_report' && !isSnapshot && hasEditAccess && (
               <AiStatusReportBanner
                 projectId={projectId}
+                organizationId={projectContext?.organization_id}
                 onGenerated={(data) => {
                   setFreeText(prev => ({ ...prev, ...data }))
                   setIsDirty(true)
@@ -520,6 +534,7 @@ export default function DocumentEngine({
             {(template.document_type === 'lessons_learned' || template.document_type === 'post_implementation_review') && !isSnapshot && hasEditAccess && (
               <AiClosureSynthesisBanner
                 projectId={projectId}
+                organizationId={projectContext?.organization_id}
                 docType={template.document_type}
                 onGenerated={(data) => {
                   setFreeText(prev => ({ ...prev, ...data }))
@@ -671,6 +686,7 @@ export default function DocumentEngine({
         documentType={template.document_type}
         documentTitle={freeText['__document_title_override'] || template.name || ''}
       />
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

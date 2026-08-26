@@ -8,11 +8,12 @@ import { MeetingMinutesEditor } from './MeetingMinutesEditor'
 
 interface MeetingMinutesListProps {
   projectId: string
+  organizationId: string
   hasEditAccess: boolean
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
 }
 
-export function MeetingMinutesList({ projectId, hasEditAccess, onShowToast }: MeetingMinutesListProps) {
+export function MeetingMinutesList({ projectId, organizationId, hasEditAccess, onShowToast }: MeetingMinutesListProps) {
   const [minutes, setMinutes] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeMinuteId, setActiveMinuteId] = useState<string | null>(null)
@@ -44,6 +45,7 @@ export function MeetingMinutesList({ projectId, hasEditAccess, onShowToast }: Me
     return (
       <MeetingMinutesEditor
         projectId={projectId}
+        organizationId={organizationId}
         minuteId={activeMinuteId}
         hasEditAccess={hasEditAccess}
         onBack={() => {

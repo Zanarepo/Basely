@@ -224,14 +224,25 @@ export async function updateWbsElement(
   // Extract fields to update
   const updateData: any = {}
 
-  // 1. Quality Gate Interception
+  // 1. Quality Gate Interception (Enterprise Only)
   if (payload.status === 'Complete') {
-    // Check if the project has an active Quality Management Plan
-    const { data: qmp } = await supabase
-      .from('quality_management_plans')
-      .select('id')
-      .eq('project_id', projectId)
-      .maybeSingle()
+    // Check if the project belongs to an Enterprise organization
+    const { data: project } = await supabase.from('projects').select('organization_id').eq('id', projectId).single()
+    let isEnterprise = false
+    if (project?.organization_id) {
+      const { data: sub } = await supabase.from('organization_subscriptions').select('tier_id').eq('organization_id', project.organization_id).maybeSingle()
+      if (sub?.tier_id === 'enterprise') {
+        isEnterprise = true
+      }
+    }
+
+    if (isEnterprise) {
+      // Check if the project has an active Quality Management Plan
+      const { data: qmp } = await supabase
+        .from('quality_management_plans')
+        .select('id')
+        .eq('project_id', projectId)
+        .maybeSingle()
 
     if (qmp) {
       // Ensure this is a work package (we don't enforce quality gates on summary nodes directly)
@@ -274,6 +285,7 @@ export async function updateWbsElement(
               category: 'General' 
             }
           }
+        }
         }
       }
     }

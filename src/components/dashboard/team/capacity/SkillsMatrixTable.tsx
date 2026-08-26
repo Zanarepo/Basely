@@ -8,20 +8,28 @@ import AddMatrixMemberModal from './AddMatrixMemberModal'
 import { type SkillCategory, type ProficiencyLevel } from '@/lib/team/capacity-actions'
 import { ToastContainer } from '@/components/dashboard/Toast'
 import { useSkillsMatrix, type WorkspaceMember, type MatrixSkill } from './hooks/useSkillsMatrix'
+import { useCapacityGating } from './hooks/useCapacityGating'
+import { useState } from 'react'
 
 interface SkillsMatrixTableProps {
   organizationId: string
   projectId?: string
   methodology?: 'waterfall' | 'agile' | 'hybrid'
   workspaceMembers?: WorkspaceMember[]
+  isPremium?: boolean
+  canUpgrade?: boolean
 }
 
 export default function SkillsMatrixTable({
   organizationId,
   projectId = 'default_project',
   methodology = 'hybrid',
-  workspaceMembers = []
+  workspaceMembers = [],
+  isPremium = false,
+  canUpgrade = false
 }: SkillsMatrixTableProps) {
+  const [restrictedFeature, setRestrictedFeature] = useState<{name: string, desc: string} | null>(null)
+  const { permissions, RestrictedModal } = useCapacityGating(isPremium, canUpgrade)
   const {
     categoryFilter, setCategoryFilter,
     proficiencyFilter, setProficiencyFilter,
@@ -29,11 +37,11 @@ export default function SkillsMatrixTable({
     activeCapacityMember, setActiveCapacityMember,
     activeSkillModal, setActiveSkillModal,
     isAddMemberOpen, setIsAddMemberOpen,
-    deletingSkillId,
+    deletingSkillId, removingMemberId,
     toasts, showToast, dismissToast,
     members, setMembers,
     filteredMembers,
-    handleDeleteSkill
+    handleDeleteSkill, handleDeleteMember
   } = useSkillsMatrix(organizationId, projectId, workspaceMembers)
 
   const getProficiencyBadge = (level: ProficiencyLevel) => {
@@ -97,7 +105,16 @@ export default function SkillsMatrixTable({
 
         <button
           type="button"
-          onClick={() => setIsAddMemberOpen(true)}
+          onClick={() => {
+            if (members.length >= permissions.maxSpecialists) {
+              setRestrictedFeature({
+                name: 'Matrix Size Limit Reached',
+                desc: 'Free users can only add up to 5 specialists to the matrix. Upgrade to Premium to add unlimited team members.'
+              })
+              return
+            }
+            setIsAddMemberOpen(true)
+          }}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg shadow-violet-500/25 hover:shadow-violet-500/35 transition-all cursor-pointer shrink-0"
         >
           <UserPlus className="w-4 h-4" />
@@ -277,15 +294,41 @@ export default function SkillsMatrixTable({
                   </td>
 
                   {/* Action */}
-                  <td className="p-4 pr-6 align-middle text-right">
-                    <button
-                      onClick={() => setActiveCapacityMember({ userId: member.userId, name: member.name })}
-                      className="px-3.5 py-2 rounded-xl border border-app-border bg-app-muted-surface hover:bg-violet-500/10 hover:border-violet-500/40 text-app-fg text-xs font-bold shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
-                    >
-                      <Sliders className="w-3.5 h-3.5 text-violet-500" />
-                      <span>Configure Bandwidth</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-app-muted" />
-                    </button>
+                  <td className="p-4 align-middle text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!permissions.canUseCapacityPlanner) {
+                            setRestrictedFeature({
+                              name: 'Advanced Capacity Planning',
+                              desc: 'Configure Target Utilization % and explicitly manage weekly available bandwidth. Available on the Premium plan.'
+                            })
+                            return
+                          }
+                          setActiveCapacityMember({ userId: member.userId, name: member.name })
+                        }}
+                        className="px-3.5 py-2 rounded-xl border border-app-border bg-app-muted-surface hover:bg-violet-500/10 hover:border-violet-500/40 text-app-fg text-xs font-bold shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+                      >
+                        <Sliders className="w-3.5 h-3.5 text-violet-500" />
+                        <span>Configure Bandwidth</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-app-muted" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMember(member.userId, member.name)}
+                        disabled={removingMemberId === member.userId}
+                        className="p-2 text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded-xl transition-all cursor-pointer disabled:opacity-50 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                        title="Remove from project matrix"
+                      >
+                        {removingMemberId === member.userId ? (
+                          <span className="inline-block w-4 h-4 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -391,6 +434,13 @@ export default function SkillsMatrixTable({
           onShowToast={showToast}
         />
       )}
+
+      <RestrictedModal 
+        isOpen={!!restrictedFeature} 
+        onClose={() => setRestrictedFeature(null)} 
+        featureName={restrictedFeature?.name || ''} 
+        description={restrictedFeature?.desc || ''} 
+      />
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>

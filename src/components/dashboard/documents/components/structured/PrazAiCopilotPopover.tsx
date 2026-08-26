@@ -34,6 +34,7 @@ interface PrazAiCopilotPopoverProps {
   isMarketResearchContext: boolean
   isRoadmapContext: boolean
   isStrategyContext: boolean
+  organizationId?: string
   onRunAiCopilot?: (mode: AiCopilotMode, customInstruction?: string) => void
 }
 
@@ -51,6 +52,7 @@ export function PrazAiCopilotPopover({
   isMarketResearchContext,
   isRoadmapContext,
   isStrategyContext,
+  organizationId,
   onRunAiCopilot,
 }: PrazAiCopilotPopoverProps) {
   return (

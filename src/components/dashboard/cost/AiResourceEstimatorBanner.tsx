@@ -25,12 +25,12 @@ export function AiResourceEstimatorBanner({ projectId, onComplete }: AiResourceE
           {isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Estimating Resources...</span>
+              <span>Assigning Resources...</span>
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4" />
-              <span>Generate Bottom-Up Estimate</span>
+              <span>Auto-Assign Resources</span>
             </>
           )}
         </button>
@@ -44,14 +44,14 @@ export function AiResourceEstimatorBanner({ projectId, onComplete }: AiResourceE
           <div className="space-y-0.5 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
-                AUTO-ASSIGN RESOURCES (BOTTOM-UP)
+                AI RESOURCE ASSIGNMENT
               </h3>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-violet-600 text-white uppercase tracking-wider">
                 Praz-AI Module
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-300">
-              Praz-AI can analyze your Work Breakdown Structure and schedule to automatically catalog required resource roles and assign realistic hours/units to each work package, building a true bottom-up estimate.
+              Praz-AI will analyze your Work Breakdown Structure and schedule to automatically catalog required resource roles, assign realistic hours to each work package, and generate a baseline cost estimate.
             </p>
           </div>
         </div>

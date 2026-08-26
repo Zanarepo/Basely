@@ -267,10 +267,13 @@ export async function sendDirectEmail(to: string, context: { subject: string; ti
           <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-top: 0; margin-bottom: 16px;">${context.title}</h2>
           <p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 28px; white-space: pre-line;">${context.message}</p>
           <div style="text-align: center; margin: 32px 0;">
-            <a href="${context.actionUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff !important; padding: 12px 26px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+            <a href="${context.actionUrl.startsWith('/') ? `${siteUrl}${context.actionUrl}` : context.actionUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff !important; padding: 12px 26px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">
               <span style="color: #ffffff;">View Details</span>
             </a>
           </div>
+          <p style="font-size: 13px; color: #6b7280; text-align: center; margin-top: 16px;">
+            <em>Note: If you do not have an account, you will be prompted to sign up. Please use this email address so we can link you to your approvals.</em>
+          </p>
           <div style="border-top: 1px solid #f3f4f6; padding-top: 24px; margin-top: 24px;">
             <p style="font-size: 14px; color: #6b7280; margin: 0;">Best regards,<br/><strong>The Prazaner Team</strong></p>
           </div>

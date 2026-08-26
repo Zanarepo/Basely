@@ -38,6 +38,7 @@ export default async function ApprovalsPage() {
   const orgName = organization?.name ?? 'Your workspace'
   const isOwner = organization?.owner_id === user.id
   const isAdmin = active?.role === 'Admin' || isOwner
+  const canApprove = isAdmin || active?.role === 'PM' || active?.role === 'Sponsor'
 
   if (!active) {
     return (
@@ -89,21 +90,69 @@ export default async function ApprovalsPage() {
     .eq('approval_policies.organization_id', active.organization_id)
     .order('created_at', { ascending: false })
 
-  if (!isAdmin) {
+  if (!canApprove) {
     query.eq('requested_by_user_id', user.id)
   }
 
   const { data: requests } = await query
 
+  // 3️⃣ Fetch missing profiles for users not in organization_members
+  const missingUserIds = new Set<string>()
+  ;(requests || []).forEach((req: any) => {
+    if (req.requested_by_user_id && !memberMap.has(req.requested_by_user_id)) {
+      missingUserIds.add(req.requested_by_user_id)
+    }
+    if (req.decided_by_user_id && !memberMap.has(req.decided_by_user_id)) {
+      missingUserIds.add(req.decided_by_user_id)
+    }
+  })
+
+  if (missingUserIds.size > 0) {
+    const { data: missingProfiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('id', Array.from(missingUserIds))
+
+    if (missingProfiles) {
+      missingProfiles.forEach(p => {
+        memberMap.set(p.id, {
+          name: p.full_name?.trim() || p.email || 'Unknown User',
+          email: p.email || ''
+        })
+      })
+    }
+  }
+
+  // 4️⃣ Fetch project names
+  const projectIds = new Set<string>()
+  ;(requests || []).forEach((req: any) => {
+    const pid = req.payload?.baseline?.project_id || req.payload?.project_id
+    if (pid) projectIds.add(pid)
+  })
+
+  const projectMap = new Map<string, string>()
+  if (projectIds.size > 0) {
+    const { data: projects } = await supabase
+      .from('projects')
+      .select('id, name')
+      .in('id', Array.from(projectIds))
+    
+    if (projects) {
+      projects.forEach(p => projectMap.set(p.id, p.name))
+    }
+  }
+
   const mappedRequests = (requests || []).map((req: any) => {
     const requester = memberMap.get(req.requested_by_user_id)
     const decider = req.decided_by_user_id ? memberMap.get(req.decided_by_user_id) : null
+    const pid = req.payload?.baseline?.project_id || req.payload?.project_id
     return {
       ...req,
       action_type: req.approval_policies?.action_type,
       requester_name: requester?.name || 'Unknown User',
       requester_email: requester?.email || '',
       decider_name: decider?.name || null,
+      project_name: pid ? projectMap.get(pid) : undefined,
     }
   })
 
@@ -123,7 +172,7 @@ export default async function ApprovalsPage() {
       <ApprovalsWorkspace 
         organizationId={active.organization_id} 
         requests={mappedRequests} 
-        isAdmin={isAdmin}
+        canApprove={canApprove}
         currentUserId={user.id}
       />
     </div>

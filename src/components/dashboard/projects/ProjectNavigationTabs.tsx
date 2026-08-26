@@ -47,7 +47,7 @@ export default function ProjectNavigationTabs({ projectId, activeTab, canViewCos
     { id: 'cost', label: 'Budget & Cost', shortLabel: 'Cost' },
     { id: 'stakeholders', label: 'Stakeholders', shortLabel: 'People' },
     { id: 'risks', label: 'Risks & Issues', shortLabel: 'Risks' },
-    { id: 'documents', label: 'Documents', shortLabel: 'Docs' },
+    { id: 'documents', label: 'Intelligence Hub', shortLabel: 'Hub' },
     { id: 'action_items', label: 'Action Items', shortLabel: 'Actions' },
     { id: 'team', label: 'Team & Access', shortLabel: 'Team' },
   ], [isProductMode])

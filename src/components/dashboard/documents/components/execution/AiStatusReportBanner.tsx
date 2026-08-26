@@ -4,17 +4,25 @@ import { useState } from 'react'
 import { Sparkles, BarChart, CheckCircle2 } from 'lucide-react'
 import { AiHoverBannerWrapper } from '../AiHoverBannerWrapper'
 import { generateStatusReport } from '@/lib/documents/ai-execution-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 interface AiStatusReportBannerProps {
   projectId: string
+  organizationId: string
   onGenerated: (data: Record<string, string>) => void
   onShowToast?: (type: 'success' | 'error', msg: string) => void
 }
 
-export function AiStatusReportBanner({ projectId, onGenerated, onShowToast }: AiStatusReportBannerProps) {
+export function AiStatusReportBanner({ projectId, organizationId, onGenerated, onShowToast }: AiStatusReportBannerProps) {
   const [isGenerating, setIsGenerating] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const handleGenerate = async () => {
+    if (isGenerating || isChecking) return
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
+
     setIsGenerating(true)
     onShowToast?.('success', 'Praz-AI is synthesizing your execution data...')
 
@@ -22,6 +30,7 @@ export function AiStatusReportBanner({ projectId, onGenerated, onShowToast }: Ai
 
     setIsGenerating(false)
     if (res.ok && res.data) {
+      await recordUsage('generations')
       onShowToast?.('success', 'Status Report generated successfully!')
       onGenerated(res.data)
     } else {
@@ -77,6 +86,7 @@ export function AiStatusReportBanner({ projectId, onGenerated, onShowToast }: Ai
           </button>
         </div>
       </div>
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

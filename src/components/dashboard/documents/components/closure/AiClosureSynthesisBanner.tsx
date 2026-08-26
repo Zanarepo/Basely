@@ -3,20 +3,28 @@
 import { useState } from 'react'
 import { Sparkles } from 'lucide-react'
 import { generateClosureSynthesis } from '@/lib/documents/ai-closure-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 interface AiClosureSynthesisBannerProps {
   projectId: string
+  organizationId: string
   docType: 'lessons_learned' | 'post_implementation_review'
   onGenerated: (data: Record<string, string>) => void
   onShowToast?: (type: 'success' | 'error', msg: string) => void
 }
 
-export function AiClosureSynthesisBanner({ projectId, docType, onGenerated, onShowToast }: AiClosureSynthesisBannerProps) {
+export function AiClosureSynthesisBanner({ projectId, organizationId, docType, onGenerated, onShowToast }: AiClosureSynthesisBannerProps) {
   const [isGenerating, setIsGenerating] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const handleGenerate = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    if (isGenerating || isChecking) return
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
+
     setIsGenerating(true)
     onShowToast?.('success', 'Praz-AI is synthesizing project outcomes...')
 
@@ -24,6 +32,7 @@ export function AiClosureSynthesisBanner({ projectId, docType, onGenerated, onSh
       const res = await generateClosureSynthesis(projectId, docType, 'openai')
 
       if (res.ok && res.data) {
+        await recordUsage('generations')
         onShowToast?.('success', 'Closure Synthesis generated successfully!')
         onGenerated(res.data)
       } else {
@@ -93,6 +102,7 @@ export function AiClosureSynthesisBanner({ projectId, docType, onGenerated, onSh
           </button>
         </div>
       </div>
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

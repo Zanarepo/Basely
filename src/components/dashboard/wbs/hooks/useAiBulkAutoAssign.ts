@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { bulkSuggestRaciAssignments } from '@/lib/wbs/ai-assignment-actions'
 import { replaceResponsibleRole, replaceAccountableRole, assignRaciRole } from '@/lib/wbs/raci-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
 
 interface UseAiBulkAutoAssignProps {
   organizationId: string
@@ -22,15 +23,22 @@ export function useAiBulkAutoAssign({
   onShowToast
 }: UseAiBulkAutoAssignProps) {
   const [isGenerating, setIsGenerating] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const handleBulkAiSuggest = async () => {
-    if (wbsElementIds.length === 0) {
-      onShowToast('info', 'No unassigned work packages to process.')
+    if (wbsElementIds.length === 0 || isGenerating || isChecking) {
+      if (wbsElementIds.length === 0) onShowToast('info', 'No unassigned work packages to process.')
       return
     }
 
     setIsGenerating(true)
     onShowToast('info', `Praz-AI is analyzing skills for ${wbsElementIds.length} tasks...`)
+
+    const allowed = await checkLimit('max_ai_basic_actions')
+    if (!allowed) {
+      setIsGenerating(false)
+      return
+    }
 
     try {
       const res = await bulkSuggestRaciAssignments(organizationId, projectId, wbsElementIds)
@@ -65,6 +73,7 @@ export function useAiBulkAutoAssign({
       }
       
       onShowToast('success', `Praz-AI successfully auto-assigned ${successCount} tasks!`)
+      await recordUsage('basic_actions', wbsElementIds.length)
       if (onAssignmentsCompleted) onAssignmentsCompleted()
       
     } catch (err: any) {
@@ -73,18 +82,9 @@ export function useAiBulkAutoAssign({
       setIsGenerating(false)
     }
   }
-
-  // Same gating logic as ADR
-  const isEnterprise = tier === 'enterprise'
-  const isPremium = tier === 'premium'
-  const isAllowed = isEnterprise || (isPremium && aiEnabled)
-  const isFree = tier === 'free'
-
   return {
     isGenerating,
     handleBulkAiSuggest,
-    isAllowed,
-    isFree,
-    isPremium
+    UpgradePromptModalProps
   }
 }

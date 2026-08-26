@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import type { Activity, Dependency } from '@/lib/schedule/cpm'
 import { getX, isValidDateStr } from './canvasUtils'
+import { getDependencyPath, type DependencyLineStyle } from './dependencyPathUtils'
 
 type GanttTimelineDependenciesProps = {
   dependencies: Dependency[]
@@ -13,6 +15,9 @@ type GanttTimelineDependenciesProps = {
   hasEditAccess: boolean
   onDeleteDependency: (depId: string) => void
   timelineStart: string
+  showAllDependencies?: boolean
+  hoveredTaskId?: string | null
+  dependencyStyle?: DependencyLineStyle
 }
 
 export function GanttTimelineDependencies({
@@ -27,10 +32,52 @@ export function GanttTimelineDependencies({
   hasEditAccess,
   onDeleteDependency,
   timelineStart,
+  showAllDependencies = false,
+  hoveredTaskId = null,
+  dependencyStyle = 'curved',
 }: GanttTimelineDependenciesProps) {
+  // Track which dependency line is currently hovered to show its badge
+  const [hoveredLineId, setHoveredLineId] = useState<string | null>(null)
+
+  // Determine which dependencies should be visible
+  const visibleDependencies = dependencies.filter(dep => {
+    if (hoveredTaskId) {
+      return dep.predecessorId === hoveredTaskId || dep.successorId === hoveredTaskId
+    }
+    if (showAllDependencies) {
+      return true
+    }
+    const predAct = activities.find(a => a.id === dep.predecessorId)
+    const succAct = activities.find(a => a.id === dep.successorId)
+    return predAct?.isCritical && succAct?.isCritical
+  })
+
+  // Pre-calculate rendering data so we don't duplicate logic for SVG lines and HTML badges
+  const renderData = visibleDependencies.map(dep => {
+    const predRowIdx = actRowIndexMap.get(dep.predecessorId)
+    const succRowIdx = actRowIndexMap.get(dep.successorId)
+    const predAct = activities.find((a) => a.id === dep.predecessorId)
+    const succAct = activities.find((a) => a.id === dep.successorId)
+
+    if (predRowIdx === undefined || succRowIdx === undefined || !predAct || !succAct) {
+      return null
+    }
+    if (!isValidDateStr(predAct.ef) || !isValidDateStr(succAct.es)) {
+      return null
+    }
+
+    const startX = getX(predAct.ef!, timelineStart, dayWidth) + dayWidth
+    const startY = predRowIdx * rowHeight + headerHeight + rowHeight / 2
+    const endX = getX(succAct.es!, timelineStart, dayWidth)
+    const endY = succRowIdx * rowHeight + headerHeight + rowHeight / 2
+
+    const { pathData, badgeX, badgeY } = getDependencyPath(startX, startY, endX, endY, dependencyStyle)
+
+    return { dep, pathData, badgeX, badgeY, predAct, succAct }
+  }).filter((data): data is NonNullable<typeof data> => data !== null)
+
   return (
     <>
-      {/* SVG overlay canvas for dependencies */}
       <svg
         className="absolute inset-0 z-10 pointer-events-none"
         style={{ width: `${canvasWidth}px`, height: '100%' }}
@@ -45,99 +92,78 @@ export function GanttTimelineDependencies({
             markerHeight="6"
             orient="auto-start-reverse"
           >
-            <path d="M 0 1 L 10 5 L 0 9 z" fill="rgb(99, 102, 241)" />
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="currentColor" />
           </marker>
         </defs>
 
         {/* Render Saved Dependencies */}
-        {dependencies.map((dep) => {
-          const predRowIdx = actRowIndexMap.get(dep.predecessorId)
-          const succRowIdx = actRowIndexMap.get(dep.successorId)
-          const predAct = activities.find((a) => a.id === dep.predecessorId)
-          const succAct = activities.find((a) => a.id === dep.successorId)
-
-          if (predRowIdx === undefined || succRowIdx === undefined || !predAct || !succAct) {
-            return null
-          }
-          if (!isValidDateStr(predAct.ef) || !isValidDateStr(succAct.es)) {
-            return null
-          }
-
-          // Calculate anchor positions
-          const startX = getX(predAct.ef!, timelineStart, dayWidth) + dayWidth
-          const startY = predRowIdx * rowHeight + headerHeight + rowHeight / 2
-
-          const endX = getX(succAct.es!, timelineStart, dayWidth)
-          const endY = succRowIdx * rowHeight + headerHeight + rowHeight / 2
-
-          // Build orthogonal polyline path
-          const midX = startX + (endX - startX) / 2
-          const pathData = `M ${startX} ${startY} H ${midX} V ${endY} H ${endX}`
-
-          return (
+        {renderData.map(({ dep, pathData }) => (
+          <g 
+            key={dep.id} 
+            className={`group pointer-events-auto cursor-pointer text-indigo-500 transition-all duration-300 ${
+              hoveredLineId === dep.id
+                ? 'opacity-100 drop-shadow-sm'
+                : hoveredLineId
+                  ? 'opacity-5'
+                  : 'opacity-70'
+            }`}
+            onPointerEnter={() => setHoveredLineId(dep.id)}
+            onPointerLeave={() => setHoveredLineId(null)}
+          >
+            {/* Thick transparent path for easy hovering */}
+            <path d={pathData} fill="none" stroke="transparent" strokeWidth="16" />
+            
+            {/* Visible path */}
             <path
-              key={dep.id}
               d={pathData}
               fill="none"
-              stroke="rgb(99, 102, 241)"
+              stroke={hoveredLineId === dep.id ? 'rgb(244 63 94)' : 'currentColor'} // rose-500
               strokeWidth="1.5"
               markerEnd="url(#arrow)"
-              className="opacity-70"
             />
-          )
-        })}
+          </g>
+        ))}
 
         {/* Render in-flight link drawing line */}
-        {drawingLink && (
-          <path
-            d={`M ${drawingLink.startX} ${drawingLink.startY} L ${drawingLink.currentX} ${drawingLink.currentY}`}
-            fill="none"
-            stroke="rgb(99, 102, 241)"
-            strokeWidth="2"
-            strokeDasharray="4 4"
-            className="animate-pulse"
-          />
-        )}
+        {drawingLink && (() => {
+          const { startX, startY, currentX, currentY } = drawingLink
+          const { pathData: drawingPath } = getDependencyPath(startX, startY, currentX, currentY, dependencyStyle)
+          return (
+            <path
+              d={drawingPath}
+              fill="none"
+              stroke="rgb(99, 102, 241)"
+              strokeWidth="2"
+              strokeDasharray="4 4"
+              className="animate-pulse"
+            />
+          )
+        })()}
       </svg>
 
       {/* HTML overlay for Dependency Deletion Badges */}
       {hasEditAccess && (
-        <div className="absolute inset-0 pointer-events-none z-30">
-          {dependencies.map((dep) => {
-            const predRowIdx = actRowIndexMap.get(dep.predecessorId)
-            const succRowIdx = actRowIndexMap.get(dep.successorId)
-            const predAct = activities.find((a) => a.id === dep.predecessorId)
-            const succAct = activities.find((a) => a.id === dep.successorId)
-
-            if (predRowIdx === undefined || succRowIdx === undefined || !predAct || !succAct) {
-              return null
-            }
-            if (!isValidDateStr(predAct.ef) || !isValidDateStr(succAct.es)) {
-              return null
-            }
-
-            const startX = getX(predAct.ef!, timelineStart, dayWidth) + dayWidth
-            const startY = predRowIdx * rowHeight + headerHeight + rowHeight / 2
-
-            const endX = getX(succAct.es!, timelineStart, dayWidth)
-            const endY = succRowIdx * rowHeight + headerHeight + rowHeight / 2
-
-            const midX = startX + (endX - startX) / 2
-            const verticalCenterY = startY + (endY - startY) / 2
+        <div className="absolute inset-0 z-30 pointer-events-none">
+          {renderData.map(({ dep, badgeX, badgeY, predAct, succAct }) => {
+            // Only render the badge if this specific line is hovered
+            if (hoveredLineId !== dep.id) return null
 
             return (
               <div
                 key={`badge-${dep.id}`}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto flex items-center justify-center group"
-                style={{ left: `${midX}px`, top: `${verticalCenterY}px`, width: '28px', height: '28px' }}
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto flex items-center justify-center animate-in zoom-in-95 fade-in duration-150"
+                style={{ left: `${badgeX}px`, top: `${badgeY}px`, width: '20px', height: '20px' }}
                 title={`Delete link from ${predAct.name} to ${succAct.name}`}
+                onPointerEnter={() => setHoveredLineId(dep.id)}
+                onPointerLeave={() => setHoveredLineId(null)}
               >
                 <div
-                  className="w-6 h-6 bg-white border border-rose-200 text-rose-500 rounded-md shadow-sm flex items-center justify-center cursor-pointer hover:bg-rose-500 hover:text-white hover:border-rose-600 hover:scale-110 transition-all duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-rose-400"
+                  className="w-5 h-5 bg-white border border-rose-200 text-rose-500 rounded flex items-center justify-center cursor-pointer shadow-md dark:bg-slate-800 dark:border-slate-700 dark:text-rose-400 hover:bg-rose-500 hover:text-white hover:border-rose-600 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation()
                     if (confirm(`Delete dependency from "${predAct.name}" to "${succAct.name}"?`)) {
                       onDeleteDependency(dep.id)
+                      setHoveredLineId(null)
                     }
                   }}
                 >

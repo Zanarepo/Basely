@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/client'
 export interface ApprovalPolicy {
   id?: string
   organization_id: string
-  action_type: 'budget_baseline' | 'schedule_baseline'
+  action_type: 'budget_baseline' | 'schedule_baseline' | 'change_request'
   approver_definition: string
   enabled: boolean
 }
@@ -38,7 +38,7 @@ export function useApprovalPolicies(organizationId: string) {
     }
   }, [organizationId])
 
-  const togglePolicy = async (actionType: 'budget_baseline' | 'schedule_baseline', enabled: boolean) => {
+  const togglePolicy = async (actionType: 'budget_baseline' | 'schedule_baseline' | 'change_request', enabled: boolean) => {
     if (!organizationId) return { success: false, error: 'Organization ID missing' }
 
     try {

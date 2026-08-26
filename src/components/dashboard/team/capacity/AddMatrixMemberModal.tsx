@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, UserPlus, Users, Sparkles, Save, ShieldCheck, Briefcase } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import { createClient } from '@/utils/supabase/client'
 import { saveMemberCapacity } from '@/lib/team/capacity-actions'
 import { assignProjectMember } from '@/lib/projects/actions'
+import { Link as LinkIcon, Unlink } from 'lucide-react'
 
 interface WorkspaceMember {
   userId: string
@@ -47,16 +49,61 @@ export default function AddMatrixMemberModal({
   )
   const [selectedUserId, setSelectedUserId] = useState('')
   const [customName, setCustomName] = useState('')
-  const [customRole, setCustomRole] = useState('Senior Systems Architect')
+  const [customRole, setCustomRole] = useState('')
   const [customEmail, setCustomEmail] = useState('')
   const [hours, setHours] = useState('40')
   const [velocity, setVelocity] = useState('15')
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [stakeholders, setStakeholders] = useState<any[]>([])
+
+  const supabase = createClient()
+
+
+  useEffect(() => {
+    if (projectId) {
+      supabase.from('stakeholders').select('*').eq('project_id', projectId)
+        .then(({ data }) => setStakeholders(data || []))
+    }
+  }, [projectId])
 
   if (!isOpen) return null
 
   const unaddedWorkspaceMembers = workspaceMembers.filter(m => !existingMemberIds.includes(m.userId))
+  const unaddedStakeholders = stakeholders.filter(s => !existingMemberIds.includes(s.id))
+
+  const handleLinkSelect = (val: string) => {
+    setSelectedUserId(val)
+    if (!val) {
+      setCustomName('')
+      setCustomRole('')
+      setCustomEmail('')
+      return
+    }
+    if (val.startsWith('ws_')) {
+      const uid = val.replace('ws_', '')
+      const member = workspaceMembers.find(m => m.userId === uid)
+      if (member) {
+        setCustomName(member.name)
+        setCustomRole(member.role || '')
+        setCustomEmail(member.email || '')
+      }
+    } else if (val.startsWith('sh_')) {
+      const sid = val.replace('sh_', '')
+      const sh = stakeholders.find(s => s.id === sid)
+      if (sh) {
+        setCustomName(sh.name || '')
+        setCustomRole(sh.role_title || '')
+        setCustomEmail(sh.email || '')
+      }
+    }
+  }
+
+  const linkOptions = [
+    { value: '', label: 'Select a workspace member or stakeholder...' },
+    ...unaddedWorkspaceMembers.map(m => ({ value: `ws_${m.userId}`, label: `[Team] ${m.name}` })),
+    ...unaddedStakeholders.map(s => ({ value: `sh_${s.id}`, label: `[Stakeholder] ${s.name}` }))
+  ]
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,30 +115,24 @@ export default function AddMatrixMemberModal({
     let finalRole = ''
     let isExistingWorkspaceUser = false
 
-    if (mode === 'workspace' && unaddedWorkspaceMembers.length > 0) {
-      if (!selectedUserId && unaddedWorkspaceMembers.length > 0) {
-        setSelectedUserId(unaddedWorkspaceMembers[0].userId)
+    if (!customName.trim()) {
+      setError('Please provide the full name or designator for this specialist.')
+      setIsSaving(false)
+      return
+    }
+    
+    finalName = customName.trim()
+    finalRole = customRole.trim() || 'Specialist Resource'
+
+    if (selectedUserId) {
+      if (selectedUserId.startsWith('ws_')) {
+        finalId = selectedUserId.replace('ws_', '')
+        isExistingWorkspaceUser = true
+      } else if (selectedUserId.startsWith('sh_')) {
+        finalId = selectedUserId.replace('sh_', '')
       }
-      const chosenId = selectedUserId || (unaddedWorkspaceMembers[0]?.userId || '')
-      const found = unaddedWorkspaceMembers.find(m => m.userId === chosenId)
-      if (!found) {
-        setError('Please select a team member from the workspace database.')
-        setIsSaving(false)
-        return
-      }
-      finalId = found.userId
-      finalName = found.name
-      finalRole = found.role || 'Project Team Member'
-      isExistingWorkspaceUser = true
     } else {
-      if (!customName.trim()) {
-        setError('Please provide the full name or designator for this specialist.')
-        setIsSaving(false)
-        return
-      }
       finalId = crypto.randomUUID()
-      finalName = customName.trim()
-      finalRole = customRole.trim() || 'Specialist Resource'
     }
 
     const initials = finalName
@@ -171,36 +212,6 @@ export default function AddMatrixMemberModal({
           </button>
         </div>
 
-        {/* Mode selector */}
-        <div className="px-6 pt-4 flex border-b border-app-border bg-app-muted-surface/50 shrink-0">
-          {unaddedWorkspaceMembers.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setMode('workspace')}
-              className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
-                mode === 'workspace'
-                  ? 'border-violet-600 text-violet-600 dark:text-violet-400'
-                  : 'border-transparent text-app-muted hover:text-app-fg'
-              }`}
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span>Workspace Database ({unaddedWorkspaceMembers.length})</span>
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => setMode('custom')}
-            className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
-              mode === 'custom' || unaddedWorkspaceMembers.length === 0
-                ? 'border-violet-600 text-violet-600 dark:text-violet-400'
-                : 'border-transparent text-app-muted hover:text-app-fg'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Custom Resource / Specialist</span>
-          </button>
-        </div>
-
         {/* Form Body */}
         <form onSubmit={handleSave} className="p-6 space-y-5 overflow-y-auto flex-1">
           {error && (
@@ -209,45 +220,45 @@ export default function AddMatrixMemberModal({
             </div>
           )}
 
-          {mode === 'workspace' && unaddedWorkspaceMembers.length > 0 ? (
+          {/* Link Profile Dropdown */}
+          <div className="p-4 bg-violet-500/5 border border-violet-500/20 rounded-2xl relative">
+            <label className="flex items-center gap-2 text-sm font-bold text-app-fg mb-3">
+              <LinkIcon className="w-4 h-4 text-violet-500" />
+              Link Platform User or Stakeholder (Optional)
+            </label>
+            <div className="relative">
+              <EnterpriseSelect
+                value={selectedUserId}
+                onChange={(val) => handleLinkSelect(val as string)}
+                options={linkOptions}
+                placeholder="Select a workspace member or stakeholder..."
+                className="bg-app-surface"
+              />
+            </div>
+            <p className="text-[11px] text-app-muted mt-2 leading-relaxed">
+              Linking ensures name & role automatically stay synced with the user's platform profile or stakeholder record.
+            </p>
+          </div>
+
+          <div className="space-y-4">
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-app-muted block mb-1.5">
-                Select from Workspace Team Database <span className="text-violet-500">*</span>
+                Specialist / Contractor Full Name <span className="text-violet-500">*</span>
               </label>
-              <EnterpriseSelect
-                value={selectedUserId || (unaddedWorkspaceMembers[0]?.userId || '')}
-                onChange={(val: string) => setSelectedUserId(val)}
-                options={unaddedWorkspaceMembers.map((m) => ({
-                  value: m.userId,
-                  label: `${m.name} (${m.role || 'Member'}) - ${m.email}`
-                }))}
-                placeholder="Choose team member..."
-                className="bg-app-muted-surface"
+              <input
+                type="text"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                placeholder="e.g. Dr. Julian Vance, Sarah Lin (Consultant)..."
+                className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-medium text-app-fg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                required
               />
-              <p className="text-[11px] text-app-muted mt-1.5">
-                Selecting will assign them to this project and initialize their competency & capacity baseline.
-              </p>
             </div>
-          ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-app-muted block mb-1.5">
-                  Specialist / Contractor Full Name <span className="text-violet-500">*</span>
+                  Project Role & Designation
                 </label>
-                <input
-                  type="text"
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  placeholder="e.g. Dr. Julian Vance, Sarah Lin (Consultant)..."
-                  className="w-full h-10 px-3.5 rounded-xl bg-app-muted-surface border border-app-border text-sm font-medium text-app-fg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-app-muted block mb-1.5">
-                    Project Role & Designation
-                  </label>
                   <input
                     type="text"
                     value={customRole}
@@ -270,7 +281,6 @@ export default function AddMatrixMemberModal({
                 </div>
               </div>
             </div>
-          )}
 
           <div className="pt-2 border-t border-app-border">
             <h4 className="text-xs font-bold uppercase tracking-wider text-app-fg mb-3 flex items-center gap-1.5">

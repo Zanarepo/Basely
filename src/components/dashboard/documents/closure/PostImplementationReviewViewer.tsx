@@ -24,6 +24,7 @@ import { DocumentLoader } from '../DocumentLoader'
 
 export interface PostImplementationReviewViewerProps {
   projectId: string
+  organizationId: string
   hasEditAccess: boolean
   currentLifecycle: ProjectLifecycleStatus
   onOpenLifecycleModal?: () => void
@@ -32,6 +33,7 @@ export interface PostImplementationReviewViewerProps {
 
 export function PostImplementationReviewViewer({
   projectId,
+  organizationId,
   hasEditAccess,
   currentLifecycle,
   onOpenLifecycleModal,
@@ -202,6 +204,7 @@ export function PostImplementationReviewViewer({
       {hasEditAccess && (
         <AiClosureSynthesisBanner
           projectId={projectId}
+          organizationId={organizationId}
           docType="post_implementation_review"
           onGenerated={(data: Record<string, string>) => {
             if (data.outcome_assessment) setOutcomeText(data.outcome_assessment)

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { convertPrdToRiceBacklog, GeneratedRiceItem } from '@/lib/documents/prd-to-rice-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
 
 interface UsePrdToRiceAutomationProps {
   projectId: string
@@ -20,14 +21,22 @@ export function usePrdToRiceAutomation({
   const [generatedItems, setGeneratedItems] = useState<GeneratedRiceItem[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const handleGenerateRiceBacklog = async () => {
-    if (isGenerating) return
-    setIsGenerating(true)
+  const { checkFeature, checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
+  const handleGenerateRiceBacklog = async () => {
+    if (isGenerating || isChecking) return
+    setIsGenerating(true)
     try {
+      const allowed = await checkFeature('ai.advanced_prioritization')
+      if (!allowed) return
+
+      const withinLimit = await checkLimit('max_ai_generations')
+      if (!withinLimit) return
+
       const res = await convertPrdToRiceBacklog(projectId, organizationId, freeText)
 
       if (res.ok && res.items) {
+        await recordUsage('generations')
         setGeneratedItems(res.items)
         setIsModalOpen(true)
         onShowToast('success', `Praz-AI generated ${res.count} RICE Backlog items!`)
@@ -48,5 +57,6 @@ export function usePrdToRiceAutomation({
     isModalOpen,
     setIsModalOpen,
     handleGenerateRiceBacklog,
+    UpgradePromptModalProps,
   }
 }

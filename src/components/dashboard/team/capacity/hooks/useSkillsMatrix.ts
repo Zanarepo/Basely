@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getTeamSkillsMatrix, getMemberCapacityAllocations, deleteMemberSkill, type MemberSkillProfile, type SkillCategory, type ProficiencyLevel } from '@/lib/team/capacity-actions'
+import { getTeamSkillsMatrix, getMemberCapacityAllocations, deleteMemberSkill, removeMemberCapacity, type MemberSkillProfile, type SkillCategory, type ProficiencyLevel } from '@/lib/team/capacity-actions'
 import { useWbsToasts } from '@/components/dashboard/wbs/workspace/hooks/useWbsToasts'
 
 export interface WorkspaceMember {
@@ -38,6 +38,7 @@ export function useSkillsMatrix(organizationId: string, projectId: string, works
   const [activeSkillModal, setActiveSkillModal] = useState<{ userId: string; name: string; skill?: MatrixSkill | null } | null>(null)
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
   const [deletingSkillId, setDeletingSkillId] = useState<string | null>(null)
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null)
   const { toasts, showToast, dismissToast } = useWbsToasts()
 
   const [members, setMembers] = useState<MatrixMember[]>([
@@ -227,6 +228,21 @@ export function useSkillsMatrix(organizationId: string, projectId: string, works
     }
   }
 
+  const handleDeleteMember = async (userId: string, name: string) => {
+    const confirm = window.confirm(`Are you sure you want to completely remove ${name} from this project's capacity matrix?`)
+    if (!confirm) return
+
+    setRemovingMemberId(userId)
+    const res = await removeMemberCapacity(projectId, userId)
+    setRemovingMemberId(null)
+    if (res.ok) {
+      setMembers(prev => prev.filter(m => m.userId !== userId))
+      showToast('success', `${name} removed from capacity matrix`)
+    } else {
+      showToast('error', res.error || 'Failed to remove member')
+    }
+  }
+
   const filteredMembers = members.filter((member) => {
     const matchesSearch = member.name.toLowerCase().includes(search.toLowerCase()) ||
                           member.role.toLowerCase().includes(search.toLowerCase()) ||
@@ -244,10 +260,11 @@ export function useSkillsMatrix(organizationId: string, projectId: string, works
     activeCapacityMember, setActiveCapacityMember,
     activeSkillModal, setActiveSkillModal,
     isAddMemberOpen, setIsAddMemberOpen,
-    deletingSkillId,
+    deletingSkillId, removingMemberId,
     toasts, showToast, dismissToast,
     members, setMembers,
     filteredMembers,
-    handleDeleteSkill
+    handleDeleteSkill,
+    handleDeleteMember
   }
 }

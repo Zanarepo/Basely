@@ -13,13 +13,14 @@ import { MeetingMinutesActionItemsList } from './meeting-minutes/MeetingMinutesA
 
 interface MeetingMinutesEditorProps {
   projectId: string
+  organizationId: string
   minuteId: string | null
   hasEditAccess: boolean
   onBack: () => void
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
 }
 
-export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBack, onShowToast }: MeetingMinutesEditorProps) {
+export function MeetingMinutesEditor({ projectId, organizationId, minuteId, hasEditAccess, onBack, onShowToast }: MeetingMinutesEditorProps) {
   const {
     isLoading,
     isSaving,
@@ -121,6 +122,7 @@ export function MeetingMinutesEditor({ projectId, minuteId, hasEditAccess, onBac
         isOpen={isCopilotOpen}
         onClose={() => setIsCopilotOpen(false)}
         projectId={projectId}
+        organizationId={organizationId}
         onExtractionComplete={handleCopilotComplete}
         onShowToast={onShowToast}
       />

@@ -50,7 +50,7 @@ export default async function DashboardPage() {
       : null
   const orgName = organization?.name ?? 'Your workspace'
   const isOwner = organization?.owner_id === effectiveUserId
-  const isAdminOrPM = isOwner || active?.role === 'Admin' || active?.role === 'PM'
+  const isAdminOrPM = isOwner || active?.role === 'Admin' || active?.role === 'PM' || active?.role === 'Sponsor'
 
   // 2️⃣ Fetch all workspace projects (with fallback if is_locked migration hasn't run yet)
   let { data: projectsData, error: projError } = await supabase
@@ -72,6 +72,7 @@ export default async function DashboardPage() {
   const projectIds = (projectsData ?? []).map((p) => p.id)
   let assignments: Record<string, string[]> = {}
   let memberPermissions: Record<string, { userId: string; canDelete: boolean }[]> = {}
+  let pendingStakeholders: Record<string, { email: string; name: string; role_title: string }[]> = {}
   
   if (projectIds.length > 0) {
     const { data: pmData } = await supabase
@@ -84,6 +85,18 @@ export default async function DashboardPage() {
       assignments[row.project_id].push(row.user_id)
       if (!memberPermissions[row.project_id]) memberPermissions[row.project_id] = []
       memberPermissions[row.project_id].push({ userId: row.user_id, canDelete: row.can_delete === true })
+    })
+
+    const { data: stData } = await supabase
+      .from('stakeholders')
+      .select('project_id, name, email, role_title')
+      .in('project_id', projectIds)
+      .not('email', 'is', null)
+      .is('linked_user_id', null)
+      
+    stData?.forEach((row) => {
+      if (!pendingStakeholders[row.project_id]) pendingStakeholders[row.project_id] = []
+      pendingStakeholders[row.project_id].push({ email: row.email, name: row.name || row.email, role_title: row.role_title })
     })
   }
 
@@ -101,14 +114,15 @@ export default async function DashboardPage() {
     createdBy: p.created_by,
     assignedMembers: assignments[p.id] || [],
     memberPermissions: memberPermissions[p.id] || [],
+    pendingStakeholders: pendingStakeholders[p.id] || [],
     calendarConfig: typeof p.calendar_config === 'string'
       ? JSON.parse(p.calendar_config)
       : p.calendar_config ?? { working_days: [1, 2, 3, 4, 5], daily_hours: 8 },
     allow_team_schedule_edits: p.allow_team_schedule_edits ?? false,
   }))
 
-  // Filter projects: Owner and Admin see all; everyone else only sees projects they are explicitly assigned to or created
-  const projects = isAdminOrPM && (isOwner || active?.role === 'Admin')
+  // Filter projects: Owner, Admin, PM, and Sponsor see all active projects; everyone else only sees projects they are explicitly assigned to or created
+  const projects = isAdminOrPM
     ? allProjects
     : allProjects.filter((p) => p.createdBy === effectiveUserId || p.assignedMembers.includes(effectiveUserId))
 

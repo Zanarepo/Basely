@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { generateNorthStarFromStrategy } from '@/lib/documents/ai-chain-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
 
 export function useGenerateNorthStar(
   organizationId: string, 
@@ -8,8 +9,13 @@ export function useGenerateNorthStar(
   showToast: (msg: string, type: 'success' | 'error' | 'info') => void
 ) {
   const [isGenerating, setIsGenerating] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const handleGenerate = async () => {
+    if (isGenerating || isChecking) return
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
+
     setIsGenerating(true)
     showToast('Praz-AI is analyzing Strategy Canvas to generate North Star metrics...', 'info')
     
@@ -17,6 +23,7 @@ export function useGenerateNorthStar(
       const { ok, error } = await generateNorthStarFromStrategy(projectId, organizationId)
       
       if (ok) {
+        await recordUsage('generations')
         showToast('North Star Metrics & Growth Levers successfully generated!', 'success')
         onSuccess()
       } else {
@@ -29,5 +36,5 @@ export function useGenerateNorthStar(
     }
   }
 
-  return { isGenerating, handleGenerate }
+  return { isGenerating, handleGenerate, UpgradePromptModalProps }
 }

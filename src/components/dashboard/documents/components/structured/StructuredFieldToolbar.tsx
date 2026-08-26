@@ -32,6 +32,7 @@ interface StructuredFieldToolbarProps {
   isAiLoading?: boolean
   documentType?: string
   sectionTitle?: string
+  organizationId?: string
 }
 
 export default function StructuredFieldToolbar({
@@ -49,6 +50,7 @@ export default function StructuredFieldToolbar({
   isAiLoading,
   documentType = '',
   sectionTitle = '',
+  organizationId,
 }: StructuredFieldToolbarProps) {
   const {
     showCalloutMenu,
@@ -176,6 +178,7 @@ export default function StructuredFieldToolbar({
               isRoadmapContext={isRoadmapContext}
               isStrategyContext={isStrategyContext}
               onRunAiCopilot={onRunAiCopilot}
+              organizationId={organizationId}
             />
 
             <div className="w-px h-4 bg-app-border mx-1" />

@@ -139,6 +139,32 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
     setDeleting(false)
   }
 
+  const handleDeleteSingle = async (id: string) => {
+    if (!hasEditAccess) return
+    const confirm = window.confirm('Are you sure you want to remove this stakeholder?')
+    if (!confirm) return
+
+    setDeleting(true)
+    const { error } = await supabase
+      .from('stakeholders')
+      .delete()
+      .eq('id', id)
+    
+    if (error) {
+      console.error(error)
+      onShowToast('error', `Failed to delete stakeholder: ${error.message}`)
+    } else {
+      setStakeholders(prev => prev.filter(s => s.id !== id))
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+      onShowToast('success', 'Stakeholder deleted')
+    }
+    setDeleting(false)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -298,13 +324,21 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
                     <td className="p-4 text-center text-sm font-bold text-app-fg">
                       {s.interest || '-'}
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="p-4 flex items-center justify-end gap-1">
                       {hasEditAccess && (
                         <button
                           onClick={() => onEdit(s.id)}
-                          className="p-2 text-app-muted hover:text-violet-500 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-violet-500/10"
+                          className="p-2 text-app-muted hover:text-violet-500 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-violet-500/10 cursor-pointer"
                         >
                           <ExternalLink className="h-4 w-4" />
+                        </button>
+                      )}
+                      {hasEditAccess && !s.linked_user_id && (
+                        <button
+                          onClick={() => handleDeleteSingle(s.id)}
+                          className="p-2 text-rose-500 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all rounded-lg cursor-pointer"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       )}
                     </td>

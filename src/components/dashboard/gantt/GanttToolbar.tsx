@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Calendar, ZoomIn, ZoomOut, PanelLeftClose, PanelLeftOpen, Edit3, Trash2, ChevronDown, Check, Archive } from 'lucide-react'
+import { Calendar, ZoomIn, ZoomOut, PanelLeftClose, PanelLeftOpen, Edit3, Trash2, ChevronDown, Check, Archive, Eye, EyeOff, Spline, CornerDownRight } from 'lucide-react'
 import { GanttToolbarMoreMenu } from './GanttToolbarMoreMenu'
 import type { Iteration } from '@/lib/releases/types'
+import type { DependencyLineStyle } from './dependencyPathUtils'
 
 type GanttToolbarProps = {
   zoom: 'day' | 'week' | 'month' | 'quarter'
@@ -32,6 +33,10 @@ type GanttToolbarProps = {
   hideCompleted?: boolean
   onToggleHideCompleted?: () => void
   completedCount?: number
+  showAllDependencies?: boolean
+  setShowAllDependencies?: React.Dispatch<React.SetStateAction<boolean>>
+  dependencyStyle?: DependencyLineStyle
+  setDependencyStyle?: React.Dispatch<React.SetStateAction<DependencyLineStyle>>
 }
 
 export function GanttToolbar({
@@ -61,6 +66,10 @@ export function GanttToolbar({
   hideCompleted = false,
   onToggleHideCompleted,
   completedCount = 0,
+  showAllDependencies = false,
+  setShowAllDependencies,
+  dependencyStyle = 'curved',
+  setDependencyStyle,
 }: GanttToolbarProps) {
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const isAgile = methodology === 'Agile' || methodology === 'Hybrid'
@@ -254,6 +263,34 @@ export function GanttToolbar({
               </span>
             )}
           </button>
+        )}
+
+        {/* Show All Dependencies Toggle */}
+        {setShowAllDependencies && (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setShowAllDependencies((prev) => !prev)}
+              className={`p-2 h-9 w-9 rounded-xl border transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-2xs ${
+                showAllDependencies
+                  ? 'bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-300 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20'
+                  : 'bg-app-surface text-app-subtle border-app-border hover:text-app-fg hover:bg-app-hover'
+              }`}
+              title={showAllDependencies ? "Hide all connections" : "Show all connections"}
+            >
+              {showAllDependencies ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </button>
+            {setDependencyStyle && (
+              <button
+                type="button"
+                onClick={() => setDependencyStyle(prev => prev === 'curved' ? 'orthogonal' : 'curved')}
+                className="p-2 h-9 w-9 rounded-xl border transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-2xs bg-app-surface text-app-subtle border-app-border hover:text-app-fg hover:bg-app-hover"
+                title={dependencyStyle === 'curved' ? "Switch to Straight lines" : "Switch to Curved lines"}
+              >
+                {dependencyStyle === 'curved' ? <Spline className="w-4 h-4" /> : <CornerDownRight className="w-4 h-4" />}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Zoom controls */}

@@ -180,7 +180,8 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
           <div className="space-y-4 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {tiers.map((t) => {
-                const isSelected = tier === t.id && (!isExpired || t.id === 'free')
+                const isCurrentPlan = tier === t.id
+                const isActivePlan = isCurrentPlan && (!isExpired || t.id === 'free')
                 
                 // Calculate localized price
                 const baseInfo = calculatePppPrice(basePrices[t.id], countryCode, dynamicRegion)
@@ -199,15 +200,18 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
                   <div
                     key={t.id}
                     className={`flex flex-col justify-between p-5 rounded-2xl border transition-all duration-300 ${
-                      isSelected
+                      isActivePlan
                         ? 'bg-white dark:bg-gray-800 border-violet-500 ring-1 ring-violet-500 shadow-sm'
+                        : isCurrentPlan
+                        ? 'bg-white dark:bg-gray-800 border-amber-500 ring-1 ring-amber-500 shadow-sm'
                         : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 shadow-sm'
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between gap-1 mb-2">
                         <strong className="text-base text-gray-900 dark:text-white font-extrabold">{t.name}</strong>
-                        {isSelected && <span className="text-sm text-violet-600 dark:text-violet-400 font-bold">✓ Active</span>}
+                        {isActivePlan && <span className="text-sm text-violet-600 dark:text-violet-400 font-bold">✓ Active</span>}
+                        {isCurrentPlan && !isActivePlan && <span className="text-sm text-amber-600 dark:text-amber-400 font-bold">⚠ Expired</span>}
                       </div>
                       
                       {/* Pricing Display */}
@@ -246,41 +250,43 @@ export const BillingDashboard: React.FC<BillingDashboardProps> = ({
                       </div>
                       
                       <span className="text-xs text-violet-600 dark:text-violet-400 font-medium block">{t.badge}</span>
+                      
+                      {/* Hover-revealed button */}
+                      <button
+                        disabled={updating || isActivePlan || isCheckoutLoading !== null}
+                        onClick={() => handleCheckout(t.id)}
+                        style={{ cursor: isActivePlan ? 'default' : 'pointer' }}
+                        className={`mt-6 w-full py-2.5 px-4 text-sm font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
+                          isHovered || isActivePlan || isCurrentPlan || isCheckoutLoading === t.id
+                            ? 'opacity-100'
+                            : 'opacity-100 sm:opacity-0'
+                        } ${
+                          isActivePlan
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed border border-gray-200 dark:border-white/5'
+                            : 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm'
+                        }`}
+                      >
+                        {isCheckoutLoading === t.id ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Loading...
+                          </>
+                        ) : updating ? (
+                          'Processing...'
+                        ) : isActivePlan ? (
+                          'Current Plan'
+                        ) : isCurrentPlan && !isActivePlan ? (
+                          'Renew Plan'
+                        ) : t.id === 'free' ? (
+                          'Downgrade to Free'
+                        ) : (
+                          `Checkout ${t.name.toUpperCase()}`
+                        )}
+                      </button>
                     </div>
-
-                    {/* Hover-revealed button */}
-                    <button
-                      disabled={updating || isSelected || isCheckoutLoading !== null}
-                      onClick={() => handleCheckout(t.id)}
-                      style={{ cursor: isSelected ? 'default' : 'pointer' }}
-                      className={`mt-6 w-full py-2.5 px-4 text-sm font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
-                        isHovered || isSelected || isCheckoutLoading === t.id
-                          ? 'opacity-100'
-                          : 'opacity-100 sm:opacity-0'
-                      } ${
-                        isSelected
-                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed border border-gray-200 dark:border-white/5'
-                          : 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm'
-                      }`}
-                    >
-                      {isCheckoutLoading === t.id ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Loading...
-                        </>
-                      ) : updating ? (
-                        'Processing...'
-                      ) : isSelected ? (
-                        'Current Plan'
-                      ) : t.id === 'free' ? (
-                        'Downgrade to Free'
-                      ) : (
-                        `Checkout ${t.id.toUpperCase()}`
-                      )}
-                    </button>
                   </div>
                 )
               })}

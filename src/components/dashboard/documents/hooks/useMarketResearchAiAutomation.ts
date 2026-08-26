@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { draftMarketResearchFromBusinessCase, synthesizeStrategyFromResearch, draftCompetitiveSpecFromMatrix } from '@/lib/documents/ai-chain-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
 
 interface UseMarketResearchAiAutomationProps {
   projectId: string
@@ -24,13 +25,19 @@ export function useMarketResearchAiAutomation({
   const [isMarketResearchDone, setIsMarketResearchDone] = useState(false)
   const [isDraftingCompetitiveSpec, setIsDraftingCompetitiveSpec] = useState(false)
   const [isCompetitiveSpecDone, setIsCompetitiveSpecDone] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const handleSynthesizeStrategy = async () => {
+    if (isSynthesizingStrategy || isChecking) return
     setIsSynthesizingStrategy(true)
     try {
+      const allowed = await checkLimit('max_ai_generations')
+      if (!allowed) return
+
       const res = await synthesizeStrategyFromResearch(projectId, freeText)
       if (res.ok) {
         setIsStrategyDone(true)
+        await recordUsage('generations')
         onShowToast(
           'success',
           '⚡ Product Strategy synthesized! Switch to Product Strategy in the sidebar to review.'
@@ -47,14 +54,19 @@ export function useMarketResearchAiAutomation({
   }
 
   const handleDraftMarketResearch = async () => {
+    if (isDraftingMarketResearch || isChecking) return
     setIsDraftingMarketResearch(true)
     try {
+      const allowed = await checkLimit('max_ai_generations')
+      if (!allowed) return
+
       const res = await draftMarketResearchFromBusinessCase(projectId, organizationId, templateId)
       if (res.ok && res.data) {
         if (onGenerated) {
           onGenerated(res.data)
         }
         setIsMarketResearchDone(true)
+        await recordUsage('generations')
         onShowToast('success', '⚡ Market Research drafted from Business Case/Feasibility Study!')
       } else {
         onShowToast('error', res.error || 'Failed to draft Market Research')
@@ -68,14 +80,19 @@ export function useMarketResearchAiAutomation({
   }
 
   const handleDraftCompetitiveSpec = async () => {
+    if (isDraftingCompetitiveSpec || isChecking) return
     setIsDraftingCompetitiveSpec(true)
     try {
+      const allowed = await checkLimit('max_ai_generations')
+      if (!allowed) return
+
       const res = await draftCompetitiveSpecFromMatrix(projectId, organizationId)
       if (res.ok && res.data) {
         if (onGenerated) {
           onGenerated(res.data)
         }
         setIsCompetitiveSpecDone(true)
+        await recordUsage('generations')
         onShowToast('success', '⚡ Competitive Spec drafted from Matrix!')
       } else {
         onShowToast('error', res.error || 'Failed to draft Competitive Spec')
@@ -98,5 +115,6 @@ export function useMarketResearchAiAutomation({
     handleSynthesizeStrategy,
     handleDraftMarketResearch,
     handleDraftCompetitiveSpec,
+    UpgradePromptModalProps,
   }
 }

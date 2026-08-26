@@ -31,9 +31,7 @@ export async function generateRisksFromDocuments(
     const isEnterprise = sub.tierId === 'enterprise'
     const isPremium = sub.tierId === 'premium'
 
-    if (!isEnterprise && !isPremium) {
-      return { ok: false, error: 'Praz-AI Multi-Document Synthesis is only available on Premium and Enterprise plans.' }
-    }
+
 
     if (isPremium) {
       const aiEnabled = await getOrganizationAiEnabled(organizationId)
@@ -172,9 +170,7 @@ export async function scanExecutionRisks(
     const isEnterprise = sub.tierId === 'enterprise'
     const isPremium = sub.tierId === 'premium'
 
-    if (!isEnterprise && !isPremium) {
-      return { ok: false, error: 'Praz-AI Multi-Document Synthesis is only available on Premium and Enterprise plans.' }
-    }
+
 
     if (isPremium) {
       const aiEnabled = await getOrganizationAiEnabled(organizationId)

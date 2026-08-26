@@ -26,9 +26,7 @@ export async function suggestAssigneeWithAiAction(
     const isEnterprise = sub.tierId === 'enterprise'
     const isPremium = sub.tierId === 'premium'
 
-    if (!isEnterprise && !isPremium) {
-      return { ok: false, error: 'Praz-AI Auto-Assignment is only available on Premium and Enterprise plans.' }
-    }
+
 
     if (isPremium) {
       const aiEnabled = await getOrganizationAiEnabled(organizationId)
@@ -55,17 +53,26 @@ export async function suggestAssigneeWithAiAction(
       return { ok: false, error: 'No available stakeholders found in this project to assign.' }
     }
 
-    // 3b. Fetch Skills for these stakeholders
+    // 3b. Fetch Skills and Capacity for these stakeholders
     const userIds = stakeholders.map((s: any) => s.linked_user_id).filter(Boolean) as string[]
     let skillsData: any[] = []
+    let capacityData: any[] = []
     if (userIds.length > 0) {
-      const { data: skills } = await supabase
-        .from('member_skill_profiles')
-        .select('*')
-        .eq('organization_id', organizationId)
-        .in('user_id', userIds)
+      const [{ data: skills }, { data: capacities }] = await Promise.all([
+        supabase
+          .from('member_skill_profiles')
+          .select('*')
+          .eq('organization_id', organizationId)
+          .in('user_id', userIds),
+        supabase
+          .from('member_capacity_allocations')
+          .select('*')
+          .eq('project_id', projectId)
+          .in('user_id', userIds)
+      ])
       
       if (skills) skillsData = skills
+      if (capacities) capacityData = capacities
     }
 
     // 4. Formulate Prompt
@@ -89,15 +96,20 @@ Output a JSON object exactly matching this schema:
       Description: ${element.description || 'No description provided.'}
       Checklist Items: ${(element.deliverables_data as any[] || []).map(i => i.text).join(', ') || 'None'}
       
-      AVAILABLE STAKEHOLDERS (Include their skills):
+      AVAILABLE STAKEHOLDERS (Include their skills and capacity):
       ${stakeholders.map((s: any) => {
         const userSkills = skillsData.filter(sk => sk.user_id === s.linked_user_id)
         const skillsString = userSkills.length > 0 ? userSkills.map(sk => `${sk.skill_name} (${sk.proficiency_level})`).join(', ') : 'No specific skills listed'
-        return `- ID: ${s.id} | Name: ${s.name} | Type: ${s.organization_type} | Role: ${s.role_title || s.sub_category || 'N/A'} | Influence/Interest: ${s.influence || 3}/${s.interest || 3} | Details: ${s.profiles?.full_name || ''} ${s.profiles?.email || ''} | Skills: ${skillsString}`
+        
+        const userCap = capacityData.find(c => c.user_id === s.linked_user_id)
+        const capacityString = userCap ? `Capacity: ${userCap.available_hours_per_week || 40} hrs/wk, ${userCap.allocated_percentage ?? 100}% Bandwidth, ${userCap.sprint_velocity_points || 0} Sprint Velocity` : 'No capacity defined (Assume full availability)'
+
+        return `- ID: ${s.id} | Name: ${s.name} | Type: ${s.organization_type} | Role: ${s.role_title || s.sub_category || 'N/A'} | Influence/Interest: ${s.influence || 3}/${s.interest || 3} | Details: ${s.profiles?.full_name || ''} ${s.profiles?.email || ''} | Skills: ${skillsString} | ${capacityString}`
       }).join('\n')}
       
       Based on the task name, description, and checklist, select stakeholder IDs from the list above for Responsible, Accountable, Consulted, and Informed roles. 
-      - heavily weigh the stakeholder's listed Skills in your decision for 'Responsible'.
+      - You MUST heavily weigh the stakeholder's listed Skills AND their available Capacity/Bandwidth in your decision for 'Responsible'.
+      - Avoid assigning work to stakeholders who have very low bandwidth (e.g. < 20%) or 0 available hours for this project, even if they are skilled.
       - external clients with high interest/influence are good for 'Consulted' or 'Informed'.
       Provide a brief rationale (1-2 sentences) explaining the choices.
       If you are unsure for Responsible, pick the first internal stakeholder. You do not have to fill Consulted and Informed if it doesn't make sense.
@@ -139,9 +151,7 @@ export async function bulkSuggestRaciAssignments(
     const isEnterprise = sub.tierId === 'enterprise'
     const isPremium = sub.tierId === 'premium'
 
-    if (!isEnterprise && !isPremium) {
-      return { ok: false, error: 'Praz-AI Auto-Assignment is only available on Premium and Enterprise plans.' }
-    }
+
 
     if (isPremium) {
       const aiEnabled = await getOrganizationAiEnabled(organizationId)
@@ -171,17 +181,26 @@ export async function bulkSuggestRaciAssignments(
       return { ok: false, error: 'No available stakeholders found in this project to assign.' }
     }
 
-    // 3b. Fetch Skills for these stakeholders
+    // 3b. Fetch Skills and Capacity for these stakeholders
     const userIds = stakeholders.map((s: any) => s.linked_user_id).filter(Boolean) as string[]
     let skillsData: any[] = []
+    let capacityData: any[] = []
     if (userIds.length > 0) {
-      const { data: skills } = await supabase
-        .from('member_skill_profiles')
-        .select('*')
-        .eq('organization_id', organizationId)
-        .in('user_id', userIds)
+      const [{ data: skills }, { data: capacities }] = await Promise.all([
+        supabase
+          .from('member_skill_profiles')
+          .select('*')
+          .eq('organization_id', organizationId)
+          .in('user_id', userIds),
+        supabase
+          .from('member_capacity_allocations')
+          .select('*')
+          .eq('project_id', projectId)
+          .in('user_id', userIds)
+      ])
       
       if (skills) skillsData = skills
+      if (capacities) capacityData = capacities
     }
 
     // 4. Formulate Prompt
@@ -214,15 +233,20 @@ Output a JSON object exactly matching this schema:
       TASKS TO ASSIGN:
       ${elementsContext}
       
-      AVAILABLE STAKEHOLDERS (Include their skills):
+      AVAILABLE STAKEHOLDERS (Include their skills and capacity):
       ${stakeholders.map((s: any) => {
         const userSkills = skillsData.filter(sk => sk.user_id === s.linked_user_id)
         const skillsString = userSkills.length > 0 ? userSkills.map(sk => `${sk.skill_name} (${sk.proficiency_level})`).join(', ') : 'No specific skills listed'
-        return `- ID: ${s.id} | Name: ${s.name} | Type: ${s.organization_type} | Role: ${s.role_title || s.sub_category || 'N/A'} | Influence/Interest: ${s.influence || 3}/${s.interest || 3} | Details: ${s.profiles?.full_name || ''} ${s.profiles?.email || ''} | Skills: ${skillsString}`
+        
+        const userCap = capacityData.find(c => c.user_id === s.linked_user_id)
+        const capacityString = userCap ? `Capacity: ${userCap.available_hours_per_week || 40} hrs/wk, ${userCap.allocated_percentage ?? 100}% Bandwidth, ${userCap.sprint_velocity_points || 0} Sprint Velocity` : 'No capacity defined (Assume full availability)'
+
+        return `- ID: ${s.id} | Name: ${s.name} | Type: ${s.organization_type} | Role: ${s.role_title || s.sub_category || 'N/A'} | Influence/Interest: ${s.influence || 3}/${s.interest || 3} | Details: ${s.profiles?.full_name || ''} ${s.profiles?.email || ''} | Skills: ${skillsString} | ${capacityString}`
       }).join('\n')}
       
       Based on each task's name, description, and checklist, select stakeholder IDs for 'Responsible', 'Accountable', 'Consulted', and 'Informed' roles from the list above. 
-      You MUST heavily weigh the stakeholder's listed Skills in your decision for 'Responsible'.
+      You MUST heavily weigh the stakeholder's listed Skills AND their available Capacity/Bandwidth in your decision for 'Responsible'.
+      Avoid assigning work to stakeholders who have very low bandwidth (e.g. < 20%) or 0 available hours for this project, even if they are highly skilled.
       'Responsible' is the person doing the work. 'Accountable' is the person ensuring it gets done (often a manager or lead).
       'Consulted' (optional array) are subject matter experts or clients whose input is needed. 'Informed' (optional array) are people who just need to be kept up to date.
       Return the JSON array covering ALL provided tasks.

@@ -32,6 +32,7 @@ type ProjectType = {
   createdBy: string | null
   assignedMembers: string[] // List of userIds
   memberPermissions: { userId: string; canDelete: boolean }[]
+  pendingStakeholders?: { email: string; name: string; role_title: string }[]
   calendarConfig: {
     working_days: number[]
     daily_hours: number
@@ -152,26 +153,28 @@ export function ProjectsDashboard({
       </div>
 
       {/* Subscription Tier Engine & Live Testing Overrides (Sprint 29) */}
-      <div>
-        <ManualPlanSwitcher organizationId={organizationId}>
-          {viewMode === 'list' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <UsageProgressMeter
-                label="Active Projects Quota"
-                current={projects.filter((p) => !p.isArchived).length}
-                max={tier === 'free' ? 3 : -1}
-                onUpgrade={isAdmin ? () => setUpgradeModalOpen(true) : undefined}
-              />
-              <UsageProgressMeter
-                label="Assigned Edit-level Seats"
-                current={workspaceMembers.filter((m) => m.role === 'PM' || m.role === 'Admin' || m.isOwner).length}
-                max={tier === 'free' ? 3 : -1}
-                onUpgrade={isAdmin ? () => setUpgradeModalOpen(true) : undefined}
-              />
-            </div>
-          )}
-        </ManualPlanSwitcher>
-      </div>
+      {isAdmin && (
+        <div>
+          <ManualPlanSwitcher organizationId={organizationId}>
+            {viewMode === 'list' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <UsageProgressMeter
+                  label="Active Projects Quota"
+                  current={projects.filter((p) => !p.isArchived).length}
+                  max={tier === 'free' ? 3 : -1}
+                  onUpgrade={() => setUpgradeModalOpen(true)}
+                />
+                <UsageProgressMeter
+                  label="Assigned Edit-level Seats"
+                  current={workspaceMembers.filter((m) => m.role === 'PM' || m.role === 'Admin' || m.isOwner).length}
+                  max={tier === 'free' ? 3 : -1}
+                  onUpgrade={() => setUpgradeModalOpen(true)}
+                />
+              </div>
+            )}
+          </ManualPlanSwitcher>
+        </div>
+      )}
 
       {/* View Mode Tabs */}
       <div className="border-b border-app-border flex space-x-6">

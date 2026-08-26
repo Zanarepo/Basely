@@ -90,7 +90,7 @@ export function WbsPlanningWorkspace({
     handleBulkDelete,
     qualityGateState,
     setQualityGateState
-  } = useWbsPlanning(projectId, hasEditAccess, callerRole, callerUserId)
+  } = useWbsPlanning(projectId, hasEditAccess, callerRole, callerUserId, tier)
 
   const { columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility } = useWbsBoard(projectId, elements)
 
@@ -142,6 +142,12 @@ export function WbsPlanningWorkspace({
           onSuccess={() => {
             showToast('success', 'Quality gate passed. Task marked complete.')
             setQualityGateState({ ...qualityGateState, isOpen: false })
+            loadElements()
+          }}
+          onExceptionRaised={() => {
+            showToast('info', 'Quality exception logged. Task moved to In Review.')
+            setQualityGateState({ ...qualityGateState, isOpen: false })
+            addColumn('In Review')
             loadElements()
           }}
         />

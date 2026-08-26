@@ -8,6 +8,7 @@ import { getChurnRiskScores } from '@/lib/backoffice/analytics'
 import { DataDeletionButton } from '@/components/backoffice/compliance/DataDeletionButton'
 import { SandboxToggleClient } from '@/components/backoffice/SandboxToggleClient'
 import { AiFeatureToggleClient } from '@/components/backoffice/AiFeatureToggleClient'
+import { AiLimitOverridePanel } from '@/components/backoffice/AiLimitOverridePanel'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -325,6 +326,17 @@ export default async function TenantDetailView({ params }: { params: Promise<{ i
                 organizationId={orgId}
                 initialAiEnabled={org.ai_features_enabled || false}
                 tier={sub?.tier_id || 'free'}
+              />
+              <AiLimitOverridePanel
+                organizationId={orgId}
+                tierDefault={{
+                  generations: sub?.tier_id === 'premium' || sub?.tier_id === 'enterprise' ? -1 : 5,
+                  basicActions: sub?.tier_id === 'premium' || sub?.tier_id === 'enterprise' ? -1 : 5,
+                }}
+                currentOverrides={{
+                  generationsLimit: (org as any).custom_ai_generations_limit ?? null,
+                  basicActionsLimit: (org as any).custom_ai_basic_actions_limit ?? null,
+                }}
               />
             </>
           )}
