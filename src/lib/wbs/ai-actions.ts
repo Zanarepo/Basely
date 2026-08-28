@@ -28,8 +28,7 @@ Output strictly a JSON object matching this schema:
   "tangible_deliverables": ["2 to 4 concrete deliverables/artifacts"],
   "acceptance_criteria": ["2 to 4 testable pass/fail conditions"]
 }`,
-      userPrompt: `Task Name: ${element.name}
-Task Description: ${element.description || 'No description provided.'}`
+      userPrompt: `Task Name: ${element.name}\nTask Description: ${element.description || 'No description provided.'}`
     })
 
     const deliverablesItems = (result.tangible_deliverables || []).map((text, i) => ({
@@ -47,11 +46,9 @@ Task Description: ${element.description || 'No description provided.'}`
     const { error: updateErr } = await supabase
       .from('wbs_elements')
       .update({
-        deliverables: result.tangible_deliverables?.join('\
-') || null,
+        deliverables: result.tangible_deliverables?.join('\n') || null,
         deliverables_data: deliverablesItems,
-        acceptance_criteria: result.acceptance_criteria?.join('\
-') || null,
+        acceptance_criteria: result.acceptance_criteria?.join('\n') || null,
         acceptance_criteria_data: acceptanceItems
       })
       .eq('id', wbsElementId)
@@ -83,12 +80,58 @@ Output strictly a JSON object matching this schema:
   "tangible_deliverables": ["2 to 4 concrete deliverables/artifacts"],
   "acceptance_criteria": ["2 to 4 testable pass/fail conditions"]
 }`,
-      userPrompt: `Task Name: ${name}
-Task Description: ${description || 'No description provided.'}`
+      userPrompt: `Task Name: ${name}\nTask Description: ${description || 'No description provided.'}`
     })
     return { ok: true, data: result }
   } catch (err: any) {
     console.error('generateScopeDetailsWithAiAction server error:', err)
+    return { ok: false, error: err?.message || 'Praz-AI Generation failed' }
+  }
+}
+
+export async function estimateStoryPointsWithAiAction(name: string, description?: string): Promise<{
+  ok: boolean
+  data?: { story_points: number }
+  error?: string
+}> {
+  try {
+    const { generateStructuredJson } = await import('@/lib/ai/ai-provider-router')
+    const result = await generateStructuredJson<{
+      story_points: number
+    }>({
+      systemPrompt: `You are an expert Agile Scrum Master. Estimate the story points for a given task based on its name and description. Use the Fibonacci sequence (1, 2, 3, 5, 8, 13, 21, etc.). Return only a JSON object matching this schema:
+{
+  "story_points": 5
+}`,
+      userPrompt: `Task Name: ${name}\nTask Description: ${description || 'No description provided.'}`
+    })
+    return { ok: true, data: result }
+  } catch (err: any) {
+    console.error('estimateStoryPointsWithAiAction server error:', err)
+    return { ok: false, error: err?.message || 'Praz-AI Estimation failed' }
+  }
+}
+
+export async function estimateRequiredSkillsWithAiAction(name: string, description?: string): Promise<{
+  ok: boolean
+  data?: { required_skills: string[] }
+  error?: string
+}> {
+  try {
+    const { generateStructuredJson } = await import('@/lib/ai/ai-provider-router')
+    const result = await generateStructuredJson<{
+      required_skills: string[]
+    }>({
+      systemPrompt: `You are an expert Technical Project Manager. Given a task name and description, infer the required skills needed to complete the task. Return a list of 1 to 4 key skills as short strings (e.g., "React", "Frontend", "Data Science", "Python").
+Output strictly a JSON object matching this schema:
+{
+  "required_skills": ["skill_1", "skill_2"]
+}`,
+      userPrompt: `Task Name: ${name}\nTask Description: ${description || 'No description provided.'}`
+    })
+    return { ok: true, data: result }
+  } catch (err: any) {
+    console.error('estimateRequiredSkillsWithAiAction server error:', err)
     return { ok: false, error: err?.message || 'Praz-AI Generation failed' }
   }
 }

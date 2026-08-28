@@ -7,6 +7,7 @@ import AdrStudioModal from './AdrStudioModal'
 import { getAdrs, deleteAdr, type ArchitectureDecisionRecord, type AdrStatus, type AdrDomain } from '@/lib/adr/actions'
 import { ToastContainer } from '@/components/dashboard/Toast'
 import { useWbsToasts } from '@/components/dashboard/wbs/workspace/hooks/useWbsToasts'
+import { AdrWorkflowPanel } from './AdrWorkflowPanel'
 
 interface AdrWorkspaceProps {
   projectId?: string
@@ -32,6 +33,7 @@ export default function AdrWorkspace({
   const [selectedAdr, setSelectedAdr] = useState<ArchitectureDecisionRecord | null>(null)
   const [activePreviewId, setActivePreviewId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [workflowAdr, setWorkflowAdr] = useState<ArchitectureDecisionRecord | null>(null)
   const { toasts, showToast, dismissToast } = useWbsToasts()
 
   const fetchRecords = async () => {
@@ -275,6 +277,20 @@ export default function AdrWorkspace({
                     <p className="text-xs text-app-muted line-clamp-2 leading-relaxed">
                       <span className="font-semibold text-app-fg">Decision: </span>{item.decision}
                     </p>
+
+                    {/* Workflow CTA — only for accepted ADRs */}
+                    {item.status === 'accepted' && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setWorkflowAdr(item)
+                        }}
+                        className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/25 transition-all cursor-pointer animate-pulse hover:animate-none"
+                      >
+                        ⚡ Activate Workflows
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
@@ -428,6 +444,20 @@ export default function AdrWorkspace({
         }}
         onShowToast={showToast}
       />
+
+      {/* Workflow Panel — slides in when "Activate Workflows" is clicked on an accepted ADR */}
+      {workflowAdr && (
+        <AdrWorkflowPanel
+          adr={workflowAdr}
+          projectId={projectId!}
+          organizationId={organizationId}
+          tier={tier}
+          onClose={() => setWorkflowAdr(null)}
+          onShowToast={showToast}
+          onRaidSuccess={() => showToast('success', 'RAID entry added from ADR.')}
+        />
+      )}
+
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   )

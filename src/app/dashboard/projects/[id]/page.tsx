@@ -22,6 +22,8 @@ const DocumentsWorkspace = dynamic(() => import('@/components/dashboard/document
 const TeamPermissionsWorkspace = dynamic(() => import('@/components/dashboard/team/TeamPermissionsWorkspace'))
 const ActionItemsTracker = dynamic(() => import('@/components/dashboard/action-items/ActionItemsTracker').then(mod => mod.ActionItemsTracker))
 const ProjectDashboardWorkspace = dynamic(() => import('@/components/dashboard/projects/ProjectDashboardWorkspace'))
+const AgileExecutionWorkspace = dynamic(() => import('@/components/dashboard/agile/AgileExecutionWorkspace'))
+const RoadmapWorkspace = dynamic(() => import('@/components/dashboard/projects/RoadmapWorkspace'))
 const RaidWorkspace = dynamic(() => import('@/components/dashboard/risks/raid/RaidWorkspace'))
 const AdrWorkspace = dynamic(() => import('@/components/dashboard/projects/adr/AdrWorkspace'))
 const SkillsMatrixTable = dynamic(() => import('@/components/dashboard/team/capacity/SkillsMatrixTable'))
@@ -289,11 +291,19 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       })()}
 
       {/* Tabs list */}
-      <ProjectNavigationTabs projectId={project.id} activeTab={activeTab} canViewCost={canViewCost} canViewTeamAccess={canAssignMembers} tier={tier} />
+      <ProjectNavigationTabs projectId={project.id} activeTab={activeTab} canViewCost={canViewCost} canViewTeamAccess={canAssignMembers} tier={tier} methodology={project.methodology} />
 
       {/* Conditional tab workspaces */}
       {activeTab === 'dashboard' && (
         <ProjectDashboardWorkspace projectId={project.id} />
+      )}
+
+      {activeTab === 'agile' && project.methodology === 'Agile' && (
+        <AgileExecutionWorkspace projectId={project.id} />
+      )}
+
+      {activeTab === 'roadmap' && project.methodology === 'Agile' && (
+        <RoadmapWorkspace projectId={project.id} />
       )}
 
       {activeTab === 'wbs' && (
@@ -323,16 +333,16 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       )}
 
-      {activeTab === 'releases' && (!orgFeatures['releases.management'] ? (
-        <FeatureGateScreen featureName="Releases & Iterations" description="Plan and track software iterations, release gates, and version milestones. Available on the Premium plan." canUpgrade={canUpgrade} />
-      ) : (
+      {activeTab === 'releases' && (
         <ReleasesWorkspace
           projectId={project.id}
           organizationId={project.organization_id || 'default_org'}
           hasEditAccess={hasScheduleEditAccess}
           methodology={project.methodology}
+          tier={tier}
+          canUpgrade={canUpgrade}
         />
-      ))}
+      )}
 
       {activeTab === 'cost' && canViewCost && (
         <CostWorkspace

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Plus, Search, ShieldAlert, CheckCircle2, Calendar, Trash2, Edit3, Layers, Sparkles, Loader2 } from 'lucide-react'
+import { Plus, Search, ShieldAlert, CheckCircle2, Calendar, Trash2, Edit3, Layers, Sparkles, Loader2, ShieldCheck } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 import RaidItemModal from './RaidItemModal'
 import { type RaidCategory, type RaidPriority } from '@/lib/raid/actions'
@@ -69,7 +69,7 @@ export default function RaidWorkspace({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-app-surface border border-app-border shadow-lg">
+      <div className="flex flex-col gap-5 p-6 rounded-2xl bg-app-surface border border-app-border shadow-lg">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-2xl font-black text-app-fg tracking-tight">
@@ -84,45 +84,50 @@ export default function RaidWorkspace({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={aiCopilot.handleOpen}
-            disabled={aiCopilot.isPredicting}
-            className="px-4 py-2.5 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 text-violet-400 border border-violet-500/30 font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-violet-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {aiCopilot.isPredicting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-            {aiCopilot.isPredicting ? 'Analyzing...' : 'Predictive Praz-AI'}
-          </button>
-          <button
-            onClick={() => {
-              setSelectedItem(null)
-              setModalCategory('assumption')
-              setIsModalOpen(true)
-            }}
-            className="px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            + Log Assumption
-          </button>
-          <button
-            onClick={() => {
-              setSelectedItem(null)
-              setModalCategory('dependency')
-              setIsModalOpen(true)
-            }}
-            className="px-4 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            + Log Dependency
-          </button>
-          <button
-            onClick={() => {
-              setSelectedItem(null)
-              setModalCategory('risk')
-              setIsModalOpen(true)
-            }}
-            className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-lg shadow-violet-600/25 transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" /> New RAID Entry
-          </button>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-app-border/50">
+          <div>
+            <button
+              onClick={aiCopilot.handleOpen}
+              disabled={aiCopilot.isPredicting}
+              className="px-4 py-2.5 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 text-violet-400 border border-violet-500/30 font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-violet-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {aiCopilot.isPredicting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              {aiCopilot.isPredicting ? 'Analyzing...' : 'Predictive Praz-AI'}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => {
+                setSelectedItem(null)
+                setModalCategory('assumption')
+                setIsModalOpen(true)
+              }}
+              className="px-4 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/20 font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md"
+            >
+              <Plus className="w-3.5 h-3.5" /> Log Assumption
+            </button>
+            <button
+              onClick={() => {
+                setSelectedItem(null)
+                setModalCategory('dependency')
+                setIsModalOpen(true)
+              }}
+              className="px-4 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md"
+            >
+              <Plus className="w-3.5 h-3.5" /> Log Dependency
+            </button>
+            <button
+              onClick={() => {
+                setSelectedItem(null)
+                setModalCategory('risk')
+                setIsModalOpen(true)
+              }}
+              className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-lg shadow-violet-600/25 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> New RAID Entry
+            </button>
+          </div>
         </div>
       </div>
 
@@ -246,9 +251,19 @@ export default function RaidWorkspace({
                 <h3 className="text-base font-bold text-app-fg tracking-tight group-hover:text-violet-300 transition-colors">
                   {item.title}
                 </h3>
-                <p className="text-xs text-app-muted leading-relaxed max-w-3xl">
+                <p className="text-sm text-app-muted leading-relaxed max-w-3xl mt-1">
                   {item.description}
                 </p>
+
+                {item.mitigation_plan && (
+                  <div className="mt-4 p-4 bg-app-input/50 rounded-xl border border-app-border max-w-4xl shadow-xs">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                      <span className="text-xs font-bold text-app-fg uppercase tracking-wider">Mitigation & Action Plan</span>
+                    </div>
+                    <p className="text-sm text-app-subtle whitespace-pre-wrap leading-relaxed">{item.mitigation_plan}</p>
+                  </div>
+                )}
 
                 {(item.external_owner_name || item.linked_wbs_element_id) && (
                   <div className="p-3 rounded-xl bg-violet-500/5 border border-violet-500/15 flex flex-wrap items-center justify-between gap-3 text-xs max-w-3xl">

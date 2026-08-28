@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
-  Brain,
   Zap,
   BookOpen,
   Target,

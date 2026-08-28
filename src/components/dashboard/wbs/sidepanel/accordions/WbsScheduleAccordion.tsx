@@ -26,6 +26,7 @@ type WbsScheduleAccordionProps = {
   handleUpdatePredType: (predId: string, type: 'FS' | 'SS' | 'FF' | 'SF') => void
   handleUpdatePredLag: (predId: string, lag: number) => void
   onDependenciesChanged: () => void
+  methodology?: string | null
 }
 
 export function WbsScheduleAccordion({
@@ -51,6 +52,7 @@ export function WbsScheduleAccordion({
   handleUpdatePredType,
   handleUpdatePredLag,
   onDependenciesChanged,
+  methodology,
 }: WbsScheduleAccordionProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -104,6 +106,7 @@ export function WbsScheduleAccordion({
             projectId={projectId}
             wbsElementId={wbsElementId}
             onDependenciesChanged={onDependenciesChanged}
+            methodology={methodology}
           />
         </div>
       )}

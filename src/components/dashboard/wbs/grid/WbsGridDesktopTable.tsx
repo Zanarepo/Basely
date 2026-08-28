@@ -137,7 +137,7 @@ export function WbsGridDesktopTable({
                 TOTAL
               </td>
               <td className="px-3 py-2.5 border-b-2 border-app-border sticky top-8 left-24 bg-violet-100 dark:bg-violet-950 z-20 font-bold text-violet-600 dark:text-violet-400">
-                Global Summary ({allWorkPackages.length} Work Packages)
+                Global {terms.planTier} ({allWorkPackages.length} {terms.workPackages})
               </td>
 
               {!hiddenCols.has('Tag') && (
@@ -267,7 +267,7 @@ export function WbsGridDesktopTable({
                   <td className="px-3 py-2.5 border-b border-app-border">
                     {isSummary ? (
                       <span className="text-[9px] font-black text-violet-600 dark:text-violet-300 bg-violet-500/15 border border-violet-500/30 px-2 py-0.5 rounded uppercase tracking-wider">
-                        SUMMARY
+                        {terms.planTier.toUpperCase()}
                       </span>
                     ) : (
                       <span 

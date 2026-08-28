@@ -174,46 +174,83 @@ export async function upsertStrategyCanvasFromAI(
 
     // Parse Strategic Bets (Section 12)
     const rawBets = parsedDoc.strategic_bets || ''
-    const betLines = rawBets.split('\n').filter(l => l.includes('|') && !l.includes('---') && !l.toLowerCase().includes('strategic bet'))
+    const betLines = rawBets.split('\n').filter(l => (l.includes('|') || l.trim().startsWith('-') || l.trim().startsWith('*')) && !l.includes('---') && !l.toLowerCase().includes('strategic bet'))
     const strategic_bets: StrategicBet[] = betLines.map((line, idx) => {
-      const parts = line.split('|').map(p => p.trim()).filter(Boolean)
-      return {
-        id: `bet-${idx + 1}-${Date.now().toString(36)}`,
-        bet: parts[1] || parts[0] || `Strategic Bet ${idx + 1}`,
-        why_it_matters: parts[2] || '',
-        expected_outcome: parts[3] || '',
-        confidence: (parts[4]?.toLowerCase().includes('high') ? 'high' : parts[4]?.toLowerCase().includes('low') ? 'low' : 'medium') as any,
+      if (line.includes('|')) {
+        const parts = line.split('|').map(p => p.trim()).filter(Boolean)
+        return {
+          id: `bet-${idx + 1}-${Date.now().toString(36)}`,
+          bet: parts[1] || parts[0] || `Strategic Bet ${idx + 1}`,
+          why_it_matters: parts[2] || '',
+          expected_outcome: parts[3] || '',
+          confidence: (parts[4]?.toLowerCase().includes('high') ? 'high' : parts[4]?.toLowerCase().includes('low') ? 'low' : 'medium') as any,
+        }
+      } else {
+        const clean = line.replace(/^[-*\s]+/, '').trim()
+        const [betName, ...rest] = clean.split(':')
+        return {
+          id: `bet-${idx + 1}-${Date.now().toString(36)}`,
+          bet: betName || `Strategic Bet ${idx + 1}`,
+          why_it_matters: rest.join(':').trim() || clean.substring(0, 100),
+          expected_outcome: '',
+          confidence: 'medium',
+        }
       }
     }).filter(b => b.bet)
 
     // Parse Product Principles (Section 14)
     const rawPrinciples = parsedDoc.product_principles || ''
-    const principleBlocks = rawPrinciples.split(/(?:\d+\.|\bPrinciple\s*\d*:?)/i).filter(Boolean)
+    const principleBlocks = rawPrinciples.split(/(?:\n\d+\.|\bPrinciple\s*\d*:?|\n- |\n\* )/i).filter(Boolean)
     const product_principles: ProductPrinciple[] = principleBlocks.map((block, idx) => {
       const lines = block.trim().split('\n').filter(Boolean)
-      const title = lines[0]?.replace(/^[#*\s:-]+/, '').trim() || `Principle ${idx + 1}`
-      const desc = lines.slice(1).join(' ').trim() || block.trim()
+      let title = lines[0]?.replace(/^[#*\s:-]+/, '').trim() || `Principle ${idx + 1}`
+      let desc = lines.slice(1).join(' ').trim()
+      
+      // If the AI used bolding for title: "**Title:** Description"
+      if (title.includes('**')) {
+        const parts = title.split('**').filter(Boolean)
+        if (parts.length > 1) {
+          title = parts[0].replace(/[:*]/g, '').trim()
+          desc = parts[1].replace(/[:*]/g, '').trim() + ' ' + desc
+        }
+      }
+
       return {
         id: `principle-${idx + 1}-${Date.now().toString(36)}`,
         title,
-        description: desc.substring(0, 300),
+        description: desc.substring(0, 300) || block.trim().substring(0, 300),
       }
     }).filter(p => p.title)
 
     // Parse Product Goals (Section 15)
     const rawGoals = parsedDoc.product_goals || ''
-    const goalLines = rawGoals.split('\n').filter(l => l.includes('|') && !l.includes('---') && !l.toLowerCase().includes('baseline'))
+    const goalLines = rawGoals.split('\n').filter(l => (l.includes('|') || l.trim().startsWith('-') || l.trim().startsWith('*')) && !l.includes('---') && !l.toLowerCase().includes('baseline'))
     const product_goals: ProductGoal[] = goalLines.map((line, idx) => {
-      const parts = line.split('|').map(p => p.trim()).filter(Boolean)
-      const catStr = (parts[0] || 'business').toLowerCase()
-      const category = (catStr.includes('customer') ? 'customer' : catStr.includes('product') ? 'product' : 'business') as any
-      return {
-        id: `goal-${idx + 1}-${Date.now().toString(36)}`,
-        category,
-        goal: parts[1] || parts[0] || `Goal ${idx + 1}`,
-        baseline: parts[2] || '',
-        target: parts[3] || '',
-        timeframe: parts[4] || '',
+      if (line.includes('|')) {
+        const parts = line.split('|').map(p => p.trim()).filter(Boolean)
+        const catStr = (parts[0] || 'business').toLowerCase()
+        const category = (catStr.includes('customer') ? 'customer' : catStr.includes('product') ? 'product' : 'business') as any
+        return {
+          id: `goal-${idx + 1}-${Date.now().toString(36)}`,
+          category,
+          goal: parts[1] || parts[0] || `Goal ${idx + 1}`,
+          baseline: parts[2] || '',
+          target: parts[3] || '',
+          timeframe: parts[4] || '',
+        }
+      } else {
+        const clean = line.replace(/^[-*\s]+/, '').trim()
+        const [goalName, ...rest] = clean.split(':')
+        const catStr = (goalName || 'business').toLowerCase()
+        const category = (catStr.includes('customer') ? 'customer' : catStr.includes('product') ? 'product' : 'business') as any
+        return {
+          id: `goal-${idx + 1}-${Date.now().toString(36)}`,
+          category,
+          goal: goalName || `Goal ${idx + 1}`,
+          baseline: '',
+          target: rest.join(':').trim() || '',
+          timeframe: '',
+        }
       }
     }).filter(g => g.goal)
 

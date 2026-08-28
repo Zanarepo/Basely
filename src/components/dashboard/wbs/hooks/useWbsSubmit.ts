@@ -74,6 +74,7 @@ export function useWbsSubmit({
         isWorkPackage: elementState.isWorkPackage,
         cost: elementState.cost,
         estimationMethod: elementState.estimationMethod,
+        story_points: elementState.storyPoints,
       })
 
       if (!wbsSuccess) {

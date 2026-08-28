@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { FileSpreadsheet, Plus, Loader2 } from 'lucide-react'
+import { FileSpreadsheet, Plus, Loader2, Sparkles } from 'lucide-react'
 import { WbsTree } from './WbsTree'
 import { WbsBoardView } from './WbsBoardView'
 import { WbsGridView } from './WbsGridView'
 import { WbsElementSidePanel } from './WbsElementSidePanel'
 import { ToastContainer } from '@/components/dashboard/Toast'
 import { UnassignedWorkView } from './UnassignedWorkView'
+import { SkillGapWidget } from './SkillGapWidget'
 
 import { useWbsPlanning } from './workspace/useWbsPlanning'
 import { WbsToolbar } from './workspace/WbsToolbar'
@@ -18,6 +19,7 @@ import { IterationModal } from '@/components/dashboard/releases/components/Itera
 import { getTerminology, ProjectMethodology } from '@/utils/terminology'
 import { useWbsBoard } from './workspace/useWbsBoard'
 import { useWbsWorkspaceState } from './workspace/useWbsWorkspaceState'
+import { useAutoGenerateWbs } from './workspace/hooks/useAutoGenerateWbs'
 
 type WbsPlanningWorkspaceProps = {
   projectId: string
@@ -119,6 +121,13 @@ export function WbsPlanningWorkspace({
     showToast
   )
 
+  const { isGeneratingWbs, handleAutoGenerateBacklogFromPrd } = useAutoGenerateWbs({
+    projectId,
+    organizationId,
+    onShowToast: showToast,
+    onSuccess: () => loadElements()
+  })
+
   if (loading && elements.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 min-h-[350px]">
@@ -131,6 +140,10 @@ export function WbsPlanningWorkspace({
   return (
     <div className="space-y-6 relative">
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      {aiEnabled && (
+        <SkillGapWidget projectId={projectId} organizationId={organizationId} />
+      )}
 
       {qualityGateState.isOpen && (
         <QualityGateModal
@@ -180,6 +193,8 @@ export function WbsPlanningWorkspace({
         hideCompleted={hideCompleted}
         onToggleHideCompleted={() => setHideCompleted((prev) => !prev)}
         completedCount={completedCount}
+        methodology={methodology}
+        terms={terms}
       />
 
       {isCreateIterationModalOpen && (
@@ -190,6 +205,8 @@ export function WbsPlanningWorkspace({
           projectMethodology={methodology}
           nextSequenceNumber={(iterations?.length || 0) + 1}
           availableWbsElements={elements.filter(e => e.isWorkPackage)}
+          projectId={projectId}
+          organizationId={organizationId}
         />
       )}
 
@@ -218,14 +235,32 @@ export function WbsPlanningWorkspace({
             Create hierarchical elements to decompose your project scope. WBS codes will calculate automatically at every level.
           </p>
           {hasEditAccess && (
-            <button
-              type="button"
-              onClick={() => handleCreateElement(null)}
-              className="btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              Create First Element
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => handleCreateElement(null)}
+                className="btn-primary"
+              >
+                <Plus className="h-4 w-4" />
+                Create First Element
+              </button>
+              
+              {aiEnabled && (
+                <button
+                  type="button"
+                  onClick={handleAutoGenerateBacklogFromPrd}
+                  disabled={isGeneratingWbs}
+                  className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-md shadow-violet-500/20 disabled:opacity-50"
+                >
+                  {isGeneratingWbs ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  Auto-Generate from PRD
+                </button>
+              )}
+            </div>
           )}
         </div>
       ) : (
@@ -356,6 +391,7 @@ export function WbsPlanningWorkspace({
         organizationId={organizationId}
         tier={tier}
         aiEnabled={aiEnabled}
+        methodology={methodology}
       />
     </div>
   )

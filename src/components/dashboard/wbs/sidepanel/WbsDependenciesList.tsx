@@ -23,6 +23,7 @@ type WbsDependenciesListProps = {
   projectId?: string
   wbsElementId?: string
   onDependenciesChanged?: () => void
+  methodology?: string | null
 }
 
 export function WbsDependenciesList({
@@ -37,7 +38,8 @@ export function WbsDependenciesList({
   handleUpdatePredLag,
   projectId,
   wbsElementId,
-  onDependenciesChanged
+  onDependenciesChanged,
+  methodology
 }: WbsDependenciesListProps) {
   const {
     loadingRaid,
@@ -61,9 +63,9 @@ export function WbsDependenciesList({
       {isWorkPackage && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-[11px] font-bold text-app-subtle flex items-center gap-1 mb-0" title="Mathematical schedule logic for Gantt chart & Critical Path">
+            <label className="text-[11px] font-bold text-app-subtle flex items-center gap-1 mb-0" title={methodology === 'Agile' ? 'Task Dependencies' : 'Mathematical schedule logic for Gantt chart & Critical Path'}>
               <Link2 className="w-3.5 h-3.5" />
-              Schedule Predecessors (Intra-Project Gantt Logic)
+              {methodology === 'Agile' ? 'Task Dependencies' : 'Schedule Predecessors (Intra-Project Gantt Logic)'}
             </label>
             {hasEditAccess && projectId && projectActivities.length > 0 && (
               <button
@@ -119,7 +121,12 @@ export function WbsDependenciesList({
                             disabled={!hasEditAccess || saving}
                             onChange={(val) => handleUpdatePredType(act.id, val as any)}
                             size="sm"
-                            options={[
+                            options={methodology === 'Agile' ? [
+                              { value: 'FS', label: 'Depends On' },
+                              { value: 'SS', label: 'Related To' },
+                              { value: 'FF', label: 'Required For' },
+                              { value: 'SF', label: 'Blocks' }
+                            ] : [
                               { value: 'FS', label: 'Finish-to-Start (FS)' },
                               { value: 'SS', label: 'Start-to-Start (SS)' },
                               { value: 'FF', label: 'Finish-to-Finish (FF)' },
@@ -128,17 +135,19 @@ export function WbsDependenciesList({
                             placeholder="Dependency type..."
                           />
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-app-subtle">Lag:</span>
-                          <input
-                            type="number"
-                            min="0"
-                            value={currentPred.lagDays}
-                            disabled={!hasEditAccess || saving}
-                            onChange={(e) => handleUpdatePredLag(act.id, parseInt(e.target.value) || 0)}
-                            className="w-10 px-1 py-0.5 bg-app-surface-solid border border-app-border rounded-lg text-center text-[10px] text-app-fg"
-                          />
-                        </div>
+                        {methodology !== 'Agile' && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-app-subtle">Lag:</span>
+                            <input
+                              type="number"
+                              min="0"
+                              value={currentPred.lagDays}
+                              disabled={!hasEditAccess || saving}
+                              onChange={(e) => handleUpdatePredLag(act.id, parseInt(e.target.value) || 0)}
+                              className="w-10 px-1 py-0.5 bg-app-surface-solid border border-app-border rounded-lg text-center text-[10px] text-app-fg"
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

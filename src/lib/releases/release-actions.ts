@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
 import { dispatchNotification } from '@/lib/notifications/dispatch'
 import { checkProjectFeatureAccess } from '@/lib/organizations/tier-logic'
+import { checkProjectItemLimit } from '@/lib/organizations/tier-access'
 import type { Iteration, Release, ReleaseStatus, ReleaseExitCriterion, ReleaseManualScope, ReleaseScopeItem, ReleaseReadinessItem, ReleaseDeploymentPlan, ReleaseRollbackPlan } from './types'
 
 export async function fetchProjectReleasesData(projectId: string): Promise<{
@@ -354,9 +355,16 @@ export async function createRelease(
   status: ReleaseStatus,
   iterationIds: string[] = [],
   exitCriteriaTexts: string[] = []
-): Promise<{ ok: boolean; error?: string }> {
-  const access = await checkProjectFeatureAccess(projectId, 'releases.management')
-  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
+): Promise<{ ok: boolean; error?: string; limitKey?: string; maxLimit?: number }> {
+  const limitCheck = await checkProjectItemLimit(projectId, 'max_releases')
+  if (!limitCheck.allowed) {
+    return { 
+      ok: false, 
+      error: `Release limit reached (${limitCheck.maxLimit}). Upgrade your plan to unlock unlimited Release planning.`,
+      limitKey: limitCheck.limitKey,
+      maxLimit: limitCheck.maxLimit
+    }
+  }
 
   const supabase = await createClient()
   const { data: release, error: relErr } = await supabase
@@ -420,9 +428,6 @@ export async function updateRelease(
   status: ReleaseStatus,
   iterationIds: string[]
 ): Promise<{ ok: boolean; error?: string }> {
-  const access = await checkProjectFeatureAccess(projectId, 'releases.management')
-  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
-
   const supabase = await createClient()
   const { error: updErr } = await supabase
     .from('releases')
@@ -451,10 +456,10 @@ export async function updateRelease(
   return { ok: true }
 }
 
-export async function deleteRelease(id: string, projectId: string): Promise<{ ok: boolean; error?: string }> {
-  const access = await checkProjectFeatureAccess(projectId, 'releases.management')
-  if (!access.allowed) return { ok: false, error: `Feature locked: Requires ${access.requiredTier} tier` }
-
+export async function deleteRelease(
+  id: string,
+  projectId: string
+): Promise<{ ok: boolean; error?: string }> {
   const supabase = await createClient()
   const { error } = await supabase
     .from('releases')

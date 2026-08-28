@@ -14,7 +14,7 @@ interface StepShipReleaseNotesProps {
   scopeCompletionPercent: number
   completedScopeCount: number
   activeScopeItemsLength: number
-  labels: { releaseNotesTerm: string; epicsTerm: string }
+  labels: { releaseNotesTerm: string; epicsTerm: string; releaseTerm: string; }
   generatingNotes: boolean
   handleGenerateNotes: () => Promise<void>
   error: string | null
@@ -53,7 +53,7 @@ export function StepShipReleaseNotes({
           <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <div className="font-extrabold text-sm text-amber-900 dark:text-amber-200">
-              Release Governance Gate Locked 🔒
+              {labels.releaseTerm} Governance Gate Locked 🔒
             </div>
             <p className="font-medium leading-relaxed">
               Deliverables completion is currently at <strong>{scopeCompletionPercent}%</strong> ({completedScopeCount}/{activeScopeItemsLength} stories completed). Praz-AI Release Notes and Release Promotion can only be activated when deliverables reach at least <strong>90% completion</strong>.
@@ -135,8 +135,8 @@ export function StepShipReleaseNotes({
           <FileText className="w-8 h-8 text-slate-400 dark:text-slate-600 mx-auto mb-2" />
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
             {!isPublishEligible
-              ? 'Release notes generation is locked until deliverables reach at least 90% completion.'
-              : 'Click the Praz-AI button above to generate formatted release notes.'}
+              ? `${labels.releaseNotesTerm} generation is locked until deliverables reach at least 90% completion.`
+              : `Click the Praz-AI button above to generate formatted ${labels.releaseNotesTerm.toLowerCase()}.`}
           </p>
         </div>
       )}
@@ -150,9 +150,9 @@ export function StepShipReleaseNotes({
           </h4>
           <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium">
             {!isPublishEligible
-              ? `Deliverables completion is ${scopeCompletionPercent}%. Reach 90% to unlock release deployment.`
+              ? `Deliverables completion is ${scopeCompletionPercent}%. Reach 90% to unlock ${labels.releaseTerm.toLowerCase()} deployment.`
               : readinessPercent === 100
-              ? 'All quality gates cleared 100%. Click below to authorize release deployment.'
+              ? `All quality gates cleared 100%. Click below to authorize ${labels.releaseTerm.toLowerCase()} deployment.`
               : `Quality score is ${readinessPercent}%. You can authorize launch now or complete remaining checklist items.`}
           </p>
         </div>
@@ -173,7 +173,7 @@ export function StepShipReleaseNotes({
             ) : (
               <>
                 <Rocket className="w-4 h-4" />
-                <span>Ship & Authorize Release 🚀</span>
+                <span>Ship & Authorize {labels.releaseTerm} 🚀</span>
               </>
             )}
           </button>

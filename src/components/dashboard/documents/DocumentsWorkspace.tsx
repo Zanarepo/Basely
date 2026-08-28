@@ -7,6 +7,7 @@ import { ProductDocumentsRouter } from './product/ProductDocumentsRouter'
 import { PlanningDocumentsRouter, PlanningDocType } from './planning/PlanningDocumentsRouter'
 import { ExecutionDocumentsRouter, ExecutionDocType } from './execution/ExecutionDocumentsRouter'
 import { ClosureDocumentsRouter, ClosureDocType } from './closure/ClosureDocumentsRouter'
+import { CustomerResearchWorkspace } from './components/CustomerResearchWorkspace'
 
 import { useDocumentWorkspaceState } from './hooks/useDocumentWorkspaceState'
 import DocumentCenterHeader from './components/DocumentCenterHeader'
@@ -126,6 +127,12 @@ export default function DocumentsWorkspace({
                 'product_strategy_document',
                 'market_research_report',
                 'market_research_workspace',
+                'problem_discovery_workspace',
+                'problem_definition_workspace',
+                'opportunity_assessment_workspace',
+                'solution_design_workspace',
+                'solution_validation_workspace',
+                'quality_management_plan',
                 'competitive_benchmarking_matrix',
                 'competitive_analysis_workspace',
                 'product_requirements_document',
@@ -161,6 +168,15 @@ export default function DocumentsWorkspace({
                     hasEditAccess={hasEditAccess}
                   />
                 )}
+                
+              {selectedDocId === 'customer_research_workspace' && (
+                <CustomerResearchWorkspace
+                  projectId={projectId}
+                  projectContext={projectContext}
+                  hasEditAccess={hasEditAccess}
+                  onShowToast={addToast}
+                />
+              )}
 
               {[
                 'closure_report',

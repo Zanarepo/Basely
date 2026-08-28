@@ -229,9 +229,6 @@ export function useSkillsMatrix(organizationId: string, projectId: string, works
   }
 
   const handleDeleteMember = async (userId: string, name: string) => {
-    const confirm = window.confirm(`Are you sure you want to completely remove ${name} from this project's capacity matrix?`)
-    if (!confirm) return
-
     setRemovingMemberId(userId)
     const res = await removeMemberCapacity(projectId, userId)
     setRemovingMemberId(null)

@@ -164,7 +164,7 @@ export function ReleaseDetailModal({
                     : 'text-app-muted hover:text-app-fg'
                 }`}
               >
-                🚀 3-Step Release Pipeline
+                3-Step {terms.release} Pipeline
               </button>
               <button
                 type="button"
@@ -175,7 +175,7 @@ export function ReleaseDetailModal({
                     : 'text-app-muted hover:text-app-fg'
                 }`}
               >
-                📊 Release Metrics
+                {terms.release} Metrics
               </button>
               <button
                 type="button"
@@ -186,7 +186,7 @@ export function ReleaseDetailModal({
                     : 'text-app-muted hover:text-app-fg'
                 }`}
               >
-                📣 GTM Launch Channels
+                {terms.gtmTerm}
               </button>
               <button
                 type="button"
@@ -197,7 +197,7 @@ export function ReleaseDetailModal({
                     : 'text-app-muted hover:text-app-fg'
                 }`}
               >
-                🧠 Continuous Improvement
+                {terms.retroTerm}
               </button>
             </div>
           </div>
@@ -230,7 +230,7 @@ export function ReleaseDetailModal({
           )}
 
           {activeView === 'gtm_rollouts' && (
-            <GtmRolloutPanel releaseId={release.id} />
+            <GtmRolloutPanel releaseId={release.id} methodology={methodology} />
           )}
 
           {activeView === 'retrospective' && (
@@ -240,6 +240,7 @@ export function ReleaseDetailModal({
               hasEditAccess={hasEditAccess}
               currentLifecycle="Executing" // Bypass gating via releaseId
               releaseId={release.id}
+              methodology={methodology}
             />
           )}
         </div>

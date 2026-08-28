@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { generateWbsFromScope } from '@/lib/wbs/wbs-ai-actions'
+import { generateWbsFromScope, generateBacklogFromPrdAndRoadmap } from '@/lib/wbs/wbs-ai-actions'
 
 interface UseAutoGenerateWbsProps {
   projectId: string
@@ -35,8 +35,28 @@ export function useAutoGenerateWbs({
     }
   }
 
+  const handleAutoGenerateBacklogFromPrd = async () => {
+    setIsGeneratingWbs(true)
+    try {
+      const res = await generateBacklogFromPrdAndRoadmap(projectId, organizationId)
+      
+      if (res.success) {
+        onSuccess()
+        onShowToast('success', 'Execution Backlog successfully generated from PRD!')
+      } else {
+        onShowToast('error', res.error || 'Failed to auto-generate Backlog.')
+      }
+    } catch (error: any) {
+      console.error(error)
+      onShowToast('error', error.message || 'An unexpected error occurred.')
+    } finally {
+      setIsGeneratingWbs(false)
+    }
+  }
+
   return {
     isGeneratingWbs,
-    handleAutoGenerateWbs
+    handleAutoGenerateWbs,
+    handleAutoGenerateBacklogFromPrd
   }
 }

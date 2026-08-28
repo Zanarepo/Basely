@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
+import { checkProjectItemLimit } from '@/lib/organizations/tier-access'
 import type { Iteration } from './types'
 
 export async function createIteration(
@@ -11,7 +12,17 @@ export async function createIteration(
   startDate: string,
   endDate: string,
   labelOverride?: 'sprint' | 'phase' | null
-): Promise<{ ok: boolean; error?: string; iteration?: Iteration }> {
+): Promise<{ ok: boolean; error?: string; limitKey?: string; maxLimit?: number; iteration?: Iteration }> {
+  const limitCheck = await checkProjectItemLimit(projectId, 'max_sprints')
+  if (!limitCheck.allowed) {
+    return {
+      ok: false,
+      error: `Sprint limit reached (${limitCheck.maxLimit}). Upgrade your plan to plan unlimited Sprints.`,
+      limitKey: limitCheck.limitKey,
+      maxLimit: limitCheck.maxLimit,
+    }
+  }
+
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('iterations')

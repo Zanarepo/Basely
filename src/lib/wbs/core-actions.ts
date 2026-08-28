@@ -85,8 +85,10 @@ export async function getWbsElements(projectId: string): Promise<
       edgeCases: d.edge_cases || null,
       edgeCasesData: typeof d.edge_cases === 'string' ? JSON.parse(d.edge_cases) : (d.edge_cases || []),
       duration: d.activities ? Number(d.activities.duration) : undefined,
+      story_points: d.story_points ? Number(d.story_points) : null,
       cost,
       estimationMethod,
+      required_skills: d.required_skills || [],
       raciAssignments: d.raci_assignments?.map((r: any) => ({
         id: r.id,
         wbsElementId: r.wbs_element_id,
@@ -214,6 +216,9 @@ export async function updateWbsElement(
     priority?: string | null
     userStoriesData?: ChecklistItem[]
     edgeCasesData?: ChecklistItem[]
+    storyPoints?: number | null
+    story_points?: number | null
+    required_skills?: string[]
   }
 ): Promise<ActionResponse> {
   const supabase = await createClient()
@@ -308,6 +313,10 @@ export async function updateWbsElement(
   if (payload.priority !== undefined) updateData.priority = payload.priority
   if (payload.userStoriesData !== undefined) updateData.user_stories = JSON.stringify(payload.userStoriesData)
   if (payload.edgeCasesData !== undefined) updateData.edge_cases = JSON.stringify(payload.edgeCasesData)
+  if (payload.storyPoints !== undefined) updateData.story_points = payload.storyPoints
+  if (payload.story_points !== undefined) updateData.story_points = payload.story_points
+  if (payload.required_skills !== undefined) updateData.required_skills = payload.required_skills
+
 
   const { error } = await supabase
     .from('wbs_elements')

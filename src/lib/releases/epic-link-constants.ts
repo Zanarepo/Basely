@@ -25,6 +25,8 @@ export const DUAL_METHODOLOGY_LABELS = {
     releasesTerm: 'Releases',
     releaseNotesTerm: 'Release Notes',
     checklistTerm: 'Deployment Readiness Checklist',
+    gtmTerm: 'GTM Launch Channels',
+    retroTerm: 'Release Retrospective',
   },
   Waterfall: {
     epicTerm: 'Summary Element',
@@ -37,6 +39,8 @@ export const DUAL_METHODOLOGY_LABELS = {
     releasesTerm: 'Milestones',
     releaseNotesTerm: 'Milestone Handover Report',
     checklistTerm: 'Prerequisites Compliance Checklist',
+    gtmTerm: 'Handover & Launch',
+    retroTerm: 'Milestone Post-Mortem',
   },
   Hybrid: {
     epicTerm: 'Epic / Summary',
@@ -49,6 +53,8 @@ export const DUAL_METHODOLOGY_LABELS = {
     releasesTerm: 'Releases / Milestones',
     releaseNotesTerm: 'Release & Handover Notes',
     checklistTerm: 'Readiness & Compliance Checklist',
+    gtmTerm: 'Launch & Handover',
+    retroTerm: 'Milestone Retrospective',
   },
 } as const
 

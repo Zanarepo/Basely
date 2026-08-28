@@ -10,12 +10,16 @@ import { ReleaseModal } from './components/ReleaseModal'
 import { ReleaseDetailModal } from './components/ReleaseDetailModal'
 import { getTerminology } from '@/utils/terminology'
 import type { Iteration, Release, ReleaseStatus } from '@/lib/releases/types'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
+import type { TierId } from '@/lib/organizations/tier-logic'
 
 interface ReleasesWorkspaceProps {
   projectId: string
   organizationId: string
   hasEditAccess: boolean
   methodology?: string | null
+  tier?: string
+  canUpgrade?: boolean
 }
 
 export function ReleasesWorkspace({
@@ -23,6 +27,8 @@ export function ReleasesWorkspace({
   organizationId,
   hasEditAccess,
   methodology = 'Agile',
+  tier = 'free',
+  canUpgrade = false,
 }: ReleasesWorkspaceProps) {
   const {
     loading,
@@ -67,7 +73,11 @@ export function ReleasesWorkspace({
   const [selectedRelease, setSelectedRelease] = useState<Release | null>(null)
   const [detailModalOpen, setDetailModalOpen] = useState(false)
 
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+  const [upgradeReason, setUpgradeReason] = useState('')
+
   const terms = getTerminology(methodology)
+  const isPremium = tier === 'premium' || tier === 'enterprise' || tier === 'pro'
 
   // Calculate high level KPI stats
   const totalReleases = releases.length
@@ -212,7 +222,7 @@ export function ReleasesWorkspace({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="p-5 bg-app-card border border-app-border rounded-2xl shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-app-muted uppercase tracking-wider block mb-1">{terms.release} Architectures</span>
+            <span className="text-xs font-bold text-app-muted uppercase tracking-wider block mb-1">Total {terms.releases}</span>
             <div className="text-2xl font-black text-app-fg">
               {totalReleases} <span className="text-xs font-extrabold text-emerald-500 font-normal ml-1.5">({releasedCount} Shipped)</span>
             </div>
@@ -224,9 +234,9 @@ export function ReleasesWorkspace({
 
         <div className="p-5 bg-app-card border border-app-border rounded-2xl shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-app-muted uppercase tracking-wider block mb-1">Schedule Windows</span>
+            <span className="text-xs font-bold text-app-muted uppercase tracking-wider block mb-1">Total {terms.iterations}</span>
             <div className="text-2xl font-black text-app-fg">
-              {totalIterations} <span className="text-xs font-semibold text-app-muted ml-1">({terms.iterations})</span>
+              {totalIterations} <span className="text-xs font-semibold text-app-muted ml-1">(Scheduled)</span>
             </div>
           </div>
           <div className="p-3.5 rounded-2xl bg-teal-500/10 text-teal-500 border border-teal-500/20">
@@ -236,9 +246,9 @@ export function ReleasesWorkspace({
 
         <div className="p-5 bg-app-card border border-app-border rounded-2xl shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-app-muted uppercase tracking-wider block mb-1">Active Readiness Gate Avg</span>
+            <span className="text-xs font-bold text-app-muted uppercase tracking-wider block mb-1">Active {terms.readiness} Avg</span>
             <div className="text-2xl font-black text-emerald-500">
-              {avgReadiness}% <span className="text-xs font-semibold text-app-muted ml-1">(Exit Criteria)</span>
+              {avgReadiness}% <span className="text-xs font-semibold text-app-muted ml-1">({terms.readiness} Criteria)</span>
             </div>
           </div>
           <div className="p-3.5 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
@@ -272,7 +282,7 @@ export function ReleasesWorkspace({
           }`}
         >
           <Layers className="h-4 w-4" />
-          <span>{terms.iterations} & Schedule Windows ({totalIterations})</span>
+          <span>{terms.iterations} & Scheduling ({totalIterations})</span>
         </button>
       </div>
 
@@ -361,15 +371,26 @@ export function ReleasesWorkspace({
         isOpen={iterationModalOpen}
         onClose={() => setIterationModalOpen(false)}
         onSave={handleSaveIteration}
+        onLimitReached={(reason) => {
+          setUpgradeReason(reason)
+          setUpgradeModalOpen(true)
+        }}
         iterationToEdit={editingIteration}
         projectMethodology={methodology}
-        nextSequenceNumber={iterations.length > 0 ? Math.max(...iterations.map(i => i.sequenceNumber)) + 1 : 1}
+        nextSequenceNumber={editingIteration ? editingIteration.sequenceNumber : iterations.length + 1}
+        projectId={projectId}
+        organizationId={organizationId}
+        availableWbsElements={availableWorkItems.filter(i => i.type === 'wbs_element' && !i.iterationId)}
       />
 
       <ReleaseModal
         isOpen={releaseModalOpen}
         onClose={() => setReleaseModalOpen(false)}
         onSave={handleSaveRelease}
+        onLimitReached={(reason) => {
+          setUpgradeReason(reason)
+          setUpgradeModalOpen(true)
+        }}
         releaseToEdit={editingRelease}
         availableIterations={iterations}
         methodology={methodology}
@@ -402,6 +423,15 @@ export function ReleasesWorkspace({
         onAddRollbackStep={handleAddRollbackStep}
         onDeleteRollbackStep={handleDeleteRollbackStep}
         onRefresh={loadData}
+      />
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        organizationId={organizationId}
+        currentTier={tier as TierId}
+        reason={upgradeReason}
       />
     </div>
   )

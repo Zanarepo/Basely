@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
-import { X, Settings2, Loader2, Save, AlertCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { X, Settings2, Loader2, Save, AlertCircle, Maximize2, Minimize2 } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 import { WbsBasicDetails } from './sidepanel/WbsBasicDetails'
 import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
@@ -13,11 +13,13 @@ import { useWbsScheduling } from './hooks/useWbsScheduling'
 import { useWbsSubmit } from './hooks/useWbsSubmit'
 import { useWbsSidePanelPermissions } from './hooks/useWbsSidePanelPermissions'
 import { useUserPersona } from '@/hooks/use-user-persona'
+import { getProjectAdrs, type AdrSummary } from '@/lib/adr/adr-workflow-data'
 
 import { WbsRaciAccordion } from './sidepanel/accordions/WbsRaciAccordion'
 import { WbsBudgetAccordion } from './sidepanel/accordions/WbsBudgetAccordion'
 import { WbsScheduleAccordion } from './sidepanel/accordions/WbsScheduleAccordion'
 import { WbsAttachmentsAccordion } from './sidepanel/accordions/WbsAttachmentsAccordion'
+import { WbsAdrAccordion } from './sidepanel/accordions/WbsAdrAccordion'
 
 type WbsElementSidePanelProps = {
   element: WbsElement | null
@@ -38,6 +40,7 @@ type WbsElementSidePanelProps = {
   organizationId: string
   tier: string
   aiEnabled: boolean
+  methodology?: string | null
 }
 
 export function WbsElementSidePanel({
@@ -59,8 +62,19 @@ export function WbsElementSidePanel({
   organizationId,
   tier,
   aiEnabled,
+  methodology,
 }: WbsElementSidePanelProps) {
   const { showBudgetControls } = useUserPersona()
+
+  const [projectAdrs, setProjectAdrs] = useState<AdrSummary[]>([])
+
+  useEffect(() => {
+    if (element?.projectId) {
+      getProjectAdrs(element.projectId).then(setProjectAdrs).catch(console.error)
+    }
+  }, [element?.projectId])
+
+  const [isExpanded, setIsExpanded] = useState(false)
   const elementState = useWbsElementState(element)
   const schedulingState = useWbsScheduling(element, elementState.isWorkPackage)
 
@@ -103,7 +117,7 @@ export function WbsElementSidePanel({
         onClick={onClose}
       />
 
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-app-surface-solid border-l border-app-border shadow-2xl flex flex-col animate-fade-in-right">
+      <div className={`fixed inset-y-0 right-0 z-50 w-full bg-app-surface-solid border-l border-app-border shadow-2xl flex flex-col transition-all duration-300 ease-in-out ${isExpanded ? 'max-w-4xl' : 'max-w-lg'} animate-fade-in-right`}>
         <form onSubmit={handleFormSubmit} className="flex flex-col h-full overflow-hidden">
         
           <div className="flex items-center justify-between p-6 pb-4 border-b border-app-border shrink-0">
@@ -113,14 +127,24 @@ export function WbsElementSidePanel({
                 WBS Element Details <span className="text-sm font-normal text-app-muted">({element?.code})</span>
               </h3>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl text-app-subtle hover:text-app-fg hover:bg-app-hover transition-colors cursor-pointer"
-              aria-label="Close panel"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="p-2 rounded-xl text-app-subtle hover:text-app-fg hover:bg-app-hover transition-colors cursor-pointer"
+                title={isExpanded ? "Minimize panel" : "Expand panel"}
+              >
+                {isExpanded ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 rounded-xl text-app-subtle hover:text-app-fg hover:bg-app-hover transition-colors cursor-pointer"
+                aria-label="Close panel"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           {schedulingState.scheduleError && (
@@ -154,6 +178,10 @@ export function WbsElementSidePanel({
                 setEdgeCasesData={elementState.setEdgeCasesData}
                 priority={elementState.priority}
                 setPriority={elementState.setPriority}
+                storyPoints={elementState.storyPoints}
+                setStoryPoints={elementState.setStoryPoints}
+                requiredSkills={elementState.requiredSkills}
+                setRequiredSkills={elementState.setRequiredSkills}
                 hasEditAccess={effectiveEditAccess}
                 canCheckDeliverables={canCheckDeliverables}
                 canCheckCriteria={canCheckCriteria}
@@ -176,6 +204,12 @@ export function WbsElementSidePanel({
                 onAutoSavePriority={(val) => {
                   if (element?.id) onSave(element.id, { priority: val })
                 }}
+                onAutoSaveStoryPoints={(val) => {
+                  if (element?.id) onSave(element.id, { story_points: val })
+                }}
+                onAutoSaveRequiredSkills={(val) => {
+                  if (element?.id) onSave(element.id, { required_skills: val })
+                }}
                 onAutoSaveStatus={async (val) => {
                   if (element?.id) await onSave(element.id, { status: val })
                 }}
@@ -184,6 +218,14 @@ export function WbsElementSidePanel({
                 callerUserId={callerUserId}
                 terms={terms}
                 organizationId={organizationId}
+                onShowToast={onShowToast}
+                wbsElementId={element?.id || ''}
+                projectAdrs={projectAdrs}
+                linkedAdrIds={elementState.linkedAdrIds}
+                tier={tier}
+                onLinkedAdrsChange={(newIds: string[]) => {
+                  elementState.setLinkedAdrIds(newIds)
+                }}
               />
 
               {element?.projectId && element?.id && (
@@ -197,8 +239,37 @@ export function WbsElementSidePanel({
                     onUpdated={(newVal) => {
                       if (onAssignmentChanged) onAssignmentChanged()
                     }}
+                    methodology={methodology}
                   />
                 </div>
+              )}
+
+              {terms.iteration === 'Phase' && (
+                <WbsScheduleAccordion
+                  projectId={element.projectId}
+                  wbsElementId={element.id}
+                  isWorkPackage={elementState.isWorkPackage}
+                  autoSchedule={schedulingState.autoSchedule}
+                  setAutoSchedule={schedulingState.setAutoSchedule}
+                  isMilestone={schedulingState.isMilestone}
+                  setIsMilestone={schedulingState.setIsMilestone}
+                  loadingSchedule={schedulingState.loadingSchedule}
+                  hasEditAccess={canEditSchedule}
+                  saving={saving}
+                  startDate={schedulingState.startDate}
+                  handleStartDateChange={schedulingState.handleStartDateChange}
+                  endDate={schedulingState.endDate}
+                  handleEndDateChange={schedulingState.handleEndDateChange}
+                  duration={schedulingState.duration}
+                  handleDurationChange={schedulingState.handleDurationChange}
+                  projectActivities={schedulingState.projectActivities}
+                  predecessors={schedulingState.predecessors}
+                  handleTogglePredecessor={schedulingState.handleTogglePredecessor}
+                  handleUpdatePredType={schedulingState.handleUpdatePredType}
+                  handleUpdatePredLag={schedulingState.handleUpdatePredLag}
+                  onDependenciesChanged={schedulingState.refetchSchedulingData}
+                  methodology={methodology}
+                />
               )}
 
               <WbsRaciAccordion
@@ -213,7 +284,7 @@ export function WbsElementSidePanel({
                 callerUserId={callerUserId}
               />
 
-              {showBudgetControls && elementState.isWorkPackage && (
+              {showBudgetControls && elementState.isWorkPackage && methodology?.toLowerCase() !== 'agile' && (
                 <WbsBudgetAccordion
                   wbsElementId={element.id}
                   wbsName={element.name}
@@ -229,31 +300,48 @@ export function WbsElementSidePanel({
                 />
               )}
 
-              <WbsScheduleAccordion
-                projectId={element.projectId}
-                wbsElementId={element.id}
-                isWorkPackage={elementState.isWorkPackage}
-                autoSchedule={schedulingState.autoSchedule}
-                setAutoSchedule={schedulingState.setAutoSchedule}
-                isMilestone={schedulingState.isMilestone}
-                setIsMilestone={schedulingState.setIsMilestone}
-                loadingSchedule={schedulingState.loadingSchedule}
-                hasEditAccess={canEditSchedule}
-                saving={saving}
-                startDate={schedulingState.startDate}
-                handleStartDateChange={schedulingState.handleStartDateChange}
-                endDate={schedulingState.endDate}
-                handleEndDateChange={schedulingState.handleEndDateChange}
-                duration={schedulingState.duration}
-                handleDurationChange={schedulingState.handleDurationChange}
-                projectActivities={schedulingState.projectActivities}
-                predecessors={schedulingState.predecessors}
-                handleTogglePredecessor={schedulingState.handleTogglePredecessor}
-                handleUpdatePredType={schedulingState.handleUpdatePredType}
-                handleUpdatePredLag={schedulingState.handleUpdatePredLag}
-                onDependenciesChanged={schedulingState.refetchSchedulingData}
-              />
+              {terms.iteration !== 'Phase' && (
+                <WbsScheduleAccordion
+                  projectId={element.projectId}
+                  wbsElementId={element.id}
+                  isWorkPackage={elementState.isWorkPackage}
+                  autoSchedule={schedulingState.autoSchedule}
+                  setAutoSchedule={schedulingState.setAutoSchedule}
+                  isMilestone={schedulingState.isMilestone}
+                  setIsMilestone={schedulingState.setIsMilestone}
+                  loadingSchedule={schedulingState.loadingSchedule}
+                  hasEditAccess={canEditSchedule}
+                  saving={saving}
+                  startDate={schedulingState.startDate}
+                  handleStartDateChange={schedulingState.handleStartDateChange}
+                  endDate={schedulingState.endDate}
+                  handleEndDateChange={schedulingState.handleEndDateChange}
+                  duration={schedulingState.duration}
+                  handleDurationChange={schedulingState.handleDurationChange}
+                  projectActivities={schedulingState.projectActivities}
+                  predecessors={schedulingState.predecessors}
+                  handleTogglePredecessor={schedulingState.handleTogglePredecessor}
+                  handleUpdatePredType={schedulingState.handleUpdatePredType}
+                  handleUpdatePredLag={schedulingState.handleUpdatePredLag}
+                  onDependenciesChanged={schedulingState.refetchSchedulingData}
+                  methodology={methodology}
+                />
+              )}
               
+              {elementState.isWorkPackage && (
+                <WbsAdrAccordion
+                  wbsElementId={element?.id || ''}
+                  organizationId={organizationId}
+                  projectAdrs={projectAdrs}
+                  linkedAdrIds={elementState.linkedAdrIds}
+                  tier={tier}
+                  hasEditAccess={hasEditAccess}
+                  onLinkedAdrsChange={(newIds: string[]) => {
+                    elementState.setLinkedAdrIds(newIds)
+                  }}
+                />
+              )}
+
               <WbsAttachmentsAccordion
                 attachments={attachments}
                 isAttachmentsLoading={isAttachmentsLoading}

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/types'
 import { useDocumentExports } from './engine/useDocumentExports'
@@ -43,6 +44,7 @@ const CompetitiveIntelligenceDashboard = dynamic(() => import('@/components/dash
 const AiStatusReportBanner = dynamic(() => import('./components/execution/AiStatusReportBanner').then(m => m.AiStatusReportBanner), { ssr: false })
 const AiClosureSynthesisBanner = dynamic(() => import('./components/closure/AiClosureSynthesisBanner').then(m => m.AiClosureSynthesisBanner), { ssr: false })
 const AiStakeholderRegisterBanner = dynamic(() => import('./components/chain/AiStakeholderRegisterBanner'), { ssr: false })
+const GenericAiChainBanner = dynamic(() => import('./components/chain/GenericAiChainBanner'), { ssr: false })
 interface DocumentEngineProps {
   projectId: string
   projectContext: any
@@ -78,6 +80,7 @@ export default function DocumentEngine({
   const [isReconciling, setIsReconciling] = useState(false)
   const [roadmapViewMode, setRoadmapViewMode] = useState<'document' | 'kanban'>('document')
   const [competitiveViewMode, setCompetitiveViewMode] = useState<'document' | 'matrix'>('document')
+  const router = useRouter()
 
   const isRoadmapDocument = ['roadmap_workspace', 'product_roadmap_document', 'product_roadmap'].includes(template.document_type)
   const isCompetitiveDocument = [
@@ -402,6 +405,22 @@ export default function DocumentEngine({
                 onGenerated={(data) => {
                   setFreeText(prev => ({...prev, ...data}))
                   setIsDirty(true)
+                }}
+              />
+            )}
+
+            {!isSnapshot && ['problem_discovery_workspace', 'customer_research_strategy', 'problem_definition_workspace', 'product_strategy_document', 'opportunity_assessment_workspace', 'prioritization_workspace', 'solution_design_workspace', 'solution_validation_workspace', 'product_requirements_document', 'product_roadmap_document'].includes(template.document_type) && (
+              <GenericAiChainBanner
+                projectId={projectId}
+                organizationId={projectContext?.organization_id || ''}
+                documentType={template.document_type}
+                templateId={template.id}
+                onShowToast={onShowToast}
+                onGenerated={(data) => {
+                  setFreeText(prev => ({...prev, ...data}))
+                  setIsDirty(true)
+                  // Trigger Next.js to re-fetch the generatedDoc prop from server
+                  router.refresh()
                 }}
               />
             )}

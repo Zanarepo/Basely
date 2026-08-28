@@ -11,6 +11,9 @@ export function useWbsElementState(element: WbsElement | null) {
   const [userStoriesData, setUserStoriesData] = useState<ChecklistItem[]>([])
   const [edgeCasesData, setEdgeCasesData] = useState<ChecklistItem[]>([])
   const [priority, setPriority] = useState<string | null>(null)
+  const [storyPoints, setStoryPoints] = useState<number | null>(null)
+  const [requiredSkills, setRequiredSkills] = useState<string[]>([])
+  const [linkedAdrIds, setLinkedAdrIds] = useState<string[]>([])
   const [status, setStatus] = useState<WbsStatus>('Not Started')
   const [isWorkPackage, setIsWorkPackage] = useState(false)
   const [cost, setCost] = useState<number | undefined>(undefined)
@@ -27,6 +30,9 @@ export function useWbsElementState(element: WbsElement | null) {
       setUserStoriesData(element.userStoriesData ?? [])
       setEdgeCasesData(element.edgeCasesData ?? [])
       setPriority(element.priority ?? null)
+      setStoryPoints(element.story_points ?? null)
+      setRequiredSkills(element.required_skills ?? [])
+      setLinkedAdrIds(element.linked_adr_ids ?? [])
       setStatus(element.status)
       setIsWorkPackage(element.isWorkPackage)
       setCost(element.cost)
@@ -44,6 +50,9 @@ export function useWbsElementState(element: WbsElement | null) {
     userStoriesData, setUserStoriesData,
     edgeCasesData, setEdgeCasesData,
     priority, setPriority,
+    storyPoints, setStoryPoints,
+    requiredSkills, setRequiredSkills,
+    linkedAdrIds, setLinkedAdrIds,
     status, setStatus,
     isWorkPackage, setIsWorkPackage,
     cost, setCost,

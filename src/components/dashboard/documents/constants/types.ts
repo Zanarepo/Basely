@@ -13,4 +13,5 @@ export interface DocumentItem {
     bestPractices: string[]
   }
   badge?: string
+  stepLabel?: string
 }

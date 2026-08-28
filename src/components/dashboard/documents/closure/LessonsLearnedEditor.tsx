@@ -32,6 +32,7 @@ export interface LessonsLearnedEditorProps {
   onOpenLifecycleModal?: () => void
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
   releaseId?: string
+  methodology?: string | null
 }
 
 export function LessonsLearnedEditor({
@@ -41,8 +42,13 @@ export function LessonsLearnedEditor({
   currentLifecycle,
   onOpenLifecycleModal,
   onShowToast,
-  releaseId
+  releaseId,
+  methodology
 }: LessonsLearnedEditorProps) {
+  const terms = React.useMemo(() => {
+    const { getDualLabels } = require('@/lib/releases/epic-link-constants')
+    return getDualLabels(methodology)
+  }, [methodology])
   const [data, setData] = useState<LessonsLearnedTemplateStructure | null>(null)
   const [loading, setLoading] = useState(true)
   const [sections, setSections] = useState<Record<string, string>>({})
@@ -278,7 +284,7 @@ export function LessonsLearnedEditor({
           </div>
           <div className="min-w-0">
             <h2 className="text-lg sm:text-2xl font-black text-app-fg tracking-tight truncate">
-              {releaseId ? 'Release Retrospective' : 'Project Lessons Learned'}
+              {releaseId ? terms.retroTerm : 'Project Lessons Learned'}
             </h2>
             <p className="text-xs sm:text-sm text-app-muted truncate">
               Structured post-execution review of accomplishments, challenges, and actionable PMO recommendations

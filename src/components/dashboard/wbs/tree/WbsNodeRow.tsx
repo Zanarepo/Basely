@@ -19,7 +19,6 @@ import { useWbsDragAndDrop } from './hooks/useWbsDragAndDrop'
 import { useWbsNodeRename } from './hooks/useWbsNodeRename'
 import { IterationBadge } from '@/components/dashboard/releases/components/IterationBadge'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
-import { useUserPersona } from '@/hooks/use-user-persona'
 
 export function WbsNodeRow({
   node,
@@ -50,15 +49,16 @@ export function WbsNodeRow({
   const isExpanded = expandedNodeIds.has(element.id)
   const hasChildren = children.length > 0
 
-  const { isProductMode } = useUserPersona()
   const isTopLevel = !element.parentId
-  const siblingTitle = isProductMode
-    ? (isTopLevel ? 'Add Epic' : 'Add Story')
-    : (isTopLevel ? 'Add Phase' : 'Add Work Package')
+  const siblingTitle = depth === 0 
+    ? `Add ${terms.planTier}` 
+    : depth === 1 
+      ? `Add ${terms.workPackage}`
+      : `Add ${terms.task}`
 
-  const childTitle = isProductMode
-    ? (isTopLevel ? 'Add Story' : 'Add Sub-task')
-    : (isTopLevel ? 'Add Work Package' : 'Add Task')
+  const childTitle = depth === 0 
+    ? `Add ${terms.workPackage}` 
+    : `Add ${terms.task}`
 
   const {
     isEditing,

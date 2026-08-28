@@ -4,6 +4,7 @@ import React from 'react'
 import { Rocket, Edit, Trash2, CheckCircle2, AlertCircle, Clock, RotateCcw, XCircle, ChevronRight, Layers } from 'lucide-react'
 import { IterationBadge } from './IterationBadge'
 import type { Release, ReleaseStatus } from '@/lib/releases/types'
+import { getTerminology } from '@/utils/terminology'
 
 interface ReleaseCardProps {
   release: Release
@@ -55,6 +56,7 @@ export function ReleaseCard({
   onEdit,
   onDelete,
 }: ReleaseCardProps) {
+  const terms = getTerminology(methodology)
   const status = STATUS_CONFIG[release.status] || STATUS_CONFIG.planned
 
   const criteria = release.exitCriteria || []
@@ -87,7 +89,7 @@ export function ReleaseCard({
                 type="button"
                 onClick={e => onEdit(release, e)}
                 className="p-1.5 rounded-lg text-app-muted hover:text-app-fg hover:bg-app-surface transition-colors cursor-pointer"
-                title="Edit Release Properties"
+                title={`Edit ${terms.releasePlan} Properties`}
               >
                 <Edit className="h-4 w-4" />
               </button>
@@ -95,7 +97,7 @@ export function ReleaseCard({
                 type="button"
                 onClick={e => onDelete(release.id, e)}
                 className="p-1.5 rounded-lg text-rose-500/80 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                title="Delete Release"
+                title={`Delete ${terms.release}`}
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -129,7 +131,7 @@ export function ReleaseCard({
         <div className="mb-4">
           <div className="text-[11px] font-bold text-app-muted uppercase tracking-wider mb-2 flex items-center gap-1">
             <Layers className="h-3 w-3 text-teal-400" />
-            Linked Iterations ({(release.iterations || []).length})
+            Linked {terms.iterations} ({(release.iterations || []).length})
           </div>
           {(release.iterations || []).length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
@@ -151,7 +153,7 @@ export function ReleaseCard({
             </div>
           ) : (
             <div className="text-xs text-app-muted-text/60 italic">
-              No iterations mapped yet.
+              No {terms.iterations.toLowerCase()} mapped yet.
             </div>
           )}
         </div>
@@ -181,7 +183,7 @@ export function ReleaseCard({
         <div className="mt-3.5 flex items-center justify-between pt-2 border-t border-app-border/40">
           <span className="text-[11px] text-app-muted font-medium">Readiness Score</span>
           <div className="flex items-center gap-1 text-xs font-bold text-purple-400 group-hover:text-purple-300 transition-colors">
-            <span>🚀 Open 3-Step Release Pipeline</span>
+            <span>🚀 Open 3-Step {terms.release} Pipeline</span>
             <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
           </div>
         </div>

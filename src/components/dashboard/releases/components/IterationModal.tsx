@@ -4,6 +4,11 @@ import type { Iteration } from '@/lib/releases/types'
 import { getIterationLabel } from '@/lib/releases/types'
 import type { WbsElement } from '@/lib/wbs/constants'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import { analyzeSprintCapacityRisk } from '@/lib/schedule/ai-capacity-actions'
+import { AlertTriangle } from 'lucide-react'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
+import { WorkloadRebalanceWidget } from './WorkloadRebalanceWidget'
 
 interface IterationModalProps {
   isOpen: boolean
@@ -16,20 +21,26 @@ interface IterationModalProps {
     labelOverride?: 'sprint' | 'phase' | null,
     selectedWbsIds?: string[]
   ) => Promise<any>
+  onLimitReached?: (reason: string) => void
   iterationToEdit?: Iteration | null
   projectMethodology?: string | null
   nextSequenceNumber: number
-  availableWbsElements?: WbsElement[]
+  availableWbsElements?: { id: string; name?: string; title?: string; code?: string; priority?: string | null }[]
+  projectId: string
+  organizationId: string
 }
 
 export function IterationModal({
   isOpen,
   onClose,
   onSave,
+  onLimitReached,
   iterationToEdit,
   projectMethodology,
   nextSequenceNumber,
   availableWbsElements,
+  projectId,
+  organizationId,
 }: IterationModalProps) {
   const [name, setName] = useState('')
   const [sequenceNumber, setSequenceNumber] = useState(1)
@@ -39,6 +50,16 @@ export function IterationModal({
   const [selectedWbsIds, setSelectedWbsIds] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  const [capacityRisk, setCapacityRisk] = useState<{
+    hasRisk: boolean;
+    warningMessage: string;
+    totalPoints: number;
+    teamCapacity: number;
+  } | null>(null)
+  const [isAnalyzingRisk, setIsAnalyzingRisk] = useState(false)
+
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   const defaultLabel = getIterationLabel(projectMethodology)
   const isHybrid = (projectMethodology || '').toLowerCase() === 'hybrid'
@@ -67,6 +88,37 @@ export function IterationModal({
     }
     setError(null)
   }, [iterationToEdit, nextSequenceNumber, defaultLabel, isHybrid, isOpen])
+
+  useEffect(() => {
+    if (!isOpen || selectedWbsIds.length === 0) {
+      setCapacityRisk(null)
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      // 1. Check AI feature access limits
+      const canAnalyze = await checkLimit('max_ai_generations')
+      if (!canAnalyze) {
+        setIsAnalyzingRisk(false)
+        return
+      }
+
+      setIsAnalyzingRisk(true)
+      const sprintId = iterationToEdit?.id || 'new'
+      const res = await analyzeSprintCapacityRisk(projectId, organizationId, sprintId, selectedWbsIds)
+      
+      if (res.ok && res.data) {
+        setCapacityRisk(res.data)
+        // Record usage for AI generations limit
+        await recordUsage('generations')
+      } else {
+        setCapacityRisk(null)
+      }
+      setIsAnalyzingRisk(false)
+    }, 800) // debounce 800ms
+
+    return () => clearTimeout(timer)
+  }, [selectedWbsIds, isOpen, projectId, organizationId, iterationToEdit])
 
   if (!isOpen) return null
 
@@ -99,6 +151,9 @@ export function IterationModal({
 
     if (res.ok) {
       onClose()
+    } else if (res.limitKey) {
+      onClose()
+      if (onLimitReached) onLimitReached(res.error || 'Limit reached')
     } else {
       setError(res.error || 'Failed to save iteration.')
     }
@@ -125,6 +180,16 @@ export function IterationModal({
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        {iterationToEdit && (
+          <div className="px-6 pt-4">
+            <WorkloadRebalanceWidget 
+              projectId={projectId}
+              organizationId={organizationId}
+              iterationId={iterationToEdit.id}
+            />
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
           {error && (
@@ -233,7 +298,7 @@ export function IterationModal({
                 </button>
               </div>
 
-              <div className="max-h-36 overflow-y-auto border border-app-border rounded-xl divide-y divide-app-border/50 bg-app-surface/40 p-1">
+              <div className="max-h-[40vh] min-h-[150px] overflow-y-auto border border-app-border rounded-xl divide-y divide-app-border/50 bg-app-surface/40 p-1">
                 {availableWbsElements.map((el) => {
                   const isChecked = selectedWbsIds.includes(el.id)
                   return (
@@ -256,7 +321,7 @@ export function IterationModal({
                         />
                         <span className="font-semibold text-app-fg truncate">
                           {el.code ? `[${el.code}] ` : ''}
-                          {el.name}
+                          {el.name || el.title}
                         </span>
                       </div>
                       {el.priority && (
@@ -267,6 +332,39 @@ export function IterationModal({
                     </label>
                   )
                 })}
+              </div>
+            </div>
+          )}
+
+          {isAnalyzingRisk && (
+            <div className="flex items-center gap-2 p-3 bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20 rounded-xl text-violet-600 dark:text-violet-400 text-sm">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Analyzing sprint capacity risk...</span>
+            </div>
+          )}
+
+          {!isAnalyzingRisk && capacityRisk && capacityRisk.hasRisk && (
+            <div className="flex items-start gap-3 p-3 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-xl">
+              <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-rose-700 dark:text-rose-400">Capacity Risk Detected</p>
+                <p className="text-xs text-rose-600 dark:text-rose-300 mt-1">{capacityRisk.warningMessage}</p>
+                <p className="text-[11px] font-medium text-rose-500 dark:text-rose-400/80 mt-2">
+                  Total Points: {capacityRisk.totalPoints} / Team Capacity: {capacityRisk.teamCapacity}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!isAnalyzingRisk && capacityRisk && !capacityRisk.hasRisk && capacityRisk.totalPoints > 0 && (
+            <div className="flex items-start gap-3 p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl">
+              <Layers className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Capacity Looking Good</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-300 mt-1">{capacityRisk.warningMessage}</p>
+                <p className="text-[11px] font-medium text-emerald-500 dark:text-emerald-400/80 mt-2">
+                  Total Points: {capacityRisk.totalPoints} / Team Capacity: {capacityRisk.teamCapacity}
+                </p>
               </div>
             </div>
           )}
@@ -296,6 +394,7 @@ export function IterationModal({
           </button>
         </div>
       </div>
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

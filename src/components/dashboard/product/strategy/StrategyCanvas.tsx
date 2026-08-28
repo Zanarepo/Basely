@@ -369,9 +369,11 @@ export function StrategyCanvas({ projectId, organizationId, hasEditAccess = true
           <span className="text-[11px] text-slate-400 font-medium">Add extra custom sections for document auto-filling</span>
         </div>
 
-        {strategy.custom_attributes && Object.keys(strategy.custom_attributes).length > 0 ? (
+        {strategy.custom_attributes && Object.keys(strategy.custom_attributes).filter(k => !k.startsWith('competitor_') && !k.startsWith('competitive_')).length > 0 ? (
           <div className="space-y-6">
-            {Object.entries(strategy.custom_attributes).map(([key, value]) => (
+            {Object.entries(strategy.custom_attributes)
+              .filter(([key]) => !key.startsWith('competitor_') && !key.startsWith('competitive_'))
+              .map(([key, value]) => (
               <div key={key} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-3 relative group">
                 <div className="absolute top-4 right-4 z-20">
                   {hasEditAccess && (

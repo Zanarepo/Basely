@@ -18,7 +18,7 @@ interface StepScopeEpicsProps {
   inProgressScopeCount: number
   notStartedScopeCount: number
   activeScopeItemsLength: number
-  labels: { epicsTerm: string; sprintsTerm: string; storiesTerm: string; epicTerm: string; storyTerm: string }
+  labels: { epicsTerm: string; sprintsTerm: string; storiesTerm: string; epicTerm: string; storyTerm: string; releaseTerm: string; sprintTerm: string; }
   scopeByEpic: [string, { epicName: string; items: ReleaseScopeItem[] }][]
   hasEditAccess: boolean
   releaseId: string
@@ -89,7 +89,7 @@ export function StepScopeEpics({
           <Layers className="w-10 h-10 text-slate-400 dark:text-slate-600 mx-auto mb-2" />
           <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">No deliverables mapped yet</h4>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-            Attach {labels.sprintsTerm.toLowerCase()} to this release or tag stories to mapped sprints to see scope items automatically.
+            Attach {labels.sprintsTerm.toLowerCase()} to this {labels.releaseTerm.toLowerCase()} or tag {labels.storiesTerm.toLowerCase()} to mapped {labels.sprintsTerm.toLowerCase()} to see scope items automatically.
           </p>
         </div>
       ) : (
@@ -162,7 +162,7 @@ export function StepScopeEpics({
                             </div>
                             {item.iterationName && (
                               <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                                Sprint:{' '}
+                                {labels.sprintTerm}:{' '}
                                 <span className="text-teal-600 dark:text-teal-400 font-semibold">
                                   {item.iterationName}
                                 </span>

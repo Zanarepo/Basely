@@ -5,6 +5,7 @@ import { X, Loader2, Rocket, Flag, Layers, Plus, Trash2 } from 'lucide-react'
 import { IterationBadge } from './IterationBadge'
 import type { Release, Iteration, ReleaseStatus } from '@/lib/releases/types'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import { getTerminology } from '@/utils/terminology'
 
 interface ReleaseModalProps {
   isOpen: boolean
@@ -17,6 +18,7 @@ interface ReleaseModalProps {
     iterationIds: string[],
     exitCriteriaTexts: string[]
   ) => Promise<any>
+  onLimitReached?: (reason: string) => void
   releaseToEdit?: Release | null
   availableIterations: Iteration[]
   methodology?: string | null
@@ -27,6 +29,7 @@ export function ReleaseModal({
   isOpen,
   onClose,
   onSave,
+  onLimitReached,
   releaseToEdit,
   availableIterations,
   methodology,
@@ -40,6 +43,8 @@ export function ReleaseModal({
   const [criteriaTexts, setCriteriaTexts] = useState<string[]>([''])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const terms = getTerminology(methodology)
 
   useEffect(() => {
     if (releaseToEdit) {
@@ -98,6 +103,9 @@ export function ReleaseModal({
     setLoading(false)
     if (res.ok) {
       onClose()
+    } else if (res.limitKey) {
+      onClose()
+      if (onLimitReached) onLimitReached(res.error || 'Limit reached')
     } else {
       setError(res.error || 'Failed to save release plan.')
     }
@@ -113,7 +121,7 @@ export function ReleaseModal({
           <div className="flex items-center gap-2">
             <Rocket className="h-5 w-5 text-violet-500" />
             <h2 className="text-lg font-extrabold text-app-fg">
-              {releaseToEdit ? 'Edit Release Plan Properties' : 'Create New Release Plan'}
+              {releaseToEdit ? `Edit ${terms.releasePlan} Properties` : `Create New ${terms.releasePlan}`}
             </h2>
           </div>
           <button
@@ -135,7 +143,7 @@ export function ReleaseModal({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2 space-y-1.5">
               <label className="text-xs font-semibold text-app-muted uppercase tracking-wider block">
-                Release Name / Version
+                {terms.release} Name / Version
               </label>
               <input
                 type="text"
@@ -183,13 +191,13 @@ export function ReleaseModal({
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-app-muted uppercase tracking-wider flex items-center gap-1.5">
                 <Layers className="h-4 w-4 text-teal-400" />
-                Map to Sprints / Phases ({selectedIterationIds.length} Selected)
+                Map to {terms.iterations} ({selectedIterationIds.length} Selected)
               </label>
             </div>
 
             {availableIterations.length === 0 ? (
               <p className="text-xs text-app-muted/60 italic p-3 bg-app-surface/50 rounded-xl border border-app-border/40">
-                No iterations defined in this project yet. You can create iterations and link them anytime.
+                No {terms.iterations.toLowerCase()} defined in this project yet. You can create {terms.iterations.toLowerCase()} and link them anytime.
               </p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto p-3 bg-app-surface/40 rounded-xl border border-app-border/60">
@@ -230,7 +238,7 @@ export function ReleaseModal({
               </div>
             )}
             <p className="text-[11px] text-app-muted">
-              Mapping an iteration automatically rolls up its tagged WBS elements and activities directly into this release&apos;s Scope Architecture.
+              Mapping an {terms.iteration.toLowerCase()} automatically rolls up its tagged WBS elements and activities directly into this {terms.release.toLowerCase()}&apos;s Scope Architecture.
             </p>
           </div>
 
@@ -295,7 +303,7 @@ export function ReleaseModal({
             className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {releaseToEdit ? 'Save Properties' : 'Create Release Architecture'}
+            {releaseToEdit ? 'Save Properties' : `Create ${terms.releasePlan}`}
           </button>
         </div>
       </div>

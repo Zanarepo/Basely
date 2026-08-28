@@ -3,6 +3,8 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { generateStructuredJson } from '@/lib/ai/ai-provider-router'
 import { getSyncDocumentTemplate } from './prd-templates'
+import { STATIC_TEMPLATES } from './static-templates'
+import { revalidatePath } from 'next/cache'
 import { upsertStrategyCanvasFromAI } from '@/lib/product-strategy/strategy-actions'
 
 export async function draftMarketResearchFromBusinessCase(
@@ -1298,4 +1300,266 @@ CRITICAL FOR VERIFIABLE DATA: Because you do not have live web access, DO NOT ha
     console.error('[synthesizeRiskRegisterFromCharterAndScope Error]:', err)
     return { ok: false, error: err.message || 'Failed to synthesize Risk Register.' }
   }
+}
+
+
+// ==========================================
+// 12-STEP AI AUTOMATION CHAIN PIPELINE
+// ==========================================
+
+export async function chainDocumentGeneration(
+  projectId: string,
+  targetDocumentType: string,
+  upstreamDocumentType: string,
+  personaRole: string,
+  actionInstruction: string,
+  uiTemplateId?: string
+): Promise<{ ok: boolean; data?: any; error?: string }> {
+  try {
+    const adminSupabase = createAdminClient()
+
+    // 1. Fetch Upstream Document
+    const { data: upstreamDoc, error: upErr } = await adminSupabase
+      .from('generated_documents')
+      .select('free_text_content')
+      .eq('project_id', projectId)
+      .eq('document_type', upstreamDocumentType)
+      .eq('is_snapshot', false)
+      .maybeSingle()
+
+    if (upErr || !upstreamDoc || !upstreamDoc.free_text_content) {
+      return { ok: false, error: `Required upstream document (${upstreamDocumentType}) is missing or empty. Please generate it first.` }
+    }
+
+    // 2. Format Upstream Context
+    const upstreamText = Object.entries(upstreamDoc.free_text_content as Record<string, string>)
+      .filter(([k]) => !k.startsWith('__'))
+      .map(([k, v]) => `[${k.toUpperCase()}]\n${v}`)
+      .join('\n\n')
+      
+    const rawContext = `
+[UPSTREAM CONTEXT: ${upstreamDocumentType.toUpperCase()}]
+${upstreamText}
+`
+
+    // 3. Construct JSON Schema from Target Template
+    // First, try to see what template the target document is actually using
+    const { data: targetDoc } = await adminSupabase
+      .from('generated_documents')
+      .select('id, template_id, section_definitions, free_text_content')
+      .eq('project_id', projectId)
+      .eq('document_type', targetDocumentType)
+      .eq('is_snapshot', false)
+      .maybeSingle()
+
+    let template: any = null
+    let sectionDefs: any[] = []
+
+    if (targetDoc?.section_definitions && Array.isArray(targetDoc.section_definitions)) {
+       sectionDefs = targetDoc.section_definitions
+    } else {
+       template = STATIC_TEMPLATES[targetDocumentType]
+       if (!template) {
+          const finalTemplateId = uiTemplateId || targetDoc?.template_id || undefined
+          template = getSyncDocumentTemplate(targetDocumentType, finalTemplateId)
+       }
+       if (template && template.section_definitions) {
+          sectionDefs = template.section_definitions
+       }
+    }
+    
+    // Filter to only free_text sections — data_bound sections are auto-populated elsewhere
+    const freeTextSections = sectionDefs.filter((s: any) => s.type !== 'data_bound')
+    
+    if (!freeTextSections || freeTextSections.length === 0) {
+       return { ok: false, error: `No free-text sections found in template for ${targetDocumentType}.` }
+    }
+    
+    let schemaObj: Record<string, string> = {}
+    for (const section of freeTextSections) {
+       let desc = `Markdown string for: ${section.title}`
+       if (section.placeholder) {
+         desc += `. Format exactly like this placeholder structure: ${section.placeholder.replace(/\n/g, ' ')}`
+       }
+       schemaObj[section.key] = desc
+    }
+    
+    const schemaString = JSON.stringify(schemaObj, null, 2)
+
+    // 4. Construct Prompt
+    const systemPrompt = `You are Praz-AI, a ${personaRole}. ${actionInstruction}
+
+CRITICAL CITATION & EVIDENCE REQUIREMENT:
+For EVERY section you generate that includes claims, statistics, market data, competitor information, methodologies, or factual statements, you MUST provide verifiable citations within the markdown text. 
+Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. Instead, you MUST include inline Google Search links that the user can click to instantly verify your claim.
+Example format: "The market is expected to reach $100B by 2025 ([Verify Source](https://www.google.com/search?q=global+market+size+2025))."
+If referencing the provided upstream context, cite it explicitly (e.g., "As established in the upstream document...").
+
+Format your output as a JSON object with ALL of the following exact keys. Each value must be a rich markdown string:
+${schemaString}
+CRITICAL: Return ONLY strictly valid JSON. You MUST escape all newlines inside string values as \\n. Do not use literal multiline strings. Do not output any markdown formatting outside the JSON object.`
+
+    const parsedResult = await generateStructuredJson<Record<string, string>>({
+      systemPrompt,
+      userPrompt: rawContext,
+    })
+
+    // 5. Merge with any existing free_text_content so data_bound sections are preserved
+    const existingContent = targetDoc?.free_text_content as Record<string, string> || {}
+    const mergedPayload: Record<string, string> = {
+      ...existingContent,
+      ...parsedResult,
+    }
+
+    // 6. Persist directly to the database — avoids client-side state race conditions
+    const now = new Date().toISOString()
+    if (targetDoc?.id) {
+      await adminSupabase
+        .from('generated_documents')
+        .update({ free_text_content: mergedPayload, updated_at: now })
+        .eq('id', targetDoc.id)
+    } else {
+      await adminSupabase
+        .from('generated_documents')
+        .insert({
+          project_id: projectId,
+          document_type: targetDocumentType,
+          template_id: uiTemplateId || targetDoc?.template_id || null,
+          free_text_content: mergedPayload,
+          is_snapshot: false,
+          created_at: now,
+          updated_at: now,
+        })
+    }
+
+    // Invalidate the page so Next.js re-fetches the updated document
+    revalidatePath(`/dashboard/projects/${projectId}`)
+
+    return { ok: true, data: mergedPayload }
+
+  } catch (err: any) {
+    console.error(`[chainDocumentGeneration Error for ${targetDocumentType}]:`, err)
+    return { ok: false, error: err.message || 'Failed to generate document' }
+  }
+}
+
+export async function draftProblemDiscoveryFromMarketResearch(projectId: string, templateId?: string) {
+  return chainDocumentGeneration(
+    projectId, 
+    'problem_discovery_workspace', 
+    'market_research_report',
+    'Senior Product Manager',
+    'Synthesize the upstream Market Research into a Problem Discovery framework.',
+    templateId
+  )
+}
+
+export async function draftCustomerResearchFromProblemDiscovery(projectId: string, templateId?: string) {
+  return chainDocumentGeneration(
+    projectId, 
+    'customer_research_strategy', 
+    'problem_discovery_workspace',
+    'Senior User Researcher',
+    'Synthesize the upstream Problem Discovery into a Customer Research Strategy.',
+    templateId
+  )
+}
+
+export async function draftProblemDefinitionFromCustomerResearch(projectId: string, templateId?: string) {
+  return chainDocumentGeneration(
+    projectId, 
+    'problem_definition_workspace', 
+    'customer_research_strategy',
+    'Senior Product Manager',
+    'Synthesize the upstream Customer Research into a crisp Problem Definition.',
+    templateId
+  )
+}
+
+export async function draftProductStrategyFromProblemDefinition(projectId: string, templateId?: string) {
+  const result = await chainDocumentGeneration(
+    projectId, 
+    'product_strategy_document', 
+    'problem_definition_workspace',
+    'VP of Product',
+    'Synthesize the upstream Problem Definition into a comprehensive Product Strategy.',
+    templateId
+  )
+  
+  // If successful, also parse and sync the structured fields to the live Strategy Canvas!
+  if (result.ok && result.data) {
+    try {
+      await upsertStrategyCanvasFromAI(projectId, result.data)
+    } catch (err) {
+      console.error('Failed to auto-sync strategy canvas from document generation', err)
+    }
+  }
+  
+  return result
+}
+
+export async function draftOpportunityAssessmentFromStrategy(projectId: string, templateId?: string) {
+  return chainDocumentGeneration(
+    projectId, 
+    'opportunity_assessment_workspace', 
+    'product_strategy_document',
+    'Senior Product Manager',
+    'Synthesize the upstream Product Strategy into a tactical Opportunity Assessment.',
+    templateId
+  )
+}
+
+export async function draftPrioritizationFromOpportunities(projectId: string, templateId?: string) {
+  return chainDocumentGeneration(
+    projectId, 
+    'prioritization_workspace', 
+    'opportunity_assessment_workspace',
+    'Senior Product Manager',
+    'Synthesize the upstream Opportunity Assessment into a RICE Prioritization matrix.',
+    templateId
+  )
+}
+
+export async function draftSolutionDesignFromPrioritization(projectId: string, templateId?: string) {
+  return chainDocumentGeneration(
+    projectId, 
+    'solution_design_workspace', 
+    'prioritization_workspace',
+    'Senior Product Designer',
+    'Synthesize the upstream context into a Product Discovery & Solution Design document.',
+    templateId
+  )
+}
+
+export async function draftValidationFromSolutionDesign(projectId: string, templateId?: string) {
+  return chainDocumentGeneration(
+    projectId, 
+    'solution_validation_workspace', 
+    'solution_design_workspace',
+    'Senior Product Manager',
+    'Synthesize the upstream Solution Design into an Experimentation & Validation plan.',
+    templateId
+  )
+}
+
+export async function draftPrdFromValidation(projectId: string, templateId?: string) {
+  return chainDocumentGeneration(
+    projectId, 
+    'product_requirements_document', 
+    'solution_validation_workspace',
+    'Technical Product Manager',
+    'Synthesize the upstream Validation plan into a comprehensive Product Requirements Document (PRD).',
+    templateId
+  )
+}
+
+export async function draftRoadmapFromPrd(projectId: string, templateId?: string) {
+  return chainDocumentGeneration(
+    projectId, 
+    'product_roadmap_document', 
+    'product_requirements_document',
+    'VP of Product',
+    'Synthesize the upstream PRD into a Now/Next/Later Product Roadmap.',
+    templateId
+  )
 }

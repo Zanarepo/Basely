@@ -2,11 +2,14 @@
 
 import { AlertOctagon } from 'lucide-react'
 import type { DashboardRisk } from '../hooks/useProjectDashboardData'
+import { getTerminology } from '@/utils/terminology'
 
 export default function RisksWidget({
-  risks
+  risks,
+  methodology
 }: {
   risks: DashboardRisk[]
+  methodology?: string | null
 }) {
   const getScoreBadge = (score: number) => {
     let style = 'bg-emerald-50 text-emerald-600 border-emerald-500/25 dark:bg-emerald-500/10'
@@ -27,10 +30,12 @@ export default function RisksWidget({
     )
   }
 
+  const terms = getTerminology(methodology)
+
   return (
     <div className="bg-white dark:bg-app-surface border border-app-border rounded-3xl p-6 shadow-sm flex flex-col h-full hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-bold text-app-fg">Top Project Risks</h3>
+        <h3 className="text-base font-bold text-app-fg">{terms.risksWidget}</h3>
         <AlertOctagon className="h-5 w-5 text-rose-500" />
       </div>
 

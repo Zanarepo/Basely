@@ -279,12 +279,12 @@ export default function SkillsMatrixTable({
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-app-muted">
-                        {methodology !== 'agile' && (
+                        {methodology?.toLowerCase() !== 'agile' && (
                           <span title="Weekly available man-hours" className="flex items-center gap-1 font-semibold text-violet-400">
                             <Clock className="w-3.5 h-3.5" /> {member.capacityHours} h/wk
                           </span>
                         )}
-                        {methodology !== 'waterfall' && (
+                        {methodology?.toLowerCase() !== 'waterfall' && (
                           <span title="Target sprint velocity in points" className="flex items-center gap-1 font-semibold text-amber-400">
                             <Zap className="w-3.5 h-3.5" /> {member.velocityPoints} pts/sprint
                           </span>

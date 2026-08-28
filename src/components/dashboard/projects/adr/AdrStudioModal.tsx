@@ -5,6 +5,9 @@ import { X, Save, ShieldAlert, CheckCircle2, AlertTriangle, Cpu, Layers, Termina
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 import { saveAdr, type ArchitectureDecisionRecord, type AdrStatus, type AdrDomain } from '@/lib/adr/actions'
 import { generateAdrWithAiAction } from '@/lib/adr/ai-adr-actions'
+import { AdrRaidExtractor } from './workflow/AdrRaidExtractor'
+import { AdrSkillGapPanel } from './workflow/AdrSkillGapPanel'
+import { useAdrWorkflow } from './hooks/useAdrWorkflow'
 
 interface AdrStudioModalProps {
   isOpen: boolean
@@ -56,6 +59,13 @@ export default function AdrStudioModal({
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const adrWorkflow = useAdrWorkflow({
+    projectId,
+    organizationId,
+    tier,
+    onShowToast,
+  })
+
   if (!isOpen) return null
 
   const handleSave = async (e: React.FormEvent) => {
@@ -95,6 +105,11 @@ export default function AdrStudioModal({
     }
 
     const savedRecord = (res.data || { ...payload, id: crypto.randomUUID() }) as ArchitectureDecisionRecord
+
+    // Auto-trigger skill gap check when ADR is accepted
+    if (status === 'accepted' && savedRecord.id && /^[0-9a-f-]{36}$/i.test(savedRecord.id)) {
+      adrWorkflow.runSkillGapCheck(savedRecord.id)
+    }
 
     if (onShowToast) {
       onShowToast('success', initialData ? 'ADR record updated successfully!' : 'New Architectural Decision Record committed to ledger!')
@@ -293,6 +308,32 @@ export default function AdrStudioModal({
               />
             </div>
           </div>
+
+          {/* ── Workflow Integrations (shown for accepted ADRs) ── */}
+          {(status === 'accepted' || initialData?.status === 'accepted') && initialData?.id && (
+            <div className="space-y-2 border border-violet-500/20 rounded-xl p-4 bg-violet-500/5">
+              <p className="text-xs font-bold text-violet-400 uppercase tracking-wider mb-3">⚡ Workflow Integrations</p>
+
+              {/* Integration 1 — RAID Extraction */}
+              <AdrRaidExtractor
+                adrId={initialData.id}
+                projectId={projectId}
+                organizationId={organizationId}
+                tier={tier}
+                onSuccess={() => onShowToast?.('success', 'RAID entries added from ADR.')}
+                onShowToast={onShowToast}
+              />
+
+              {/* Integration 3 — Skill Gap */}
+              <AdrSkillGapPanel
+                result={adrWorkflow.skillGapResult}
+                isLoading={adrWorkflow.isCheckingSkillGap}
+                error={adrWorkflow.skillGapError}
+                onRunCheck={() => adrWorkflow.runSkillGapCheck(initialData.id)}
+                tier={tier}
+              />
+            </div>
+          )}
 
           {/* Footer actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-app-border sticky bottom-0 bg-app-surface/90 backdrop-blur-md">

@@ -65,7 +65,9 @@ export const USAGE_LIMITS: Record<TierId, Record<string, number>> = {
     max_ai_generations: 5,
     max_ai_basic_actions: 5,
     max_ai_meetings: 1,
-    max_ai_pipeline_runs: 1
+    max_ai_pipeline_runs: 1,
+    max_sprints: 3,
+    max_releases: 2
   },
   'premium': { 
     max_seats: -1, 
@@ -74,7 +76,9 @@ export const USAGE_LIMITS: Record<TierId, Record<string, number>> = {
     max_ai_generations: -1,
     max_ai_basic_actions: -1,
     max_ai_meetings: -1,
-    max_ai_pipeline_runs: -1
+    max_ai_pipeline_runs: -1,
+    max_sprints: -1,
+    max_releases: -1
   },
   'enterprise': { 
     max_seats: -1, 
@@ -83,6 +87,8 @@ export const USAGE_LIMITS: Record<TierId, Record<string, number>> = {
     max_ai_generations: -1,
     max_ai_basic_actions: -1,
     max_ai_meetings: -1,
-    max_ai_pipeline_runs: -1
+    max_ai_pipeline_runs: -1,
+    max_sprints: -1,
+    max_releases: -1
   },
 }

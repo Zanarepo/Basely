@@ -1,5 +1,5 @@
 export type TierId = 'free' | 'premium' | 'enterprise'
-export type LimitKey = 'max_seats' | 'max_active_projects' | 'seats' | 'active_projects' | 'max_ai_generations' | 'max_ai_basic_actions' | 'max_ai_meetings' | 'max_ai_pipeline_runs'
+export type LimitKey = 'max_seats' | 'max_active_projects' | 'seats' | 'active_projects' | 'max_ai_generations' | 'max_ai_basic_actions' | 'max_ai_meetings' | 'max_ai_pipeline_runs' | 'max_sprints' | 'max_releases'
 
 export interface FeatureAccessResult {
   allowed: boolean

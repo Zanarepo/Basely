@@ -32,6 +32,8 @@ type WbsToolbarProps = {
   hideCompleted?: boolean
   onToggleHideCompleted?: () => void
   completedCount?: number
+  methodology?: string | null
+  terms: import('@/utils/terminology').TerminologyDict
 }
 
 export function WbsToolbar({
@@ -60,8 +62,10 @@ export function WbsToolbar({
   hideCompleted = false,
   onToggleHideCompleted,
   completedCount = 0,
+  methodology,
+  terms,
 }: WbsToolbarProps) {
-  const { isProductMode, addButtonText, showBudgetControls } = useUserPersona()
+  const { isProductMode, showBudgetControls } = useUserPersona()
   const [isAllExpanded, setIsAllExpanded] = useState(true)
   const [bulkAssignOpen, setBulkAssignOpen] = useState(false)
 
@@ -168,7 +172,7 @@ export function WbsToolbar({
         </div>
 
         {/* Financials Toggle (Hidden in Product / Agile mode) */}
-        {showBudgetControls && onToggleFinancials && (
+        {showBudgetControls && onToggleFinancials && methodology?.toLowerCase() !== 'agile' && (
           <div className="flex rounded-xl bg-app-muted-surface border border-app-border p-1">
             <button
               type="button"
@@ -309,7 +313,7 @@ export function WbsToolbar({
               className="btn-primary py-1.5 px-3 rounded-xl flex items-center gap-1.5 font-semibold shadow-xs"
             >
               <Plus className="h-4 w-4" />
-              {addButtonText}
+              Add {terms.planTier}
             </button>
           </>
         )}

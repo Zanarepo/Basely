@@ -215,6 +215,8 @@ export async function autoExtractPersonasFromStrategy(
         'product_strategy_document', 
         'market_research_report', 
         'market_research_workspace',
+        'customer_research_strategy',
+        'problem_discovery_workspace',
         'charter',
         'business_case',
         'feasibility_study'

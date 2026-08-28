@@ -4,12 +4,14 @@ import { Loader2, AlertCircle, RefreshCw, AlertOctagon, CheckCircle2 } from 'luc
 import { useProjectDashboardData } from './hooks/useProjectDashboardData'
 import ScheduleHealthWidget from './widgets/ScheduleHealthWidget'
 import CostHealthWidget from './widgets/CostHealthWidget'
+import FlowMetricsWidget from './widgets/FlowMetricsWidget'
 import MilestonesWidget from './widgets/MilestonesWidget'
 import RisksWidget from './widgets/RisksWidget'
 import ProjectActivityPanel from './widgets/ProjectActivityPanel'
 import ProjectReleaseHealthPanel from './widgets/ProjectReleaseHealthPanel'
 import { useState } from 'react'
 import { Activity } from 'lucide-react'
+import { getTerminology } from '@/utils/terminology'
 
 export default function ProjectDashboardWorkspace({
   projectId
@@ -85,6 +87,7 @@ export default function ProjectDashboardWorkspace({
   }
 
   const rag = getRagDetails()
+  const terms = getTerminology(project.methodology)
 
   return (
     <div className="space-y-6">
@@ -116,7 +119,7 @@ export default function ProjectDashboardWorkspace({
             className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-sm font-semibold shadow-sm transition-all cursor-pointer"
           >
             <Activity className="h-4 w-4" />
-            Release Health
+            {terms.release} Health
           </button>
 
           <button
@@ -134,25 +137,29 @@ export default function ProjectDashboardWorkspace({
         {/* Widget 1: Schedule Health */}
         {scheduleHealth && (
           <div className="lg:col-span-1">
-            <ScheduleHealthWidget health={scheduleHealth} />
+            <ScheduleHealthWidget health={scheduleHealth} methodology={project.methodology} />
           </div>
         )}
 
-        {/* Widget 2: Cost Health */}
+        {/* Widget 2: Cost Health or Flow Metrics */}
         {costHealth && (
           <div className="lg:col-span-1">
-            <CostHealthWidget health={costHealth} currency={project.currency} />
+            {project.methodology === 'Agile' ? (
+              <FlowMetricsWidget />
+            ) : (
+              <CostHealthWidget health={costHealth} currency={project.currency} methodology={project.methodology} />
+            )}
           </div>
         )}
 
         {/* Widget 3: Milestones List */}
         <div className="lg:col-span-1 md:col-span-2 lg:col-span-1">
-          <MilestonesWidget milestones={upcomingMilestones} />
+          <MilestonesWidget milestones={upcomingMilestones} methodology={project.methodology} />
         </div>
 
         {/* Widget 4: Risks list */}
         <div className="lg:col-span-1 md:col-span-2 lg:col-span-1">
-          <RisksWidget risks={topRisks} />
+          <RisksWidget risks={topRisks} methodology={project.methodology} />
         </div>
       </div>
 

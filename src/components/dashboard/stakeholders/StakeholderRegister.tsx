@@ -32,6 +32,7 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
   const [loading, setLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   
   // Filters
   const [orgTypeFilter, setOrgTypeFilter] = useState<'all' | 'internal' | 'external'>('all')
@@ -141,10 +142,8 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
 
   const handleDeleteSingle = async (id: string) => {
     if (!hasEditAccess) return
-    const confirm = window.confirm('Are you sure you want to remove this stakeholder?')
-    if (!confirm) return
-
-    setDeleting(true)
+    
+    setDeletingId(id)
     const { error } = await supabase
       .from('stakeholders')
       .delete()
@@ -162,7 +161,7 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
       })
       onShowToast('success', 'Stakeholder deleted')
     }
-    setDeleting(false)
+    setDeletingId(null)
   }
 
   if (loading) {
@@ -336,9 +335,14 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
                       {hasEditAccess && !s.linked_user_id && (
                         <button
                           onClick={() => handleDeleteSingle(s.id)}
-                          className="p-2 text-rose-500 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all rounded-lg cursor-pointer"
+                          disabled={deletingId === s.id}
+                          className="p-2 text-rose-500 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all rounded-lg cursor-pointer disabled:opacity-50"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {deletingId === s.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
                         </button>
                       )}
                     </td>

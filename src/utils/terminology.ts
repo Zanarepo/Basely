@@ -9,6 +9,14 @@ export interface TerminologyDict {
   deployment: string
   rollback: string
   readiness: string
+  gtmTerm: string
+  retroTerm: string
+  wbsTab: string
+  wbsShortTab: string
+  criticalPath: string
+  costHealth: string
+  milestonesWidget: string
+  risksWidget: string
   
   // WBS / Hierarchy terminology
   planTier: string
@@ -28,6 +36,14 @@ export const AGILE_TERMS: TerminologyDict = {
   deployment: 'Deployment',
   rollback: 'Rollback',
   readiness: 'Readiness',
+  gtmTerm: 'GTM Launch Channels',
+  retroTerm: 'Release Retrospective',
+  wbsTab: 'Product Backlog',
+  wbsShortTab: 'Backlog',
+  criticalPath: 'Iteration Trajectory',
+  costHealth: 'Cost & Burn Rate Health',
+  milestonesWidget: 'Upcoming Releases',
+  risksWidget: 'Impediments & Blockers',
   
   planTier: 'Epic',
   planTiers: 'Epics',
@@ -46,6 +62,14 @@ export const WATERFALL_TERMS: TerminologyDict = {
   deployment: 'Handover',
   rollback: 'Contingency',
   readiness: 'Prerequisites',
+  gtmTerm: 'Handover & Launch',
+  retroTerm: 'Milestone Post-Mortem',
+  wbsTab: 'Work Breakdown Structure (WBS)',
+  wbsShortTab: 'WBS',
+  criticalPath: 'Critical Path Status',
+  costHealth: 'Cost & EVM Health',
+  milestonesWidget: 'Upcoming Milestones',
+  risksWidget: 'Top Project Risks',
   
   planTier: 'Summary Element',
   planTiers: 'Summary Elements',
@@ -64,6 +88,14 @@ export const OPERATIONS_TERMS: TerminologyDict = {
   deployment: 'Transition',
   rollback: 'Reversion',
   readiness: 'Compliance',
+  gtmTerm: 'Operational Transition',
+  retroTerm: 'Cycle Review',
+  wbsTab: 'Operations Backlog',
+  wbsShortTab: 'Backlog',
+  criticalPath: 'Cycle Flow Status',
+  costHealth: 'Cost & Run-Rate Health',
+  milestonesWidget: 'Upcoming Cycles',
+  risksWidget: 'Operational Risks',
   
   planTier: 'Program',
   planTiers: 'Programs',
@@ -74,15 +106,11 @@ export const OPERATIONS_TERMS: TerminologyDict = {
 }
 
 export function getTerminology(methodology: ProjectMethodology | null | undefined): TerminologyDict {
-  switch (methodology) {
-    case 'Agile':
-      return AGILE_TERMS
-    case 'Waterfall':
-      return WATERFALL_TERMS
-    case 'Operations':
-      return OPERATIONS_TERMS
-    case 'Hybrid':
-    default:
-      return AGILE_TERMS // Fallback to Agile terms
-  }
+  const normalizedMethodology = methodology?.toLowerCase();
+  
+  if (normalizedMethodology === 'agile') return AGILE_TERMS;
+  if (normalizedMethodology === 'waterfall') return WATERFALL_TERMS;
+  if (normalizedMethodology === 'operations') return OPERATIONS_TERMS;
+  
+  return AGILE_TERMS; // Fallback to Agile terms (which covers 'hybrid' as well)
 }
