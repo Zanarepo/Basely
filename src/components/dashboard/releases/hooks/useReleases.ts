@@ -62,17 +62,17 @@ export function useReleases(projectId: string) {
   }, [projectId, loadData])
 
   // Iteration handlers
-  const createIteration = async (name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null) => {
+  const createIteration = async (name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null, selectedWbsIds?: string[]) => {
     setIsSubmitting(true)
-    const res = await serverCreateIteration(projectId, name, sequenceNumber, startDate, endDate, labelOverride)
+    const res = await serverCreateIteration(projectId, name, sequenceNumber, startDate, endDate, labelOverride, selectedWbsIds)
     if (res.ok) await loadData()
     setIsSubmitting(false)
     return res
   }
 
-  const updateIteration = async (id: string, name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null) => {
+  const updateIteration = async (id: string, name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null, selectedWbsIds?: string[]) => {
     setIsSubmitting(true)
-    const res = await serverUpdateIteration(id, projectId, name, sequenceNumber, startDate, endDate, labelOverride)
+    const res = await serverUpdateIteration(id, projectId, name, sequenceNumber, startDate, endDate, labelOverride, selectedWbsIds)
     if (res.ok) await loadData()
     setIsSubmitting(false)
     return res

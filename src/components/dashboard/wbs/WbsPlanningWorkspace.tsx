@@ -250,7 +250,7 @@ export function WbsPlanningWorkspace({
                   type="button"
                   onClick={handleAutoGenerateBacklogFromPrd}
                   disabled={isGeneratingWbs}
-                  className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-md shadow-violet-500/20 disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50"
                 >
                   {isGeneratingWbs ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

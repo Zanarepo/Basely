@@ -94,7 +94,7 @@ export default function MarketResearchChainBanner({
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 disabled={isDraftingMarketResearch || isSynthesizingStrategy || isDraftingCompetitiveSpec}
-                className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-violet-500/20 cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 transition-all"
               >
                 {isDraftingMarketResearch || isSynthesizingStrategy || isDraftingCompetitiveSpec ? (
                   <>

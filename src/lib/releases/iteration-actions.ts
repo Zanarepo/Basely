@@ -11,7 +11,8 @@ export async function createIteration(
   sequenceNumber: number,
   startDate: string,
   endDate: string,
-  labelOverride?: 'sprint' | 'phase' | null
+  labelOverride?: 'sprint' | 'phase' | null,
+  selectedWbsIds?: string[]
 ): Promise<{ ok: boolean; error?: string; limitKey?: string; maxLimit?: number; iteration?: Iteration }> {
   const limitCheck = await checkProjectItemLimit(projectId, 'max_sprints')
   if (!limitCheck.allowed) {
@@ -39,6 +40,13 @@ export async function createIteration(
 
   if (error) return { ok: false, error: error.message }
 
+  if (selectedWbsIds && selectedWbsIds.length > 0) {
+    await supabase.from('wbs_elements')
+      .update({ iteration_id: data.id })
+      .in('id', selectedWbsIds)
+      .eq('project_id', projectId)
+  }
+
   await logProjectActivity(projectId, 'iteration' as any, data.id, 'created', { name: data.name })
   return {
     ok: true,
@@ -65,7 +73,8 @@ export async function updateIteration(
   sequenceNumber: number,
   startDate: string,
   endDate: string,
-  labelOverride?: 'sprint' | 'phase' | null
+  labelOverride?: 'sprint' | 'phase' | null,
+  selectedWbsIds?: string[]
 ): Promise<{ ok: boolean; error?: string }> {
   const supabase = await createClient()
   const { error } = await supabase
@@ -81,6 +90,22 @@ export async function updateIteration(
     .eq('id', id)
 
   if (error) return { ok: false, error: error.message }
+  
+  if (selectedWbsIds !== undefined) {
+    // Untag items currently assigned to this iteration that are NOT in selectedWbsIds
+    await supabase.from('wbs_elements')
+      .update({ iteration_id: null })
+      .eq('iteration_id', id)
+      .eq('project_id', projectId)
+    
+    if (selectedWbsIds.length > 0) {
+      await supabase.from('wbs_elements')
+        .update({ iteration_id: id })
+        .in('id', selectedWbsIds)
+        .eq('project_id', projectId)
+    }
+  }
+
   await logProjectActivity(projectId, 'iteration' as any, id, 'updated', { name })
   return { ok: true }
 }

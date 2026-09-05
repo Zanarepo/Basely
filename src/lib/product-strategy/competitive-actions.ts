@@ -66,11 +66,9 @@ export async function generateCompetitiveMatrix(
       5. Identify 1-3 competitive moats for OUR PRODUCT (e.g. what makes us defensible).
       
       CRITICAL INSTRUCTION FOR VERIFICATION LINKS:
-      Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. They will be broken.
-      Instead, whenever you generate a value for "Estimated Market Share" or "Annual Revenue (ARR)", you MUST append a Google Search link that the user can click to instantly verify your claim.
-      Format: \`$45M [Verify on Google](https://www.google.com/search?q=Competitor+Name+Annual+Revenue)\` or \`15% [Verify on Google](https://www.google.com/search?q=Competitor+Name+Market+Share)\`.
-      Never output a raw number for these metrics without a linked search source.
-      
+Because you do not have live web access, DO NOT hallucinate or guess direct URLs for sources. They will be broken.
+For metrics like "Estimated Market Share" or "Annual Revenue (ARR)", you should only state values that you can verify from your training data. When stating such values, provide a direct citation to the source (e.g., "[Title of Source](https://real-url.com/page)" if you know the exact URL from your training data). If you cannot verify a specific metric from your training data, qualify the statement appropriately or omit the specific value rather than inventing a source. Never output raw numbers for these metrics without a verifiable source citation.
+            
       Return a JSON object with this exact structure:
       {
         "competitorA": "Name of first competitor",

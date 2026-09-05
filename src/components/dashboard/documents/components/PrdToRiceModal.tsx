@@ -137,7 +137,7 @@ export default function PrdToRiceModal({
               type="button"
               style={{ cursor: 'pointer' }}
               onClick={onClose}
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold text-xs transition-all shadow-md shadow-violet-500/20 cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center justify-center shadow-sm transition-all cursor-pointer"
             >
               Done
             </button>

@@ -89,6 +89,7 @@ export default function RaidWorkspace({
             <button
               onClick={aiCopilot.handleOpen}
               disabled={aiCopilot.isPredicting}
+              title="AI analyzes your WBS/Backlog and project context to automatically predict and log potential Risks, Assumptions, Issues, and Dependencies."
               className="px-4 py-2.5 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 text-violet-400 border border-violet-500/30 font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-violet-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {aiCopilot.isPredicting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
@@ -274,7 +275,7 @@ export default function RaidWorkspace({
                     ) : <span className="font-semibold text-app-muted">Governance Scope:</span>}
                     {item.linked_wbs_element_id && (
                       <div className="flex items-center flex-wrap gap-1.5 ml-auto">
-                        <span className="text-[11px] font-bold text-violet-400 dark:text-violet-300">🔗 Linked WBS:</span>
+                        <span className="text-[11px] font-bold text-violet-400 dark:text-violet-300">🔗 Linked {terms.planTier === 'Epic' ? 'Epic' : 'WBS'}:</span>
                         {item.linked_wbs_element_id.split(',').map(id => id.trim()).filter(Boolean).map(id => {
                           const el = wbsElements.find(w => w.id === id)
                           return (

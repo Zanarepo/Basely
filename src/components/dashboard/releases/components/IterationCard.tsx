@@ -5,6 +5,7 @@ import { Calendar, Edit, Trash2, CheckCircle2, ListTodo, Layers, Zap } from 'luc
 import { IterationBadge } from './IterationBadge'
 import { EpicCoverageWidget } from './EpicCoverageWidget'
 import type { Iteration } from '@/lib/releases/types'
+import { getTerminology } from '@/utils/terminology'
 
 interface IterationCardProps {
   iteration: Iteration
@@ -40,6 +41,9 @@ export function IterationCard({
   const completedCount = iteration.completedCount || 0
   const completionPercent = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0
   const isSprintDone = iteration.status === 'completed' || (totalItems > 0 && completedCount === totalItems)
+
+  const terms = getTerminology(methodology || 'Agile')
+  const isAgile = ['agile', 'scrum', 'kanban'].includes((methodology || 'agile').toLowerCase())
 
   return (
     <div className="group relative bg-app-card border border-app-border rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden">
@@ -108,7 +112,7 @@ export function IterationCard({
         {totalItems > 0 && (
           <div className="mb-3 space-y-1.5 p-2.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl">
             <div className="flex items-center justify-between text-[11px] font-bold">
-              <span className="text-slate-600 dark:text-slate-400">Deliverables Progress</span>
+              <span className="text-slate-600 dark:text-slate-400">Progress</span>
               <span className={isSprintDone ? 'text-emerald-600 dark:text-emerald-400' : 'text-purple-600 dark:text-purple-400'}>
                 {completedCount}/{totalItems} Done ({completionPercent}%)
               </span>
@@ -125,14 +129,16 @@ export function IterationCard({
 
       <div className="pt-3 border-t border-app-border/60 flex items-center justify-between text-xs text-app-muted">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1" title="Tagged WBS Elements">
+          <div className="flex items-center gap-1" title={`Tagged ${terms.workPackages}`}>
             <Layers className="h-3.5 w-3.5 text-violet-400" />
-            <span className="font-semibold text-app-fg">{iteration.taggedWbsCount || 0}</span> WBS
+            <span className="font-semibold text-app-fg">{iteration.taggedWbsCount || 0}</span> {isAgile ? terms.workPackages : 'WBS'}
           </div>
-          <div className="flex items-center gap-1" title="Tagged Schedule Activities">
-            <ListTodo className="h-3.5 w-3.5 text-emerald-400" />
-            <span className="font-semibold text-app-fg">{iteration.taggedActivityCount || 0}</span> Activities
-          </div>
+          {!isAgile && (
+            <div className="flex items-center gap-1" title="Tagged Schedule Activities">
+              <ListTodo className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="font-semibold text-app-fg">{iteration.taggedActivityCount || 0}</span> Activities
+            </div>
+          )}
         </div>
 
         <span className="inline-flex items-center gap-1 text-[11px] font-medium text-app-muted bg-app-surface px-2 py-0.5 rounded">

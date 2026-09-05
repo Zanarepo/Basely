@@ -139,7 +139,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
                 onClick={handleAutoExtract}
                 disabled={isExtracting}
                 style={{ cursor: isExtracting ? 'wait' : 'pointer' }}
-                className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg shadow-sm hover:shadow transition-all duration-150 disabled:opacity-50"
+                className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-violet-700 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 hover:bg-violet-200 dark:hover:bg-violet-900/60 rounded-lg shadow-sm hover:shadow transition-all duration-150 disabled:opacity-50"
               >
                 {isExtracting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
                 Auto-Extract Personas
@@ -149,7 +149,7 @@ export function PersonasDashboard({ organizationId, projectId, hasEditAccess = t
               type="button"
               onClick={handleCreateNew}
               style={{ cursor: 'pointer' }}
-              className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-white bg-violet-500 hover:bg-violet-600 rounded-lg shadow hover:shadow-md transition-all duration-150"
+              className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg shadow hover:shadow-md transition-all duration-150"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Persona

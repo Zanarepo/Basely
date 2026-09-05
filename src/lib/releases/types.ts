@@ -18,6 +18,8 @@ export interface Iteration {
   inProgressCount?: number
   epicNames?: string[]
   status?: 'planned' | 'active' | 'completed'
+  totalItems?: number
+  snapshots?: any[]
 }
 
 export interface ReleaseExitCriterion {

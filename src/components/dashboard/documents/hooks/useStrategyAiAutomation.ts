@@ -57,7 +57,7 @@ export function useStrategyAiAutomation({
       const allowed = await checkLimit('max_ai_generations')
       if (!allowed) return
 
-      const res = await synthesizeStrategyFromCharterAndScope(projectId, organizationId, templateId)
+      const res = await synthesizeStrategyFromCharterAndScope(projectId, templateId)
       if (res.ok && res.data) {
         setIsDone(true)
         if (onGenerated) {

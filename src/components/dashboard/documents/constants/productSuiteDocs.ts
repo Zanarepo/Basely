@@ -90,22 +90,7 @@ const personasDoc = {
   title: 'Customer Personas & JTBD'
 }
 
-// Step 5: Product Strategy
-const strategyCanvasDoc = {
-  ...productStrategyDocs.find(d => d.id === 'strategy_canvas_workspace')!,
-  stepLabel: 'Step 5',
-}
-const strategySpecDoc = {
-  ...productStrategyDocs.find(d => d.id === 'product_strategy_document')!,
-  stepLabel: 'Step 5',
-}
-
-const strategicOutcomesHubDoc = {
-  ...commonDocs.find(d => d.id === 'strategic_outcomes_hub')!,
-  stepLabel: 'Step 5',
-}
-
-// Step 6: Opportunity Assessment
+// Step 5: Opportunity Assessment
 const opportunityAssessmentDoc: DocumentItem = {
   id: 'opportunity_assessment_workspace',
   title: 'Opportunity Assessment',
@@ -114,15 +99,29 @@ const opportunityAssessmentDoc: DocumentItem = {
   icon: Activity,
   description: 'Evaluating potential business value, technical feasibility, and market risk.',
   badge: 'Strategy',
-  stepLabel: 'Step 6',
+  stepLabel: 'Step 5',
   guide: {
-    purpose: 'Assess whether a problem is worth solving for the business.',
+    purpose: 'Assess whether a problem is worth solving for the business before committing strategy.',
     audience: 'Product Leaders, Tech Leads',
     bestPractices: [
-      'Assess against company OKRs.',
-      'Identify technical dealbreakers early.',
+      'Assess against market size and business opportunity.',
+      'Identify technical dealbreakers and risk early.',
     ],
   },
+}
+
+// Step 6: Company Strategy / Goals Alignment & Product Strategy
+const strategyCanvasDoc = {
+  ...productStrategyDocs.find(d => d.id === 'strategy_canvas_workspace')!,
+  stepLabel: 'Step 6',
+}
+const strategySpecDoc = {
+  ...productStrategyDocs.find(d => d.id === 'product_strategy_document')!,
+  stepLabel: 'Step 6',
+}
+const strategicOutcomesHubDoc = {
+  ...commonDocs.find(d => d.id === 'strategic_outcomes_hub')!,
+  stepLabel: 'Step 6',
 }
 
 // Step 7: Prioritization
@@ -132,7 +131,14 @@ const prioritizationDoc = {
   title: 'Opportunity Prioritization Matrix'
 }
 
-// Step 8: Solution Design
+// Step 8: Roadmap Document
+const roadmapWorkspaceDoc = {
+  ...productStrategyDocs.find(d => d.id === 'roadmap_workspace')!,
+  stepLabel: 'Step 8',
+  title: 'Product Roadmap Document'
+}
+
+// Step 9: Solution Design
 const solutionDesignDoc: DocumentItem = {
   id: 'solution_design_workspace',
   title: 'Solution Design & Wireframes',
@@ -141,9 +147,9 @@ const solutionDesignDoc: DocumentItem = {
   icon: Zap,
   description: 'Ideation, user flows, architecture sketches, and UI wireframes.',
   badge: 'Design',
-  stepLabel: 'Step 8',
+  stepLabel: 'Step 9',
   guide: {
-    purpose: 'Brainstorm and sketch how to solve the prioritized opportunities.',
+    purpose: 'Brainstorm and sketch how to solve the prioritized roadmap opportunities.',
     audience: 'Designers, Tech Leads, Product Managers',
     bestPractices: [
       'Explore multiple solutions for the same problem.',
@@ -152,7 +158,7 @@ const solutionDesignDoc: DocumentItem = {
   },
 }
 
-// Step 9: Validation
+// Step 10: Validation & Experimentation
 const validationDoc: DocumentItem = {
   id: 'solution_validation_workspace',
   title: 'Validation & Experiments',
@@ -161,7 +167,7 @@ const validationDoc: DocumentItem = {
   icon: FlaskConical,
   description: 'Fake-door tests, A/B hypotheses, and prototype user testing results.',
   badge: 'Validation',
-  stepLabel: 'Step 9',
+  stepLabel: 'Step 10',
   guide: {
     purpose: 'Validate the proposed solution with real users before writing code.',
     audience: 'UX Researchers, Product Managers',
@@ -174,25 +180,19 @@ const validationDoc: DocumentItem = {
 
 const qualityDoc = {
   ...commonDocs.find(d => d.id === 'quality_management_plan')!,
-  stepLabel: 'Step 9',
+  stepLabel: 'Step 10',
 }
 
-// Step 10: Product Requirements
+// Step 11: Product Requirements
 const prdDoc = {
   ...productRequirementsDocs.find(d => d.id === 'product_requirements_document')!,
-  stepLabel: 'Step 10',
+  stepLabel: 'Step 11',
 }
 
+// Step 12: Launch Readiness
 const releaseChecklistDoc = {
   ...productPrioritizationExecutionDocs.find(d => d.id === 'release_checklist_workspace')!,
-  stepLabel: 'Step 10',
-}
-
-// Step 11: Roadmap Document
-const roadmapWorkspaceDoc = {
-  ...productStrategyDocs.find(d => d.id === 'roadmap_workspace')!,
-  stepLabel: 'Step 11',
-  title: 'Product Roadmap Document'
+  stepLabel: 'Step 12',
 }
 
 export const PRODUCT_SUITE_DOCS: DocumentItem[] = [
@@ -201,15 +201,15 @@ export const PRODUCT_SUITE_DOCS: DocumentItem[] = [
   customerResearchDoc,
   problemDefinitionDoc,
   personasDoc,
+  opportunityAssessmentDoc,
   strategyCanvasDoc,
   strategySpecDoc,
   strategicOutcomesHubDoc,
-  opportunityAssessmentDoc,
   prioritizationDoc,
+  roadmapWorkspaceDoc,
   solutionDesignDoc,
   validationDoc,
   qualityDoc,
   prdDoc,
-  releaseChecklistDoc,
-  roadmapWorkspaceDoc
+  releaseChecklistDoc
 ]

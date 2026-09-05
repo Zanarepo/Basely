@@ -111,11 +111,11 @@ export function ReleasesWorkspace({
     }
   }
 
-  const handleSaveIteration = async (name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null) => {
+  const handleSaveIteration = async (name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null, selectedWbsIds?: string[]) => {
     if (editingIteration) {
-      return await updateIteration(editingIteration.id, name, sequenceNumber, startDate, endDate, labelOverride)
+      return await updateIteration(editingIteration.id, name, sequenceNumber, startDate, endDate, labelOverride, selectedWbsIds)
     } else {
-      return await createIteration(name, sequenceNumber, startDate, endDate, labelOverride)
+      return await createIteration(name, sequenceNumber, startDate, endDate, labelOverride, selectedWbsIds)
     }
   }
 
@@ -380,7 +380,15 @@ export function ReleasesWorkspace({
         nextSequenceNumber={editingIteration ? editingIteration.sequenceNumber : iterations.length + 1}
         projectId={projectId}
         organizationId={organizationId}
-        availableWbsElements={availableWorkItems.filter(i => i.type === 'wbs_element' && !i.iterationId)}
+        availableWbsElements={availableWorkItems.filter(i => {
+          if (i.type !== 'wbs_element') return false
+          const isAgile = ['agile', 'scrum', 'kanban'].includes(methodology?.toLowerCase() || 'agile')
+          if (isAgile && (i as any).isMilestone) return false
+          // Extra fallback for name matching
+          if (isAgile && (i.title || '').includes('- Completion Milestone')) return false
+          
+          return !i.iterationId || (editingIteration && i.iterationId === editingIteration.id)
+        })}
       />
 
       <ReleaseModal

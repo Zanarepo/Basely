@@ -6,7 +6,7 @@ import { PRODUCT_SUITE_DOCS, PROJECT_SUITE_DOCS, DocumentItem } from '../constan
 export interface ToastMessage {
   id: string
   title: string
-  type: 'success' | 'info' | 'warning'
+  type: 'success' | 'info' | 'warning' | 'error'
 }
 
 export function useDocumentWorkspaceState() {
@@ -61,21 +61,24 @@ export function useDocumentWorkspaceState() {
   const addToast = (titleOrType: string, typeOrMsg?: string) => {
     const id = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
     let title = titleOrType
-    let type: 'success' | 'info' | 'warning' = 'success'
+    let type: 'success' | 'info' | 'warning' | 'error' = 'success'
 
     if (typeOrMsg) {
-      if (titleOrType === 'success' || titleOrType === 'error' || titleOrType === 'info') {
-        type = titleOrType === 'error' ? 'warning' : (titleOrType as any)
+      if (titleOrType === 'success' || titleOrType === 'error' || titleOrType === 'info' || titleOrType === 'warning') {
+        type = titleOrType as any
         title = typeOrMsg
       } else {
-        type = typeOrMsg as any
+        type = (typeOrMsg as any) || 'success'
       }
     }
 
     setToasts((prev) => [...prev, { id, title, type }])
+    
+    // Give users ample time to read error / warning instructions (8 seconds), 5 seconds for success
+    const timeoutDuration = (type === 'error' || type === 'warning') ? 8000 : 5000
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, 3000)
+    }, timeoutDuration)
   }
 
   const dismissToast = (id: string) => {

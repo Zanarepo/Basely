@@ -32,87 +32,87 @@ export function AiAutomationWorkflowGuide({
   const steps = [
     {
       id: 1,
-      badge: 'Step 1',
-      title: 'Market Research',
+      badge: 'Step 1-4',
+      title: 'Market & Customer Discovery',
       icon: Search,
       color: 'from-amber-500/20 to-amber-500/5 text-amber-600 dark:text-amber-400 border-amber-500/30',
       activeColor: 'bg-amber-500 text-white',
-      tag: 'TAM, Competitors, ICP Discovery',
+      tag: 'TAM, Problem Discovery & VoC',
       story:
-        'Document your addressable market size, target customer profiles, competitive landscape, and user friction points.',
-      keyAction: 'Synthesize Strategy',
+        'Document your addressable market size, customer research, user pain points, problem definitions, and target personas.',
+      keyAction: 'Size Opportunities',
       detail:
-        'Feeds directly into the AI Strategy engine to ground all auto-generated product decisions in verified market reality.',
+        'Grounds all downstream opportunities in validated customer problems and real market evidence.',
     },
     {
       id: 2,
-      badge: 'Step 2',
-      title: 'AI Product Strategy',
-      icon: Compass,
-      color: 'from-violet-500/20 to-violet-500/5 text-violet-600 dark:text-violet-400 border-violet-500/30',
-      activeColor: 'bg-violet-600 text-white',
-      tag: 'Vision, Pillars, Differentiation',
+      badge: 'Step 5',
+      title: 'Opportunity Assessment',
+      icon: Target,
+      color: 'from-indigo-500/20 to-indigo-500/5 text-indigo-600 dark:text-indigo-400 border-indigo-500/30',
+      activeColor: 'bg-indigo-600 text-white',
+      tag: 'Value, Feasibility & Risk',
       story:
-        '1-click generation of your comprehensive 28-section strategic document based entirely on your market research inputs.',
-      keyAction: 'Generate Roadmap',
+        'Evaluate potential business value, technical feasibility, and market risks before committing strategy or roadmap resources.',
+      keyAction: 'Formulate Strategy',
       detail:
-        'Transforms qualitative research into formal strategic pillars, bets, and defensibility moats without manual drafting.',
+        'Sizes the problem and confirms the business upside, ensuring the organization only pursues high-yield opportunities.',
     },
     {
       id: 3,
-      badge: 'Step 3',
-      title: 'Strategic Outcomes & OKRs',
-      icon: Target,
-      color: 'from-pink-500/20 to-pink-500/5 text-pink-600 dark:text-pink-400 border-pink-500/30',
-      activeColor: 'bg-pink-600 text-white',
-      tag: 'Objectives & North Star',
+      badge: 'Step 6',
+      title: 'Strategy & Strategic Outcomes',
+      icon: Compass,
+      color: 'from-violet-500/20 to-violet-500/5 text-violet-600 dark:text-violet-400 border-violet-500/30',
+      activeColor: 'bg-violet-600 text-white',
+      tag: 'Vision, OKRs & North Star',
       story:
-        'AI analyzes the product strategy to auto-generate quantitative North Star metrics and strict, measurable OKRs.',
-      keyAction: 'Generate OKRs',
+        '1-click synthesis of your Product Strategy Doc, Strategy Canvas, and quantitative OKRs / North Star dashboard.',
+      keyAction: 'Prioritize Bets',
       detail:
-        'Forms the quantitative backbone of your product, allowing the upcoming roadmap to be automatically aligned with strategic goals.',
+        'Establishes strategic pillars, competitive defensibility moats, and North Star metrics aligned to company goals.',
     },
     {
       id: 4,
-      badge: 'Step 4',
-      title: 'AI Product Roadmap',
+      badge: 'Step 7-8',
+      title: 'Prioritization & Roadmap',
       icon: Map,
-      color: 'from-indigo-500/20 to-indigo-500/5 text-indigo-600 dark:text-indigo-400 border-indigo-500/30',
-      activeColor: 'bg-indigo-600 text-white',
-      tag: 'Now / Next / Later Sequencing',
+      color: 'from-pink-500/20 to-pink-500/5 text-pink-600 dark:text-pink-400 border-pink-500/30',
+      activeColor: 'bg-pink-600 text-white',
+      tag: 'RICE & Now/Next/Later Horizons',
       story:
-        'Auto-converts strategy into a Now/Next/Later timeline, aligning items automatically to the generated OKRs.',
-      keyAction: 'Generate PRD',
+        'Score opportunities with RICE matrix and sequence them into a Now/Next/Later theme roadmap before diving into feature specs.',
+      keyAction: 'Design Solutions',
       detail:
-        'Aligns engineering and leadership on feature sequencing, dependencies, and expected outcomes across quarters.',
+        'Communicates outcome-focused release themes to leadership and engineering squads with clear milestones.',
     },
     {
       id: 5,
-      badge: 'Step 5',
-      title: 'AI PRD Specs',
+      badge: 'Step 9-10',
+      title: 'Solution Design & Validation',
       icon: FileText,
-      color: 'from-emerald-500/20 to-emerald-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-      activeColor: 'bg-emerald-600 text-white',
-      tag: '23-Section Requirements Spec',
+      color: 'from-cyan-500/20 to-cyan-500/5 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
+      activeColor: 'bg-cyan-600 text-white',
+      tag: 'User Flows, UI Wireframes & Tests',
       story:
-        'Auto-expands roadmap initiatives into Agile User Stories, functional requirements, UI/UX guidelines, and Edge Cases.',
-      keyAction: 'Extract Backlog',
+        'Design solutions and test riskiest assumptions with fake-door tests, A/B hypotheses, and prototype experiments.',
+      keyAction: 'Draft PRD',
       detail:
-        'The AI builds a complete PRD in seconds, allowing PMs to simply review and refine rather than write specs from scratch.',
+        'Ensures features are de-risked with verified customer adoption signals before engineering begins building.',
     },
     {
       id: 6,
-      badge: 'Step 6',
-      title: 'RICE Backlog Extraction',
+      badge: 'Step 11-12',
+      title: 'PRD Specs & Release Launch',
       icon: ListChecks,
-      color: 'from-cyan-500/20 to-cyan-500/5 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
-      activeColor: 'bg-cyan-600 text-white',
-      tag: 'Sprint Execution Items',
+      color: 'from-emerald-500/20 to-emerald-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+      activeColor: 'bg-emerald-600 text-white',
+      tag: 'User Stories, AC & Launch Checklist',
       story:
-        'Uses the PRD → RICE module to automatically extract user stories and populate your development sprint backlog.',
+        'Generates complete 23-section PRD specs with success metrics, decomposed user stories, acceptance criteria, and GTM checklists.',
       keyAction: 'Start Sprints',
       detail:
-        'Extracted stories are assigned estimated Reach, Impact, Confidence, and Effort scores to immediately prioritize engineering work.',
+        'Ready for engineering execution, sprint planning, and post-launch telemetry measurement.',
     },
   ]
 
@@ -237,17 +237,17 @@ export function AiAutomationWorkflowGuide({
                 </div>
                 <p className="text-app-fg leading-relaxed">
                   {activeStep === 1 &&
-                    'Validate your ICP and TAM estimates thoroughly; poor market inputs lead to weak downstream strategies.'}
+                    'Validate your ICP and TAM estimates thoroughly; ground discovery in qualitative customer evidence before sizing opportunities.'}
                   {activeStep === 2 &&
-                    'Treat AI-generated strategy as a strong draft. Edit the defensive moats and pillars to match your specific context.'}
+                    'Assess technical feasibility and business value early; weed out low-yield or high-risk initiatives before committing to strategy.'}
                   {activeStep === 3 &&
-                    'Review the AI-generated OKRs with stakeholders. They form the bridge between your high-level strategy and roadmap execution.'}
+                    'Align strategic pillars directly with company OKRs and North Star metrics so every bet has an accountable measurement.'}
                   {activeStep === 4 &&
-                    'Ensure the "Now" horizon strictly focuses on high-confidence bets that address immediate market needs and align to your OKRs.'}
+                    'Score initiatives objectively with RICE before locking in roadmap themes across Now/Next/Later horizons.'}
                   {activeStep === 5 &&
-                    'Before finalizing the PRD, review the AI-generated edge cases to see if any complex scenarios were missed.'}
+                    'Run rapid experiments (fake doors, prototypes) on risky UX assumptions before writing extensive PRD feature requirements.'}
                   {activeStep === 6 &&
-                    'Always manually review the AI-estimated RICE scores with your engineering lead before starting the sprint.'}
+                    'Ensure every user story in the PRD has testable Given-When-Then acceptance criteria and telemetry metrics before sprint planning.'}
                 </p>
               </div>
             </div>

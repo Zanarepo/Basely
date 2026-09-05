@@ -132,7 +132,6 @@ export default function DocumentsWorkspace({
                 'opportunity_assessment_workspace',
                 'solution_design_workspace',
                 'solution_validation_workspace',
-                'quality_management_plan',
                 'competitive_benchmarking_matrix',
                 'competitive_analysis_workspace',
                 'product_requirements_document',

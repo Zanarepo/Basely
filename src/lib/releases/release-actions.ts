@@ -92,7 +92,12 @@ export async function fetchProjectReleasesData(projectId: string): Promise<{
 
     const { data: rawActivities } = await supabase
       .from('activities')
-      .select('id, name, wbs_element_id, iteration_id, status')
+      .select('id, name, wbs_element_id, iteration_id, status, type')
+      .eq('project_id', projectId)
+
+    const { data: rawSnapshots } = await supabase
+      .from('sprint_snapshots')
+      .select('*')
       .eq('project_id', projectId)
 
     const isCompletedStatus = (status?: string | null) => {
@@ -157,11 +162,17 @@ export async function fetchProjectReleasesData(projectId: string): Promise<{
         completedCount,
         inProgressCount,
         epicNames: Array.from(epicNamesSet),
-        status: sprintStatus
+        status: sprintStatus,
+        totalItems,
+        snapshots: (rawSnapshots || []).filter(s => s.iteration_id === i.id).sort((a, b) => new Date(a.snapshot_date).getTime() - new Date(b.snapshot_date).getTime())
       } as Iteration]
     }))
 
     const iterations = Array.from(iterMap.values())
+
+    const milestoneWbsIds = new Set(
+      (rawActivities || []).filter(a => a.type === 'Milestone').map(a => a.wbs_element_id)
+    )
 
     // Build available work items for tagging/adding to releases
     const availableWorkItems = [
@@ -170,7 +181,8 @@ export async function fetchProjectReleasesData(projectId: string): Promise<{
         type: 'wbs_element' as const,
         title: w.name,
         code: w.code,
-        iterationId: w.iteration_id || null
+        iterationId: w.iteration_id || null,
+        isMilestone: milestoneWbsIds.has(w.id) || w.name?.includes('- Completion Milestone') || w.name?.includes('🎯')
       })),
       ...(rawActivities || []).map(a => {
         const wbs = wbsMap.get(a.wbs_element_id)
@@ -179,7 +191,8 @@ export async function fetchProjectReleasesData(projectId: string): Promise<{
           type: 'activity' as const,
           title: a.name,
           code: wbs ? `${wbs.code} (Activity)` : 'Activity',
-          iterationId: a.iteration_id || null
+          iterationId: a.iteration_id || null,
+          isMilestone: a.type === 'Milestone'
         }
       })
     ]

@@ -25,7 +25,7 @@ interface IterationModalProps {
   iterationToEdit?: Iteration | null
   projectMethodology?: string | null
   nextSequenceNumber: number
-  availableWbsElements?: { id: string; name?: string; title?: string; code?: string; priority?: string | null }[]
+  availableWbsElements?: { id: string; name?: string; title?: string; code?: string; priority?: string | null; iterationId?: string | null }[]
   projectId: string
   organizationId: string
 }
@@ -71,7 +71,11 @@ export function IterationModal({
       setStartDate(iterationToEdit.startDate)
       setEndDate(iterationToEdit.endDate)
       setLabelOverride(iterationToEdit.labelOverride || '')
-      setSelectedWbsIds([])
+      setSelectedWbsIds(
+        availableWbsElements
+          ?.filter((el: any) => el.iterationId === iterationToEdit.id)
+          .map(el => el.id) || []
+      )
     } else {
       setName(`${defaultLabel} ${nextSequenceNumber}`)
       setSequenceNumber(nextSequenceNumber)

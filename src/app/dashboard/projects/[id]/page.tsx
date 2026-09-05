@@ -303,7 +303,10 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       )}
 
       {activeTab === 'roadmap' && project.methodology === 'Agile' && (
-        <RoadmapWorkspace projectId={project.id} />
+        <RoadmapWorkspace 
+          projectId={project.id} 
+          organizationId={project.organization_id || 'default_org'}
+        />
       )}
 
       {activeTab === 'wbs' && (

@@ -12,6 +12,7 @@ import { AdrRaidExtractor } from './workflow/AdrRaidExtractor'
 import { AdrSkillGapPanel } from './workflow/AdrSkillGapPanel'
 import { useAdrWorkflow } from './hooks/useAdrWorkflow'
 import type { ArchitectureDecisionRecord } from '@/lib/adr/actions'
+import { getTerminology } from '@/utils/terminology'
 
 interface AdrWorkflowPanelProps {
   adr: ArchitectureDecisionRecord
@@ -21,6 +22,7 @@ interface AdrWorkflowPanelProps {
   onClose: () => void
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
   onRaidSuccess?: () => void
+  methodology?: string
 }
 
 export function AdrWorkflowPanel({
@@ -31,9 +33,12 @@ export function AdrWorkflowPanel({
   onClose,
   onShowToast,
   onRaidSuccess,
+  methodology,
 }: AdrWorkflowPanelProps) {
   const [activeSection, setActiveSection] = useState<'raid' | 'skill' | null>(null)
   const [isExpanded, setIsExpanded] = useState(false)
+
+  const terms = getTerminology(methodology)
 
   const adrWorkflow = useAdrWorkflow({
     projectId,
@@ -178,7 +183,7 @@ export function AdrWorkflowPanel({
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
               </div>
               <div>
-                <p className="text-sm font-bold text-app-fg">WBS Architecture Compliance</p>
+                <p className="text-sm font-bold text-app-fg">{terms.wbsShortTab} Architecture Compliance</p>
                 <p className="text-xs text-app-muted mt-0.5">Enforce this ADR at the task level</p>
               </div>
               <span className="ml-auto text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 shrink-0">
@@ -186,7 +191,7 @@ export function AdrWorkflowPanel({
               </span>
             </div>
             <p className="text-xs text-app-muted leading-relaxed">
-              Open any <strong className="text-app-fg">WBS Story</strong> in the side panel and link this ADR to it.
+              Open any <strong className="text-app-fg">{terms.wbsShortTab} {terms.workPackage}</strong> in the side panel and link this ADR to it.
               Then click <strong className="text-app-fg">Verify Architecture Compliance</strong> to check if the task's
               implementation approach violates this decision.
             </p>

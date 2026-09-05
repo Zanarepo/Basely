@@ -107,7 +107,7 @@ export function QualityManagementPlanEditor({
             <button
               onClick={handleGenerateAI}
               disabled={isGenerating || isSaving}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-violet-700 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 hover:bg-violet-200 dark:hover:bg-violet-900/60 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
             >
               {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               Auto-Generate via AI
@@ -115,7 +115,7 @@ export function QualityManagementPlanEditor({
             <button
               onClick={handleSavePlan}
               disabled={isSaving || isGenerating}
-              className="flex items-center gap-2 bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Changes

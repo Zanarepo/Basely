@@ -60,7 +60,7 @@ export function useMarketResearchAiAutomation({
       const allowed = await checkLimit('max_ai_generations')
       if (!allowed) return
 
-      const res = await draftMarketResearchFromBusinessCase(projectId, organizationId, templateId)
+      const res = await draftMarketResearchFromBusinessCase(projectId, templateId)
       if (res.ok && res.data) {
         if (onGenerated) {
           onGenerated(res.data)

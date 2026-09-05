@@ -16,11 +16,11 @@ export function CustomerResearchWorkspace({ projectId, projectContext, hasEditAc
   const [activeTab, setActiveTab] = useState<'strategy' | 'insights'>('strategy')
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white">
+    <div className="flex-1 flex flex-col h-full bg-app-surface">
       {/* Workspace Header with Tabs */}
       <div className="flex-none border-b border-app-border px-6 pt-4">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center text-violet-600">
+          <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400">
             <Search className="w-4 h-4" />
           </div>
           <div>
@@ -30,13 +30,13 @@ export function CustomerResearchWorkspace({ projectId, projectContext, hasEditAc
         </div>
 
         <div className="flex items-center mt-4">
-          <div className="inline-flex items-center gap-1 p-1 bg-white border border-gray-200 rounded-xl">
+          <div className="inline-flex items-center gap-1 p-1 bg-white dark:bg-slate-900 border border-app-border rounded-xl">
             <button
               onClick={() => setActiveTab('strategy')}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg cursor-pointer transition-colors ${
                 activeTab === 'strategy' 
-                  ? 'bg-violet-100 text-violet-700' 
-                  : 'text-app-muted hover:text-app-fg hover:bg-gray-50'
+                  ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300' 
+                  : 'text-app-muted hover:text-app-fg hover:bg-gray-50 dark:hover:bg-slate-800'
               }`}
             >
               <FileText className="w-4 h-4" />
@@ -47,8 +47,8 @@ export function CustomerResearchWorkspace({ projectId, projectContext, hasEditAc
               onClick={() => setActiveTab('insights')}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg cursor-pointer transition-colors ${
                 activeTab === 'insights' 
-                  ? 'bg-violet-100 text-violet-700' 
-                  : 'text-app-muted hover:text-app-fg hover:bg-gray-50'
+                  ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300' 
+                  : 'text-app-muted hover:text-app-fg hover:bg-gray-50 dark:hover:bg-slate-800'
               }`}
             >
               <Search className="w-4 h-4" />
@@ -57,6 +57,7 @@ export function CustomerResearchWorkspace({ projectId, projectContext, hasEditAc
           </div>
         </div>
       </div>
+
 
       {/* Workspace Body */}
       <div className="flex-1 overflow-auto">
