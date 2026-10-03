@@ -27,17 +27,11 @@ export function GanttTimelineTooltip({ hoveredItem }: GanttTimelineTooltipProps)
 
   return (
     <div
-      className={`absolute z-50 text-white text-xs rounded-lg shadow-xl p-3 border pointer-events-none -translate-x-1/2 min-w-[200px] ${
-        flipBelow ? '' : '-translate-y-full'
-      } ${
+      className={`fixed z-[100] text-white text-xs rounded-xl shadow-2xl p-4 border pointer-events-none min-w-[280px] max-w-[320px] top-24 right-8 animate-in fade-in slide-in-from-right-4 duration-200 ${
         isMilestone
-          ? 'bg-amber-950 border-amber-700'
-          : 'bg-slate-900 border-slate-700'
+          ? 'bg-amber-950/95 border-amber-700/50 backdrop-blur-md'
+          : 'bg-slate-900/95 border-slate-700/50 backdrop-blur-md'
       }`}
-      style={{
-        left: `${hoveredItem.x}px`,
-        top: flipBelow ? `${hoveredItem.yBottom}px` : `${hoveredItem.y}px`,
-      }}
     >
       {isMilestone ? (
         <>

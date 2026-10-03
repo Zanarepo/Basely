@@ -18,7 +18,7 @@ type ToastProps = {
 
 export function ToastContainer({ toasts, onDismiss }: ToastProps) {
   return (
-    <div className="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+    <div className="fixed top-6 right-6 z-[100] flex flex-col gap-2.5 max-w-md w-full pointer-events-none">
       {toasts.map((toast) => (
         <ToastItem
           key={toast.id}
@@ -38,11 +38,12 @@ function ToastItem({
   onDismiss: () => void
 }) {
   useEffect(() => {
+    const duration = toast.type === 'error' ? 8000 : 4000
     const timer = setTimeout(() => {
       onDismiss()
-    }, 4000)
+    }, duration)
     return () => clearTimeout(timer)
-  }, [onDismiss])
+  }, [onDismiss, toast.type])
 
   return (
     <div

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Plus, Trash2, Pencil, Check, X, Save, DollarSign, Calendar, LinkIcon, Loader2 } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 import { useProcurementPlan } from './hooks/useProcurementPlan'
 import { ProcurementEntry } from '@/lib/planning/procurement-actions'
 import { ProcurementEntryForm } from './ProcurementEntryForm'
@@ -29,11 +30,7 @@ export function ProcurementPlanEditor({
   }, [error, onShowToast])
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center p-12">
-        <Loader2 className="w-8 h-8 animate-spin text-app-muted" />
-      </div>
-    )
+    return <DocumentLoader message="Loading Procurement Plan..." />
   }
 
   const startAdd = () => {

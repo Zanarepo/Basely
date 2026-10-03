@@ -40,6 +40,11 @@ export type WbsElement = {
   deliverablesData?: DeliverableItem[]
   acceptanceCriteria: string | null
   acceptanceCriteriaData?: AcceptanceCriteriaItem[]
+  userStories: string | null
+  userStoriesData?: ChecklistItem[]
+  edgeCases: string | null
+  edgeCasesData?: ChecklistItem[]
+  priority: string | null
   status: WbsStatus
   isWorkPackage: boolean
   sortOrder: number
@@ -47,8 +52,14 @@ export type WbsElement = {
   updatedAt: string
   raciAssignments?: RaciAssignment[]
   duration?: number
+  story_points?: number | null
   iterationId?: string | null
   iteration_id?: string | null
   cost?: number
   estimationMethod?: 'analogous' | 'parametric' | 'bottom_up'
+  required_skills?: string[]
+  linked_adr_ids?: string[]
+  okrId?: string | null
+  okrTitle?: string | null
+  isSaving?: boolean
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Users, UserIcon, Mail } from 'lucide-react'
 
@@ -14,35 +14,35 @@ export default function StakeholderRegisterResolver({ projectId, periodEnd, froz
   const [data, setData] = useState<any>(frozenData)
   const [loading, setLoading] = useState(!frozenData)
 
+  const loadData = useCallback(async () => {
+    if (frozenData) return
+    const supabase = createClient()
+
+    const { data: stakeholders, error } = await supabase
+      .from('stakeholders')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('influence', { ascending: false })
+
+    if (error || !stakeholders) {
+      console.error("Stakeholders fetch error:", error)
+      setData([])
+      setLoading(false)
+      return
+    }
+
+    setData(stakeholders)
+    setLoading(false)
+  }, [projectId, frozenData])
+
   useEffect(() => {
     if (frozenData) {
       setData(frozenData)
       setLoading(false)
       return
     }
-
-    async function loadData() {
-      const supabase = createClient()
-
-      const { data: stakeholders, error } = await supabase
-        .from('stakeholders')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('influence', { ascending: false })
-
-      if (error || !stakeholders) {
-        console.error("Stakeholders fetch error:", error)
-        setData([])
-        setLoading(false)
-        return
-      }
-
-      setData(stakeholders)
-      setLoading(false)
-    }
-
     loadData()
-  }, [projectId, periodEnd, frozenData])
+  }, [frozenData, loadData, periodEnd])
 
   if (loading) {
     return (

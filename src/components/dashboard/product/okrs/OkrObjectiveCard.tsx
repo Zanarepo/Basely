@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import type { OkrObjective, OkrKeyResult } from '@/lib/product-strategy/types'
-import { deleteOkrObjective, updateOkrObjective } from '@/lib/product-strategy/actions'
+import { deleteOkrObjective, updateOkrObjective } from '@/lib/product-strategy/okr-actions'
 import { KeyResultRow } from './KeyResultRow'
 import { Plus, Trash2, Edit2, ChevronDown, ChevronRight, Loader2, Target, User, Calendar, X } from 'lucide-react'
 

@@ -1,18 +1,42 @@
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
-import { DocumentTemplate, GeneratedDocument, saveGeneratedDocument, regenerateDocument } from '@/lib/documents/actions'
-import DocumentHistoryModal from './DocumentHistoryModal'
-import { fetchAutoFillText } from './engine/autoFillDataFetcher'
+import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
+import { DocumentTemplate, GeneratedDocument } from '@/lib/documents/types'
 import { useDocumentExports } from './engine/useDocumentExports'
 import DocumentHeader from './components/DocumentHeader'
 import DocumentSection from './components/DocumentSection'
-import RegenConfirmModal from './components/RegenConfirmModal'
-import SnapshotModal from './components/SnapshotModal'
-import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
-import { PrdMetadataRibbon } from '@/components/dashboard/product/prd/PrdMetadataRibbon'
+import InlineSectionInserter from './components/InlineSectionInserter'
+import { useSectionOrdering } from './hooks/useSectionOrdering'
+import { useDocumentSections } from './hooks/useDocumentSections'
+import { useDocumentPersistence } from './hooks/useDocumentPersistence'
+import { useStrategyAiAutomation } from './hooks/useStrategyAiAutomation'
+import DocumentStatsRibbon from './components/DocumentStatsRibbon'
 
+import { DocumentReconcileAlert } from './components/DocumentReconcileAlert'
+import { RoadmapViewSwitcher, CompetitiveViewSwitcher } from './components/DocumentViewSwitchers'
+import { DocumentAiBanners } from './components/DocumentAiBanners'
+
+import DocumentPropertiesHeader from './components/DocumentPropertiesHeader'
+import { reconcileDocument } from '@/lib/documents/reconcile-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
+import { generateBacklogFromPrdAndRoadmap } from '@/lib/wbs/wbs-ai-actions'
+
+// Lazy-load heavy components that aren't needed for initial render
+const DocumentHistoryModal = dynamic(() => import('./DocumentHistoryModal'), { ssr: false })
+const ReferenceDocumentsSection = dynamic(() => import('./components/ReferenceDocumentsSection'), { ssr: false })
+const FloatingReferenceLinksWidget = dynamic(() => import('./components/FloatingReferenceLinksWidget'), { ssr: false })
+const RegenConfirmModal = dynamic(() => import('./components/RegenConfirmModal'), { ssr: false })
+const SnapshotModal = dynamic(() => import('./components/SnapshotModal'), { ssr: false })
+const CommentThread = dynamic(() => import('@/components/dashboard/collaboration/CommentThread').then(m => m.CommentThread), { ssr: false })
+const DocumentApprovalBanner = dynamic(() => import('./components/DocumentApprovalBanner'), { ssr: false })
+const DocumentTableOfContents = dynamic(() => import('./components/DocumentTableOfContents'), { ssr: false })
+const CustomSectionBuilder = dynamic(() => import('./components/CustomSectionBuilder'), { ssr: false })
+const RemovedSectionsTrashPanel = dynamic(() => import('./components/RemovedSectionsTrashPanel'), { ssr: false })
+const RoadmapDashboard = dynamic(() => import('@/components/dashboard/product/roadmap/RoadmapDashboard').then(m => m.RoadmapDashboard), { ssr: false })
+const CompetitiveIntelligenceDashboard = dynamic(() => import('@/components/dashboard/product/strategy/CompetitiveIntelligenceDashboard').then(m => m.CompetitiveIntelligenceDashboard), { ssr: false })
 interface DocumentEngineProps {
   projectId: string
   projectContext: any
@@ -23,6 +47,7 @@ interface DocumentEngineProps {
   isSnapshot?: boolean
   onShowTemplateSelector?: () => void
   isReadOnlyTemplate?: boolean // For pre-project entities that don't save to generated_documents
+  onSaveSuccess?: () => void
 }
 
 export default function DocumentEngine({
@@ -35,55 +60,46 @@ export default function DocumentEngine({
   isSnapshot = false,
   onShowTemplateSelector,
   isReadOnlyTemplate = false,
+  onSaveSuccess,
 }: DocumentEngineProps) {
   const [isPending, startTransition] = useTransition()
 
   // Local state for free text content, seeded from DB
   const [freeText, setFreeText] = useState<Record<string, string>>({})
-
-  // New custom section addition state
-  const [newSectionTitle, setNewSectionTitle] = useState('')
-
-  // Compute custom sections stored inside freeText
-  const customSections: { key: string; title: string; type: string; isCustom?: boolean }[] = (() => {
-    try {
-      if (freeText['__custom_sections']) {
-        const parsed = JSON.parse(freeText['__custom_sections'])
-        if (Array.isArray(parsed)) {
-          return parsed.map((sec: any) => ({ ...sec, type: 'free_text', isCustom: true }))
-        }
-      }
-    } catch (e) {
-      console.error('Failed to parse custom document sections:', e)
-    }
-    return []
-  })()
-
-  const allSections = [...template.section_definitions, ...customSections]
-
-  // Track if we have unsaved changes
   const [isDirty, setIsDirty] = useState(false)
-
-  // Modal state for regeneration confirmation
-  const [showRegenConfirm, setShowRegenConfirm] = useState(false)
-
-  // Snapshot Generation State
-  const [showSnapshotModal, setShowSnapshotModal] = useState(false)
-  const [periodEnd, setPeriodEnd] = useState(new Date().toISOString().split('T')[0])
-
-  // Export & History State
+  const [newSectionTitle, setNewSectionTitle] = useState('')
   const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [isReconciling, setIsReconciling] = useState(false)
+  const [roadmapViewMode, setRoadmapViewMode] = useState<'document' | 'kanban'>('document')
+  const [competitiveViewMode, setCompetitiveViewMode] = useState<'document' | 'matrix'>('document')
+  const [isGeneratingBacklog, setIsGeneratingBacklog] = useState(false)
+  const [isBacklogGenerated, setIsBacklogGenerated] = useState(false)
+  const router = useRouter()
 
-  // Initialize state
+  const isRoadmapDocument = ['roadmap_workspace', 'product_roadmap_document', 'product_roadmap'].includes(template.document_type)
+  const isCompetitiveDocument = [
+    'competitive_analysis_workspace',
+    'competitive_benchmarking_matrix',
+    'market_research_report',
+    'market_research_workspace',
+  ].includes(template.document_type)
+
+  // Compute all sections & soft-removed items via hook
+  const {
+    allSections,
+    allRemovedSections,
+    sectionTitleOverrides
+  } = useDocumentSections({ template, freeText })
+
+  // Initialize state & sync freeText when template or generatedDoc updates
   useEffect(() => {
     if (generatedDoc?.free_text_content) {
       setFreeText(generatedDoc.free_text_content)
-    } else {
-      setFreeText({})
+      setIsDirty(false)
     }
-    setIsDirty(false)
-  }, [generatedDoc?.id, template?.document_type])
+  }, [generatedDoc?.id, generatedDoc?.updated_at, template?.id, template?.document_type])
 
+  // Document exports hook
   const {
     showExportMenu,
     setShowExportMenu,
@@ -97,152 +113,139 @@ export default function DocumentEngine({
     template,
     generatedDoc,
     freeText,
-    periodEnd,
+    periodEnd: new Date().toISOString().split('T')[0],
     onShowToast
   })
 
+  // Section ordering & layout management hook
+  const {
+    handleMoveSectionUp,
+    handleMoveSectionDown,
+    handleAddSection,
+    handleDuplicateSection,
+    handleRemoveSection,
+    handleSectionTitleChange,
+    handleRestoreSection,
+    handlePermanentDeleteSection,
+    handleClearAllRemovedSections,
+    handleResetToDefaultLayout
+  } = useSectionOrdering({
+    freeText,
+    setFreeText,
+    allSections,
+    setIsDirty,
+    onShowToast,
+    startTransition,
+    newSectionTitle,
+    setNewSectionTitle
+  })
+
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(projectContext?.organization_id || '')
+
+  const {
+    isSynthesizingRoadmap,
+    isDraftingStrategy,
+    isDone: isStrategyDone,
+    handleSynthesizeRoadmap,
+    handleDraftStrategy
+  } = useStrategyAiAutomation({
+    projectId,
+    organizationId: projectContext?.organization_id || '',
+    templateId: template.id,
+    freeText,
+    onShowToast,
+    onGenerated: (data) => {
+      setFreeText(prev => ({ ...prev, ...data }))
+      setIsDirty(true)
+    }
+  })
+  // Document persistence hook (saving, auto-save, snapshots, regeneration, auto-fill)
+  const {
+    showRegenConfirm,
+    setShowRegenConfirm,
+    showSnapshotModal,
+    setShowSnapshotModal,
+    periodEnd,
+    setPeriodEnd,
+    handleSave,
+    handleRegenerate,
+    executeRegenerate,
+    handleGenerateSnapshot,
+    handleAutoFillSection
+  } = useDocumentPersistence({
+    projectId,
+    template,
+    generatedDoc,
+    freeText,
+    setFreeText,
+    isDirty,
+    setIsDirty,
+    isPending,
+    startTransition,
+    isSnapshot,
+    isReadOnlyTemplate,
+    onShowToast,
+    onSaveSuccess
+  })
+
   const handleFreeTextChange = (key: string, value: string) => {
-    setFreeText(prev => ({ ...prev, [key]: value }))
+    setFreeText((prev) => ({ ...prev, [key]: value }))
     setIsDirty(true)
   }
 
-  const handleAddSection = () => {
-    if (!newSectionTitle.trim()) return
-    const sectionTitle = newSectionTitle.trim()
-    const sectionKey = 'custom_sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6)
-
-    startTransition(() => {
-      setFreeText((prev) => {
-        const next = { ...prev }
-        const currentCustom = (() => {
-          try {
-            return prev['__custom_sections'] ? JSON.parse(prev['__custom_sections']) : []
-          } catch {
-            return []
-          }
-        })()
-        const updatedCustom = [...currentCustom, { key: sectionKey, title: sectionTitle }]
-        next['__custom_sections'] = JSON.stringify(updatedCustom)
-        next[sectionKey] = '' // Initialize as empty string to trigger interactive edit field
-        return next
-      })
-      setNewSectionTitle('')
-      setIsDirty(true)
-    })
-    onShowToast('success', `Added new custom section "${sectionTitle}"`)
-  }
-
-  const handleRemoveSection = (sectionKey: string) => {
-    startTransition(() => {
-      setFreeText((prev) => {
-        const next = { ...prev }
-        delete next[sectionKey]
-        try {
-          if (next['__custom_sections']) {
-            const current = JSON.parse(next['__custom_sections']) as { key: string; title: string }[]
-            const updated = current.filter((s) => s.key !== sectionKey)
-            if (updated.length > 0) {
-              next['__custom_sections'] = JSON.stringify(updated)
-            } else {
-              delete next['__custom_sections']
-            }
-          }
-        } catch {
-          // ignore parsing errors
-        }
-        return next
-      })
-      setIsDirty(true)
-    })
-    onShowToast('success', 'Custom section removed')
-  }
-
-  const handleSave = () => {
-    startTransition(async () => {
-      const customTemplateId = template.is_custom ? template.id : undefined
-      const result = await saveGeneratedDocument(projectId, template.document_type, freeText, false, undefined, undefined, customTemplateId)
-      if (result.ok) {
-        setIsDirty(false)
-        onShowToast('success', 'Document saved successfully')
-      } else {
-        onShowToast('error', result.error || 'Failed to save document')
-      }
-    })
-  }
-
-  const handleRegenerate = () => {
-    if (Object.keys(freeText).length > 0 && generatedDoc) {
-      setShowRegenConfirm(true)
-    } else {
-      executeRegenerate()
-    }
-  }
-
-  const executeRegenerate = () => {
-    setShowRegenConfirm(false)
-    startTransition(async () => {
-      const customTemplateId = template.is_custom ? template.id : undefined
-      if (isDirty) {
-        await saveGeneratedDocument(projectId, template.document_type, freeText, false, undefined, undefined, customTemplateId)
-      }
-
-      const result = await regenerateDocument(projectId, template.document_type)
-      if (result.ok) {
-        setIsDirty(false)
-        onShowToast('success', 'Data-bound sections refreshed to latest project data')
-      } else {
-        onShowToast('error', result.error || 'Failed to regenerate document')
-      }
-    })
-  }
-
-  const handleGenerateSnapshot = () => {
-    startTransition(async () => {
-      const customTemplateId = template.is_custom ? template.id : undefined
-      const result = await saveGeneratedDocument(
-        projectId,
-        template.document_type,
-        freeText,
-        true, // isSnapshot
-        {}, // frozenData
-        periodEnd,
-        customTemplateId
-      )
-
-      if (result.ok) {
-        setShowSnapshotModal(false)
-        onShowToast('success', 'Snapshot generated successfully')
-        window.dispatchEvent(new Event('snapshot-saved'))
-      } else {
-        onShowToast('error', result.error || 'Failed to generate snapshot')
-      }
-    })
-  }
-
-  const handleAutoFillSection = async (section: any) => {
-    if (!section.source) return
+  const handleGenerateBacklog = async () => {
+    if (isGeneratingBacklog) return
+    setIsGeneratingBacklog(true)
     try {
-      const text = await fetchAutoFillText(projectId, section.source)
-      
-      if (text) {
-        startTransition(() => {
-          setFreeText((prev) => {
-            const nextState = { ...prev }
-            nextState[section.key] = text
-            if (section.key.startsWith('wbs')) {
-              nextState['wbs_prototype'] = text
-              nextState['wbs_dictionary'] = text
-            }
-            return nextState
-          })
-          setIsDirty(true)
-        })
-        onShowToast('success', `Auto-filled ${section.title} from project data`)
+      const orgId = projectContext?.organization_id || ''
+      const res = await generateBacklogFromPrdAndRoadmap(projectId, orgId)
+
+      if (res.success) {
+        setIsBacklogGenerated(true)
+        onShowToast?.('success', 'Execution Backlog (Epics & Stories) successfully generated in Product Backlog!')
+        router.refresh()
+      } else {
+        onShowToast?.('error', res.error || 'Failed to extract PRD to Product Backlog.')
       }
     } catch (err: any) {
-      console.error('Auto-fill error:', err)
-      onShowToast('error', err.message || 'An error occurred while fetching data')
+      console.error('[PRD to WBS Hook Error]:', err)
+      onShowToast?.('error', err.message || 'An error occurred during backlog generation.')
+    } finally {
+      setIsGeneratingBacklog(false)
     }
+  }
+
+  const handleDocumentTitleChange = (newTitle: string) => {
+    setFreeText((prev) => ({
+      ...prev,
+      '__document_title_override': newTitle
+    }))
+    setIsDirty(true)
+  }
+
+  const handleReconcile = async () => {
+    if (!generatedDoc || isReconciling || isChecking) return
+
+    const allowed = await checkLimit('max_ai_generations')
+    if (!allowed) return
+
+    setIsReconciling(true)
+    startTransition(async () => {
+      try {
+        const res = await reconcileDocument(generatedDoc.id, projectId)
+        if (!res.success) {
+          onShowToast?.('error', res.error || 'Failed to reconcile document')
+          return
+        }
+        await recordUsage('generations')
+        onShowToast?.('success', 'Document successfully reconciled with latest data!')
+        onSaveSuccess?.() // Trigger a re-fetch of the document to get the latest data
+      } catch (err: any) {
+        onShowToast?.('error', err.message || 'Error')
+      } finally {
+        setIsReconciling(false)
+      }
+    })
   }
 
   return (
@@ -266,10 +269,56 @@ export default function DocumentEngine({
         handleExportXlsx={handleExportXlsx}
         onShowTemplateSelector={onShowTemplateSelector}
         isReadOnlyTemplate={isReadOnlyTemplate}
+        customDocumentTitle={freeText['__document_title_override']}
+        onDocumentTitleChange={handleDocumentTitleChange}
       />
 
-      {/* Document Content Rendering */}
-      <div className="flex-1 overflow-y-auto p-6 lg:p-10 bg-app-bg">
+      <DocumentReconcileAlert
+        generatedDoc={generatedDoc}
+        isSnapshot={isSnapshot}
+        hasEditAccess={hasEditAccess}
+        isReconciling={isReconciling}
+        handleReconcile={handleReconcile}
+      />
+
+      {/* Roadmap View Mode Switcher Toggle Bar */}
+      {isRoadmapDocument && (
+        <RoadmapViewSwitcher roadmapViewMode={roadmapViewMode} setRoadmapViewMode={setRoadmapViewMode} />
+      )}
+
+      {/* Competitive / Market Research View Mode Switcher Toggle Bar */}
+      {isCompetitiveDocument && (
+        <CompetitiveViewSwitcher competitiveViewMode={competitiveViewMode} setCompetitiveViewMode={setCompetitiveViewMode} />
+      )}
+
+      {/* Document vs Kanban Board Body Rendering (Preserved in DOM for 0ms Instant Toggle) */}
+      {isRoadmapDocument && (
+        <div className={`flex-1 overflow-y-auto p-6 lg:p-10 bg-app-bg ${roadmapViewMode === 'kanban' ? 'block' : 'hidden'}`}>
+          <div className="max-w-7xl mx-auto bg-app-surface border border-app-border rounded-2xl shadow-sm p-6 md:p-8">
+            <RoadmapDashboard projectId={projectId} organizationId={projectContext?.organization_id || ''} />
+          </div>
+        </div>
+      )}
+
+      {/* Competitive Matrix Dashboard (Preserved in DOM for 0ms Instant Toggle) */}
+      {isCompetitiveDocument && (
+        <div className={`flex-1 overflow-y-auto p-6 lg:p-10 bg-app-bg ${competitiveViewMode === 'matrix' ? 'block' : 'hidden'}`}>
+          <div className="max-w-7xl mx-auto bg-app-surface border border-app-border rounded-2xl shadow-sm p-6 md:p-8">
+            <CompetitiveIntelligenceDashboard
+              projectId={projectId}
+              organizationId={projectContext?.organization_id || ''}
+              hasEditAccess={hasEditAccess}
+            />
+          </div>
+        </div>
+      )}
+
+      <div
+        className={`flex-1 overflow-y-auto p-6 lg:p-10 bg-app-bg ${(isRoadmapDocument && roadmapViewMode === 'kanban') || (isCompetitiveDocument && competitiveViewMode === 'matrix')
+          ? 'hidden'
+          : 'block'
+          }`}
+      >
         <div id="document-printable-area" className="max-w-4xl mx-auto space-y-10 bg-app-surface border border-app-border rounded-lg shadow-sm p-8 md:p-12 relative min-h-[800px]">
 
           {/* Watermark for preview */}
@@ -279,84 +328,127 @@ export default function DocumentEngine({
             </div>
           )}
 
-          {/* PRD Studio Metadata Ribbon — only visible for Product Requirements Documents */}
-          {template.document_type === 'product_requirements_document' && !isSnapshot && (
-            <div className="mb-8">
-              <PrdMetadataRibbon
-                projectId={projectId}
-                organizationId={projectContext?.organization_id || ''}
-              />
-            </div>
-          )}
+          {/* Live Document Reading Stats & Save Telemetry Ribbon */}
+          <DocumentStatsRibbon
+            freeText={freeText}
+            allSectionsCount={allSections.length}
+            isDirty={isDirty}
+            isPending={isPending}
+            isSnapshot={isSnapshot}
+            onResetLayout={() => handleResetToDefaultLayout(template.section_definitions)}
+          />
+
+          {/* AI Workflow Chain Banners */}
+          <DocumentAiBanners
+            projectId={projectId}
+            organizationId={projectContext?.organization_id || ''}
+            template={template}
+            freeText={freeText}
+            setFreeText={setFreeText}
+            setIsDirty={setIsDirty}
+            onShowToast={onShowToast}
+            onSaveSuccess={onSaveSuccess}
+            isSnapshot={isSnapshot}
+            hasEditAccess={hasEditAccess}
+            handleGenerateBacklog={handleGenerateBacklog}
+            isGeneratingBacklog={isGeneratingBacklog}
+            isBacklogGenerated={isBacklogGenerated}
+            handleDraftStrategy={handleDraftStrategy}
+            isDraftingStrategy={isDraftingStrategy}
+            handleSynthesizeRoadmap={handleSynthesizeRoadmap}
+            isSynthesizingRoadmap={isSynthesizingRoadmap}
+            isStrategyDone={isStrategyDone}
+          />
+
+          {/* Notion-Style Document Properties Header Grid */}
+          <DocumentPropertiesHeader
+            projectId={projectId}
+            documentType={template.document_type}
+            freeText={freeText}
+            setFreeText={setFreeText}
+            setIsDirty={setIsDirty}
+            onShowToast={onShowToast}
+            hasEditAccess={hasEditAccess}
+            isSnapshot={isSnapshot}
+          />
+
+          {/* Universal Enterprise Document Approval & Governance Sign-Off Banner */}
+          <DocumentApprovalBanner
+            projectId={projectId}
+            documentType={template.document_type}
+            freeText={freeText}
+            setFreeText={setFreeText}
+            setIsDirty={setIsDirty}
+            onShowToast={onShowToast}
+            hasEditAccess={hasEditAccess}
+            isSnapshot={isSnapshot}
+          />
+
+          {/* Floating Table of Contents (TOC) / Outline Side Navigator */}
+          <DocumentTableOfContents
+            sections={allSections}
+            sectionTitleOverrides={sectionTitleOverrides}
+          />
 
           {/* Engine: Loop through all standard and dynamic custom sections */}
-          {allSections.map((section) => (
-            <DocumentSection
-              key={section.key}
-              section={section}
-              template={template}
-              generatedDoc={generatedDoc}
-              projectId={projectId}
-              projectContext={projectContext}
-              isSnapshot={isSnapshot}
-              hasEditAccess={hasEditAccess}
-              freeText={freeText}
-              handleAutoFillSection={handleAutoFillSection}
-              handleFreeTextChange={handleFreeTextChange}
-              onRemoveSection={handleRemoveSection}
-            />
+          {allSections.map((section, index) => (
+            <div key={section.key} className="space-y-4">
+              {/* Hover Section Inserter Line above each section */}
+              {hasEditAccess && !isSnapshot && (
+                <InlineSectionInserter
+                  onAddSection={(title, content) => handleAddSection(title, index, content)}
+                  isPending={isPending}
+                />
+              )}
+
+              <DocumentSection
+                section={section}
+                template={template}
+                generatedDoc={generatedDoc}
+                projectId={projectId}
+                projectContext={projectContext}
+                isSnapshot={isSnapshot}
+                hasEditAccess={hasEditAccess}
+                freeText={freeText}
+                handleAutoFillSection={handleAutoFillSection}
+                handleFreeTextChange={handleFreeTextChange}
+                onRemoveSection={handleRemoveSection}
+                sectionTitleOverride={sectionTitleOverrides[section.key]}
+                onSectionTitleChange={handleSectionTitleChange}
+                onMoveSectionUp={handleMoveSectionUp}
+                onMoveSectionDown={handleMoveSectionDown}
+                onDuplicateSection={handleDuplicateSection}
+                isFirstSection={index === 0}
+                isLastSection={index === allSections.length - 1}
+              />
+            </div>
           ))}
 
-          {/* Dynamic Section Builder (For Competitive Matrix, Market Research & all documents) */}
-          {hasEditAccess && !isSnapshot && (
-            <div className="mt-8 pt-6 border-t border-dashed border-app-border">
-              <div className="bg-app-muted-surface/50 dark:bg-slate-800/60 rounded-xl p-5 border border-app-border space-y-3 shadow-sm transition-all hover:border-violet-500/30">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">
-                      ➕ Add Custom Section & Text Field
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-app-muted font-medium">
-                    Add dynamic analytical blocks (e.g. Competitor Pricing Tiers, TAM Expansion, Regional Risks)
-                  </span>
-                </div>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
-                  <input
-                    type="text"
-                    value={newSectionTitle}
-                    onChange={(e) => setNewSectionTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        handleAddSection()
-                      }
-                    }}
-                    placeholder="Section Title / Header Name (e.g. Enterprise Pricing & SLA Tiers)..."
-                    className="flex-1 px-3.5 py-2 text-sm rounded-xl border border-app-border bg-app-surface text-app-fg placeholder:text-app-muted focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      handleAddSection()
-                    }}
-                    disabled={!newSectionTitle.trim() || isPending}
-                    style={{ cursor: 'pointer' }}
-                    className="inline-flex items-center justify-center px-5 py-2 text-xs font-semibold text-white bg-violet-500 hover:bg-violet-600 rounded-xl shadow-sm transition-all shrink-0 disabled:opacity-50 disabled:pointer-events-none"
-                  >
-                    {isPending ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin text-white" /> Adding...
-                      </>
-                    ) : (
-                      '+ Add Section Field'
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
+          {/* Hover Section Inserter Line after the last section */}
+          {hasEditAccess && !isSnapshot && allSections.length > 0 && (
+            <InlineSectionInserter
+              onAddSection={(title, content) => handleAddSection(title, allSections.length, content)}
+              isPending={isPending}
+            />
           )}
+
+          {/* Custom Section Builder Component */}
+          <CustomSectionBuilder
+            newSectionTitle={newSectionTitle}
+            setNewSectionTitle={setNewSectionTitle}
+            handleAddSection={handleAddSection}
+            isPending={isPending}
+            hasEditAccess={hasEditAccess}
+            isSnapshot={isSnapshot}
+          />
+
+          {/* Bottom Auto-Indexed Reference Documents Table */}
+          <ReferenceDocumentsSection
+            freeText={freeText}
+            allSections={allSections}
+            documentType={template.document_type}
+            documentTitle={freeText['__document_title_override'] || template.name || ''}
+          />
 
           {generatedDoc?.id && (
             <div className="mt-8 border-t border-app-border pt-6">
@@ -364,10 +456,20 @@ export default function DocumentEngine({
                 projectId={projectId}
                 entityType="document"
                 entityId={generatedDoc.id}
-                // Ideally pass currentUserId from a context or prop, omitting if unavailable since server checks it
               />
             </div>
           )}
+
+          {/* Soft-Removed Sections Trash Panel */}
+          <RemovedSectionsTrashPanel
+            allRemovedSections={allRemovedSections}
+            sectionTitleOverrides={sectionTitleOverrides}
+            handleRestoreSection={handleRestoreSection}
+            handlePermanentDeleteSection={handlePermanentDeleteSection}
+            handleClearAllRemovedSections={handleClearAllRemovedSections}
+            hasEditAccess={hasEditAccess}
+            isSnapshot={isSnapshot}
+          />
         </div>
       </div>
 
@@ -392,6 +494,15 @@ export default function DocumentEngine({
         documentType={template.document_type}
         onShowToast={onShowToast}
       />
+
+      {/* Floating VoC & Document Evidence Reference Links Widget */}
+      <FloatingReferenceLinksWidget
+        freeText={freeText}
+        allSections={allSections}
+        documentType={template.document_type}
+        documentTitle={freeText['__document_title_override'] || template.name || ''}
+      />
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

@@ -2,6 +2,7 @@
 
 import React from 'react'
 import type { ExecutionDocType } from './ExecutionSidebarSection'
+export type { ExecutionDocType }
 import { MeetingMinutesList } from './MeetingMinutesList'
 import { ChangeRequestLog } from '../change-requests/ChangeRequestLog'
 import { DeliverableSignoffSheet } from '../deliverables/DeliverableSignoffSheet'
@@ -9,6 +10,7 @@ import { DeliverableSignoffSheet } from '../deliverables/DeliverableSignoffSheet
 export interface ExecutionDocumentsRouterProps {
   documentType: ExecutionDocType
   projectId: string
+  organizationId: string
   hasEditAccess: boolean
   isManager?: boolean
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
@@ -17,6 +19,7 @@ export interface ExecutionDocumentsRouterProps {
 export function ExecutionDocumentsRouter({
   documentType,
   projectId,
+  organizationId,
   hasEditAccess,
   isManager,
   onShowToast
@@ -26,6 +29,7 @@ export function ExecutionDocumentsRouter({
       return (
         <MeetingMinutesList
           projectId={projectId}
+          organizationId={organizationId}
           hasEditAccess={hasEditAccess}
           onShowToast={onShowToast}
         />

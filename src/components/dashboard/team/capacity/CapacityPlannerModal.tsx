@@ -39,8 +39,8 @@ export default function CapacityPlannerModal({
 
   if (!isOpen) return null
 
-  const isAgile = methodology === 'agile'
-  const isWaterfall = methodology === 'waterfall'
+  const isAgile = methodology?.toLowerCase() === 'agile'
+  const isWaterfall = methodology?.toLowerCase() === 'waterfall'
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()

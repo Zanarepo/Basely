@@ -24,8 +24,9 @@ export function ApprovalPoliciesPanel({ organizationId, members, isAdmin }: Appr
 
   const budgetPolicy = policies.find(p => p.action_type === 'budget_baseline')
   const schedulePolicy = policies.find(p => p.action_type === 'schedule_baseline')
+  const changeRequestPolicy = policies.find(p => p.action_type === 'change_request')
 
-  const handleToggle = async (actionType: 'budget_baseline' | 'schedule_baseline', enabled: boolean) => {
+  const handleToggle = async (actionType: 'budget_baseline' | 'schedule_baseline' | 'change_request', enabled: boolean) => {
     setErrorMsg(null)
     setSuccessMsg(null)
     
@@ -118,6 +119,26 @@ export function ApprovalPoliciesPanel({ organizationId, members, isAdmin }: Appr
                   type="checkbox"
                   checked={schedulePolicy?.enabled ?? false}
                   onChange={(e) => handleToggle('schedule_baseline', e.target.checked)}
+                  disabled={isSaving}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-violet-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500" />
+              </label>
+            </div>
+
+            <div className="bg-app-surface-solid border border-app-border rounded-xl p-4 sm:p-5 flex items-start gap-4 flex-col sm:flex-row sm:items-center justify-between transition-colors hover:border-app-border-hover">
+              <div>
+                <h4 className="text-sm font-semibold text-app-fg">Change Request Workflows</h4>
+                <p className="text-xs text-app-muted mt-1 max-w-lg">
+                  When enabled, any standalone Change Request or Risk Escalation will be routed through the thresholds defined in your Change Management Plan.
+                </p>
+              </div>
+              
+              <label className="relative inline-flex items-center cursor-pointer mt-0.5 shrink-0">
+                <input
+                  type="checkbox"
+                  checked={changeRequestPolicy?.enabled ?? false}
+                  onChange={(e) => handleToggle('change_request' as any, e.target.checked)}
                   disabled={isSaving}
                   className="sr-only peer"
                 />

@@ -94,7 +94,7 @@ export function HeroSection({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         </h1>
         
         <p className="text-slate-400 text-[17px] max-w-2xl mx-auto leading-relaxed mb-10 drop-shadow-sm">
-          Baseline unifies your schedule, budget (EVM), and risk register into a mathematically linked engine driven by your work breakdown. No spreadsheet reconciliation. No disjointed documentation.
+          Prazaner unifies your schedule, budget (EVM), and risk register into a mathematically linked engine driven by your work breakdown. No spreadsheet reconciliation. No disjointed documentation.
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -121,7 +121,7 @@ export function HeroSection({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             <span className="w-2.5 h-2.5 rounded-full bg-white/10"></span>
             <span className="w-2.5 h-2.5 rounded-full bg-white/10"></span>
             <span className="w-2.5 h-2.5 rounded-full bg-white/10"></span>
-            <span className="ml-3 text-[11px] font-mono text-slate-500">baseline.app / atlas-migration / schedule</span>
+            <span className="ml-3 text-[11px] font-mono text-slate-500">parzana.app / atlas-migration / schedule</span>
           </div>
           <div className="p-6 md:p-10 relative">
             {/* Subtle violet glow at center */}

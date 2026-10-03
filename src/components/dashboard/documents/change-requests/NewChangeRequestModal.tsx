@@ -4,12 +4,15 @@ import { X } from 'lucide-react'
 interface Props {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (description: string, rationale: string) => Promise<void>
+  onSubmit: (description: string, rationale: string, costImpact?: number, scheduleImpact?: number) => Promise<void>
+  currencySymbol?: string
 }
 
-export function NewChangeRequestModal({ isOpen, onClose, onSubmit }: Props) {
+export function NewChangeRequestModal({ isOpen, onClose, onSubmit, currencySymbol = '$' }: Props) {
   const [description, setDescription] = useState('')
   const [rationale, setRationale] = useState('')
+  const [costImpact, setCostImpact] = useState<number | undefined>(undefined)
+  const [scheduleImpact, setScheduleImpact] = useState<number | undefined>(undefined)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -22,9 +25,11 @@ export function NewChangeRequestModal({ isOpen, onClose, onSubmit }: Props) {
     setSubmitting(true)
     setError(null)
     try {
-      await onSubmit(description, rationale)
+      await onSubmit(description, rationale, costImpact, scheduleImpact)
       setDescription('')
       setRationale('')
+      setCostImpact(undefined)
+      setScheduleImpact(undefined)
       onClose()
     } catch (err: any) {
       setError(err.message || 'Failed to submit.')
@@ -34,27 +39,27 @@ export function NewChangeRequestModal({ isOpen, onClose, onSubmit }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Log Change Request</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-app-surface border border-app-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-app-border bg-app-surface-solid">
+          <h3 className="text-lg font-black text-app-fg tracking-tight">Log Change Request</h3>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer transition-colors"
+            className="p-1.5 text-app-muted hover:text-app-fg hover:bg-app-hover rounded-lg cursor-pointer transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-5">
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 rounded-md">
+            <div className="p-3.5 text-sm text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 rounded-xl border border-red-100 dark:border-red-900/50">
               {error}
             </div>
           )}
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-semibold text-app-fg mb-1.5">
               Description *
             </label>
             <input
@@ -62,36 +67,66 @@ export function NewChangeRequestModal({ isOpen, onClose, onSubmit }: Props) {
               required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2.5 bg-app-bg border border-app-border text-app-fg rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all placeholder:text-app-muted/50"
               placeholder="e.g. Scope expansion for Phase 2"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-semibold text-app-fg mb-1.5">
               Rationale / Justification
             </label>
             <textarea
               rows={3}
               value={rationale}
               onChange={(e) => setRationale(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+              className="w-full px-4 py-2.5 bg-app-bg border border-app-border text-app-fg rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all placeholder:text-app-muted/50 resize-none"
               placeholder="Why is this change necessary?"
             />
           </div>
 
-          <div className="flex justify-end pt-2 space-x-3">
+          <div className="grid grid-cols-2 gap-4 items-end">
+            <div className="flex flex-col">
+              <label className="block text-sm font-semibold text-app-fg mb-1.5 h-10 flex items-end">
+                Cost Impact ({currencySymbol})
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={costImpact === undefined ? '' : costImpact}
+                onChange={(e) => setCostImpact(e.target.value ? Number(e.target.value) : undefined)}
+                className="w-full px-4 py-2.5 bg-app-bg border border-app-border text-app-fg rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all placeholder:text-app-muted/50"
+                placeholder="0.00"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="block text-sm font-semibold text-app-fg mb-1.5 h-10 flex items-end">
+                Schedule Delay (Days)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={scheduleImpact === undefined ? '' : scheduleImpact}
+                onChange={(e) => setScheduleImpact(e.target.value ? Number(e.target.value) : undefined)}
+                className="w-full px-4 py-2.5 bg-app-bg border border-app-border text-app-fg rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all placeholder:text-app-muted/50"
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-3 space-x-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer transition-colors"
+              className="px-4 py-2.5 text-sm font-semibold text-app-muted hover:text-app-fg hover:bg-app-hover rounded-xl cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting || !description.trim()}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md cursor-pointer transition-colors"
+              className="px-5 py-2.5 text-sm font-bold text-white bg-violet-500 hover:bg-violet-600 active:scale-95 disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed rounded-xl cursor-pointer transition-all shadow-md shadow-violet-500/20"
             >
               {submitting ? 'Saving...' : 'Save Change'}
             </button>

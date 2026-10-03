@@ -3,15 +3,19 @@
 import { DollarSign, TrendingUp, TrendingDown } from 'lucide-react'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
 import type { CostHealth } from '../hooks/useProjectDashboardData'
+import { getTerminology } from '@/utils/terminology'
 
 export default function CostHealthWidget({
   health,
-  currency
+  currency,
+  methodology
 }: {
   health: CostHealth
   currency: string
+  methodology?: string | null
 }) {
   const { cpi, spi, eac, vac, pv, ev, ac, bac } = health
+  const terms = getTerminology(methodology)
 
   const formatIndex = (val: number | null) => {
     if (val === null) return '—'
@@ -29,7 +33,7 @@ export default function CostHealthWidget({
     <div className="bg-white dark:bg-app-surface border border-app-border rounded-3xl p-6 shadow-sm flex flex-col justify-between h-full hover:shadow-md transition-all">
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-app-fg">Cost & EVM Health</h3>
+          <h3 className="text-base font-bold text-app-fg">{terms.costHealth}</h3>
           <DollarSign className="h-5 w-5 text-emerald-500" />
         </div>
 

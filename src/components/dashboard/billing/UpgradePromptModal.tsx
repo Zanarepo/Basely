@@ -9,9 +9,9 @@ import { createCheckoutSessionAction } from '@/lib/organizations/subscription-ac
 interface UpgradePromptModalProps {
   isOpen: boolean
   onClose: () => void
-  currentTier: TierId
+  currentTier?: TierId
   organizationId: string
-  onSelectTier: (tier: TierId) => Promise<any> | void
+  onSelectTier?: (tier: TierId) => Promise<any> | void
   reason?: string
   featureOrLimitName?: string
 }
@@ -119,7 +119,7 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
     setLoadingTier(tier)
     try {
       if (tier === 'free') {
-        await onSelectTier(tier)
+        if (onSelectTier) await onSelectTier(tier)
       } else {
         const basePrice = TIER_CARDS.find(c => c.id === tier)?.basePrice || 0
         const priceInfo = calculatePppPrice(basePrice, countryCode)

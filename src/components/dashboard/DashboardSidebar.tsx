@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   ArrowRight,
@@ -18,9 +19,10 @@ import {
   Database,
   Shield,
   LifeBuoy,
+  BookOpen,
 } from 'lucide-react'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
-import { useWorkspace } from './WorkspaceContext'
+import { useWorkspace } from '@/components/dashboard/WorkspaceContext'
 import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createClient } from '@/utils/supabase/client'
@@ -51,9 +53,28 @@ export function DashboardSidebar({
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isFooterOpen, setIsFooterOpen] = useState(false)
+  const [hideErpDev, setHideErpDev] = useState(false)
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null)
   const { isPlatformStaff } = usePlatformStaff()
 
   useEffect(() => {
+    // Clear loading state when navigation completes
+    setNavigatingTo(null)
+  }, [pathname])
+
+  useEffect(() => {
+    // Check initial state
+    setHideErpDev(localStorage.getItem('PZ_HIDE_ERP_DEV') === 'true')
+    
+    // Listen for cross-component toggle
+    const handleToggle = (e: Event) => {
+      const customEvent = e as CustomEvent
+      if (customEvent.detail?.key === 'PZ_HIDE_ERP_DEV') {
+        setHideErpDev(customEvent.detail.value)
+      }
+    }
+    window.addEventListener('pz-feature-toggle', handleToggle)
+
     const handleResize = () => setIsMobile(window.innerWidth < 768)
     handleResize()
     window.addEventListener('resize', handleResize)
@@ -67,6 +88,7 @@ export function DashboardSidebar({
     return () => {
       window.clearTimeout(timeoutId)
       window.removeEventListener('resize', handleResize)
+      window.removeEventListener('pz-feature-toggle', handleToggle)
     }
   }, [])
 
@@ -93,17 +115,23 @@ export function DashboardSidebar({
     router.push('/login')
   }
 
+  const handleNavigate = (href: string) => {
+    if (pathname === href) return // don't load if already there
+    setNavigatingTo(href)
+    if (onCloseMobile) onCloseMobile()
+    router.push(href)
+  }
+
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     // Approvals requires governance.approval_workflows (Enterprise only)
     ...(tier === 'enterprise' ? [{ href: '/dashboard/approvals', label: 'Approvals', icon: CheckSquare }] : []),
     { href: '/dashboard/team', label: 'Team', icon: Users },
+    { href: '/dashboard/docs', label: 'Documentation', icon: BookOpen },
     { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
   ]
 
-  if (activeWorkspace.role === 'Admin' && tier !== 'free') {
-    navItems.push({ href: '/dashboard/settings/templates', label: 'Templates', icon: Settings })
-  }
+
 
   if (!mounted) {
     return (
@@ -135,19 +163,24 @@ export function DashboardSidebar({
           }`}
         >
           <Link href="/" className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity">
-            <div className="shrink-0 p-2 rounded-xl bg-linear-to-tr from-violet-600 to-violet-600 shadow-lg shadow-violet-600/20">
-              <LayoutDashboard className="h-5 w-5 text-white" />
-            </div>
-            {!effectivelyCollapsed && (
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-app-fg tracking-tight truncate">
-                  Baseline
-                </p>
-                <p className="text-[10px] text-app-subtle uppercase tracking-widest">
-                  Project Controls
-                </p>
-              </div>
-            )}
+            {/* Light Mode Logo */}
+            <Image
+              src="/prazaner_logo_light.png"
+              alt="Prazaner"
+              width={effectivelyCollapsed ? 32 : 130}
+              height={effectivelyCollapsed ? 32 : 36}
+              className={`dark:hidden block ${effectivelyCollapsed ? 'h-7 w-7 object-contain' : 'h-8 w-auto object-contain'} transition-all`}
+              priority
+            />
+            {/* Dark Mode Logo */}
+            <Image
+              src="/prazaner_logo_transparent.png"
+              alt="Prazaner"
+              width={effectivelyCollapsed ? 32 : 130}
+              height={effectivelyCollapsed ? 32 : 36}
+              className={`hidden dark:block ${effectivelyCollapsed ? 'h-7 w-7 object-contain' : 'h-8 w-auto object-contain'} transition-all`}
+              priority
+            />
           </Link>
 
           {/* Close button on mobile */}
@@ -242,58 +275,68 @@ export function DashboardSidebar({
           }`}
         >
           {/* Accordion Content */}
-          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isFooterOpen ? 'max-h-48 opacity-100 mb-2' : 'max-h-0 opacity-0 mb-0'}`}>
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isFooterOpen ? 'max-h-96 opacity-100 mb-2' : 'max-h-0 opacity-0 mb-0'}`}>
             <div className="space-y-1 p-1">
-              {(activeWorkspace.role === 'Admin' || activeWorkspace.role === 'Owner') && tier === 'enterprise' && (
-                <>
-                  <Link
-                    href="/dashboard/settings/integrations"
-                    title={effectivelyCollapsed ? 'ERP Connectors' : undefined}
-                    className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-violet-500 hover:bg-violet-500/10 border border-transparent transition-all cursor-pointer ${
-                      effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
-                    }`}
-                  >
-                    <Database className="h-5 w-5 shrink-0" />
-                    {!effectivelyCollapsed && <span className="text-sm font-medium">ERP Connectors</span>}
-                  </Link>
-                  <Link
-                    href="/dashboard/settings/developers"
-                    title={effectivelyCollapsed ? 'Developers' : undefined}
-                    className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-violet-500 hover:bg-violet-500/10 border border-transparent transition-all cursor-pointer ${
-                      effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
-                    }`}
-                  >
-                    <Terminal className="h-5 w-5 shrink-0" />
-                    {!effectivelyCollapsed && <span className="text-sm font-medium">Developers</span>}
-                  </Link>
-                </>
-              )}
-              
-              <div className={effectivelyCollapsed ? 'flex justify-center p-1' : 'px-1 py-1'}>
-                <ThemeToggle collapsed={effectivelyCollapsed} />
-              </div>
-
+              {/* Sign Out Button (positioned at top of footer menu) */}
               <button
                 type="button"
                 onClick={handleSignOut}
                 disabled={signingOut}
                 title="Sign out"
-                className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-rose-500 dark:hover:text-rose-300 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer disabled:opacity-50 ${
+                className={`w-full flex items-center gap-3 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 font-semibold transition-all cursor-pointer disabled:opacity-50 ${
                   effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
                 }`}
               >
                 {signingOut ? (
-                  <Loader2 className="h-5 w-5 animate-spin shrink-0" />
+                  <Loader2 className="h-5 w-5 animate-spin shrink-0 text-rose-500" />
                 ) : (
-                  <LogOut className="h-5 w-5 shrink-0" />
+                  <LogOut className="h-5 w-5 shrink-0 text-rose-500" />
                 )}
-                {!effectivelyCollapsed && <span className="text-sm font-medium">Sign out</span>}
+                {!effectivelyCollapsed && <span className="text-sm font-semibold">Sign out</span>}
               </button>
+
+              {(activeWorkspace.role === 'Admin' || activeWorkspace.role === 'Owner') && tier === 'enterprise' && !hideErpDev && (
+                <>
+                  <button
+                    onClick={() => handleNavigate('/dashboard/settings/integrations')}
+                    title={effectivelyCollapsed ? 'ERP Connectors' : undefined}
+                    className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-violet-500 hover:bg-violet-500/10 border border-transparent transition-all cursor-pointer ${
+                      effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                    }`}
+                  >
+                    {navigatingTo === '/dashboard/settings/integrations' ? (
+                      <Loader2 className="h-5 w-5 shrink-0 animate-spin text-violet-500" />
+                    ) : (
+                      <Database className="h-5 w-5 shrink-0" />
+                    )}
+                    {!effectivelyCollapsed && <span className="text-sm font-medium">ERP Connectors</span>}
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('/dashboard/settings/developers')}
+                    title={effectivelyCollapsed ? 'Developers' : undefined}
+                    className={`w-full flex items-center gap-3 rounded-xl text-app-muted hover:text-violet-500 hover:bg-violet-500/10 border border-transparent transition-all cursor-pointer ${
+                      effectivelyCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                    }`}
+                  >
+                    {navigatingTo === '/dashboard/settings/developers' ? (
+                      <Loader2 className="h-5 w-5 shrink-0 animate-spin text-violet-500" />
+                    ) : (
+                      <Terminal className="h-5 w-5 shrink-0" />
+                    )}
+                    {!effectivelyCollapsed && <span className="text-sm font-medium">Developers</span>}
+                  </button>
+                </>
+              )}
+
+              <div className={effectivelyCollapsed ? 'flex justify-center p-1' : 'px-1 py-0.5'}>
+                <ThemeToggle collapsed={effectivelyCollapsed} />
+              </div>
             </div>
           </div>
 
-          {/* Accordion Trigger */}
+          {/* Accordion Trigger (User Profile Card) */}
           <button
+            type="button"
             onClick={() => setIsFooterOpen(!isFooterOpen)}
             title={effectivelyCollapsed ? userEmail : undefined}
             className={`w-full flex items-center justify-between rounded-xl hover:bg-app-hover transition-colors text-app-fg cursor-pointer border border-transparent hover:border-app-border/50 ${
@@ -305,7 +348,7 @@ export function DashboardSidebar({
                   <span className="font-semibold text-sm uppercase">{userEmail ? userEmail[0] : 'U'}</span>
                </div>
                {!effectivelyCollapsed && (
-                 <span className="text-sm font-medium truncate">{userEmail}</span>
+                 <span className="text-sm font-medium truncate text-app-fg">{userEmail}</span>
                )}
             </div>
             {!effectivelyCollapsed && (

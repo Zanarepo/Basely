@@ -1,17 +1,19 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Calendar as CalendarIcon, Loader2, ChevronRight, FileText } from 'lucide-react'
+import { Plus, Calendar as CalendarIcon, ChevronRight, FileText } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
 import { createClient } from '@/utils/supabase/client'
 import { MeetingMinutesEditor } from './MeetingMinutesEditor'
 
 interface MeetingMinutesListProps {
   projectId: string
+  organizationId: string
   hasEditAccess: boolean
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
 }
 
-export function MeetingMinutesList({ projectId, hasEditAccess, onShowToast }: MeetingMinutesListProps) {
+export function MeetingMinutesList({ projectId, organizationId, hasEditAccess, onShowToast }: MeetingMinutesListProps) {
   const [minutes, setMinutes] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeMinuteId, setActiveMinuteId] = useState<string | null>(null)
@@ -43,6 +45,7 @@ export function MeetingMinutesList({ projectId, hasEditAccess, onShowToast }: Me
     return (
       <MeetingMinutesEditor
         projectId={projectId}
+        organizationId={organizationId}
         minuteId={activeMinuteId}
         hasEditAccess={hasEditAccess}
         onBack={() => {
@@ -75,9 +78,7 @@ export function MeetingMinutesList({ projectId, hasEditAccess, onShowToast }: Me
 
       <div className="flex-1 p-6 overflow-y-auto">
         {isLoading ? (
-          <div className="flex items-center justify-center h-48">
-            <Loader2 className="w-6 h-6 animate-spin text-app-muted" />
-          </div>
+          <DocumentLoader message="Loading Meeting Minutes..." />
         ) : minutes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-app-border rounded-2xl bg-app-card/50">
             <FileText className="w-8 h-8 text-app-muted mb-3" />

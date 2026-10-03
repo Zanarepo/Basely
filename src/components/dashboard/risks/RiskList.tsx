@@ -1,11 +1,17 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Plus, Search, Filter, ShieldAlert, ArrowUpDown, MoreVertical, Edit2, Trash2, AlertCircle, MessageSquare } from 'lucide-react'
+import { Plus, Search, Filter, ShieldAlert, ArrowUpDown, MoreVertical, Edit2, Trash2, AlertCircle, MessageSquare, FileEdit } from 'lucide-react'
 import type { Risk, Issue } from './useRiskData'
 import RiskForm from './RiskForm'
 import { deleteRisk } from '@/lib/risks/actions'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import { LogRiskChoiceModal } from './components/LogRiskChoiceModal'
+import { ImportRiskFromDocumentModal } from './components/ImportRiskFromDocumentModal'
+import { AiExecutionRiskScannerModal } from './components/AiExecutionRiskScannerModal'
+import { EscalateToChangeRequestModal } from './components/EscalateToChangeRequestModal'
+import { useRiskChangeRequest } from './hooks/useRiskChangeRequest'
+import IssueForm from './IssueForm'
 
 interface RiskListProps {
   projectId: string
@@ -34,10 +40,19 @@ export default function RiskList({
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [strategyFilter, setStrategyFilter] = useState<string>('all')
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isChoiceModalOpen, setIsChoiceModalOpen] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isScannerModalOpen, setIsScannerModalOpen] = useState(false)
   const [editingRisk, setEditingRisk] = useState<Risk | null>(null)
+  const [escalatingRisk, setEscalatingRisk] = useState<Risk | null>(null)
+  const [crEscalatingRisk, setCrEscalatingRisk] = useState<Risk | null>(null)
+  const [isIssueFormOpen, setIsIssueFormOpen] = useState(false)
+  const [isCRModalOpen, setIsCRModalOpen] = useState(false)
   const [scrollToComments, setScrollToComments] = useState(false)
-  
+
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const { escalateRisk, isEscalating: isEscalatingCR } = useRiskChangeRequest(projectId, onShowToast)
 
   // Auto-open a specific risk when navigating from entity references
   useEffect(() => {
@@ -129,9 +144,9 @@ export default function RiskList({
             onClick={() => {
               setEditingRisk(null)
               setScrollToComments(false)
-              setIsFormOpen(true)
+              setIsChoiceModalOpen(true)
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-violet-500 text-white text-sm font-semibold rounded-lg hover:bg-violet-600 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-violet-500 text-white text-sm font-semibold rounded-lg hover:bg-violet-600 transition-colors shadow-sm cursor-pointer"
           >
             <Plus className="h-4 w-4" />
             Log Risk
@@ -215,7 +230,7 @@ export default function RiskList({
                         setScrollToComments(true)
                         setIsFormOpen(true)
                       }}
-                      className="p-2 text-app-muted hover:text-violet-400 hover:bg-app-surface border border-transparent hover:border-app-border rounded-lg transition-all"
+                      className="p-2 text-app-muted hover:text-violet-400 hover:bg-app-surface border border-transparent hover:border-app-border rounded-lg transition-all cursor-pointer"
                       title="View Comments"
                     >
                       <MessageSquare className="h-4 w-4" />
@@ -226,11 +241,35 @@ export default function RiskList({
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation()
+                            setEscalatingRisk(risk)
+                            setIsIssueFormOpen(true)
+                          }}
+                          className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-lg transition-colors cursor-pointer"
+                          title="Escalate to Issue"
+                        >
+                          <AlertCircle className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setCrEscalatingRisk(risk)
+                            setIsCRModalOpen(true)
+                          }}
+                          className="p-2 text-violet-500 hover:text-white hover:bg-violet-500 rounded-lg transition-colors cursor-pointer"
+                          title="Escalate to Change Request"
+                        >
+                          <FileEdit className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
                             setEditingRisk(risk)
                             setScrollToComments(false)
                             setIsFormOpen(true)
                           }}
-                          className="p-2 text-app-muted hover:text-violet-500 hover:bg-violet-500/10 rounded-lg transition-colors"
+                          className="p-2 text-app-muted hover:text-violet-500 hover:bg-violet-500/10 rounded-lg transition-colors cursor-pointer"
                           title="Edit Risk"
                         >
                           <Edit2 className="h-4 w-4" />
@@ -238,7 +277,7 @@ export default function RiskList({
                         <button
                           onClick={() => handleDelete(risk.id, risk.title)}
                           disabled={deletingId === risk.id}
-                          className="p-2 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                          className="p-2 text-app-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
                           title="Delete Risk"
                         >
                           <Trash2 className={`h-4 w-4 ${deletingId === risk.id ? 'animate-pulse' : ''}`} />
@@ -274,6 +313,89 @@ export default function RiskList({
             onRefresh()
           }}
           onShowToast={onShowToast}
+        />
+      )}
+
+      {/* Escalate to Issue Form */}
+      {isIssueFormOpen && escalatingRisk && (
+        <IssueForm
+          projectId={projectId}
+          workspaceMembers={workspaceMembers}
+          stakeholders={stakeholders}
+          risks={risks}
+          existingIssue={null}
+          prefillData={{
+            title: `[Escalated] ${escalatingRisk.title}`,
+            description: escalatingRisk.description || '',
+            linked_risk_id: escalatingRisk.id,
+            owner_stakeholder_id: escalatingRisk.owner_stakeholder_id || '',
+            status: 'Open'
+          }}
+          onClose={() => {
+            setIsIssueFormOpen(false)
+            setEscalatingRisk(null)
+          }}
+          onSuccess={() => {
+            setIsIssueFormOpen(false)
+            setEscalatingRisk(null)
+            onShowToast?.('success', 'Risk successfully escalated to an Issue')
+            onRefresh()
+          }}
+          onShowToast={onShowToast}
+        />
+      )}
+
+      {/* Choice Modal */}
+      <LogRiskChoiceModal
+        isOpen={isChoiceModalOpen}
+        onClose={() => setIsChoiceModalOpen(false)}
+        onSelectManual={() => setIsFormOpen(true)}
+        onSelectImport={() => setIsImportModalOpen(true)}
+        onSelectScan={() => setIsScannerModalOpen(true)}
+      />
+
+      {/* Import from Document Modal */}
+      <ImportRiskFromDocumentModal
+        isOpen={isImportModalOpen}
+        projectId={projectId}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={(msg) => {
+          onShowToast?.('success', msg)
+          onRefresh()
+        }}
+        onShowToast={(type, msg) => onShowToast?.(type, msg)}
+      />
+
+      {/* Ai Execution Risk Scanner Modal */}
+      <AiExecutionRiskScannerModal
+        isOpen={isScannerModalOpen}
+        projectId={projectId}
+        onClose={() => setIsScannerModalOpen(false)}
+        onSuccess={(msg) => {
+          onShowToast?.('success', msg)
+          onRefresh()
+        }}
+        onShowToast={(type, msg) => onShowToast?.(type, msg)}
+      />
+
+      {/* Escalate to Change Request Modal */}
+      {crEscalatingRisk && (
+        <EscalateToChangeRequestModal
+          isOpen={isCRModalOpen}
+          onClose={() => setIsCRModalOpen(false)}
+          isSubmitting={isEscalatingCR}
+          riskTitle={crEscalatingRisk.title}
+          onConfirm={async () => {
+            const res = await escalateRisk(
+              crEscalatingRisk.id,
+              crEscalatingRisk.title,
+              crEscalatingRisk.mitigation_plan || ''
+            )
+            if (res.success) {
+              setIsCRModalOpen(false)
+              setCrEscalatingRisk(null)
+            }
+          }}
         />
       )}
     </div>

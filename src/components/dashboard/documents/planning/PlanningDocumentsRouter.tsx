@@ -12,6 +12,7 @@ export type PlanningDocType = 'scope_statement' | 'communication_plan' | 'qualit
 export interface PlanningDocumentsRouterProps {
   documentType: PlanningDocType
   projectId: string
+  organizationId: string
   hasEditAccess: boolean
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
 }
@@ -19,6 +20,7 @@ export interface PlanningDocumentsRouterProps {
 export function PlanningDocumentsRouter({
   documentType,
   projectId,
+  organizationId,
   hasEditAccess,
   onShowToast
 }: PlanningDocumentsRouterProps) {
@@ -44,6 +46,7 @@ export function PlanningDocumentsRouter({
       return (
         <QualityManagementPlanEditor
           projectId={projectId}
+          organizationId={organizationId}
           hasEditAccess={hasEditAccess}
           onShowToast={onShowToast}
         />

@@ -18,10 +18,11 @@ type Props = {
   projectCurrency: string
   hasEditAccess: boolean
   onDataChange: (silent?: boolean) => void
+  canImportCsv?: boolean
 }
 
 export default function ActualsView({
-  projectId, wbsCostData, projectCurrency, hasEditAccess, onDataChange
+  projectId, wbsCostData, projectCurrency, hasEditAccess, onDataChange, canImportCsv = false
 }: Props) {
   const [csvText, setCsvText] = useState('')
 
@@ -95,22 +96,24 @@ export default function ActualsView({
               {selectedIds.length > 0 && (
                 <button
                   onClick={handleBulkDelete}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-semibold rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-semibold rounded-lg transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete Selected ({selectedIds.length})
                 </button>
               )}
-              <button
-                onClick={() => { setIsImporting(true); setImportSummary(null); setCsvText(''); setIsAdding(false); setEditingId(null); }}
-                className="flex items-center gap-2 px-4 py-2 bg-app-surface border border-app-border text-app-fg text-sm font-semibold rounded-lg hover:bg-app-hover transition-colors"
-              >
-                <Upload className="w-4 h-4" />
-                Import CSV
-              </button>
+              {canImportCsv && (
+                <button
+                  onClick={() => { setIsImporting(true); setImportSummary(null); setCsvText(''); setIsAdding(false); setEditingId(null); }}
+                  className="flex items-center gap-2 px-4 py-2 bg-app-surface border border-app-border text-app-fg text-sm font-semibold rounded-lg hover:bg-app-hover transition-colors cursor-pointer"
+                >
+                  <Upload className="w-4 h-4" />
+                  Import CSV
+                </button>
+              )}
               <button
                 onClick={openAddForm}
-                className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Add Actual

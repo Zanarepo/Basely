@@ -9,27 +9,34 @@ import ResourceRatesManager from './ResourceRatesManager'
 import TimePhasingView from './TimePhasingView'
 import BaselineManager from './BaselineManager'
 import ActualsView from './ActualsView'
+import CostDashboardView from './CostDashboardView'
 import { useSearchParams } from 'next/navigation'
+import { AiCostEstimatorBanner } from './AiCostEstimatorBanner'
+import { AiResourceEstimatorBanner } from './AiResourceEstimatorBanner'
+import { useCostGating } from './useCostGating'
 
 type CostWorkspaceProps = {
   projectId: string
   hasEditAccess: boolean
   methodology?: import('@/utils/terminology').ProjectMethodology | null
+  canUpgrade?: boolean
+  isPremium?: boolean
 }
 
-type CostViewType = 'estimation' | 'resources' | 'timephasing' | 'baselines' | 'actuals'
+type CostViewType = 'overview' | 'estimation' | 'resources' | 'timephasing' | 'baselines' | 'actuals'
 
 import { getTerminology } from '@/utils/terminology'
 
-export default function CostWorkspace({ projectId, hasEditAccess, methodology }: CostWorkspaceProps) {
+export default function CostWorkspace({ projectId, hasEditAccess, methodology, canUpgrade = false, isPremium = false }: CostWorkspaceProps) {
   const searchParams = useSearchParams()
-  const initialView = (searchParams.get('costView') as CostViewType) || 'estimation'
+  const initialView = (searchParams.get('costView') as CostViewType) || 'overview'
   const [currentView, setCurrentView] = useState<CostViewType>(initialView)
   const { loading, error, wbsCostData, baselines, resourceRates, contingencyAmount, contingencyType, allocatedContingency, projectCurrency, globalOverhead, refresh } = useCostData(projectId)
+  const { permissions, RestrictedView, RestrictedTabIcon } = useCostGating(isPremium, canUpgrade)
 
   useEffect(() => {
     const view = searchParams.get('costView') as CostViewType
-    if (view && ['estimation', 'resources', 'timephasing', 'baselines', 'actuals'].includes(view)) {
+    if (view && ['overview', 'estimation', 'resources', 'timephasing', 'baselines', 'actuals'].includes(view)) {
       setCurrentView(view)
     }
   }, [searchParams])
@@ -133,6 +140,17 @@ export default function CostWorkspace({ projectId, hasEditAccess, methodology }:
       {/* View Switcher */}
       <div className="flex items-center gap-2 bg-app-surface border border-app-border p-2 rounded-2xl overflow-x-auto whitespace-nowrap no-scrollbar w-full shadow-sm">
         <button
+          onClick={() => setCurrentView('overview')}
+          className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+            currentView === 'overview'
+              ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 shadow-sm'
+              : 'text-app-muted hover:text-app-fg hover:bg-app-hover'
+          }`}
+        >
+          <Activity className="w-4 h-4" />
+          Overview
+        </button>
+        <button
           onClick={() => setCurrentView('estimation')}
           className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             currentView === 'estimation'
@@ -164,6 +182,7 @@ export default function CostWorkspace({ projectId, hasEditAccess, methodology }:
         >
           <Activity className="w-4 h-4" />
           Time-Phased (S-Curve)
+          <RestrictedTabIcon isRestricted={!permissions.canViewTimePhasing} />
         </button>
         <button
           onClick={() => setCurrentView('baselines')}
@@ -175,6 +194,7 @@ export default function CostWorkspace({ projectId, hasEditAccess, methodology }:
         >
           <FileDigit className="w-4 h-4" />
           Baselines
+          <RestrictedTabIcon isRestricted={!permissions.canViewBaselines} />
         </button>
         <button
           onClick={() => setCurrentView('actuals')}
@@ -186,13 +206,30 @@ export default function CostWorkspace({ projectId, hasEditAccess, methodology }:
         >
           <FileDigit className="w-4 h-4" />
           Actuals
+          <RestrictedTabIcon isRestricted={!permissions.canViewActuals} />
         </button>
       </div>
 
-      {/* Main Content Area */}
-      <div className="min-h-[500px]">
+      {/* View Content */}
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+        {currentView === 'overview' && (
+          <CostDashboardView
+            projectId={projectId}
+            projectCurrency={projectCurrency}
+            isPremium={isPremium}
+            canUpgrade={canUpgrade}
+          />
+        )}
+        
         {currentView === 'estimation' && (
-          <CostEstimationView 
+          <>
+            {permissions.canUseAiEstimator && (
+              <AiCostEstimatorBanner 
+                projectId={projectId} 
+                onComplete={refresh} 
+              />
+            )}
+            <CostEstimationView 
             projectId={projectId} 
             wbsCostData={wbsCostData} 
             resourceRates={resourceRates}
@@ -202,10 +239,15 @@ export default function CostWorkspace({ projectId, hasEditAccess, methodology }:
             onDataChange={refresh}
             terms={terms}
           />
+          </>
         )}
         {currentView === 'resources' && (
-          <ResourceRatesManager 
-            projectId={projectId} 
+          <>
+            {permissions.canUseAiResourceAssigner && (
+              <AiResourceEstimatorBanner projectId={projectId} onComplete={refresh} />
+            )}
+            <ResourceRatesManager 
+              projectId={projectId} 
             resourceRates={resourceRates} 
             projectCurrency={projectCurrency}
             globalOverhead={globalOverhead}
@@ -213,36 +255,51 @@ export default function CostWorkspace({ projectId, hasEditAccess, methodology }:
             contingencyType={contingencyType}
             hasEditAccess={hasEditAccess}
             onDataChange={refresh}
+            canImportCsv={permissions.canImportCsv}
           />
+          </>
         )}
         {currentView === 'timephasing' && (
-          <TimePhasingView 
-            projectId={projectId} 
-            wbsCostData={wbsCostData} 
-            projectCurrency={projectCurrency}
-            globalOverhead={globalOverhead}
-            hasEditAccess={hasEditAccess}
-            onDataChange={refresh}
-            terms={terms}
-          />
+          !permissions.canViewTimePhasing ? (
+            <RestrictedView featureName="Time-Phased Budgets (S-Curve)" description="Distribute your budget over time and visualize cash flow with S-Curves. Available on the Premium plan." />
+          ) : (
+            <TimePhasingView 
+              projectId={projectId} 
+              wbsCostData={wbsCostData} 
+              projectCurrency={projectCurrency}
+              globalOverhead={globalOverhead}
+              hasEditAccess={hasEditAccess}
+              onDataChange={refresh}
+              terms={terms}
+            />
+          )
         )}
         {currentView === 'baselines' && (
-          <BaselineManager 
-            projectId={projectId} 
-            baselines={baselines} 
-            projectCurrency={projectCurrency}
-            hasEditAccess={hasEditAccess}
-            onDataChange={refresh}
-          />
+          !permissions.canViewBaselines ? (
+            <RestrictedView featureName="Budget Baselines" description="Create snapshots of your budget to track changes and manage formal version control. Available on the Premium plan." />
+          ) : (
+            <BaselineManager 
+              projectId={projectId} 
+              baselines={baselines} 
+              projectCurrency={projectCurrency}
+              hasEditAccess={hasEditAccess}
+              onDataChange={refresh}
+            />
+          )
         )}
         {currentView === 'actuals' && (
-          <ActualsView
-            projectId={projectId}
-            wbsCostData={wbsCostData}
-            projectCurrency={projectCurrency}
-            hasEditAccess={hasEditAccess}
-            onDataChange={refresh}
-          />
+          !permissions.canViewActuals ? (
+            <RestrictedView featureName="Actuals & Earned Value" description="Track actual expenditures against your baseline and calculate Earned Value metrics like CPI and SPI. Available on the Premium plan." />
+          ) : (
+            <ActualsView
+              projectId={projectId}
+              wbsCostData={wbsCostData}
+              projectCurrency={projectCurrency}
+              hasEditAccess={hasEditAccess}
+              onDataChange={refresh}
+              canImportCsv={permissions.canImportCsv}
+            />
+          )
         )}
       </div>
     </div>

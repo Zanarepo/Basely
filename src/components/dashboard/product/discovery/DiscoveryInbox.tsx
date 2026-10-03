@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import type { DiscoveryInsight, Persona } from '@/lib/product-strategy/types'
-import { getPersonas } from '@/lib/product-strategy/actions'
+import { getPersonas } from '@/lib/product-strategy/persona-actions'
 import { useDiscoveryInsights } from './hooks/useDiscoveryInsights'
 import { DiscoveryInsightCard } from './DiscoveryInsightCard'
 import { DiscoveryInsightModal } from './DiscoveryInsightModal'
@@ -19,6 +19,9 @@ import {
   CheckCircle2,
   Archive
 } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
+
+import { PmDiscoveryWorkflowGuide } from './PmDiscoveryWorkflowGuide'
 
 interface DiscoveryInboxProps {
   organizationId: string
@@ -108,7 +111,8 @@ export function DiscoveryInbox({ organizationId, projectId, hasEditAccess = true
   })
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-6 pb-12">
+      <PmDiscoveryWorkflowGuide currentStep={1} />
       {/* Header Banner */}
       <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -142,7 +146,7 @@ export function DiscoveryInbox({ organizationId, projectId, hasEditAccess = true
                 type="button"
                 onClick={handleCreate}
                 style={{ cursor: 'pointer' }}
-                className="px-5 py-2.5 rounded-xl bg-[#6b4eff] hover:bg-[#5839ec] text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
+                className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
               >
                 <Plus className="w-4 h-4" />
                 Log Insight
@@ -193,10 +197,7 @@ export function DiscoveryInbox({ organizationId, projectId, hasEditAccess = true
 
       {/* Insights List */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Loading Discovery Insights...</span>
-        </div>
+        <DocumentLoader message="Loading Discovery Inbox..." />
       ) : filtered.length === 0 ? (
         <div className="py-20 flex flex-col items-center justify-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
           <Inbox className="w-10 h-10 text-slate-300 dark:text-slate-600" />
@@ -208,7 +209,7 @@ export function DiscoveryInbox({ organizationId, projectId, hasEditAccess = true
               type="button"
               onClick={handleCreate}
               style={{ cursor: 'pointer' }}
-              className="mt-2 px-5 py-2.5 rounded-xl bg-[#6b4eff] hover:bg-[#5839ec] text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
+              className="mt-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
             >
               <Plus className="w-4 h-4" />
               Log Your First Insight

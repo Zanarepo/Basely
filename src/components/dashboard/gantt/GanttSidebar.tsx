@@ -8,8 +8,10 @@ type GanttSidebarProps = {
   expandedNodeIds: Set<string>
   workspaceMembers: any[]
   onToggleExpand: (id: string, e: React.MouseEvent) => void
+  onSelectElement?: (id: string) => void
   scrollRef: React.RefObject<HTMLDivElement | null>
   rowHeight: number
+  approvedCRDescriptions?: string[]
 }
 
 export function GanttSidebar({
@@ -19,8 +21,10 @@ export function GanttSidebar({
   expandedNodeIds,
   workspaceMembers,
   onToggleExpand,
+  onSelectElement,
   scrollRef,
   rowHeight,
+  approvedCRDescriptions = [],
 }: GanttSidebarProps) {
   return (
     <div className="w-[340px] border-r border-app-border flex flex-col shrink-0 select-none">
@@ -42,11 +46,19 @@ export function GanttSidebar({
             const isSummary = !el.isWorkPackage
             const code = wbsCodes.get(el.id) || ''
             const member = el.ownerId ? workspaceMembers.find((m) => m.id === el.ownerId) : null
+            
+            // Fuzzy match: check if the CR description contains the first 20 chars of the normalized name
+            const normalizedName = el.name.toLowerCase().replace(/\s+/g, ' ').trim()
+            const matchQuery = normalizedName.length > 20 ? normalizedName.substring(0, 20) : normalizedName
+            const hasCRBadge = approvedCRDescriptions.some((desc) =>
+              desc.toLowerCase().replace(/\s+/g, ' ').includes(matchQuery)
+            )
 
             return (
               <div
                 key={el.id}
-                className="h-12 flex items-center px-4 border-b border-app-border/40 hover:bg-app-muted-surface/30 group"
+                onClick={() => onSelectElement?.(el.id)}
+                className="h-12 flex items-center px-4 border-b border-app-border/40 hover:bg-violet-500/10 dark:hover:bg-violet-500/15 cursor-pointer transition-all group"
               >
                 {/* WBS Code Column */}
                 <span className="text-xs font-bold text-app-subtle w-16 truncate">
@@ -80,6 +92,16 @@ export function GanttSidebar({
                   <span className={`text-xs truncate ${isSummary ? 'font-bold' : 'text-app-fg'}`}>
                     {el.name}
                   </span>
+
+                  {/* Approved CR badge */}
+                  {hasCRBadge && (
+                    <span
+                      title="This task has an approved Change Request"
+                      className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold tracking-wider uppercase bg-violet-500/15 text-violet-600 dark:text-violet-400 border border-violet-500/30 shrink-0"
+                    >
+                      CR
+                    </span>
+                  )}
                 </div>
 
                 {/* Assignee initials visual badge */}

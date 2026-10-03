@@ -32,29 +32,10 @@ export function useWbsSubmit({
     setScheduleError(null)
 
     try {
-      const wbsSuccess = await onSave(element.id, {
-        name: elementState.name.trim(),
-        description: elementState.description.trim() || null,
-        deliverables: elementState.deliverables.trim() || null,
-        deliverablesData: elementState.deliverablesData,
-        acceptanceCriteria: elementState.acceptanceCriteria.trim() || null,
-        acceptanceCriteriaData: elementState.acceptanceCriteriaData,
-        status: elementState.status,
-        isWorkPackage: elementState.isWorkPackage,
-        cost: elementState.cost,
-        estimationMethod: elementState.estimationMethod,
-      })
-
-      if (!wbsSuccess) {
-        setSaving(false)
-        return
-      }
-
       if (elementState.isWorkPackage) {
         let activeActId = schedulingState.activityId
-        const supabase = createClient()
-        
         if (!activeActId) {
+          const supabase = createClient()
           const { data: newAct } = await supabase
             .from('activities')
             .select('id')
@@ -64,8 +45,8 @@ export function useWbsSubmit({
         }
 
         if (activeActId) {
-          const constraintType = schedulingState.autoSchedule ? 'ASAP' : 'Start No Earlier Than'
-          const constraintDate = schedulingState.autoSchedule ? null : (schedulingState.startDate || null)
+          const constraintType = schedulingState.autoSchedule ? 'ASAP' : 'Must Start On'
+          const constraintDate = schedulingState.autoSchedule ? null : (schedulingState.startDate ? schedulingState.startDate.split('T')[0] : null)
 
           const schedRes = await updateActivityScheduling(element.projectId, activeActId, {
             duration: schedulingState.duration,
@@ -80,6 +61,25 @@ export function useWbsSubmit({
             return
           }
         }
+      }
+
+      const wbsSuccess = await onSave(element.id, {
+        name: elementState.name.trim(),
+        description: elementState.description.trim() || null,
+        deliverables: elementState.deliverables.trim() || null,
+        deliverablesData: elementState.deliverablesData,
+        acceptanceCriteria: elementState.acceptanceCriteria.trim() || null,
+        acceptanceCriteriaData: elementState.acceptanceCriteriaData,
+        status: elementState.status,
+        isWorkPackage: elementState.isWorkPackage,
+        cost: elementState.cost,
+        estimationMethod: elementState.estimationMethod,
+        story_points: elementState.storyPoints,
+      })
+
+      if (!wbsSuccess) {
+        setSaving(false)
+        return
       }
 
       setSaving(false)

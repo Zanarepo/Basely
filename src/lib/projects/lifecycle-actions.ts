@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { logProjectActivity } from '@/lib/projects/activity-actions'
-import { dispatchNotification } from '@/lib/notifications/actions'
+import { dispatchNotification } from '@/lib/notifications/dispatch'
 
 import type { ProjectLifecycleStatus, LifecycleTransitionLog } from './lifecycle-types'
 import { LIFECYCLE_STAGES, isValidStandardTransition } from './lifecycle-types'

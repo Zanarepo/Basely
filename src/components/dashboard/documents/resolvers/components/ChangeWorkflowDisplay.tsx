@@ -9,9 +9,12 @@ interface ChangeWorkflowDisplayProps {
   escalationProcess: string
   rolesDescription: string
   isEnterpriseTier: boolean
-  approvalPolicies: ApprovalPolicyRule[]
+  approvalPolicies?: ApprovalPolicyRule[]
   saving: boolean
-  onSave: (thresholds: string, escalation: string, roles: string) => Promise<boolean>
+  costThreshold: number
+  scheduleThresholdDays: number
+  onSave: (thresholds: string, escalation: string, roles: string, costThresh: number, scheduleThresh: number) => Promise<boolean>
+  currencySymbol?: string
 }
 
 export function ChangeWorkflowDisplay({
@@ -19,26 +22,35 @@ export function ChangeWorkflowDisplay({
   escalationProcess,
   rolesDescription,
   isEnterpriseTier,
-  approvalPolicies,
+  approvalPolicies = [],
   saving,
-  onSave
+  costThreshold,
+  scheduleThresholdDays,
+  onSave,
+  currencySymbol = '$'
 }: ChangeWorkflowDisplayProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [thresholdsVal, setThresholdsVal] = useState(approvalThresholds)
   const [escalationVal, setEscalationVal] = useState(escalationProcess)
   const [rolesVal, setRolesVal] = useState(rolesDescription)
+  const [costThreshVal, setCostThreshVal] = useState(costThreshold.toString())
+  const [scheduleThreshVal, setScheduleThreshVal] = useState(scheduleThresholdDays.toString())
   const [savedSuccess, setSavedSuccess] = useState(false)
 
   const handleEditOpen = () => {
     setThresholdsVal(approvalThresholds)
     setEscalationVal(escalationProcess)
     setRolesVal(rolesDescription)
+    setCostThreshVal(costThreshold.toString())
+    setScheduleThreshVal(scheduleThresholdDays.toString())
     setIsEditing(true)
   }
 
   const handleSave = async (e?: React.MouseEvent) => {
     e?.preventDefault()
-    const ok = await onSave(thresholdsVal, escalationVal, rolesVal)
+    const parsedCost = parseFloat(costThreshVal) || 0
+    const parsedSchedule = parseFloat(scheduleThreshVal) || 0
+    const ok = await onSave(thresholdsVal, escalationVal, rolesVal, parsedCost, parsedSchedule)
     if (ok) {
       setIsEditing(false)
       setSavedSuccess(true)
@@ -120,69 +132,100 @@ export function ChangeWorkflowDisplay({
         </div>
       )}
 
-      {/* Main Governance Content Cards - Responsive Grid with Hover Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card 1: Thresholds */}
-        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-violet-500/40 shadow-sm hover:shadow-lg transition-all relative flex flex-col">
-          <div className="flex items-center justify-between border-b border-app-border pb-4 mb-4">
+      {/* Main Governance Content Cards - Vertical Rows Layout */}
+      <div className="flex flex-col gap-5">
+        {/* Row 1: Thresholds */}
+        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-violet-500/40 shadow-sm transition-all relative flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+          <div className="w-full md:w-1/3 flex flex-col items-start gap-3">
             <h4 className="font-bold text-app-fg text-sm sm:text-base flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block shadow-2xs shadow-violet-500/50"></span>
               Approval Thresholds
             </h4>
+            <p className="text-xs text-app-muted">Baseline cost and schedule variances that trigger formal escalation.</p>
             <button
               type="button"
               onClick={handleEditOpen}
-              className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 font-semibold cursor-pointer border border-violet-500/20 shadow-2xs"
+              className="mt-1 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 font-semibold cursor-pointer border border-violet-500/20 shadow-2xs"
               style={{ cursor: 'pointer' }}
             >
-              <Edit3 className="w-3.5 h-3.5" /> Edit
+              <Edit3 className="w-3.5 h-3.5" /> Edit Thresholds
             </button>
           </div>
-          <p className="text-xs sm:text-sm text-app-fg whitespace-pre-line leading-relaxed flex-1 font-sans">
-            {approvalThresholds}
-          </p>
+          
+          <div className="w-full md:w-2/3 flex flex-col gap-4">
+            <div className="flex flex-wrap gap-4">
+              <div className="bg-app-muted-surface border border-app-border rounded-xl p-3.5 flex-1 min-w-[140px]">
+                <span className="text-[10px] text-app-muted font-bold uppercase tracking-wider block mb-1">Cost Threshold</span>
+                <div className="flex items-baseline gap-0.5 text-app-fg font-semibold text-lg">
+                  <span className="font-sans text-base">{currencySymbol}</span>
+                  <span className="font-mono">{costThreshold.toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="bg-app-muted-surface border border-app-border rounded-xl p-3.5 flex-1 min-w-[140px]">
+                <span className="text-[10px] text-app-muted font-bold uppercase tracking-wider block mb-1">Schedule Delay</span>
+                <span className="font-mono text-app-fg font-semibold text-lg">{scheduleThresholdDays} Days</span>
+              </div>
+            </div>
+            <div className="bg-app-surface border border-app-border rounded-xl p-4">
+              <p className="text-xs sm:text-sm text-app-fg whitespace-pre-line leading-relaxed font-sans">
+                {approvalThresholds}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Card 2: Escalation Process */}
-        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-violet-500/40 shadow-sm hover:shadow-lg transition-all relative flex flex-col">
-          <div className="flex items-center justify-between border-b border-app-border pb-4 mb-4">
+        {/* Row 2: Escalation Process */}
+        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-amber-500/40 shadow-sm transition-all relative flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+          <div className="w-full md:w-1/3 flex flex-col items-start gap-3">
             <h4 className="font-bold text-app-fg text-sm sm:text-base flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shadow-2xs shadow-amber-500/50"></span>
               Escalation Pathway
             </h4>
+            <p className="text-xs text-app-muted">Step-by-step workflow for evaluating and escalating baseline changes.</p>
             <button
               type="button"
               onClick={handleEditOpen}
-              className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-semibold cursor-pointer border border-amber-500/20 shadow-2xs"
+              className="mt-1 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-semibold cursor-pointer border border-amber-500/20 shadow-2xs"
               style={{ cursor: 'pointer' }}
             >
-              <Edit3 className="w-3.5 h-3.5" /> Edit
+              <Edit3 className="w-3.5 h-3.5" /> Edit Pathway
             </button>
           </div>
-          <p className="text-xs sm:text-sm text-app-fg whitespace-pre-line leading-relaxed flex-1 font-sans">
-            {escalationProcess}
-          </p>
+          
+          <div className="w-full md:w-2/3">
+            <div className="bg-app-surface border border-app-border rounded-xl p-4 h-full">
+              <p className="text-xs sm:text-sm text-app-fg whitespace-pre-line leading-relaxed font-sans">
+                {escalationProcess}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Card 3: Governance Roles */}
-        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-violet-500/40 shadow-sm hover:shadow-lg transition-all relative flex flex-col">
-          <div className="flex items-center justify-between border-b border-app-border pb-4 mb-4">
+        {/* Row 3: Governance Roles */}
+        <div className="group bg-app-surface-solid border border-app-border rounded-2xl p-6 hover:border-emerald-500/40 shadow-sm transition-all relative flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+          <div className="w-full md:w-1/3 flex flex-col items-start gap-3">
             <h4 className="font-bold text-app-fg text-sm sm:text-base flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-2xs shadow-emerald-500/50"></span>
               Governance Roles & CCB
             </h4>
+            <p className="text-xs text-app-muted">Key stakeholders and their specific responsibilities in the change process.</p>
             <button
               type="button"
               onClick={handleEditOpen}
-              className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 font-semibold cursor-pointer border border-emerald-500/20 shadow-2xs"
+              className="mt-1 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 font-semibold cursor-pointer border border-emerald-500/20 shadow-2xs"
               style={{ cursor: 'pointer' }}
             >
-              <Edit3 className="w-3.5 h-3.5" /> Edit
+              <Edit3 className="w-3.5 h-3.5" /> Edit Roles
             </button>
           </div>
-          <p className="text-xs sm:text-sm text-app-fg whitespace-pre-line leading-relaxed flex-1 font-sans">
-            {rolesDescription}
-          </p>
+          
+          <div className="w-full md:w-2/3">
+            <div className="bg-app-surface border border-app-border rounded-xl p-4 h-full">
+              <p className="text-xs sm:text-sm text-app-fg whitespace-pre-line leading-relaxed font-sans">
+                {rolesDescription}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -220,11 +263,35 @@ export function ChangeWorkflowDisplay({
             {/* Modal Body */}
             <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
               {/* Thresholds Input */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <label className="text-xs font-bold text-app-fg flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block shadow-2xs shadow-violet-500/50"></span>
                   Approval Thresholds & Variances
                 </label>
+                
+                <div className="flex gap-4">
+                  <div className="flex-1 space-y-1.5">
+                    <label className="text-[11px] text-app-muted font-semibold">Cost Threshold ($)</label>
+                    <input
+                      type="number"
+                      value={costThreshVal}
+                      onChange={(e) => setCostThreshVal(e.target.value)}
+                      disabled={saving}
+                      className="w-full bg-app-surface border border-app-border rounded-xl p-3 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="text-[11px] text-app-muted font-semibold">Schedule Threshold (Days)</label>
+                    <input
+                      type="number"
+                      value={scheduleThreshVal}
+                      onChange={(e) => setScheduleThreshVal(e.target.value)}
+                      disabled={saving}
+                      className="w-full bg-app-surface border border-app-border rounded-xl p-3 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                    />
+                  </div>
+                </div>
+
                 <textarea
                   value={thresholdsVal}
                   onChange={(e) => setThresholdsVal(e.target.value)}

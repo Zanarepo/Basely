@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { resolveClosureReportData, ClosureReportData } from '@/lib/documents/resolvers/closure-resolver'
+import React from 'react'
 import { LifecycleGatingBanner } from './LifecycleGatingBanner'
 import type { ProjectLifecycleStatus } from '@/lib/projects/lifecycle-types'
 import { 
@@ -18,6 +17,7 @@ import {
   FileText 
 } from 'lucide-react'
 import { DocumentLoader } from '../DocumentLoader'
+import { useClosureReportViewer } from './hooks/useClosureReportViewer'
 
 export interface ClosureReportViewerProps {
   projectId: string
@@ -34,38 +34,15 @@ export function ClosureReportViewer({
   onOpenLifecycleModal,
   onShowToast
 }: ClosureReportViewerProps) {
-  const [data, setData] = useState<ClosureReportData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [executiveSummary, setExecutiveSummary] = useState(
-    'Formal Project Closure Report summarizing verified EVM metrics, completed schedule baselines, deliverable acceptance, and residual risk assessments upon entering the Closing phase.'
-  )
-  const [saving, setSaving] = useState(false)
-
-  const isUnlocked = ['Closing', 'Closed'].includes(currentLifecycle)
-
-  useEffect(() => {
-    let isMounted = true
-    async function loadData() {
-      if (!isUnlocked) {
-        setLoading(false)
-        return
-      }
-      setLoading(true)
-      try {
-        const res = await resolveClosureReportData(projectId)
-        if (isMounted) {
-          setData(res)
-        }
-      } catch (err) {
-        console.error('Failed to load closure data:', err)
-        onShowToast?.('error', 'Could not compile project closure figures.')
-      } finally {
-        if (isMounted) setLoading(false)
-      }
-    }
-    loadData()
-    return () => { isMounted = false }
-  }, [projectId, isUnlocked, onShowToast])
+  const {
+    data,
+    loading,
+    executiveSummary,
+    setExecutiveSummary,
+    saving,
+    isUnlocked,
+    handleSaveSnapshot,
+  } = useClosureReportViewer({ projectId, currentLifecycle, onShowToast })
 
   if (!isUnlocked) {
     return (
@@ -81,14 +58,6 @@ export function ClosureReportViewer({
 
   if (loading || !data) {
     return <DocumentLoader message="Compiling EVM baselines & deliverable audit records..." />
-  }
-
-  const handleSaveSnapshot = async () => {
-    setSaving(true)
-    setTimeout(() => {
-      setSaving(false)
-      onShowToast?.('success', 'Closure Report snapshot frozen and archived in compliance records.')
-    }, 800)
   }
 
   return (

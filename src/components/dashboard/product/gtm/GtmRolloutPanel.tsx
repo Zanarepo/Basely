@@ -6,7 +6,10 @@ import { Loader2, Plus, Flag, Trash2, Rocket } from 'lucide-react'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 
-export function GtmRolloutPanel({ releaseId }: { releaseId: string }) {
+import { getDualLabels } from '@/lib/releases/epic-link-constants'
+
+export function GtmRolloutPanel({ releaseId, methodology }: { releaseId: string; methodology?: string | null }) {
+  const labels = getDualLabels(methodology)
   const [phases, setPhases] = useState<any[]>([])
   const [flags, setFlags] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -90,7 +93,7 @@ export function GtmRolloutPanel({ releaseId }: { releaseId: string }) {
             </div>
             <div>
               <h3 className="font-semibold text-slate-900 dark:text-white">Targeted Rollout Phases</h3>
-              <p className="text-xs text-slate-500">Manage release exposure percentage to users.</p>
+              <p className="text-xs text-slate-500">Manage {labels.releaseTerm.toLowerCase()} exposure percentage to users.</p>
             </div>
           </div>
           <button
@@ -184,7 +187,7 @@ export function GtmRolloutPanel({ releaseId }: { releaseId: string }) {
             </div>
             <div>
               <h3 className="font-semibold text-slate-900 dark:text-white">Feature Flags</h3>
-              <p className="text-xs text-slate-500">Toggle code paths dynamically during this release.</p>
+              <p className="text-xs text-slate-500">Toggle code paths dynamically during this {labels.releaseTerm.toLowerCase()}.</p>
             </div>
           </div>
           <button
@@ -200,7 +203,7 @@ export function GtmRolloutPanel({ releaseId }: { releaseId: string }) {
         <div className="space-y-3">
           {flags.length === 0 && (
             <div className="border border-slate-200 dark:border-slate-800 rounded-lg p-6 text-center text-slate-500 italic text-sm">
-              No feature flags registered for this release.
+              No feature flags registered for this {labels.releaseTerm.toLowerCase()}.
             </div>
           )}
           {flags.map(flag => (

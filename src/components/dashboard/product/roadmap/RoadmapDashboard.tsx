@@ -5,10 +5,14 @@ import { getRoadmapItems } from '@/lib/product-roadmap/actions'
 import { RoadmapCard } from './RoadmapCard'
 import { Loader2, Plus } from 'lucide-react'
 import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
+import { useAutoAlignRoadmap } from './hooks/useAutoAlignRoadmap'
+import { AutoAlignButton } from './components/AutoAlignButton'
 
 import { updateRoadmapHorizon } from '@/lib/product-roadmap/actions'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
-export function RoadmapDashboard({ projectId }: { projectId: string }) {
+export function RoadmapDashboard({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const [items, setItems] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
@@ -19,9 +23,16 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
     setToasts(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, message }])
   }, [])
 
+  const { isAligning, handleAlign, UpgradePromptModalProps } = useAutoAlignRoadmap(
+    projectId,
+    organizationId,
+    () => loadData(),
+    showToast
+  )
+
   const loadData = useCallback(async () => {
     try {
-      setIsLoading(true)
+      if (items.length === 0) setIsLoading(true)
       const { success, data, error } = await getRoadmapItems(projectId)
       if (success && data) {
         setItems(data)
@@ -33,7 +44,7 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
     } finally {
       setIsLoading(false)
     }
-  }, [projectId, showToast])
+  }, [projectId, showToast, items.length])
 
   useEffect(() => {
     loadData()
@@ -80,12 +91,8 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center p-12">
-        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-      </div>
-    )
+  if (isLoading && items.length === 0) {
+    return <DocumentLoader message="Loading Kanban items..." />
   }
 
   const horizons = ['Now', 'Next', 'Later']
@@ -98,6 +105,13 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
         <div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Outcome-Driven Roadmap</h2>
           <p className="text-sm text-slate-500 mt-1">Visualize strategic themes across time horizons. Variances with Gantt schedules will be flagged automatically.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <AutoAlignButton 
+            isAligning={isAligning} 
+            onAlign={handleAlign} 
+            disabled={isLoading}
+          />
         </div>
       </div>
 
@@ -183,6 +197,7 @@ export function RoadmapDashboard({ projectId }: { projectId: string }) {
           )
         })}
       </div>
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

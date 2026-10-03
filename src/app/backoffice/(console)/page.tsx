@@ -6,6 +6,7 @@ import { CohortRetentionWidget } from '@/components/backoffice/CohortRetentionWi
 import { RevenueForecastWidget } from '@/components/backoffice/RevenueForecastWidget'
 import { CurrencySelector } from '@/components/backoffice/CurrencySelector'
 import { PendingDeletionsWidget } from '@/components/backoffice/compliance/PendingDeletionsWidget'
+import { FeatureTogglesClient } from '@/components/backoffice/FeatureTogglesClient'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -226,6 +227,11 @@ export default async function BackofficeDashboard(props: Props) {
       {/* Pending Deletions Widget (Sprint 49) */}
       {isSuper && (
         <PendingDeletionsWidget data={pendingDeletions} />
+      )}
+
+      {/* Feature Toggles (Local UI only) */}
+      {isSuper && (
+        <FeatureTogglesClient />
       )}
     </div>
   )

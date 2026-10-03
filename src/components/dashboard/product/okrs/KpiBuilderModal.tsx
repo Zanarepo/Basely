@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import type { ProductKpi } from '@/lib/product-strategy/types'
-import { createProductKpi, updateProductKpi } from '@/lib/product-strategy/actions'
+import { createProductKpi, updateProductKpi } from '@/lib/product-strategy/kpi-actions'
 import { X, Save, Loader2, Plus, Trash2 } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 

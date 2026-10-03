@@ -1,7 +1,13 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Edit2, Eye } from 'lucide-react'
+import { useRichTextFormatting } from './structured/useRichTextFormatting'
+import { markdownComponents } from './structured/markdownComponents'
+import StructuredFieldToolbar from './structured/StructuredFieldToolbar'
+import SectionReferenceLinksBar from './structured/SectionReferenceLinksBar'
+import { refineSectionTextWithAi, AiCopilotMode } from '@/lib/documents/ai-copilot-actions'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 interface StructuredEditableFieldProps {
   value: string
@@ -10,6 +16,8 @@ interface StructuredEditableFieldProps {
   hasEditAccess: boolean
   isDataBound?: boolean
   placeholder?: string
+  documentType?: string
+  organizationId?: string
 }
 
 export default function StructuredEditableField({
@@ -17,102 +25,105 @@ export default function StructuredEditableField({
   onChange,
   title,
   hasEditAccess,
-  isDataBound = false,
-  placeholder
+  placeholder,
+  documentType,
+  organizationId
 }: StructuredEditableFieldProps) {
-  // Start in view mode by default if there's text, otherwise edit mode
-  const [isEditing, setIsEditing] = useState(!value)
+  // Coerce value to string once — AI chain actions may store objects in JSONB
+  const safeValue = typeof value === 'string' ? value : (value == null ? '' : String(value))
+  // View mode by default if there's text, otherwise edit mode
+  const [isEditing, setIsEditing] = useState(!safeValue)
+  const [fontSize, setFontSize] = useState<'text-xs' | 'text-sm' | 'text-base' | 'text-lg'>('text-sm')
+  const [isAiLoading, setIsAiLoading] = useState(false)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId || '')
 
-  // Custom components for Markdown to match Tailwind styling
-  const markdownComponents = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    table: ({ node, ...props }: any) => (
-      <div className="overflow-x-auto my-4 border border-app-border rounded-lg">
-        <table className="w-full text-left text-sm" {...props} />
-      </div>
-    ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    thead: ({ node, ...props }: any) => (
-      <thead className="bg-app-muted-surface border-b border-app-border" {...props} />
-    ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    th: ({ node, ...props }: any) => (
-      <th className="px-4 py-3 font-semibold text-app-fg" {...props} />
-    ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    td: ({ node, ...props }: any) => (
-      <td className="px-4 py-3 border-t border-app-border/50 text-app-fg/80" {...props} />
-    ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ul: ({ node, ...props }: any) => (
-      <ul className="list-disc list-inside space-y-1 my-2 ml-2" {...props} />
-    ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ol: ({ node, ...props }: any) => (
-      <ol className="list-decimal list-inside space-y-1 my-2 ml-2" {...props} />
-    ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    h3: ({ node, ...props }: any) => (
-      <h3 className="text-sm font-bold text-app-fg mt-4 mb-2" {...props} />
-    ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    p: ({ node, ...props }: any) => (
-      <p className="mb-2" {...props} />
-    ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    a: ({ node, ...props }: any) => (
-      <a className="text-violet-500 hover:underline" {...props} />
-    )
+  const {
+    textareaRef,
+    activeFormats,
+    checkActiveFormats,
+    insertFormatting,
+    insertLinePrefix,
+    insertTableTemplate,
+    insertLink,
+    handlePaste
+  } = useRichTextFormatting(safeValue, onChange, isEditing)
+
+  const handleRunAiCopilot = async (mode: AiCopilotMode, customInstruction?: string) => {
+    if (isAiLoading || isChecking) return
+    setIsAiLoading(true)
+
+    // Timeout safety net: if anything hangs, clear loading after 45s
+    const timeoutId = setTimeout(() => setIsAiLoading(false), 45_000)
+
+    try {
+      const allowed = await checkLimit('max_ai_basic_actions')
+      if (!allowed) return
+
+      const res = await refineSectionTextWithAi(safeValue, mode, customInstruction)
+      if (res.ok && res.resultText) {
+        onChange(res.resultText)
+        // Fire-and-forget: don't await so it never blocks the loading state
+        await recordUsage('basic_actions')
+      }
+    } catch {
+      // errors are swallowed; loading state is always cleared below
+    } finally {
+      clearTimeout(timeoutId)
+      setIsAiLoading(false)
+    }
   }
 
-  const displayValue = value || '*No content entered.*'
+  const displayValue = safeValue || '*No content entered.*'
 
   return (
-    <div className="group relative rounded-lg transition-all">
-      <div className="flex items-center justify-end mb-2 absolute top-2 right-2 z-10">
-        {hasEditAccess && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setIsEditing(!isEditing)
-            }}
-            style={{ cursor: 'pointer' }}
-            className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-app-surface border border-app-border rounded shadow-sm text-app-muted hover:text-violet-500 transition-opacity duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100"
-            title={isEditing ? "Switch to formatted view" : "Edit raw text"}
-          >
-            {isEditing ? (
-              <>
-                <Eye className="w-3.5 h-3.5" /> Preview
-              </>
-            ) : (
-              <>
-                <Edit2 className="w-3.5 h-3.5" /> Edit
-              </>
-            )}
-          </button>
-        )}
-      </div>
+    <div className="group relative rounded-xl border border-app-border bg-app-surface shadow-sm transition-all z-10">
+      {/* Header Toolbar */}
+      <StructuredFieldToolbar
+        isEditing={isEditing}
+        hasEditAccess={hasEditAccess}
+        activeFormats={activeFormats}
+        fontSize={fontSize}
+        setFontSize={setFontSize}
+        setIsEditing={setIsEditing}
+        insertFormatting={insertFormatting}
+        insertLinePrefix={insertLinePrefix}
+        insertTableTemplate={insertTableTemplate}
+        insertLink={insertLink}
+        onRunAiCopilot={handleRunAiCopilot}
+        isAiLoading={isAiLoading}
+        documentType={documentType}
+        sectionTitle={title}
+        organizationId={organizationId}
+      />
 
+      {/* Editor or Markdown View */}
       {isEditing && hasEditAccess ? (
         <textarea
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder || `Enter ${title.toLowerCase()}... (Markdown tables supported)`}
-          rows={Math.max(6, (value?.split('\n').length || 0) + 1)}
-          className="w-full p-3 pt-10 bg-app-bg border border-violet-500/50 rounded-lg text-sm text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all resize-y font-mono"
+          ref={textareaRef}
+          value={safeValue}
+          onChange={(e) => {
+            onChange(e.target.value)
+            checkActiveFormats()
+          }}
+          onSelect={checkActiveFormats}
+          onKeyUp={checkActiveFormats}
+          onClick={checkActiveFormats}
+          onPaste={handlePaste}
+          placeholder={placeholder || `Enter ${title.toLowerCase()}... (Use bullet points, headings, links, or tables)`}
+          rows={Math.max(7, safeValue.split('\n').length + 2)}
+          className={`w-full p-4 bg-app-bg text-app-fg placeholder:text-app-muted focus:outline-none transition-all resize-y font-mono ${fontSize}`}
         />
       ) : (
-        <div className="p-4 bg-app-muted-surface/40 border border-app-border rounded-lg text-sm text-app-fg prose prose-sm dark:prose-invert max-w-none">
-          <ReactMarkdown 
-            remarkPlugins={[remarkGfm]} 
-            components={markdownComponents}
-          >
+        <div className={`p-4 bg-app-bg text-app-fg ${fontSize} min-h-[100px] leading-relaxed transition-all`}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
             {displayValue}
           </ReactMarkdown>
         </div>
       )}
+
+      {/* Section Bottom Links Bar */}
+      <SectionReferenceLinksBar value={value} />
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

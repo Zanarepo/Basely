@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { getErpAdapter, ErpAdapter, SyncExecutionResult, SyncErrorDetail } from './adapters'
-import { dispatchNotification } from '@/lib/notifications/actions'
+import { dispatchNotification } from '@/lib/notifications/dispatch'
 import { NextRequest } from 'next/server'
 import { POST as actualCostsHandler } from '@/app/api/v1/projects/[projectId]/actual-costs/route'
 

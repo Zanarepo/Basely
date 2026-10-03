@@ -32,6 +32,7 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
   const [loading, setLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   
   // Filters
   const [orgTypeFilter, setOrgTypeFilter] = useState<'all' | 'internal' | 'external'>('all')
@@ -137,6 +138,30 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
       onShowToast('success', `Deleted ${selectedIds.size} stakeholders`)
     }
     setDeleting(false)
+  }
+
+  const handleDeleteSingle = async (id: string) => {
+    if (!hasEditAccess) return
+    
+    setDeletingId(id)
+    const { error } = await supabase
+      .from('stakeholders')
+      .delete()
+      .eq('id', id)
+    
+    if (error) {
+      console.error(error)
+      onShowToast('error', `Failed to delete stakeholder: ${error.message}`)
+    } else {
+      setStakeholders(prev => prev.filter(s => s.id !== id))
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+      onShowToast('success', 'Stakeholder deleted')
+    }
+    setDeletingId(null)
   }
 
   if (loading) {
@@ -298,13 +323,26 @@ export function StakeholderRegister({ projectId, hasEditAccess, onEdit, onShowTo
                     <td className="p-4 text-center text-sm font-bold text-app-fg">
                       {s.interest || '-'}
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="p-4 flex items-center justify-end gap-1">
                       {hasEditAccess && (
                         <button
                           onClick={() => onEdit(s.id)}
-                          className="p-2 text-app-muted hover:text-violet-500 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-violet-500/10"
+                          className="p-2 text-app-muted hover:text-violet-500 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-violet-500/10 cursor-pointer"
                         >
                           <ExternalLink className="h-4 w-4" />
+                        </button>
+                      )}
+                      {hasEditAccess && !s.linked_user_id && (
+                        <button
+                          onClick={() => handleDeleteSingle(s.id)}
+                          disabled={deletingId === s.id}
+                          className="p-2 text-rose-500 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all rounded-lg cursor-pointer disabled:opacity-50"
+                        >
+                          {deletingId === s.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
                         </button>
                       )}
                     </td>

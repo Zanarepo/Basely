@@ -17,6 +17,7 @@ interface ResourceRatesManagerProps {
   contingencyType: 'flat' | 'percentage'
   hasEditAccess: boolean
   onDataChange: (silent?: boolean) => void
+  canImportCsv?: boolean
 }
 
 export default function ResourceRatesManager({
@@ -27,7 +28,8 @@ export default function ResourceRatesManager({
   contingencyAmount,
   contingencyType,
   hasEditAccess,
-  onDataChange
+  onDataChange,
+  canImportCsv = false
 }: ResourceRatesManagerProps) {
   const [isImporting, setIsImporting] = useState(false)
 
@@ -116,6 +118,7 @@ export default function ResourceRatesManager({
         handleSelectAll={handleSelectAll}
         handleBulkDelete={handleBulkDelete}
         setIsImporting={setIsImporting}
+        canImportCsv={canImportCsv}
         isCreating={isCreating}
         startCreate={startCreate}
         editingId={editingId}

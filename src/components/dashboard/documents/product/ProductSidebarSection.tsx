@@ -10,9 +10,7 @@ export type ProductDocType =
   | 'competitive_benchmarking_matrix'
   | 'strategy_canvas_workspace'
   | 'personas_workspace'
-  | 'north_star_kpis_workspace'
-  | 'okrs_workspace'
-  | 'okr_kpi_performance_report'
+  | 'strategic_outcomes_hub'
   | 'voc_discovery_workspace'
   | 'prioritization_workspace'
   | 'roadmap_workspace'
@@ -27,15 +25,13 @@ export function ProductSidebarSection({ activeTab, onSelect }: ProductSidebarSec
   const items = [
     { key: 'strategy_canvas_workspace', label: 'Strategy Canvas Studio', icon: <Compass className="w-4 h-4 text-violet-500" /> },
     { key: 'personas_workspace', label: 'Personas & JTBD Roster', icon: <Users className="w-4 h-4 text-violet-500" /> },
-    { key: 'north_star_kpis_workspace', label: 'North Star KPI Engine', icon: <TrendingUp className="w-4 h-4 text-violet-500" /> },
-    { key: 'okrs_workspace', label: 'OKR Performance Tree', icon: <Layers className="w-4 h-4 text-violet-500" /> },
+    { key: 'strategic_outcomes_hub', label: 'Strategic Outcomes Hub', icon: <BarChart3 className="w-4 h-4 text-violet-500" /> },
     { key: 'voc_discovery_workspace', label: 'VoC Discovery Inbox', icon: <Lightbulb className="w-4 h-4 text-amber-500" /> },
     { key: 'prioritization_workspace', label: 'RICE Prioritization Matrix', icon: <BarChart3 className="w-4 h-4 text-rose-500" /> },
     { key: 'roadmap_workspace', label: 'Outcome Roadmap', icon: <Map className="w-4 h-4 text-violet-500" /> },
     { key: 'product_strategy_document', label: 'Product Strategy Doc', icon: <FileText className="w-4 h-4 text-violet-500" /> },
     { key: 'market_research_report', label: 'Market Research Report', icon: <BarChart3 className="w-4 h-4 text-emerald-500" /> },
     { key: 'competitive_benchmarking_matrix', label: 'Competitive Matrix', icon: <Target className="w-4 h-4 text-purple-500" /> },
-    { key: 'okr_kpi_performance_report', label: 'OKR & KPI Report Doc', icon: <Activity className="w-4 h-4 text-violet-500" /> },
     { key: 'product_requirements_document', label: 'Product Requirements Doc', icon: <ClipboardList className="w-4 h-4 text-violet-500" /> }
   ]
 

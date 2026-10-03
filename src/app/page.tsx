@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/landing/Navbar"
 import { HeroSection } from "@/components/landing/HeroSection"
 import { ShowcaseSection } from "@/components/landing/ShowcaseSection"
+import { AiCapabilityShowcase } from "@/components/landing/AiCapabilityShowcase"
 import { FeatureTabs } from "@/components/landing/FeatureTabs"
 import { TrustProof } from "@/components/landing/TrustProof"
 import { BentoGrid } from "@/components/landing/BentoGrid"
@@ -28,6 +29,7 @@ export default async function Home() {
       <main>
         <HeroSection isLoggedIn={isLoggedIn} />
         <ShowcaseSection />
+        <AiCapabilityShowcase />
         <FeatureTabs />
         <TrustProof />
         <BentoGrid />

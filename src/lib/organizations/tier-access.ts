@@ -25,7 +25,7 @@ async function fetchTierSettings() {
   const supabase = createAdminClient()
   const [featuresRes, limitsRes] = await Promise.all([
     supabase.from('tier_feature_map').select('tier_id, feature_key, enabled'),
-    supabase.from('tier_usage_limits').select('tier_id, max_seats, max_active_projects, max_workspaces')
+    supabase.from('tier_usage_limits').select('tier_id, limit_key, max_value')
   ])
 
   const newFeatures: Record<string, Record<string, boolean>> = {}
@@ -39,11 +39,8 @@ async function fetchTierSettings() {
   const newLimits: Record<string, Record<string, number>> = {}
   if (limitsRes.data) {
     for (const row of limitsRes.data) {
-      newLimits[row.tier_id] = {
-        max_seats: row.max_seats,
-        max_active_projects: row.max_active_projects,
-        max_workspaces: row.max_workspaces
-      }
+      if (!newLimits[row.tier_id]) newLimits[row.tier_id] = {}
+      newLimits[row.tier_id][row.limit_key] = row.max_value
     }
   }
 
@@ -142,14 +139,42 @@ export async function checkUsageLimit(
   organizationId: string,
   rawLimitKey: LimitKey
 ): Promise<UsageLimitResult> {
-  const limitKey = (rawLimitKey === 'seats' ? 'max_seats' : rawLimitKey === 'active_projects' ? 'max_active_projects' : rawLimitKey) as 'max_seats' | 'max_active_projects'
+  const isAiLimit = rawLimitKey.startsWith('max_ai_')
+  const limitKey = isAiLimit 
+    ? rawLimitKey as 'max_ai_generations' | 'max_ai_basic_actions' | 'max_ai_meetings' | 'max_ai_pipeline_runs'
+    : (rawLimitKey === 'seats' ? 'max_seats' : rawLimitKey === 'active_projects' ? 'max_active_projects' : rawLimitKey) as 'max_seats' | 'max_active_projects'
   
   const sub = await getOrganizationSubscription(organizationId)
   const { limits } = await fetchTierSettings()
   
   const tierLimits = limits[sub.tierId] || limits['free'] || {}
   const defaultLimits = USAGE_LIMITS[sub.tierId] || USAGE_LIMITS['free'] || {}
-  const maxLimit = tierLimits[limitKey] ?? defaultLimits[limitKey] ?? -1
+  let maxLimit = tierLimits[limitKey] ?? defaultLimits[limitKey] ?? -1
+
+  // ── Per-org custom overrides (set by backoffice superadmins) ─────────────
+  // These take precedence over tier defaults for specific customers.
+  if (isAiLimit && (limitKey === 'max_ai_generations' || limitKey === 'max_ai_basic_actions')) {
+    try {
+      const supabaseAdmin = createAdminClient()
+      const { data: orgRow } = await supabaseAdmin
+        .from('organizations')
+        .select('custom_ai_generations_limit, custom_ai_basic_actions_limit')
+        .eq('id', organizationId)
+        .single()
+
+      if (orgRow) {
+        if (limitKey === 'max_ai_generations' && orgRow.custom_ai_generations_limit != null) {
+          maxLimit = orgRow.custom_ai_generations_limit
+        }
+        if (limitKey === 'max_ai_basic_actions' && orgRow.custom_ai_basic_actions_limit != null) {
+          maxLimit = orgRow.custom_ai_basic_actions_limit
+        }
+      }
+    } catch {
+      // fallback to tier default on any error
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   // -1 means unlimited
   if (maxLimit === -1) {
@@ -188,6 +213,36 @@ export async function checkUsageLimit(
 
       if (!error && projects) {
         currentUsage = projects.filter((p) => !p.is_archived).length
+      }
+    } catch {}
+  } else if (isAiLimit) {
+    try {
+      // Ensure a usage row exists for this org (lazy-create if missing)
+      await supabase
+        .from('organization_ai_usage')
+        .upsert({ organization_id: organizationId }, { onConflict: 'organization_id', ignoreDuplicates: true })
+
+      const { data: usage, error } = await supabase
+        .from('organization_ai_usage')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .single()
+
+      if (!error && usage) {
+        // Check if billing_cycle_start is in the current calendar month
+        const cycleStart = new Date(usage.billing_cycle_start)
+        const now = new Date()
+        
+        if (cycleStart.getFullYear() === now.getFullYear() && cycleStart.getMonth() === now.getMonth()) {
+          // Still in the same month, use the counts
+          if (limitKey === 'max_ai_generations') currentUsage = usage.ai_generations_count
+          if (limitKey === 'max_ai_basic_actions') currentUsage = usage.ai_basic_actions_count
+          if (limitKey === 'max_ai_meetings') currentUsage = usage.ai_meetings_count
+          if (limitKey === 'max_ai_pipeline_runs') currentUsage = usage.ai_pipeline_runs_count
+        } else {
+          // It's a new month, usage is effectively 0
+          currentUsage = 0
+        }
       }
     } catch {}
   }
@@ -254,4 +309,111 @@ export async function checkWorkspaceCreationLimit(userId: string): Promise<{ all
   }
 
   return { allowed: true, currentUsage, maxLimit }
+}
+
+export async function getOrganizationAiEnabled(organizationId: string): Promise<boolean> {
+  const supabase = createAdminClient()
+  try {
+    const { data, error } = await supabase
+      .from('organizations')
+      .select('ai_features_enabled')
+      .eq('id', organizationId)
+      .single()
+      
+    if (error || !data) return false
+    return !!data.ai_features_enabled
+  } catch {
+    return false
+  }
+}
+
+export async function checkProjectItemLimit(
+  projectId: string,
+  limitKey: 'max_sprints' | 'max_releases'
+): Promise<UsageLimitResult> {
+  const supabase = createAdminClient()
+  const { data: proj } = await supabase
+    .from('projects')
+    .select('organization_id, organizations(custom_max_sprints_limit, custom_max_releases_limit)')
+    .eq('id', projectId)
+    .single()
+
+  if (!proj?.organization_id) {
+    return {
+      allowed: false,
+      requiredTier: 'premium',
+      limitKey,
+      currentUsage: 0,
+      maxLimit: 0,
+      reason: 'USAGE_LIMIT_EXCEEDED',
+      currentTier: 'free',
+      isTrialing: false,
+    }
+  }
+
+  const sub = await getOrganizationSubscription(proj.organization_id)
+  const { limits } = await fetchTierSettings()
+  
+  const tierLimits = limits[sub.tierId] || limits['free'] || {}
+  const defaultLimits = USAGE_LIMITS[sub.tierId] || USAGE_LIMITS['free'] || {}
+  let maxLimit = tierLimits[limitKey] ?? defaultLimits[limitKey] ?? -1
+
+  // ── Per-org custom overrides ─────────────
+  if (proj.organizations && !Array.isArray(proj.organizations)) {
+    const org = proj.organizations as any
+    if (limitKey === 'max_sprints' && org.custom_max_sprints_limit != null) {
+      maxLimit = org.custom_max_sprints_limit
+    } else if (limitKey === 'max_releases' && org.custom_max_releases_limit != null) {
+      maxLimit = org.custom_max_releases_limit
+    }
+  }
+  // ─────────────────────────────────────────
+
+  if (maxLimit === -1) {
+    return {
+      allowed: true,
+      currentUsage: 0,
+      maxLimit: -1,
+      limitKey,
+      currentTier: sub.tierId,
+      isTrialing: sub.status === 'trialing',
+    }
+  }
+
+  let currentUsage = 0
+  if (limitKey === 'max_sprints') {
+    const { count } = await supabase
+      .from('iterations')
+      .select('id', { count: 'exact', head: true })
+      .eq('project_id', projectId)
+    currentUsage = count || 0
+  } else if (limitKey === 'max_releases') {
+    const { count } = await supabase
+      .from('releases')
+      .select('id', { count: 'exact', head: true })
+      .eq('project_id', projectId)
+    currentUsage = count || 0
+  }
+
+  if (currentUsage >= maxLimit) {
+    return {
+      allowed: false,
+      requiredTier: 'premium',
+      limitKey,
+      currentUsage,
+      maxLimit,
+      reason: 'USAGE_LIMIT_EXCEEDED',
+      currentTier: sub.tierId,
+      isTrialing: sub.status === 'trialing',
+    }
+  }
+
+  return {
+    allowed: true,
+    currentUsage,
+    maxLimit,
+    limitKey,
+    currentTier: sub.tierId,
+    isTrialing: sub.status === 'trialing',
+  }
 }

@@ -8,6 +8,7 @@ function inviteErrorUrl(request: NextRequest, message: string) {
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token')?.trim()
+  const next = request.nextUrl.searchParams.get('next')?.trim()
 
   if (!token) {
     return NextResponse.redirect(
@@ -21,7 +22,10 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    const returnPath = `/invite?token=${encodeURIComponent(token)}`
+    let returnPath = `/invite?token=${encodeURIComponent(token)}`
+    if (next) {
+      returnPath += `&next=${encodeURIComponent(next)}`
+    }
     return NextResponse.redirect(
       new URL(`/login?next=${encodeURIComponent(returnPath)}`, request.url)
     )
@@ -42,7 +46,12 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const response = NextResponse.redirect(new URL('/dashboard', request.url))
+  let redirectTarget = '/dashboard'
+  if (next && next.startsWith('/')) {
+    redirectTarget = next
+  }
+
+  const response = NextResponse.redirect(new URL(redirectTarget, request.url))
   response.cookies.set(ACTIVE_ORG_COOKIE, organizationId as string, {
     path: '/',
     maxAge: 60 * 60 * 24 * 365,

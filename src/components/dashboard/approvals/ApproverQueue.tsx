@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Check, X, Clock, Loader2, Eye, Calendar, DollarSign, Database, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import type { ApprovalRequest } from './ApprovalsWorkspace'
 import { approveRequest, rejectRequest, getLatestBaselineComparison } from '@/lib/approvals/actions'
+import { getCurrencySymbol } from '@/lib/utils'
 
 function PreviewModal({ request, onClose }: { request: ApprovalRequest, onClose: () => void }) {
   const { action_type, payload } = request
@@ -200,6 +201,38 @@ function PreviewModal({ request, onClose }: { request: ApprovalRequest, onClose:
         </div>
       )
     }
+  } else if (action_type === 'change_request' && payload) {
+    const sym = payload.currency ? getCurrencySymbol(payload.currency) : '$'
+    summary = (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+        <div className="p-4 bg-app-muted-surface border border-app-border rounded-xl">
+          <p className="text-xs text-app-muted uppercase font-semibold mb-1 flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Cost Impact</p>
+          <p className="text-lg font-bold text-app-fg">{sym}{(Number(payload.cost_impact) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        </div>
+        <div className="p-4 bg-app-muted-surface border border-app-border rounded-xl">
+          <p className="text-xs text-app-muted uppercase font-semibold mb-1 flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Schedule Delay</p>
+          <p className="text-lg font-bold text-app-fg">{Number(payload.schedule_impact_days) || 0} Days</p>
+        </div>
+      </div>
+    )
+
+    table = (
+      <div className="mt-6 border border-app-border rounded-xl overflow-hidden bg-app-surface-solid">
+        <div className="p-3 bg-app-muted-surface border-b border-app-border flex justify-between items-center">
+          <h3 className="text-sm font-semibold text-app-fg">Request Details</h3>
+        </div>
+        <div className="p-4 space-y-4">
+          <div>
+            <h4 className="text-xs font-semibold text-app-muted uppercase mb-1">Description</h4>
+            <p className="text-sm text-app-fg">{payload.description || 'N/A'}</p>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-app-muted uppercase mb-1">Rationale</h4>
+            <p className="text-sm text-app-fg whitespace-pre-wrap">{payload.rationale || 'N/A'}</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -215,7 +248,9 @@ function PreviewModal({ request, onClose }: { request: ApprovalRequest, onClose:
         <div className="p-6 overflow-y-auto">
           <div className="mb-6">
             <h3 className="text-sm text-app-muted font-medium">Name</h3>
-            <p className="text-base text-app-fg font-semibold mt-1">{payload?.baseline?.name || 'Unnamed Baseline'}</p>
+            <p className="text-base text-app-fg font-semibold mt-1">
+              {payload?.baseline?.name || payload?.description || 'Unnamed Request'}
+            </p>
           </div>
 
           <div className="mb-4">
@@ -227,7 +262,7 @@ function PreviewModal({ request, onClose }: { request: ApprovalRequest, onClose:
         </div>
 
         <div className="p-4 border-t border-app-border bg-app-muted-surface flex justify-end">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-medium border border-app-border rounded-lg hover:bg-app-hover text-app-fg transition-colors">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium border border-app-border rounded-lg hover:bg-app-hover text-app-fg transition-colors cursor-pointer">
             Close Preview
           </button>
         </div>
@@ -280,8 +315,13 @@ export function ApproverQueue({ requests }: { requests: ApprovalRequest[] }) {
               r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-500' :
                 'bg-rose-500/10 text-rose-500'
             }`}>
-            {r.status}
+            {r.status === 'pending' && r.action_type === 'change_request' ? 'PENDING SPONSOR' : r.status}
           </span>
+          {r.project_name && (
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-violet-500/10 text-violet-600 truncate max-w-[200px]">
+              {r.project_name}
+            </span>
+          )}
         </div>
         <p className="text-sm text-app-muted">
           Requested by <span className="font-medium text-app-fg">{r.requester_name}</span> ({r.requester_email})
@@ -290,6 +330,12 @@ export function ApproverQueue({ requests }: { requests: ApprovalRequest[] }) {
           <Clock className="w-3.5 h-3.5" />
           {new Date(r.created_at).toLocaleString()}
         </div>
+
+        {isHistory && r.decided_at && (
+          <div className="mt-1 text-xs text-app-muted">
+            {r.status === 'approved' ? 'Approved by' : 'Rejected by'} <span className="font-medium text-app-fg">{r.decider_name || 'System'}</span> on {new Date(r.decided_at).toLocaleString()}
+          </div>
+        )}
 
         {r.decision_comment && (
           <div className="mt-3 text-sm bg-rose-500/10 text-rose-500 px-3 py-2 rounded border border-rose-500/20">
@@ -301,7 +347,7 @@ export function ApproverQueue({ requests }: { requests: ApprovalRequest[] }) {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-4 sm:mt-0 shrink-0 sm:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
         <button
           onClick={() => setPreviewRequest(r)}
-          className="flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-app-border text-app-fg hover:bg-app-hover transition-colors"
+          className="flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-app-border text-app-fg hover:bg-app-hover transition-colors cursor-pointer"
         >
           <Eye className="w-4 h-4" /> Preview
         </button>
@@ -311,14 +357,14 @@ export function ApproverQueue({ requests }: { requests: ApprovalRequest[] }) {
             <button
               onClick={() => handleReject(r.id)}
               disabled={processingId === r.id}
-              className="flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-app-border hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/30 transition-colors disabled:opacity-50"
+              className="flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-app-border hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <X className="w-4 h-4" /> Reject
             </button>
             <button
               onClick={() => handleApprove(r.id)}
               disabled={processingId === r.id}
-              className="flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 transition-colors disabled:opacity-50"
+              className="flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {processingId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               Approve

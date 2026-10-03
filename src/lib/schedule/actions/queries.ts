@@ -13,9 +13,6 @@ export async function getScheduleData(projectId: string): Promise<ActionResponse
   calendars: any[]
   baselines: any[]
 }>> {
-  // Trigger automatic recalculation pass (runs WBS auto-heal and CPM engine)
-  await recalculateSchedule(projectId)
-
   const supabase = createAdminClient()
 
   const { data: activities, error: actErr } = await supabase

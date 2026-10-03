@@ -90,15 +90,16 @@ export function WbsSchedulingFields({
                 <input
                   id="sched-start"
                   type="date"
-                  disabled={!hasEditAccess || saving || autoSchedule}
+                  disabled={!hasEditAccess || saving}
                   value={startDate}
-                  onChange={(e) => handleStartDateChange(e.target.value)}
+                  onChange={(e) => {
+                    if (autoSchedule) setAutoSchedule(false)
+                    handleStartDateChange(e.target.value)
+                  }}
                   onClick={(e) => {
-                    if (!autoSchedule) {
-                      try {
-                        e.currentTarget.showPicker()
-                      } catch (err) {}
-                    }
+                    try {
+                      e.currentTarget.showPicker()
+                    } catch (err) {}
                   }}
                   className="w-full px-3 py-1.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-xs disabled:opacity-60 cursor-pointer"
                 />
@@ -107,17 +108,20 @@ export function WbsSchedulingFields({
               {/* End Date */}
               <div className="space-y-1.5">
                 <label htmlFor="sched-end" className="text-[11px] font-bold text-app-subtle flex items-center gap-1">
-                  {(autoSchedule || isMilestone) && <Lock className="w-2.5 h-2.5 text-app-subtle" />}
+                  {isMilestone && <Lock className="w-2.5 h-2.5 text-app-subtle" />}
                   End Date
                 </label>
                 <input
                   id="sched-end"
                   type="date"
-                  disabled={!hasEditAccess || saving || autoSchedule || isMilestone}
+                  disabled={!hasEditAccess || saving || isMilestone}
                   value={endDate}
-                  onChange={(e) => handleEndDateChange(e.target.value)}
+                  onChange={(e) => {
+                    if (autoSchedule) setAutoSchedule(false)
+                    handleEndDateChange(e.target.value)
+                  }}
                   onClick={(e) => {
-                    if (!autoSchedule && !isMilestone) {
+                    if (!isMilestone) {
                       try {
                         e.currentTarget.showPicker()
                       } catch (err) {}

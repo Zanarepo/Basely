@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CICOD Workflow Manager (WFM) - Architecture & Module Connectivity</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #090D16;
+      --bg-surface: #0F172A;
+      --bg-card: rgba(30, 41, 59, 0.6);
+      --bg-card-hover: rgba(51, 65, 85, 0.7);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(99, 102, 241, 0.4);
+      --primary: #3B82F6;
+      --primary-light: #60A5FA;
+      --indigo: #6366F1;
+      --purple: #8B5CF6;
+      --emerald: #10B981;
+      --amber: #F59E0B;
+      --rose: #F43F5E;
+      --cyan: #06B6D4;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --glow-blue: rgba(59, 130, 246, 0.25);
+      --glow-purple: rgba(139, 92, 246, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+    }
+
+    /* Top Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 48px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #EF4444, #DC2626);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .nav-tags {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .badge {
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .badge-primary {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--primary-light);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-emerald {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34D399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px 80px 24px;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto 50px auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 9999px;
+      font-size: 13px;
+      color: #A5B4FC;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .hero h2 {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #FFFFFF 30%, #94A3B8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Navigation Tabs */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .tab-btn {
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      padding: 10px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #3B82F6, #2563EB);
+      color: #FFFFFF;
+      border-color: #60A5FA;
+      box-shadow: 0 4px 20px var(--glow-blue);
+    }
+
+    /* Section Views */
+    .view-section {
+      display: none;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Interactive Diagram Grid */
+    .flow-pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      margin-bottom: 60px;
+    }
+
+    .pipeline-tier {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 24px 30px;
+      position: relative;
+      transition: border-color 0.3s ease;
+    }
+
+    .pipeline-tier:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .tier-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .tier-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tier-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+    }
+
+    .tier-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .tier-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    /* Flow Connectors */
+    .flow-arrow-down {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: -16px 0;
+      z-index: 2;
+    }
+
+    .arrow-bubble {
+      background: #1E293B;
+      border: 1px solid var(--border-accent);
+      color: #A5B4FC;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Module Card */
+    .module-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 22px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .module-card:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+      border-color: var(--primary-light);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 20px var(--glow-blue);
+    }
+
+    .module-card.selected {
+      border-color: #38BDF8;
+      background: rgba(30, 58, 138, 0.3);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .icon-blue { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
+    .icon-purple { background: rgba(139, 92, 246, 0.15); color: #A78BFA; }
+    .icon-emerald { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+    .icon-amber { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
+    .icon-rose { background: rgba(244, 63, 94, 0.15); color: #FB7185; }
+    .icon-cyan { background: rgba(6, 182, 212, 0.15); color: #22D3EE; }
+
+    .role-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: #94A3B8;
+    }
+
+    .card-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+      color: #FFFFFF;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 18px;
+      flex-grow: 1;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+    }
+
+    .sidebar-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .connections-count {
+      color: var(--primary-light);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Detail Drawer / Modal */
+    .drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: none;
+      justify-content: flex-end;
+    }
+
+    .drawer-overlay.active {
+      display: flex;
+    }
+
+    .drawer {
+      width: 580px;
+      max-width: 90vw;
+      background: #0F172A;
+      border-left: 1px solid var(--border-subtle);
+      height: 100%;
+      overflow-y: auto;
+      padding: 36px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideLeft {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    .drawer-close {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .drawer-close:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .drawer-header h3 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .drawer-section {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .drawer-section h4 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94A3B8;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tech-tag {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #E2E8F0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Simulator Section */
+    .simulator-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 36px;
+      margin-bottom: 60px;
+    }
+
+    .sim-header {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 36px auto;
+    }
+
+    .sim-header h3 {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .step-track {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 40px;
+    }
+
+    .step-track::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 5%;
+      right: 5%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      z-index: 1;
+    }
+
+    .step-node {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .node-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #1E293B;
+      border: 2px solid #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .step-node.active .node-circle {
+      background: #3B82F6;
+      border-color: #93C5FD;
+      color: white;
+      box-shadow: 0 0 20px var(--glow-blue);
+      transform: scale(1.1);
+    }
+
+    .step-node.completed .node-circle {
+      background: #10B981;
+      border-color: #6EE7B7;
+      color: white;
+    }
+
+    .node-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 100px;
+    }
+
+    .step-node.active .node-label {
+      color: #F8FAFC;
+    }
+
+    .sim-content-card {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border-accent);
+      border-radius: 16px;
+      padding: 28px;
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .sim-step-icon {
+      font-size: 40px;
+      min-width: 70px;
+      height: 70px;
+      border-radius: 18px;
+      background: rgba(99, 102, 241, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sim-step-info h4 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .sim-step-info p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .sim-controls {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-sim {
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 15px var(--glow-blue);
+    }
+
+    .btn-primary:hover {
+      background: #2563EB;
+    }
+
+    /* Full Matrix Table */
+    .matrix-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 30px;
+      overflow-x: auto;
+    }
+
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .matrix-table th {
+      padding: 14px 18px;
+      color: var(--text-dim);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(15, 23, 42, 0.5);
+    }
+
+    .matrix-table td {
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+
+    .matrix-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .pill-active { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+    .pill-core { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
+    .pill-aux { background: rgba(139, 92, 246, 0.15); color: #C084FC; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0;
+      font-size: 13px;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border-subtle);
+      margin-top: 60px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="brand">
+      <div class="brand-logo">C</div>
+      <div class="brand-text">
+        <h1>CICOD Workflow Manager (WFM)</h1>
+        <p>Enterprise Architecture &amp; Module Connectivity Matrix</p>
+      </div>
+    </div>
+    <div class="nav-tags">
+      <span class="badge badge-emerald">Tenant: princetest</span>
+      <span class="badge badge-primary">Role: SUPERADMIN</span>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Hero Header -->
+    <section class="hero">
+      <div class="hero-badge">
+        <span>⚡ System Architecture Deep-Dive</span>
+      </div>
+      <h2>How CICOD Workflow Manager Operates &amp; Connects</h2>
+      <p>
+        Workflow Manager organizes teams, automates ticket progression through customized state machines, 
+        collects customer intake through dynamic web forms, and dispatches field resources based on capacity utilization.
+      </p>
+    </section>
+
+    <!-- Navigation Views -->
+    <nav class="tabs">
+      <button class="tab-btn active" onclick="switchView('pipeline-view')">
+        <span>🌐 Architecture Pipeline</span>
+      </button>
+      <button class="tab-btn" onclick="switchView('simulator-view')">
+        <span>▶ Interactive Lifecycle Walkthrough</span>
+      </button>
+      <button class="tab-btn" onclick="switchView('matrix-view')">
+        <span>📊 Complete 12-Module Matrix</span>
+      </button>
+    </nav>
+
+    <!-- VIEW 1: Architecture Pipeline -->
+    <div id="pipeline-view" class="view-section active">
+
+      <div class="flow-pipeline">
+
+        <!-- Tier 1: Intake -->
+        <div class="pipeline-tier">
+          <div class="tier-header">
+            <div class="tier-title-group">
+              <div class="tier-num">1</div>
+              <div>
+                <div class="tier-title">Intake &amp; Inbound Request Channels</div>
+                <div class="tier-desc">Captures customer requests, internal requirements, and automated system alerts</div>
+              </div>
+            </div>
+            <span class="badge badge-primary">Input Layer</span>
+          </div>
+          <div class="cards-row">
+            
+            <div class="module-card" onclick="openModuleDetail('forms')">
+              <div class="card-top">
+                <div class="card-icon icon-blue">📋</div>
+                <span class="role-tag">Perm: 33</span>
+              </div>
+              <h3 class="card-name">Web Forms</h3>
+              <p class="card-desc">Drag-and-drop form builder. Generates embedded or hosted customer intake forms with custom validations.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#forms_menu</span>
+                <span class="connections-count">Triggers ➔ Workflows</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openModuleDetail('settings')">
+              <div class="card-top">
+                <div class="card-icon icon-purple">✉️</div>
+                <span class="role-tag">Perm: 14</span>
+              </div>
+              <h3 class="card-name">Email-to-Ticket Gateway</h3>
+              <p class="card-desc">Automated IMAP/POP3 ingestion engine that converts support emails into active tracking tickets.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#settings_menu</span>
+                <span class="connections-count">Creates ➔ Work Orders</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openModuleDetail('contact')">
+              <div class="card-top">
+                <div class="card-icon icon-cyan">👥</div>
+                <span class="role-tag">Perm: 1</span>
+              </div>
+              <h3 class="card-name">Contacts Directory</h3>
+              <p class="card-desc">Customer and account repository. Automatically matches incoming phone/emails to historical customer records.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#contact_menu</span>
+                <span class="connections-count">Binds ➔ Requester</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Connector -->
+        <div class="flow-arrow-down">
+          <div class="arrow-bubble">⬇ Ingestion Passes Payload to Process State Machine</div>
+        </div>
+
+        <!-- Tier 2: Process Definition & State Machine -->
+        <div class="pipeline-tier">
+          <div class="tier-header">
+            <div class="tier-title-group">
+              <div class="tier-num">2</div>
+              <div>
+                <div class="tier-title">Process Blueprint &amp; State Engine</div>
+                <div class="tier-desc">Defines rules, transition stages, approvals, and SLA benchmarks</div>
+              </div>
+            </div>
+            <span class="badge badge-emerald">Core Logic</span>
+          </div>
+          <div class="cards-row">
+
+            <div class="module-card" onclick="openModuleDetail('workflows')">
+              <div class="card-top">
+                <div class="card-icon icon-emerald">🔄</div>
+                <span class="role-tag">Perm: 37</span>
+              </div>
+              <h3 class="card-name">Workflows Engine</h3>
+              <p class="card-desc">Custom state machine engine. Configures stages (e.g. New ➔ Inspection ➔ Line Manager Approval ➔ Execution ➔ Closed).</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#workflows_menu</span>
+                <span class="connections-count">Enforces ➔ State Rules</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openModuleDetail('setup')">
+              <div class="card-top">
+                <div class="card-icon icon-amber">⚙️</div>
+                <span class="role-tag">Wizard</span>
+              </div>
+              <h3 class="card-name">Setup Workflow</h3>
+              <p class="card-desc">Onboarding configuration wizard to initialize templates, assign departments, and establish initial routing.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#setupworkflow_menu</span>
+                <span class="connections-count">Configures ➔ Defaults</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Connector -->
+        <div class="flow-arrow-down">
+          <div class="arrow-bubble">⬇ State Machine Spawns Active Executable Work Order</div>
+        </div>
+
+        <!-- Tier 3: Execution & Case Management -->
+        <div class="pipeline-tier">
+          <div class="tier-header">
+            <div class="tier-title-group">
+              <div class="tier-num">3</div>
+              <div>
+                <div class="tier-title">Execution &amp; Field Operations</div>
+                <div class="tier-desc">Live ticket tracking, capacity-based engineer dispatch, and line manager approvals</div>
+              </div>
+            </div>
+            <span class="badge badge-primary">Operations Tier</span>
+          </div>
+          <div class="cards-row">
+
+            <div class="module-card" onclick="openModuleDetail('tickets')">
+              <div class="card-top">
+                <div class="card-icon icon-rose">🎫</div>
+                <span class="role-tag">Perm: 9</span>
+              </div>
+              <h3 class="card-name">Work Orders / Tickets</h3>
+              <p class="card-desc">The central execution workplace. Displays priority, checklists, stage updates, comments, and customer attachments.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#tickets_menu</span>
+                <span class="connections-count">Assigns ➔ Engineers</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openModuleDetail('engineer')">
+              <div class="card-top">
+                <div class="card-icon icon-cyan">🛠️</div>
+                <span class="role-tag">Perm: 2</span>
+              </div>
+              <h3 class="card-name">Resources &amp; Engineers</h3>
+              <p class="card-desc">Capacity utilization matrix. Analyzes active technician workloads, skills, and schedules for balanced task assignment.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#engineer_menu</span>
+                <span class="connections-count">Dispatches ➔ Field Work</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openModuleDetail('users')">
+              <div class="card-top">
+                <div class="card-icon icon-purple">🏢</div>
+                <span class="role-tag">Perm: 1</span>
+              </div>
+              <h3 class="card-name">Users &amp; Teams</h3>
+              <p class="card-desc">Department hierarchy and Line Manager governance. Manages approvals, role boundaries, and team lead oversight.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#users_menu</span>
+                <span class="connections-count">Provides ➔ Approvals</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openModuleDetail('production')">
+              <div class="card-top">
+                <div class="card-icon icon-amber">📦</div>
+                <span class="role-tag">IMS Link</span>
+              </div>
+              <h3 class="card-name">Production &amp; IMS</h3>
+              <p class="card-desc">Verifies Order IDs (`orderid-verification`), releases inventory parts, and ensures materials fulfillment for tickets.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#production_menu</span>
+                <span class="connections-count">Supplies ➔ Hardware</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Connector -->
+        <div class="flow-arrow-down">
+          <div class="arrow-bubble">⬇ Operational Data Aggregated for Governance &amp; Analytics</div>
+        </div>
+
+        <!-- Tier 4: Monitoring & Governance -->
+        <div class="pipeline-tier">
+          <div class="tier-header">
+            <div class="tier-title-group">
+              <div class="tier-num">4</div>
+              <div>
+                <div class="tier-title">Governance, Escalations &amp; Analytics</div>
+                <div class="tier-desc">Executive visibility, SLA breach monitoring, and departmental productivity analytics</div>
+              </div>
+            </div>
+            <span class="badge badge-emerald">Governance Tier</span>
+          </div>
+          <div class="cards-row">
+
+            <div class="module-card" onclick="openModuleDetail('dashboard')">
+              <div class="card-top">
+                <div class="card-icon icon-blue">📊</div>
+                <span class="role-tag">Perm: 13</span>
+              </div>
+              <h3 class="card-name">Operations Dashboard</h3>
+              <p class="card-desc">Real-time status overview: active tickets by state, SLA heatmaps, critical alerts, and urgent tasks requiring attention.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#dashboard_menu</span>
+                <span class="connections-count">Monitors ➔ Live Operations</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openModuleDetail('reports')">
+              <div class="card-top">
+                <div class="card-icon icon-emerald">📈</div>
+                <span class="role-tag">Perm: 20</span>
+              </div>
+              <h3 class="card-name">Reports &amp; Analytics</h3>
+              <p class="card-desc">Deep historical analytics: Turnaround Time (TAT), Department &amp; Regional Utilization Summaries, and Top Performers.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#reports_menu</span>
+                <span class="connections-count">Audits ➔ Throughput</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openModuleDetail('escalations')">
+              <div class="card-top">
+                <div class="card-icon icon-rose">⚠️</div>
+                <span class="role-tag">Perm: 14</span>
+              </div>
+              <h3 class="card-name">Escalation Engine</h3>
+              <p class="card-desc">Automatic SLA timer: checks unworked tickets at 48h, 96h, and 240h milestones, triggering alerts and manager reassignments.</p>
+              <div class="card-footer">
+                <span class="sidebar-id">#settings_menu</span>
+                <span class="connections-count">Enforces ➔ Timelines</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: Interactive Lifecycle Walkthrough -->
+    <div id="simulator-view" class="view-section">
+      <div class="simulator-box">
+        <div class="sim-header">
+          <h3>Step-by-Step Ticket Lifecycle Simulator</h3>
+          <p>Click through the 6 stages to see how an issue flows across the modules from intake to resolution.</p>
+        </div>
+
+        <div class="step-track">
+          <div class="step-node active" onclick="setSimStep(0)">
+            <div class="node-circle">1</div>
+            <div class="node-label">Intake</div>
+          </div>
+          <div class="step-node" onclick="setSimStep(1)">
+            <div class="node-circle">2</div>
+            <div class="node-label">Workflow Match</div>
+          </div>
+          <div class="step-node" onclick="setSimStep(2)">
+            <div class="node-circle">3</div>
+            <div class="node-label">Dispatch</div>
+          </div>
+          <div class="step-node" onclick="setSimStep(3)">
+            <div class="node-circle">4</div>
+            <div class="node-label">Fulfillment</div>
+          </div>
+          <div class="step-node" onclick="setSimStep(4)">
+            <div class="node-circle">5</div>
+            <div class="node-label">Approval</div>
+          </div>
+          <div class="step-node" onclick="setSimStep(5)">
+            <div class="node-circle">6</div>
+            <div class="node-label">Closure</div>
+          </div>
+        </div>
+
+        <div class="sim-content-card">
+          <div class="sim-step-icon" id="sim-icon">📋</div>
+          <div class="sim-step-info">
+            <h4 id="sim-title">Stage 1: Customer Submits Web Form</h4>
+            <p id="sim-desc">
+              A customer fills out a public intake form created via <strong>Web Forms</strong>. 
+              The system queries the <strong>Contacts Directory</strong>: if the phone/email exists, the ticket is linked; otherwise, a new contact is generated.
+            </p>
+            <div class="tag-list" id="sim-tags">
+              <span class="tech-tag">Module: Web Forms</span>
+              <span class="tech-tag">Module: Contacts Directory</span>
+              <span class="tech-tag">Action: Ingest Payload</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sim-controls">
+          <button class="btn-sim btn-secondary" onclick="prevSimStep()">Previous</button>
+          <button class="btn-sim btn-primary" onclick="nextSimStep()">Next Stage ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: Complete Matrix Table -->
+    <div id="matrix-view" class="view-section">
+      <div class="matrix-card">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Sidebar Menu Item</th>
+              <th>Role Permission</th>
+              <th>Core Function</th>
+              <th>Incoming Connections</th>
+              <th>Outgoing Connections</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>#setupworkflow_menu</strong><br><small style="color: var(--text-dim)">Setup Workflow</small></td>
+              <td><code>Wizard</code></td>
+              <td>Initializes workflow blueprints and default routing</td>
+              <td>Superadmin Setup</td>
+              <td>Workflows, Teams</td>
+              <td><span class="status-pill pill-core">Setup</span></td>
+            </tr>
+            <tr>
+              <td><strong>#dashboard_menu</strong><br><small style="color: var(--text-dim)">Dashboard</small></td>
+              <td><code>Role 13</code></td>
+              <td>Real-time operational KPI monitor</td>
+              <td>Work Orders, Escalation Engine</td>
+              <td>Executive View</td>
+              <td><span class="status-pill pill-active">Live Monitoring</span></td>
+            </tr>
+            <tr>
+              <td><strong>#tickets_menu</strong><br><small style="color: var(--text-dim)">Work Orders / Tickets</small></td>
+              <td><code>Role 9</code></td>
+              <td>Core ticket lifecycle and case workspace</td>
+              <td>Web Forms, Email Gateway, Workflows</td>
+              <td>Engineers, Teams, Reports</td>
+              <td><span class="status-pill pill-core">Core Execution</span></td>
+            </tr>
+            <tr>
+              <td><strong>#workflows_menu</strong><br><small style="color: var(--text-dim)">Workflows</small></td>
+              <td><code>Role 37</code></td>
+              <td>Custom state machine process designer</td>
+              <td>Setup Wizard, Admin Settings</td>
+              <td>Work Orders (Instance creation)</td>
+              <td><span class="status-pill pill-core">Process Engine</span></td>
+            </tr>
+            <tr>
+              <td><strong>#forms_menu</strong><br><small style="color: var(--text-dim)">Web Forms</small></td>
+              <td><code>Role 33</code></td>
+              <td>Public &amp; embedded customer form builder</td>
+              <td>Customer submissions</td>
+              <td>Workflows, Contacts Directory</td>
+              <td><span class="status-pill pill-active">Intake</span></td>
+            </tr>
+            <tr>
+              <td><strong>#contact_menu</strong><br><small style="color: var(--text-dim)">Contacts</small></td>
+              <td><code>Role 1</code></td>
+              <td>CRM customer and account registry</td>
+              <td>Web Forms, Manual Entry</td>
+              <td>Work Orders</td>
+              <td><span class="status-pill pill-aux">Data Entity</span></td>
+            </tr>
+            <tr>
+              <td><strong>#users_menu</strong><br><small style="color: var(--text-dim)">Users &amp; Teams</small></td>
+              <td><code>Role 1</code></td>
+              <td>Department structure, roles, and Line Manager approvals</td>
+              <td>Merchant Admin</td>
+              <td>Work Orders, Engineers</td>
+              <td><span class="status-pill pill-core">Organization</span></td>
+            </tr>
+            <tr>
+              <td><strong>#engineer_menu</strong><br><small style="color: var(--text-dim)">Resources &amp; Engineers</small></td>
+              <td><code>Role 2</code></td>
+              <td>Technician workload capacity &amp; field scheduling</td>
+              <td>Work Orders assignment</td>
+              <td>Reports (Utilization summary)</td>
+              <td><span class="status-pill pill-active">Dispatch</span></td>
+            </tr>
+            <tr>
+              <td><strong>#production_menu</strong><br><small style="color: var(--text-dim)">Production / IMS</small></td>
+              <td><code>Role 0 (IMS)</code></td>
+              <td>Inventory order verification and parts fulfillment</td>
+              <td>Work Orders requiring hardware</td>
+              <td>Work Orders (Verification token)</td>
+              <td><span class="status-pill pill-aux">Integration</span></td>
+            </tr>
+            <tr>
+              <td><strong>#reports_menu</strong><br><small style="color: var(--text-dim)">Reports &amp; Analytics</small></td>
+              <td><code>Role 20</code></td>
+              <td>TAT, regional utilization, and escalation metrics</td>
+              <td>Work Orders, Engineers, Teams</td>
+              <td>Export / Management</td>
+              <td><span class="status-pill pill-active">Analytics</span></td>
+            </tr>
+            <tr>
+              <td><strong>#settings_menu</strong><br><small style="color: var(--text-dim)">Settings &amp; Escalations</small></td>
+              <td><code>Role 14</code></td>
+              <td>Configures SLA breach tiers (48h/96h/240h) and Email IMAP</td>
+              <td>System Admin</td>
+              <td>Escalations Engine, Work Orders</td>
+              <td><span class="status-pill pill-core">Configuration</span></td>
+            </tr>
+            <tr>
+              <td><strong>#gethelp_menu</strong><br><small style="color: var(--text-dim)">Help &amp; Support</small></td>
+              <td><code>Role 42</code></td>
+              <td>Documentation, product tour, and support center</td>
+              <td>Users</td>
+              <td>Support Portal</td>
+              <td><span class="status-pill pill-aux">Documentation</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Module Details Modal/Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer(event)">
+    <div class="drawer" id="drawerContent" onclick="event.stopPropagation()">
+      <button class="drawer-close" onclick="closeDrawer()">✕ Close Details</button>
+      <div class="drawer-header">
+        <h3 id="drawerTitle">Module Title</h3>
+        <span class="badge badge-primary" id="drawerBadge">Permission Role</span>
+      </div>
+
+      <div class="drawer-section">
+        <h4>Overview &amp; Purpose</h4>
+        <p id="drawerDesc" style="color: var(--text-muted); font-size: 14px; line-height: 1.6;"></p>
+      </div>
+
+      <div class="drawer-section">
+        <h4>Inputs &amp; Incoming Data Flow</h4>
+        <div class="tag-list" id="drawerInputs"></div>
+      </div>
+
+      <div class="drawer-section">
+        <h4>Outputs &amp; Connected Modules</h4>
+        <div class="tag-list" id="drawerOutputs"></div>
+      </div>
+
+      <div class="drawer-section">
+        <h4>Underlying Technical Mechanisms</h4>
+        <div class="tag-list" id="drawerTech"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 CICOD SaaS Ecosystem • Generated for tenant: <strong>princetest</strong></p>
+  </footer>
+
+  <script>
+    // Tab switching
+    function switchView(viewId) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(viewId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+    // Module Data Dictionary
+    const modulesData = {
+      forms: {
+        title: "Web Forms (Form Builder)",
+        badge: "Role Permission: 33 (#forms_menu)",
+        desc: "Dynamic web form creator that allows non-technical administrators to design multi-field intake interfaces. Can be distributed as standalone URLs or embedded via iframes into customer-facing portals.",
+        inputs: ["Customer Inputs", "Validation Rules", "File Uploads"],
+        outputs: ["Workflows Engine (Spawns Ticket)", "Contacts (Links or creates profile)"],
+        tech: ["HTML5 Forms", "Client Validations", "JSON Schema Ingestion"]
+      },
+      settings: {
+        title: "Settings & Escalations Matrix",
+        badge: "Role Permission: 14 (#settings_menu)",
+        desc: "The nerve center for system configuration. Houses the Email Integration gateway (IMAP/POP3), SLA resolution milestones, and multi-tier escalation thresholds (48h, 96h, 240h).",
+        inputs: ["IMAP Mailbox Credentials", "SLA Threshold Rules", "Alert Templates"],
+        outputs: ["Email-to-Ticket Generator", "Escalation Watchdog", "Notification Webhooks"],
+        tech: ["email-integration.js", "escalation.js", "Cron Scheduling"]
+      },
+      contact: {
+        title: "Contacts & Account Registry",
+        badge: "Role Permission: 1 (#contact_menu)",
+        desc: "Enterprise directory storing customer and vendor profiles. Tracks phone numbers, emails, addresses, and full historical log of all work orders opened by that client.",
+        inputs: ["Web Form Submissions", "Agent Manual Entry", "CSV Bulk Imports"],
+        outputs: ["Work Orders (Requester Context)", "Customer Portal"],
+        tech: ["CRM Data Binding", "Customer History Logs"]
+      },
+      workflows: {
+        title: "Workflows State Machine",
+        badge: "Role Permission: 37 (#workflows_menu)",
+        desc: "The operational blueprint designer. Defines custom state transitions, mandatory fields per phase, conditional routing paths, and mandatory line manager approvals.",
+        inputs: ["Form Builder Trigger", "Admin Process Map", "SLA Policies"],
+        outputs: ["Work Orders (Ticket Instantiation)", "Task Stage Checklists"],
+        tech: ["Yii Process Engine", "JSON State Machine", "Role-based Transition Guards"]
+      },
+      setup: {
+        title: "Setup Workflow Wizard",
+        badge: "Onboarding Wizard (#setupworkflow_menu)",
+        desc: "Quick-start guide for newly provisioned tenants. Walks through establishing the company's first operational workflow, creating default teams, and testing form intake.",
+        inputs: ["Tenant Onboarding Survey", "Default Department Map"],
+        outputs: ["Workflows Seed Configuration", "Team Default Groups"],
+        tech: ["tour.js", "Template Wizard Engine"]
+      },
+      tickets: {
+        title: "Work Orders & Tickets Hub",
+        badge: "Role Permission: 9 (#tickets_menu)",
+        desc: "The primary daily operational workplace. Displays real-time ticket cards with urgency badges, field technician assignments, checklist progression, and audit logs.",
+        inputs: ["Web Forms", "Email Gateway", "Manual Ticket Creation"],
+        outputs: ["Field Engineers Dispatch", "Production/IMS", "Operations Dashboard"],
+        tech: ["actions.js", "Yii Active Record", "Ticket Status State Machine"]
+      },
+      engineer: {
+        title: "Resources & Engineers (Capacity Engine)",
+        badge: "Role Permission: 2 (#engineer_menu)",
+        desc: "Advanced workforce and capacity management. Calculates individual technician utilization %, current workload queues, active field jobs, and regional dispatch balance.",
+        inputs: ["Ticket Assignments", "Technician Shifts", "Geographic Regions"],
+        outputs: ["Workload Optimization", "Department Utilization Summary", "Top 5 Performers"],
+        tech: ["resource-performance.js", "Capacity Algorithms", "Utilization Aggregators"]
+      },
+      users: {
+        title: "Users & Teams Governance",
+        badge: "Role Permission: 1 (#users_menu)",
+        desc: "Organizational hierarchy and role-based access control (RBAC). Configures Line Managers, team lead sign-offs, and departmental permissions.",
+        inputs: ["Merchant Admin Roster", "SSO User Profile"],
+        outputs: ["Line Manager Approvals", "Role Guards", "Queue Access"],
+        tech: ["SSO User Sync", "is_linemanager Property", "RBAC Permission Sets"]
+      },
+      production: {
+        title: "Production & IMS Integration",
+        badge: "Inventory Link (#production_menu)",
+        desc: "Direct bridge to the Inventory Management System. Validates work order parts requests, checks order IDs against production schedules, and fulfills physical materials.",
+        inputs: ["Work Order Hardware Request", "Order ID Verification API"],
+        outputs: ["Inventory Issuance", "Fulfillment Status to Ticket"],
+        tech: ["wfmservice/orderid-verification", "HTTP RPC Bridge"]
+      },
+      dashboard: {
+        title: "Operations Dashboard",
+        badge: "Role Permission: 13 (#dashboard_menu)",
+        desc: "Executive command center. Aggregates live operational data across all active workflows: tickets by stage, SLA countdown timers, and overdue tickets.",
+        inputs: ["Live Tickets Feed", "Escalation Watchdog", "Engineer Queue Status"],
+        outputs: ["Real-time Executive View", "Quick Action Links"],
+        tech: ["AmCharts 5", "Live Metric Aggregation", "Tippy Tooltips"]
+      },
+      reports: {
+        title: "Reports & Analytics Engine",
+        badge: "Role Permission: 20 (#reports_menu)",
+        desc: "Historical performance intelligence. Generates deep analysis on Turnaround Time (TAT), Department & Regional Capacity Utilization, and SLA breach breakdowns.",
+        inputs: ["Closed Tickets Log", "Time-in-Stage Timestamps", "Resource Performance Data"],
+        outputs: ["Executive Exports (Excel/PDF)", "SLA Compliance Audits"],
+        tech: ["xepOnline Plugin", "TableExport", "Resource Performance Metrics"]
+      },
+      escalations: {
+        title: "Automated Escalation Watchdog",
+        badge: "Role Permission: 14 (#settings_menu)",
+        desc: "Continuous watchdog checking tickets against SLA commitments. Automatically raises priority and alerts Line Managers when tickets stall past 48, 96, or 240 hours.",
+        inputs: ["Ticket Inactivity Timers", "SLA Configuration Matrix"],
+        outputs: ["Automated Manager Alerts", "Priority Escalation", "Dashboard Warning Badges"],
+        tech: ["escalation.js", "initBarChart", "initPieChart", "Tiered Thresholds"]
+      }
+    };
+
+    function openModuleDetail(key) {
+      const data = modulesData[key];
+      if (!data) return;
+
+      document.getElementById('drawerTitle').innerText = data.title;
+      document.getElementById('drawerBadge').innerText = data.badge;
+      document.getElementById('drawerDesc').innerText = data.desc;
+
+      const fillTags = (containerId, items) => {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        items.forEach(item => {
+          const span = document.createElement('span');
+          span.className = 'tech-tag';
+          span.innerText = item;
+          container.appendChild(span);
+        });
+      };
+
+      fillTags('drawerInputs', data.inputs);
+      fillTags('drawerOutputs', data.outputs);
+      fillTags('drawerTech', data.tech);
+
+      document.getElementById('drawerOverlay').classList.add('active');
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawerOverlay').classList.remove('active');
+    }
+
+    // Simulator Steps
+    const simStages = [
+      {
+        step: 0,
+        icon: "📋",
+        title: "Stage 1: Customer Submits Web Form",
+        desc: "A customer completes an online service intake form created in Web Forms. The system matches their email or phone number in the Contacts directory, linking their history or creating a new contact card.",
+        tags: ["Module: Web Forms", "Module: Contacts Directory", "Action: Intake Validation"]
+      },
+      {
+        step: 1,
+        icon: "🔄",
+        title: "Stage 2: Process State Machine Instantiation",
+        desc: "The Workflows engine checks the active business process rules. It creates a new Work Order, binds the required stage checklist, and starts the SLA response timer.",
+        tags: ["Module: Workflows", "Module: Work Orders", "Action: Create Ticket Instance"]
+      },
+      {
+        step: 2,
+        icon: "🛠️",
+        title: "Stage 3: Capacity-Aware Resource Dispatch",
+        desc: "The Resources & Engineers engine evaluates technician capacity, active job loads, and regional availability. The ticket is assigned to the best available engineer with appropriate skills.",
+        tags: ["Module: Resources & Engineers", "Module: Users & Teams", "Action: Intelligent Assignment"]
+      },
+      {
+        step: 3,
+        icon: "📦",
+        title: "Stage 4: Hardware & Materials Fulfillment (IMS)",
+        desc: "If the job requires hardware, the ticket connects with Production / IMS to verify the Order ID via `orderid-verification` and release the required inventory parts.",
+        tags: ["Module: Production & IMS", "Module: Work Orders", "Action: Order ID Verification"]
+      },
+      {
+        step: 4,
+        icon: "👔",
+        title: "Stage 5: Line Manager Sign-Off & Approvals",
+        desc: "Once the field technician marks their checklist items complete, the ticket moves to 'Pending Approval'. The Line Manager configured in Teams reviews the work log and approves the stage.",
+        tags: ["Module: Users & Teams", "Module: Work Orders", "Action: Line Manager Sign-Off"]
+      },
+      {
+        step: 5,
+        icon: "📈",
+        title: "Stage 6: Resolution, SLA Logging & Analytics",
+        desc: "The ticket is marked Closed. The turnaround time (TAT) is recorded. The Operations Dashboard updates in real time, and the closed case feeds into Reports & Analytics.",
+        tags: ["Module: Dashboard", "Module: Reports & Analytics", "Action: Record TAT & Utilization"]
+      }
+    ];
+
+    let currentSimStep = 0;
+
+    function setSimStep(index) {
+      currentSimStep = index;
+      const stage = simStages[index];
+
+      document.querySelectorAll('.step-node').forEach((node, i) => {
+        node.classList.remove('active', 'completed');
+        if (i < index) node.classList.add('completed');
+        if (i === index) node.classList.add('active');
+      });
+
+      document.getElementById('sim-icon').innerText = stage.icon;
+      document.getElementById('sim-title').innerText = stage.title;
+      document.getElementById('sim-desc').innerText = stage.desc;
+
+      const tagContainer = document.getElementById('sim-tags');
+      tagContainer.innerHTML = '';
+      stage.tags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'tech-tag';
+        span.innerText = t;
+        tagContainer.appendChild(span);
+      });
+    }
+
+    function nextSimStep() {
+      if (currentSimStep < simStages.length - 1) {
+        setSimStep(currentSimStep + 1);
+      } else {
+        setSimStep(0);
+      }
+    }
+
+    function prevSimStep() {
+      if (currentSimStep > 0) {
+        setSimStep(currentSimStep - 1);
+      }
+    }
+  </script>
+</body>
+</html>

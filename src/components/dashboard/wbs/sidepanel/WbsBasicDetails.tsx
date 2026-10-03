@@ -1,9 +1,11 @@
-import { User, FileText, CheckSquare, Plus, Check, X, ChevronDown, ChevronRight } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { WbsStatus, ChecklistItem } from '@/lib/wbs/constants'
-import { WbsChecklist } from './WbsChecklist'
-import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 import { TerminologyDict } from '@/utils/terminology'
+import { useAiEntitlements } from '@/hooks/useAiEntitlements'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
+import { StatusSelector } from './components/StatusSelector'
+import { EstimationFields } from './components/EstimationFields'
+import { ScopeDeliverablesAccordion } from './components/ScopeDeliverablesAccordion'
 
 type WbsBasicDetailsProps = {
   name: string
@@ -18,6 +20,16 @@ type WbsBasicDetailsProps = {
   setDeliverablesData: React.Dispatch<React.SetStateAction<ChecklistItem[]>>
   acceptanceCriteriaData: ChecklistItem[]
   setAcceptanceCriteriaData: React.Dispatch<React.SetStateAction<ChecklistItem[]>>
+  userStoriesData?: ChecklistItem[]
+  setUserStoriesData?: React.Dispatch<React.SetStateAction<ChecklistItem[]>>
+  edgeCasesData?: ChecklistItem[]
+  setEdgeCasesData?: React.Dispatch<React.SetStateAction<ChecklistItem[]>>
+  priority?: string | null
+  setPriority?: (val: string | null) => void
+  storyPoints?: number | null
+  setStoryPoints?: (val: number | null) => void
+  requiredSkills?: string[]
+  setRequiredSkills?: (val: string[]) => void
   hasEditAccess: boolean
   canCheckDeliverables?: boolean
   canCheckCriteria?: boolean
@@ -30,7 +42,20 @@ type WbsBasicDetailsProps = {
   callerUserId?: string
   onAutoSaveDeliverables?: (items: ChecklistItem[]) => void
   onAutoSaveCriteria?: (items: ChecklistItem[]) => void
+  onAutoSaveUserStories?: (items: ChecklistItem[]) => void
+  onAutoSaveEdgeCases?: (items: ChecklistItem[]) => void
+  onAutoSavePriority?: (val: string | null) => void
+  onAutoSaveStoryPoints?: (val: number | null) => void
+  onAutoSaveRequiredSkills?: (val: string[]) => void
+  onAutoSaveStatus?: (val: WbsStatus) => Promise<void> | void
   terms: TerminologyDict
+  organizationId: string
+  onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
+  projectAdrs?: any[]
+  linkedAdrIds?: string[]
+  tier?: string
+  wbsElementId?: string
+  onLinkedAdrsChange?: (ids: string[]) => void
 }
 
 export function WbsBasicDetails({
@@ -40,6 +65,11 @@ export function WbsBasicDetails({
   description, setDescription,
   deliverablesData, setDeliverablesData,
   acceptanceCriteriaData, setAcceptanceCriteriaData,
+  userStoriesData = [], setUserStoriesData,
+  edgeCasesData = [], setEdgeCasesData,
+  priority, setPriority,
+  storyPoints, setStoryPoints,
+  requiredSkills = [], setRequiredSkills,
   hasEditAccess,
   canCheckDeliverables,
   canCheckCriteria,
@@ -48,24 +78,17 @@ export function WbsBasicDetails({
   onAddCustomStatus,
   onAutoSaveDeliverables,
   onAutoSaveCriteria,
-  terms
+  onAutoSaveUserStories,
+  onAutoSaveEdgeCases,
+  onAutoSavePriority,
+  onAutoSaveStoryPoints,
+  onAutoSaveRequiredSkills,
+  onAutoSaveStatus,
+  terms,
+  organizationId,
+  onShowToast
 }: WbsBasicDetailsProps) {
-  const [isAddingStatus, setIsAddingStatus] = useState(false)
-  const [newStatusName, setNewStatusName] = useState('')
-  const [isScopeOpen, setIsScopeOpen] = useState(false)
-
-  const handleSaveNewStatus = () => {
-    const trimmed = newStatusName.trim()
-    if (trimmed) {
-      onAddCustomStatus(trimmed)
-      setStatus(trimmed as WbsStatus)
-    }
-    setNewStatusName('')
-    setIsAddingStatus(false)
-  }
-
-  // Fallback to hasEditAccess if canCheckDeliverables isn't explicitly passed
-  const isCheckboxEnabled = (!saving) && (canCheckDeliverables ?? hasEditAccess)
+  const { checkLimit, recordUsage, isChecking, UpgradePromptModalProps } = useAiEntitlements(organizationId)
 
   return (
     <>
@@ -86,63 +109,17 @@ export function WbsBasicDetails({
         />
       </div>
 
-      {/* Owner Removed - Handled by RACI */}
-
       {/* Status & Terminology Toggle */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="auth-label">Status</label>
-          {isAddingStatus ? (
-             <div className="flex flex-col gap-2">
-               <input
-                 autoFocus
-                 type="text"
-                 placeholder="New Status"
-                 className="w-full px-3 py-1.5 text-sm bg-app-input border border-violet-500 rounded-lg text-app-fg focus:outline-none focus:ring-1 focus:ring-violet-500"
-                 value={newStatusName}
-                 onChange={(e) => setNewStatusName(e.target.value)}
-                 onKeyDown={(e) => e.key === 'Enter' && handleSaveNewStatus()}
-               />
-               <div className="flex items-center gap-2">
-                 <button
-                   type="button"
-                   className="flex-1 flex justify-center items-center py-1.5 bg-violet-500 hover:bg-violet-600 text-white rounded-lg text-xs font-semibold cursor-pointer"
-                   onClick={handleSaveNewStatus}
-                 >
-                   <Check className="w-3 h-3 mr-1" /> Add
-                 </button>
-                 <button
-                   type="button"
-                   className="flex-1 flex justify-center items-center py-1.5 bg-app-muted-surface hover:bg-app-hover text-app-subtle rounded-lg text-xs font-semibold cursor-pointer"
-                   onClick={() => setIsAddingStatus(false)}
-                 >
-                   <X className="w-3 h-3 mr-1" /> Cancel
-                 </button>
-               </div>
-             </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <EnterpriseSelect
-                value={status}
-                onChange={(val) => setStatus(val as WbsStatus)}
-                options={customStatuses}
-                disabled={!hasEditAccess || saving}
-                size="lg"
-                placeholder="Select status..."
-              />
-              {hasEditAccess && !saving && (
-                <button
-                  type="button"
-                  onClick={() => setIsAddingStatus(true)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-violet-500 hover:text-violet-600 transition-colors w-max cursor-pointer"
-                >
-                  <Plus className="w-3 h-3" />
-                  New Status
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+      <div className="grid grid-cols-2 gap-4 mt-4">
+        <StatusSelector
+          status={status}
+          setStatus={setStatus}
+          customStatuses={customStatuses}
+          onAddCustomStatus={onAddCustomStatus}
+          hasEditAccess={hasEditAccess}
+          saving={saving}
+          onAutoSaveStatus={onAutoSaveStatus}
+        />
 
         <div className="space-y-2">
           <label className="auth-label block mb-1">Planning Tier</label>
@@ -173,70 +150,56 @@ export function WbsBasicDetails({
         </div>
       </div>
 
+      {/* Estimation Fields */}
+      <EstimationFields
+        name={name}
+        description={description}
+        priority={priority}
+        setPriority={setPriority}
+        storyPoints={storyPoints}
+        setStoryPoints={setStoryPoints}
+        requiredSkills={requiredSkills}
+        setRequiredSkills={setRequiredSkills}
+        hasEditAccess={hasEditAccess}
+        saving={saving}
+        terms={terms}
+        isChecking={isChecking}
+        checkLimit={checkLimit}
+        recordUsage={recordUsage}
+        onShowToast={onShowToast}
+        onAutoSavePriority={onAutoSavePriority}
+        onAutoSaveStoryPoints={onAutoSaveStoryPoints}
+        onAutoSaveRequiredSkills={onAutoSaveRequiredSkills}
+      />
+
       {/* Scope & Deliverables Accordion */}
-      <div className="border border-app-border rounded-xl overflow-hidden bg-app-surface mt-6">
-        <button
-          type="button"
-          onClick={() => setIsScopeOpen(!isScopeOpen)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-app-surface hover:bg-app-hover transition-colors"
-        >
-          <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
-            <FileText className="w-4 h-4 text-app-muted" />
-            Scope & Deliverables
-          </div>
-          {isScopeOpen ? (
-            <ChevronDown className="w-4 h-4 text-app-muted" />
-          ) : (
-            <ChevronRight className="w-4 h-4 text-app-muted" />
-          )}
-        </button>
-        
-        {isScopeOpen && (
-          <div className="p-4 border-t border-app-border bg-app-surface-solid space-y-6">
-            {/* Description */}
-            <div className="space-y-2">
-              <label htmlFor="wbs-description" className="auth-label flex items-center gap-1.5">
-                <FileText className="h-3.5 w-3.5 text-app-subtle" />
-                Description
-              </label>
-              <textarea
-                id="wbs-description"
-                disabled={!hasEditAccess || saving}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe scope boundaries, key steps, and what this element covers..."
-                className="w-full px-4 py-2.5 bg-app-input border border-app-border rounded-xl text-app-fg focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 min-h-[90px] resize-none text-xs disabled:opacity-50"
-              />
-            </div>
+      <ScopeDeliverablesAccordion
+        name={name}
+        description={description}
+        setDescription={setDescription}
+        deliverablesData={deliverablesData}
+        setDeliverablesData={setDeliverablesData}
+        acceptanceCriteriaData={acceptanceCriteriaData}
+        setAcceptanceCriteriaData={setAcceptanceCriteriaData}
+        userStoriesData={userStoriesData}
+        setUserStoriesData={setUserStoriesData}
+        edgeCasesData={edgeCasesData}
+        setEdgeCasesData={setEdgeCasesData}
+        hasEditAccess={hasEditAccess}
+        canCheckDeliverables={canCheckDeliverables}
+        canCheckCriteria={canCheckCriteria}
+        saving={saving}
+        terms={terms}
+        isChecking={isChecking}
+        checkLimit={checkLimit}
+        recordUsage={recordUsage}
+        onAutoSaveDeliverables={onAutoSaveDeliverables}
+        onAutoSaveCriteria={onAutoSaveCriteria}
+        onAutoSaveUserStories={onAutoSaveUserStories}
+        onAutoSaveEdgeCases={onAutoSaveEdgeCases}
+      />
 
-            {/* Deliverables (Interactive Checklist) */}
-            <WbsChecklist
-              title="Tangible Deliverables"
-              icon={<CheckSquare className="h-3.5 w-3.5 text-app-subtle" />}
-              items={deliverablesData}
-              setItems={setDeliverablesData}
-              hasEditAccess={hasEditAccess}
-              canCheckItems={canCheckDeliverables}
-              saving={saving}
-              placeholder="E.g., Design Mockups"
-              onAutoSave={onAutoSaveDeliverables}
-            />
-
-            {/* Acceptance Criteria */}
-            <WbsChecklist
-              title="Acceptance Criteria"
-              icon={<CheckSquare className="h-3.5 w-3.5 text-app-subtle" />}
-              items={acceptanceCriteriaData}
-              setItems={setAcceptanceCriteriaData}
-              hasEditAccess={hasEditAccess}
-              canCheckItems={canCheckCriteria}
-              saving={saving}
-              placeholder="E.g., Passes User Testing"
-              onAutoSave={onAutoSaveCriteria}
-            />
-          </div>
-        )}
-      </div>
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </>
   )
 }

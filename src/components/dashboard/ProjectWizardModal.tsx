@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { X, Briefcase, Loader2, ShieldAlert, ChevronDown } from 'lucide-react'
-import { createProject } from '@/lib/projects/actions'
+import { useProjectWizardModal, MethodologyType } from './hooks/useProjectWizardModal'
 
 function CustomDropdown({
   id,
@@ -60,14 +59,12 @@ type ProjectWizardModalProps = {
   organizationId: string
 }
 
-type MethodologyType = 'Waterfall' | 'Agile' | 'Hybrid'
-
 const METHODOLOGIES: MethodologyType[] = ['Waterfall', 'Agile', 'Hybrid']
 const CURRENCIES = [
   { code: 'USD', symbol: '$' },
-  { code: 'NGN', symbol: '?' },
-  { code: 'EUR', symbol: '?' },
-  { code: 'GBP', symbol: '?' },
+  { code: 'NGN', symbol: '₦' },
+  { code: 'EUR', symbol: '€' },
+  { code: 'GBP', symbol: '£' },
 ]
 const DAYS_OF_WEEK = [
   { name: 'Sun', value: 0 }, { name: 'Mon', value: 1 }, { name: 'Tue', value: 2 },
@@ -76,56 +73,26 @@ const DAYS_OF_WEEK = [
 ]
 
 export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWizardModalProps) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [name, setName] = useState('')
-  const [clientName, setClientName] = useState('')
-  const [description, setDescription] = useState('')
-  const [methodology, setMethodology] = useState<MethodologyType>('Waterfall')
-  const [currency, setCurrency] = useState('USD')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [workingDays, setWorkingDays] = useState<number[]>([1, 2, 3, 4, 5])
-  const [dailyHours, setDailyHours] = useState(8)
-  const [allowTeamScheduleEdits, setAllowTeamScheduleEdits] = useState(false)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const {
+    showBudgetControls,
+    isPending,
+    name, setName,
+    clientName, setClientName,
+    description, setDescription,
+    methodology, setMethodology,
+    currency, setCurrency,
+    startDate, setStartDate,
+    endDate, setEndDate,
+    workingDays,
+    dailyHours, setDailyHours,
+    allowTeamScheduleEdits, setAllowTeamScheduleEdits,
+    errorMsg,
+    handleClose,
+    handleDayToggle,
+    handleSubmit
+  } = useProjectWizardModal({ organizationId, onClose })
 
   if (!open) return null
-
-  const handleClose = () => {
-    if (isPending) return
-    setName(''); setClientName(''); setDescription(''); setMethodology('Waterfall')
-    setCurrency('USD'); setStartDate(''); setEndDate(''); setWorkingDays([1, 2, 3, 4, 5])
-    setDailyHours(8); setAllowTeamScheduleEdits(false); setErrorMsg(null); onClose()
-  }
-
-  const handleDayToggle = (day: number) => {
-    setWorkingDays((current) => current.includes(day)
-      ? current.filter((value) => value !== day)
-      : [...current, day].sort())
-  }
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault()
-    setErrorMsg(null)
-    if (!name.trim()) return setErrorMsg('Project name is required')
-    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-      return setErrorMsg('End date must be on or after start date')
-    }
-    if (!workingDays.length) return setErrorMsg('Please select at least one working day')
-
-    startTransition(async () => {
-      const result = await createProject(organizationId, {
-        name, clientName: clientName.trim() || null, description: description.trim() || null,
-        methodology, currency, startDate: startDate || null, endDate: endDate || null,
-        calendarConfig: { working_days: workingDays, daily_hours: dailyHours },
-        allowTeamScheduleEdits,
-      })
-      if (!result.ok) return setErrorMsg(result.error)
-      router.refresh()
-      handleClose()
-    })
-  }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -165,7 +132,7 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
               <div className="space-y-2"><label htmlFor="project-name" className="auth-label">Project Name <span className="text-rose-500">*</span></label><input id="project-name" value={name} onChange={(event) => setName(event.target.value)} disabled={isPending} placeholder="e.g. Q3 Commercial Launch" className="auth-input pl-4" /></div>
               <div className="space-y-2"><label htmlFor="project-client" className="auth-label">Client Name</label><input id="project-client" value={clientName} onChange={(event) => setClientName(event.target.value)} disabled={isPending} placeholder="e.g. Acme Corp" className="auth-input pl-4" /></div>
               <div className="space-y-2"><label htmlFor="project-description" className="auth-label">Description</label><textarea id="project-description" value={description} onChange={(event) => setDescription(event.target.value)} disabled={isPending} placeholder="Describe the main deliverables and objectives..." className="auth-input pl-4 py-3 min-h-[80px] resize-none" /></div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className={`grid grid-cols-1 ${showBudgetControls ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-4`}>
                 <div className="space-y-2">
                   <label htmlFor="project-methodology" className="auth-label">Methodology</label>
                   <CustomDropdown
@@ -176,16 +143,18 @@ export function ProjectWizardModal({ open, onClose, organizationId }: ProjectWiz
                     disabled={isPending}
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="project-currency" className="auth-label">Currency</label>
-                  <CustomDropdown
-                    id="project-currency"
-                    value={currency}
-                    options={CURRENCIES.map(c => ({ label: `${c.code} (${c.symbol})`, value: c.code }))}
-                    onChange={(val) => setCurrency(val)}
-                    disabled={isPending}
-                  />
-                </div>
+                {showBudgetControls && (
+                  <div className="space-y-2">
+                    <label htmlFor="project-currency" className="auth-label">Currency</label>
+                    <CustomDropdown
+                      id="project-currency"
+                      value={currency}
+                      options={CURRENCIES.map(c => ({ label: `${c.code} (${c.symbol})`, value: c.code }))}
+                      onChange={(val) => setCurrency(val)}
+                      disabled={isPending}
+                    />
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2"><label htmlFor="project-start" className="auth-label">Start Date</label><input id="project-start" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} disabled={isPending} className="auth-input pl-4" /></div>

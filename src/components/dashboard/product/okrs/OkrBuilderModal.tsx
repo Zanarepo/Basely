@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import type { OkrObjective, OkrKeyResult } from '@/lib/product-strategy/types'
-import { createOkrObjective, updateOkrObjective, createOkrKeyResult, updateOkrKeyResult } from '@/lib/product-strategy/actions'
+import { createOkrObjective, updateOkrObjective, createOkrKeyResult, updateOkrKeyResult } from '@/lib/product-strategy/okr-actions'
 import { X, Save, Loader2, Plus } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
 

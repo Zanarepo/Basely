@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/client'
 
 interface BusinessCaseResolverProps {
   entityId: string
-  field: 'problem_statement' | 'proposed_solution' | 'financials' | 'recommendation'
+  field: 'problem_statement' | 'proposed_solution' | 'financials' | 'recommendation' | 'problem' | 'solution'
 }
 
 export default function BusinessCaseResolver({ entityId, field }: BusinessCaseResolverProps) {
@@ -35,11 +35,11 @@ export default function BusinessCaseResolver({ entityId, field }: BusinessCaseRe
     return <p className="text-app-muted italic">Business Case data not found.</p>
   }
 
-  if (field === 'problem_statement') {
+  if (field === 'problem_statement' || field === 'problem') {
     return <p className="whitespace-pre-wrap">{data.problem_statement || 'No problem statement provided.'}</p>
   }
 
-  if (field === 'proposed_solution') {
+  if (field === 'proposed_solution' || field === 'solution') {
     return <p className="whitespace-pre-wrap">{data.proposed_solution || 'No proposed solution provided.'}</p>
   }
 

@@ -18,12 +18,18 @@ export async function getChangeRequests(projectId: string): Promise<ChangeReques
 
   const orgId = project.organization_id
 
-  // 2. Check feature access (Enterprise Tier check)
-  const hasApprovalWorkflows = (await checkFeatureAccess(orgId, 'governance.approval_workflows')).allowed
+  // 2. Check if the org actually has active approval policies
+  const { data: activePolicies } = await supabase
+    .from('approval_policies')
+    .select('id')
+    .eq('organization_id', orgId)
+    .eq('enabled', true)
+
+  const hasActiveApprovalWorkflows = activePolicies && activePolicies.length > 0
 
   let results: ChangeRequestEntry[] = []
 
-  if (hasApprovalWorkflows) {
+  if (hasActiveApprovalWorkflows) {
     // Enterprise: Read from approval_requests where action_type is related to changes
     const { data: requests, error } = await supabase
       .from('approval_requests')

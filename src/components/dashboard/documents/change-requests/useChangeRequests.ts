@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import { getChangeRequests, createStandaloneChangeRequest, updateStandaloneChangeRequest, deleteStandaloneChangeRequest, ChangeRequestEntry } from '@/lib/documents/change-requests'
+import { createClient } from '@/utils/supabase/client'
+import { getCurrencySymbol } from '@/lib/utils'
 
 export function useChangeRequests(projectId: string) {
   const [logs, setLogs] = useState<ChangeRequestEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currencySymbol, setCurrencySymbol] = useState('$')
 
   const fetchLogs = async () => {
     setLoading(true)
@@ -19,21 +22,34 @@ export function useChangeRequests(projectId: string) {
     }
   }
 
+  const fetchCurrency = async () => {
+    try {
+      const supabase = createClient()
+      const { data } = await supabase.from('projects').select('currency').eq('id', projectId).maybeSingle()
+      if (data?.currency) {
+        setCurrencySymbol(getCurrencySymbol(data.currency))
+      }
+    } catch (e) {
+      console.error('Failed to fetch currency', e)
+    }
+  }
+
   useEffect(() => {
     if (projectId) {
       fetchLogs()
+      fetchCurrency()
     }
   }, [projectId])
 
-  const createLog = async (description: string, rationale: string) => {
-    const res = await createStandaloneChangeRequest(projectId, description, rationale)
+  const createLog = async (description: string, rationale: string, costImpact?: number, scheduleImpactDays?: number) => {
+    const res = await createStandaloneChangeRequest(projectId, description, rationale, 'pending', costImpact, scheduleImpactDays)
     if (!res.success) {
       throw new Error(res.error)
     }
     await fetchLogs()
   }
 
-  const updateLogStatus = async (id: string, outcome: 'pending' | 'approved' | 'rejected' | 'withdrawn') => {
+  const updateLogStatus = async (id: string, outcome: 'pending' | 'pending_sponsor_approval' | 'approved' | 'rejected' | 'withdrawn') => {
     // Optimistic update
     setLogs(currentLogs => 
       currentLogs.map(log => log.id === id ? { ...log, outcome } : log)
@@ -69,6 +85,7 @@ export function useChangeRequests(projectId: string) {
     createLog,
     updateLogStatus,
     deleteLog,
-    refresh: fetchLogs
+    refresh: fetchLogs,
+    currencySymbol
   }
 }

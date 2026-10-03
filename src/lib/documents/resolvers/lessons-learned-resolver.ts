@@ -10,13 +10,16 @@ export interface LessonsLearnedTemplateStructure {
     durationDays: number
   }
   defaultSections: Record<string, string>
+  aiInsights?: any[] | null
+  lessonId?: string | null
+  status?: string | null
 }
 
 /**
  * Resolves project context and provides structured free-text section prompts
  * to guide project teams through formal sprint and project retrospectives.
  */
-export async function resolveLessonsLearnedData(projectId: string): Promise<LessonsLearnedTemplateStructure | null> {
+export async function resolveLessonsLearnedData(projectId: string, releaseId?: string): Promise<LessonsLearnedTemplateStructure | null> {
   const supabase = await createClient()
 
   let proj: any = null
@@ -58,6 +61,34 @@ export async function resolveLessonsLearnedData(projectId: string): Promise<Less
     durationDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)))
   }
 
+  let query = supabase
+    .from('product_lessons_learned')
+    .select('*')
+    .eq('project_id', projectId)
+
+  if (releaseId) {
+    query = query.eq('release_id', releaseId)
+  } else {
+    query = query.is('release_id', null)
+  }
+
+  const { data: lesson } = await query.order('created_at', { ascending: false }).limit(1).maybeSingle()
+
+  let whatWorked = ''
+  let whatDidNotWork = ''
+  let recommendations = ''
+
+  if (lesson && lesson.raw_notes) {
+    const notes = lesson.raw_notes
+    const match1 = notes.match(/What worked well:\n([\s\S]*?)(?=\n\nWhat did not work:|$)/)
+    const match2 = notes.match(/What did not work:\n([\s\S]*?)(?=\n\nRecommendations:|$)/)
+    const match3 = notes.match(/Recommendations:\n([\s\S]*?)$/)
+    
+    if (match1) whatWorked = match1[1].trim()
+    if (match2) whatDidNotWork = match2[1].trim()
+    if (match3) recommendations = match3[1].trim()
+  }
+
   return {
     projectContext: {
       name: proj.name || 'Project Retrospective',
@@ -67,9 +98,12 @@ export async function resolveLessonsLearnedData(projectId: string): Promise<Less
     },
     defaultSections: {
       executive_context: `This Lessons Learned report summarizes historical performance and retrospective insights for "${proj.name || 'Project Retrospective'}", executed using the ${proj.methodology || 'Waterfall'} methodology over an estimated ${durationDays}-day duration.`,
-      what_worked_well: "• Cross-functional engineering communication via automated Slack notifications.\n• Earned Value Management (EVM) tracking enabled proactive budget variance mitigation.\n• Clear deliverables outlined in the WBS Dictionary reduced scope creep.",
-      what_did_not_work: "• Initial stakeholder gathering lacked explicit sign-off criteria for sub-deliverables.\n• Third-party vendor dependencies led to minor critical path buffer absorption.",
-      recommendations_for_future: "1. Introduce mandatory Requirements Traceability Matrix (RTM) tracking during Phase 1 Initiation.\n2. Schedule recurring weekly Post-Implementation Review reminders 30 days prior to formal closure.\n3. Automate token-based external client sign-off links to eliminate login barriers."
-    }
+      what_worked_well: whatWorked,
+      what_did_not_work: whatDidNotWork,
+      recommendations_for_future: recommendations
+    },
+    aiInsights: lesson?.synthesized_insights?.length > 0 ? lesson.synthesized_insights : null,
+    status: lesson?.status || null,
+    lessonId: lesson?.id || null
   }
 }

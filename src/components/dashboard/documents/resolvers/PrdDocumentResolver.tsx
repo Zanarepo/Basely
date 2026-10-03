@@ -42,6 +42,8 @@ export function PrdDocumentResolver({ projectId, source }: PrdDocumentResolverPr
             .eq('id', prd.target_persona_id)
             .single()
           setPersona(p as Persona | null)
+        } else {
+          setPersona(null)
         }
         if (prd.primary_okr_id) {
           const { data: o } = await supabase
@@ -50,6 +52,8 @@ export function PrdDocumentResolver({ projectId, source }: PrdDocumentResolverPr
             .eq('id', prd.primary_okr_id)
             .single()
           setOkr(o as OkrObjective | null)
+        } else {
+          setOkr(null)
         }
       }
 
@@ -66,7 +70,17 @@ export function PrdDocumentResolver({ projectId, source }: PrdDocumentResolverPr
 
       setLoading(false)
     }
+
     loadData()
+
+    const handleUpdate = () => {
+      loadData()
+    }
+    window.addEventListener('prd-metadata-updated', handleUpdate)
+
+    return () => {
+      window.removeEventListener('prd-metadata-updated', handleUpdate)
+    }
   }, [projectId, source])
 
   if (loading) {

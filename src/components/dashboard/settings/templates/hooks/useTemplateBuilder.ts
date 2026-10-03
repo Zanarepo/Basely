@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { DocumentSectionDef } from '@/lib/documents/actions'
+import { DocumentSectionDef } from '@/lib/documents/types'
 
 export function useTemplateBuilder(initialSections: DocumentSectionDef[] = []) {
   const [sections, setSections] = useState<DocumentSectionDef[]>(initialSections)

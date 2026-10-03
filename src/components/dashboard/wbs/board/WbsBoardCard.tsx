@@ -1,4 +1,4 @@
-import { Trash2, CheckSquare } from 'lucide-react'
+import { Trash2, CheckSquare, Target, UserX, AlertCircle, AlertTriangle, Loader2 } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
 
 interface WbsBoardCardProps {
@@ -64,7 +64,7 @@ export function WbsBoardCard({
   return (
     <div
       onClick={() => onSelect(t.id)}
-      draggable={canDragTask}
+      draggable={canDragTask && !t.isSaving}
       onDragStart={(e) => onDragStart(e, t.id, colName)}
       onDragOver={(e) => onDragOverTask(e, t.id)}
       onDragLeave={onDragLeaveTask}
@@ -77,9 +77,10 @@ export function WbsBoardCard({
       data-board-column={colName}
       className={`group/task group relative bg-app-surface border rounded-xl p-3.5 sm:p-3 shadow-xs transition-all duration-200 select-none touch-pan-y
         ${isResponsible ? 'border-violet-400 ring-1 ring-violet-400/50 bg-violet-50/30 dark:bg-violet-500/5' : 'border-app-border'}
-        ${canDragTask ? 'cursor-grab active:cursor-grabbing hover:border-violet-400 hover:shadow-md' : 'cursor-pointer hover:border-slate-300'}
+        ${canDragTask && !t.isSaving ? 'cursor-grab active:cursor-grabbing hover:border-violet-400 hover:shadow-md' : 'cursor-pointer hover:border-slate-300'}
         ${draggedTaskId === t.id ? 'opacity-40 border-dashed scale-95 bg-violet-500/5' : ''}
         ${dragOverTaskId === t.id ? 'border-t-2 border-t-violet-500 transform translate-y-1 shadow-lg' : ''}
+        ${t.isSaving ? 'opacity-70 pointer-events-none' : ''}
       `}
     >
       <div className="flex items-center justify-between mb-2">
@@ -119,7 +120,8 @@ export function WbsBoardCard({
       <div className="text-sm text-app-fg font-medium leading-snug mb-3">
         {t.name}
       </div>
-      
+
+
       {t.deliverablesData && t.deliverablesData.length > 0 && (
         <div className="flex items-center gap-1.5 mb-1 text-[10px] font-medium text-violet-500/80">
           <CheckSquare className="w-3 h-3" />
@@ -143,36 +145,81 @@ export function WbsBoardCard({
           })()}
         </div>
       )}
-      
-      <div className="flex items-center justify-between mt-auto">
-        <div className="flex items-center gap-1.5">
-          {initials ? (
-            <div
-              className="w-6 h-6 rounded-full bg-emerald-500 text-white text-[9px] flex items-center justify-center font-semibold shrink-0"
-              title={`Responsible: ${responsibleName}`}
-            >
-              {initials}
-            </div>
-          ) : (
-            <div className="w-6 h-6 rounded-full border border-dashed border-app-border flex items-center justify-center text-app-subtle text-[10px]" title="No Responsible assigned">
-              +
-            </div>
-          )}
-          {isMissingRaci && (
-            <span title="Missing Responsible or Accountable assignment" className="text-amber-500 text-xs cursor-help">⚠️</span>
-          )}
+
+      {t.priority && (
+        <div className={`mb-3 w-max px-2 py-0.5 rounded-md text-[10px] font-semibold border ${
+          t.priority === 'Critical' ? 'bg-red-500/10 text-red-600 border-red-500/20' :
+          t.priority === 'High' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
+          t.priority === 'Medium' ? 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20' :
+          'bg-slate-500/10 text-slate-600 border-slate-500/20'
+        }`}>
+          {t.priority}
         </div>
-        
-        {/* Workflow stage progress bar */}
-        <div className="w-16 h-1.5 bg-app-muted-surface rounded-full overflow-hidden" title={`Workflow Stage: ${visibleColIndex + 1} of ${visibleColumnsLength}`}>
-          <div
-            className="h-full bg-violet-500 rounded-full transition-all duration-300"
-            style={{
-              width: `${Math.round(((visibleColIndex + 1) / visibleColumnsLength) * 100)}%`,
-            }}
-          />
+      )}
+
+      {t.status === 'In Review' && (
+        <div className="mb-3 w-max px-2 py-1 rounded-md text-[10px] font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20 flex items-center gap-1.5 shadow-sm shadow-rose-500/5">
+          <AlertTriangle className="w-3 h-3" />
+          Review Required
+        </div>
+      )}
+      
+      <div className="flex flex-col mt-auto gap-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            {initials ? (
+              <div
+                className="w-6 h-6 rounded-full bg-emerald-500 text-white text-[9px] flex items-center justify-center font-semibold shrink-0"
+                title={`Responsible: ${responsibleName}`}
+              >
+                {initials}
+              </div>
+            ) : (
+              <div className="w-6 h-6 rounded-full border border-dashed border-app-border flex items-center justify-center text-app-subtle text-[10px]" title="No Responsible assigned">
+                +
+              </div>
+            )}
+            {isMissingRaci && (
+              <span title="Missing Responsible or Accountable assignment" className="cursor-help">
+                <UserX className="w-3.5 h-3.5 text-amber-500" />
+              </span>
+            )}
+          </div>
+          
+          {/* Workflow stage progress bar */}
+          <div className="w-16 h-1.5 bg-app-muted-surface rounded-full overflow-hidden" title={`Workflow Stage: ${visibleColIndex + 1} of ${visibleColumnsLength}`}>
+            <div
+              className="h-full bg-violet-500 rounded-full transition-all duration-300"
+              style={{
+                width: `${Math.round(((visibleColIndex + 1) / visibleColumnsLength) * 100)}%`,
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="h-px w-full bg-app-border/60" />
+
+        <div className="flex items-center gap-1.5">
+          {t.okrTitle ? (
+            <span title={`Strategic OKR: ${t.okrTitle}`} className="cursor-help text-indigo-500 hover:text-indigo-600 transition-colors">
+              <Target className="w-3.5 h-3.5" />
+            </span>
+          ) : (
+            <span title="Unaligned Work: No Strategic OKR" className="cursor-help text-rose-400 hover:text-rose-500 transition-colors">
+              <AlertCircle className="w-3.5 h-3.5" />
+            </span>
+          )}
         </div>
       </div>
+
+      {t.isSaving && (
+        <div className="absolute inset-0 bg-app-surface/60 backdrop-blur-[1px] rounded-xl flex flex-col items-center justify-center z-10 transition-all">
+          <Loader2 className="w-6 h-6 text-violet-500 animate-spin mb-2" />
+          <span className="text-[10px] font-bold text-violet-600 animate-pulse bg-violet-500/10 px-2 py-0.5 rounded-full border border-violet-500/20">
+            CHECKING GATE...
+          </span>
+        </div>
+      )}
     </div>
   )
 }

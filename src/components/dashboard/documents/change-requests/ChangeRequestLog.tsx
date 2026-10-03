@@ -15,7 +15,7 @@ interface ChangeRequestLogProps {
 }
 
 export function ChangeRequestLog({ projectId, hasEditAccess, isManager, onShowToast }: ChangeRequestLogProps) {
-  const { logs, loading, error, createLog, updateLogStatus, deleteLog, refresh } = useChangeRequests(projectId)
+  const { logs, loading, error, createLog, updateLogStatus, deleteLog, refresh, currencySymbol } = useChangeRequests(projectId)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const isApprovalWorkflow = logs.length > 0 && logs[0].source === 'approval_workflow'
@@ -107,6 +107,7 @@ export function ChangeRequestLog({ projectId, hasEditAccess, isManager, onShowTo
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={createLog}
+        currencySymbol={currencySymbol}
       />
     </div>
   )

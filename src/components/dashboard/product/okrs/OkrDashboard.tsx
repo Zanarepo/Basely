@@ -2,10 +2,15 @@
 
 import React, { useState, useEffect } from 'react'
 import type { OkrObjective, OkrKeyResult } from '@/lib/product-strategy/types'
-import { getOkrObjectives } from '@/lib/product-strategy/actions'
+import { getOkrObjectives } from '@/lib/product-strategy/okr-actions'
 import { OkrObjectiveCard } from './OkrObjectiveCard'
 import { OkrBuilderModal } from './OkrBuilderModal'
-import { Target, Plus, Loader2, RefreshCw, Layers } from 'lucide-react'
+import { Target, Plus, Search, Filter, Loader2, ArrowUpDown, RefreshCw, Layers } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
+import { useGenerateOkrs } from './hooks/useGenerateOkrs'
+import { GenerateOkrsDropdown } from './components/GenerateOkrsDropdown'
+import { ToastContainer, type ToastMessage } from '@/components/dashboard/Toast'
+import { UpgradePromptModal } from '@/components/dashboard/billing/UpgradePromptModal'
 
 interface OkrDashboardProps {
   organizationId: string
@@ -21,6 +26,18 @@ export function OkrDashboard({
   const [objectives, setObjectives] = useState<OkrObjective[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [toasts, setToasts] = useState<ToastMessage[]>([])
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToasts(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, message }])
+  }
+
+  const { isGenerating, handleGenerate, UpgradePromptModalProps } = useGenerateOkrs(
+    organizationId,
+    projectId,
+    () => fetchOkrs(true),
+    showToast
+  )
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -127,60 +144,54 @@ export function OkrDashboard({
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800 mb-3">
-              <Layers className="w-3.5 h-3.5 text-violet-500" />
-              <span>HIERARCHICAL OKR PERFORMANCE ENGINE</span>
-            </div>
-            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
-              Objectives & Key Results Studio
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl font-medium">
-              Structure strategic quarterly outcomes into measurable, high-confidence Key Results. All progress sliders update instantaneously without page reloads and feed formal OKR reporting documents.
-            </p>
-          </div>
+      <ToastContainer toasts={toasts} onDismiss={(id) => setToasts(t => t.filter(x => x.id !== id))} />
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            Objectives & Key Results
+          </h2>
+        </div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault()
-                fetchOkrs(true)
-              }}
-              disabled={refreshing || loading}
-              style={{ cursor: 'pointer' }}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold inline-flex items-center transition-colors shadow-2xs disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin text-violet-500' : ''}`} />
-              {refreshing ? 'Syncing...' : 'Sync OKRs'}
-            </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              fetchOkrs(true)
+            }}
+            disabled={refreshing || loading}
+            style={{ cursor: 'pointer' }}
+            className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold inline-flex items-center transition-colors shadow-2xs disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin text-violet-500' : ''}`} />
+            {refreshing ? 'Syncing...' : 'Sync'}
+          </button>
 
-            {hasEditAccess && (
+          {hasEditAccess && (
+            <>
+              <GenerateOkrsDropdown
+                isGenerating={isGenerating}
+                onGenerate={handleGenerate}
+                disabled={loading || refreshing}
+              />
               <button
                 type="button"
                 onClick={handleCreateObjective}
                 style={{ cursor: 'pointer' }}
-                className="px-5 py-2.5 rounded-xl bg-[#6b4eff] hover:bg-[#5839ec] text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
+                className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all"
               >
                 <Plus className="w-4 h-4" />
                 Register Objective
               </button>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* Content Tree */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            Loading hierarchical Objectives and Key Results...
-          </span>
-        </div>
+        <DocumentLoader message="Loading hierarchical Objectives and Key Results..." />
       ) : objectives.length === 0 ? (
         <div className="bg-slate-50 dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center max-w-2xl mx-auto my-10 space-y-4">
           <div className="w-12 h-12 bg-violet-500/10 rounded-full flex items-center justify-center mx-auto text-violet-500">
@@ -236,6 +247,7 @@ export function OkrDashboard({
         onSavedObjective={handleSavedObjective}
         onSavedKeyResult={handleSavedKeyResult}
       />
+      <UpgradePromptModal {...UpgradePromptModalProps} />
     </div>
   )
 }

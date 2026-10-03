@@ -3,11 +3,12 @@
 import React from 'react'
 import { StrategyCanvas } from '@/components/dashboard/product/strategy/StrategyCanvas'
 import { PersonasDashboard } from '@/components/dashboard/product/personas/PersonasDashboard'
-import { NorthStarDashboard } from '@/components/dashboard/product/okrs/NorthStarDashboard'
-import { OkrDashboard } from '@/components/dashboard/product/okrs/OkrDashboard'
+import { StrategicOutcomesHub } from '@/components/dashboard/product/okrs/StrategicOutcomesHub'
 import { DiscoveryInbox } from '@/components/dashboard/product/discovery/DiscoveryInbox'
 import { PrioritizationDashboard } from '@/components/dashboard/product/prioritization/PrioritizationDashboard'
 import { RoadmapDashboard } from '@/components/dashboard/product/roadmap/RoadmapDashboard'
+import { CompetitiveIntelligenceDashboard } from '@/components/dashboard/product/strategy/CompetitiveIntelligenceDashboard'
+import { ReleasesWorkspace } from '@/components/dashboard/releases/ReleasesWorkspace'
 
 export interface ProductDocumentsRouterProps {
   documentType: string
@@ -48,31 +49,20 @@ export function ProductDocumentsRouter({
     )
   }
 
-  if (documentType === 'north_star_kpis_workspace') {
+  if (documentType === 'strategic_outcomes_hub') {
     return (
       <div className="h-full overflow-y-auto pr-2">
-        <NorthStarDashboard
+        <StrategicOutcomesHub
           projectId={projectId}
           organizationId={organizationId}
           hasEditAccess={hasEditAccess}
+          projectContext={projectContext}
         />
       </div>
     )
   }
 
-  if (documentType === 'okrs_workspace') {
-    return (
-      <div className="h-full overflow-y-auto pr-2">
-        <OkrDashboard
-          projectId={projectId}
-          organizationId={organizationId}
-          hasEditAccess={hasEditAccess}
-        />
-      </div>
-    )
-  }
-
-  if (documentType === 'voc_discovery_workspace') {
+  if (documentType === 'voc_discovery_workspace' || documentType === 'discovery_insights_document') {
     return (
       <div className="h-full overflow-y-auto pr-2">
         <DiscoveryInbox
@@ -100,6 +90,31 @@ export function ProductDocumentsRouter({
       <div className="h-full overflow-y-auto pr-2">
         <RoadmapDashboard
           projectId={projectId}
+          organizationId={organizationId}
+        />
+      </div>
+    )
+  }
+
+  if (documentType === 'competitive_analysis_workspace' || documentType === 'competitive_benchmarking_matrix') {
+    return (
+      <div className="h-full overflow-y-auto pr-2">
+        <CompetitiveIntelligenceDashboard
+          projectId={projectId}
+          organizationId={organizationId}
+          hasEditAccess={hasEditAccess}
+        />
+      </div>
+    )
+  }
+
+  if (documentType === 'release_checklist_workspace') {
+    return (
+      <div className="h-full overflow-y-auto pr-2">
+        <ReleasesWorkspace
+          projectId={projectId}
+          organizationId={organizationId}
+          hasEditAccess={hasEditAccess}
         />
       </div>
     )

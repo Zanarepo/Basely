@@ -1,21 +1,25 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { FileSpreadsheet, Plus, Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { FileSpreadsheet, Plus, Loader2, Sparkles } from 'lucide-react'
 import { WbsTree } from './WbsTree'
 import { WbsBoardView } from './WbsBoardView'
 import { WbsGridView } from './WbsGridView'
 import { WbsElementSidePanel } from './WbsElementSidePanel'
 import { ToastContainer } from '@/components/dashboard/Toast'
 import { UnassignedWorkView } from './UnassignedWorkView'
+import { SkillGapWidget } from './SkillGapWidget'
 
-// Moduralized Components & Hooks
 import { useWbsPlanning } from './workspace/useWbsPlanning'
-import { WbsToolbar, WbsViewType } from './workspace/WbsToolbar'
+import { WbsToolbar } from './workspace/WbsToolbar'
 import { WbsImportModal } from './WbsImportModal'
 import { RaciMatrixView } from './RaciMatrixView'
-import { getTerminology, TerminologyDict, ProjectMethodology } from '@/utils/terminology'
+import { QualityGateModal } from './QualityGateModal'
+import { IterationModal } from '@/components/dashboard/releases/components/IterationModal'
+import { getTerminology, ProjectMethodology } from '@/utils/terminology'
+import { useWbsBoard } from './workspace/useWbsBoard'
+import { useWbsWorkspaceState } from './workspace/useWbsWorkspaceState'
+import { useAutoGenerateWbs } from './workspace/hooks/useAutoGenerateWbs'
 
 type WbsPlanningWorkspaceProps = {
   projectId: string
@@ -27,9 +31,10 @@ type WbsPlanningWorkspaceProps = {
   allowTeamScheduleEdits?: boolean
   currency?: string
   methodology?: ProjectMethodology | null
+  organizationId: string
+  tier: string
+  aiEnabled: boolean
 }
-
-import { useWbsBoard } from './workspace/useWbsBoard'
 
 export function WbsPlanningWorkspace({
   projectId,
@@ -41,21 +46,17 @@ export function WbsPlanningWorkspace({
   allowTeamScheduleEdits = false,
   currency = 'USD',
   methodology,
+  organizationId,
+  tier,
+  aiEnabled,
 }: WbsPlanningWorkspaceProps) {
-  const searchParams = useSearchParams()
-  const initialView = (searchParams.get('wbsView') as WbsViewType) || 'tree'
-  const [currentView, setCurrentView] = useState<WbsViewType>(initialView)
-  const [isImporting, setIsImporting] = useState(false)
-  
   const terms = getTerminology(methodology)
-  
-  const elementIdFromUrl = searchParams.get('element')
-  const [processedElementId, setProcessedElementId] = useState<string | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
+  const [isCreateIterationModalOpen, setIsCreateIterationModalOpen] = useState(false)
 
   const {
     elements,
     loading,
-    error,
     isPending,
     activeElementId,
     setActiveElementId,
@@ -89,110 +90,43 @@ export function WbsPlanningWorkspace({
     selectAll,
     clearSelection,
     handleBulkDelete,
-  } = useWbsPlanning(projectId, hasEditAccess, callerRole, callerUserId)
-
-  const [showFinancials, setShowFinancials] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('wbsShowFinancials')
-      return saved ? JSON.parse(saved) : false
-    }
-    return false
-  })
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('wbsShowFinancials', JSON.stringify(showFinancials))
-    }
-  }, [showFinancials])
-
-  useEffect(() => {
-    if (elementIdFromUrl && elementIdFromUrl !== processedElementId && elements.length > 0) {
-      setActiveElementId(elementIdFromUrl)
-      setProcessedElementId(elementIdFromUrl)
-      
-      // Also ensure the path to this node is expanded
-      const el = elements.find(e => e.id === elementIdFromUrl)
-      if (el && el.parentId) {
-        let current: any = el
-        const toExpand = new Set<string>()
-        while (current?.parentId) {
-          toExpand.add(current.parentId)
-          current = elements.find(e => e.id === current.parentId)
-        }
-        setExpandedNodeIds(prev => new Set([...prev, ...toExpand]))
-      }
-    }
-  }, [elementIdFromUrl, processedElementId, elements, setActiveElementId, setExpandedNodeIds])
-
-  const treeNodesWithCosts = useMemo(() => {
-    // We only need to roll up costs if they are being displayed, but for 
-    // consistency we can always calculate them or calculate only when shown.
-    // Deep clone to avoid mutating the original treeNodes
-    const calculateCosts = (nodes: any[]): any[] => {
-      return nodes.map(node => {
-        const clonedChildren = calculateCosts(node.children)
-        let totalCost = node.element.cost || 0
-        for (const child of clonedChildren) {
-          totalCost += (child.element.cost || 0)
-        }
-        return {
-          ...node,
-          children: clonedChildren,
-          element: {
-            ...node.element,
-            cost: totalCost
-          }
-        }
-      })
-    }
-    
-    return calculateCosts(treeNodes)
-  }, [treeNodes])
-
-  // Auto-open a specific WBS element when navigating from entity references
-  useEffect(() => {
-    const elementId = searchParams.get('elementId')
-    if (elementId && elements.length > 0) {
-      setActiveElementId(elementId)
-      // Expand parent nodes so the element is visible in the tree
-      const el = elements.find(e => e.id === elementId)
-      if (el?.parentId) {
-        setExpandedNodeIds(prev => {
-          const next = new Set(prev)
-          // Walk up the parent chain
-          let currentId = el.parentId
-          while (currentId) {
-            next.add(currentId)
-            const parent = elements.find(e => e.id === currentId)
-            currentId = parent?.parentId ?? null
-          }
-          return next
-        })
-      }
-    }
-  }, [searchParams, elements, setActiveElementId, setExpandedNodeIds])
-
-  // Sync currentView if URL changes
-  useEffect(() => {
-    const view = searchParams.get('wbsView') as WbsViewType
-    if (view && ['tree', 'board', 'grid', 'raci', 'unassigned'].includes(view)) {
-      setCurrentView(view)
-    }
-  }, [searchParams])
+    qualityGateState,
+    setQualityGateState
+  } = useWbsPlanning(projectId, hasEditAccess, callerRole, callerUserId, tier)
 
   const { columns, taskOrders, addColumn, deleteColumn, renameColumn, reorderColumn, moveTask, hiddenColumns, toggleColumnVisibility } = useWbsBoard(projectId, elements)
 
-  const sortedElements = useMemo(() => {
-    const list: typeof elements = []
-    const traverse = (nodes: typeof treeNodes) => {
-      for (const node of nodes) {
-        list.push(node.element)
-        traverse(node.children)
-      }
-    }
-    traverse(treeNodes)
-    return list
-  }, [treeNodes])
+  const {
+    currentView,
+    setCurrentView,
+    showFinancials,
+    setShowFinancials,
+    hideCompleted,
+    setHideCompleted,
+    iterations,
+    handleSaveIterationWithTagging,
+    handleBulkAssignIteration,
+    completedCount,
+    filteredSortedElements,
+    filteredTreeNodesWithCosts,
+  } = useWbsWorkspaceState(
+    projectId,
+    elements,
+    treeNodes,
+    setActiveElementId,
+    setExpandedNodeIds,
+    selectedIds,
+    clearSelection,
+    loadElements,
+    showToast
+  )
+
+  const { isGeneratingWbs, handleAutoGenerateBacklogFromPrd } = useAutoGenerateWbs({
+    projectId,
+    organizationId,
+    onShowToast: showToast,
+    onSuccess: () => loadElements()
+  })
 
   if (loading && elements.length === 0) {
     return (
@@ -206,6 +140,31 @@ export function WbsPlanningWorkspace({
   return (
     <div className="space-y-6 relative">
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      {aiEnabled && (
+        <SkillGapWidget projectId={projectId} organizationId={organizationId} />
+      )}
+
+      {qualityGateState.isOpen && (
+        <QualityGateModal
+          projectId={projectId}
+          elementId={qualityGateState.elementId}
+          standards={qualityGateState.standards}
+          category={qualityGateState.category}
+          onClose={() => setQualityGateState({ ...qualityGateState, isOpen: false })}
+          onSuccess={() => {
+            showToast('success', 'Quality gate passed. Task marked complete.')
+            setQualityGateState({ ...qualityGateState, isOpen: false })
+            loadElements()
+          }}
+          onExceptionRaised={() => {
+            showToast('info', 'Quality exception logged. Task moved to In Review.')
+            setQualityGateState({ ...qualityGateState, isOpen: false })
+            addColumn('In Review')
+            loadElements()
+          }}
+        />
+      )}
 
       {/* Toolbar header */}
       <WbsToolbar
@@ -227,7 +186,29 @@ export function WbsPlanningWorkspace({
         handleBulkDelete={handleBulkDelete}
         showFinancials={showFinancials}
         onToggleFinancials={() => setShowFinancials(!showFinancials)}
+        onCreateIteration={() => setIsCreateIterationModalOpen(true)}
+        iterationButtonLabel={`Create ${terms.iteration}`}
+        iterations={iterations}
+        handleBulkAssignIteration={handleBulkAssignIteration}
+        hideCompleted={hideCompleted}
+        onToggleHideCompleted={() => setHideCompleted((prev) => !prev)}
+        completedCount={completedCount}
+        methodology={methodology}
+        terms={terms}
       />
+
+      {isCreateIterationModalOpen && (
+        <IterationModal
+          isOpen={isCreateIterationModalOpen}
+          onClose={() => setIsCreateIterationModalOpen(false)}
+          onSave={handleSaveIterationWithTagging}
+          projectMethodology={methodology}
+          nextSequenceNumber={(iterations?.length || 0) + 1}
+          availableWbsElements={elements.filter(e => e.isWorkPackage)}
+          projectId={projectId}
+          organizationId={organizationId}
+        />
+      )}
 
       {isImporting && (
         <WbsImportModal 
@@ -254,14 +235,32 @@ export function WbsPlanningWorkspace({
             Create hierarchical elements to decompose your project scope. WBS codes will calculate automatically at every level.
           </p>
           {hasEditAccess && (
-            <button
-              type="button"
-              onClick={() => handleCreateElement(null)}
-              className="btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              Create First Element
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => handleCreateElement(null)}
+                className="btn-primary"
+              >
+                <Plus className="h-4 w-4" />
+                Create First Element
+              </button>
+              
+              {aiEnabled && (
+                <button
+                  type="button"
+                  onClick={handleAutoGenerateBacklogFromPrd}
+                  disabled={isGeneratingWbs}
+                  className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs inline-flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50"
+                >
+                  {isGeneratingWbs ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  Auto-Generate from PRD
+                </button>
+              )}
+            </div>
           )}
         </div>
       ) : (
@@ -270,7 +269,7 @@ export function WbsPlanningWorkspace({
             {currentView === 'tree' && (
               <div className="overflow-x-auto">
                 <WbsTree
-                  treeNodes={treeNodesWithCosts}
+                  treeNodes={filteredTreeNodesWithCosts}
                   expandedNodeIds={expandedNodeIds}
                   onToggleExpand={handleToggleExpand}
                   activeElementId={activeElementId}
@@ -323,13 +322,17 @@ export function WbsPlanningWorkspace({
                 callerUserId={callerUserId}
                 onShowToast={showToast}
                 terms={terms}
+                iterations={iterations}
+                methodology={methodology}
+                hideCompleted={hideCompleted}
+                onToggleHideCompleted={() => setHideCompleted((prev) => !prev)}
               />
             )}
 
             {currentView === 'grid' && (
               <WbsGridView 
                 projectId={projectId}
-                elements={sortedElements}
+                elements={filteredSortedElements}
                 workspaceMembers={workspaceMembers}
                 onSelect={setActiveElementId}
                 selectedIds={selectedIds}
@@ -344,10 +347,15 @@ export function WbsPlanningWorkspace({
 
             {currentView === 'raci' && (
               <RaciMatrixView 
-                projectId={projectId}
-                elements={sortedElements}
+                projectId={projectId} 
+                elements={filteredSortedElements}
                 expandedNodeIds={expandedNodeIds}
                 onToggleExpand={handleToggleExpand}
+                organizationId={organizationId}
+                tier={tier}
+                aiEnabled={aiEnabled}
+                onShowToast={showToast}
+                onAssignmentsCompleted={loadElements}
               />
             )}
 
@@ -356,6 +364,7 @@ export function WbsPlanningWorkspace({
                 elements={elements}
                 onSelect={setActiveElementId}
                 terms={terms}
+                hideCompleted={hideCompleted}
               />
             )}
           </div>
@@ -379,7 +388,10 @@ export function WbsPlanningWorkspace({
         allowTeamScheduleEdits={allowTeamScheduleEdits}
         currency={currency}
         terms={terms}
-
+        organizationId={organizationId}
+        tier={tier}
+        aiEnabled={aiEnabled}
+        methodology={methodology}
       />
     </div>
   )

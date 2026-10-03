@@ -4,7 +4,7 @@ import { ExternalSignoffForm } from '@/components/signoff/ExternalSignoffForm'
 import { ShieldAlert, Lock, ArrowLeft } from 'lucide-react'
 
 export const metadata = {
-  title: 'External Project Sign-Off | Basely PM',
+  title: 'External Project Sign-Off | Prazaner PM',
   description: 'Secure token-based external stakeholder project closure acceptance portal.'
 }
 
@@ -22,7 +22,7 @@ export default async function ExternalSignoffPage({ searchParams }: PageProps) {
     <div className="min-h-screen bg-app-bg text-app-fg py-12 px-4 sm:px-6 md:px-12 flex flex-col justify-between selection:bg-violet-500 selection:text-white">
       <header className="w-full max-w-4xl mx-auto mb-8 flex items-center justify-between">
         <div className="flex items-center gap-2 font-black text-lg tracking-wider bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
-          BASELY CONTROLS
+          PRAZANER CONTROLS
         </div>
         <div className="flex items-center gap-1 text-xs text-app-muted font-mono font-bold bg-app-surface px-3 py-1 rounded-full border border-app-border">
           <Lock className="w-3 h-3 text-emerald-400" />

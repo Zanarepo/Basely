@@ -2,11 +2,14 @@
 
 import { Milestone, CheckCircle2, AlertTriangle, Clock } from 'lucide-react'
 import type { DashboardMilestone } from '../hooks/useProjectDashboardData'
+import { getTerminology } from '@/utils/terminology'
 
 export default function MilestonesWidget({
-  milestones
+  milestones,
+  methodology
 }: {
   milestones: DashboardMilestone[]
+  methodology?: string | null
 }) {
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'No Date'
@@ -17,10 +20,12 @@ export default function MilestonesWidget({
     })
   }
 
+  const terms = getTerminology(methodology)
+
   return (
     <div className="bg-white dark:bg-app-surface border border-app-border rounded-3xl p-6 shadow-sm flex flex-col h-full hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-bold text-app-fg">Upcoming Milestones</h3>
+        <h3 className="text-base font-bold text-app-fg">{terms.milestonesWidget}</h3>
         <Milestone className="h-5 w-5 text-violet-500" />
       </div>
 

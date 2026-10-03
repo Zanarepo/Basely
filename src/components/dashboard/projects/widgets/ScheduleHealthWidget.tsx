@@ -3,10 +3,14 @@
 import { Calendar, CheckCircle2, AlertTriangle, Clock } from 'lucide-react'
 import type { ScheduleHealth } from '../hooks/useProjectDashboardData'
 
+import { getTerminology } from '@/utils/terminology'
+
 export default function ScheduleHealthWidget({
-  health
+  health,
+  methodology
 }: {
   health: ScheduleHealth
+  methodology?: string | null
 }) {
   const {
     overallPercentComplete,
@@ -18,6 +22,7 @@ export default function ScheduleHealthWidget({
   } = health
 
   const pct = Math.min(100, Math.max(0, overallPercentComplete))
+  const terms = getTerminology(methodology)
 
   return (
     <div className="bg-white dark:bg-app-surface border border-app-border rounded-3xl p-6 shadow-sm flex flex-col justify-between h-full hover:shadow-md transition-all">
@@ -58,7 +63,7 @@ export default function ScheduleHealthWidget({
           </div>
 
           <div className="flex-1 space-y-1">
-            <div className="text-xs text-app-muted font-bold uppercase tracking-wider">Critical Path Status</div>
+            <div className="text-xs text-app-muted font-bold uppercase tracking-wider">{terms.criticalPath}</div>
             <div className="flex items-center gap-2">
               <span className={`h-2.5 w-2.5 rounded-full ${
                 criticalPathStatus === 'On Track' ? 'bg-emerald-500' : 'bg-rose-500'

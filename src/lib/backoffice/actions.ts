@@ -3,7 +3,7 @@
 import { requireSuperadmin, requireStaffWriteAccess, requireAnnouncementAccess } from './auth'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
-import { sendDirectEmail } from '@/lib/notifications/actions'
+import { sendDirectEmail } from '@/lib/notifications/dispatch'
 
 export async function overrideTenantTierAction(
   organizationId: string, 

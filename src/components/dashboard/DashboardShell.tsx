@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import { DashboardSidebar } from './DashboardSidebar'
 import { CreateWorkspaceModal } from './CreateWorkspaceModal'
-import { WorkspaceProvider, type Workspace } from './WorkspaceContext'
+import { WorkspaceProvider, type Workspace } from '@/components/dashboard/WorkspaceContext'
 import { GlobalSearchOverlay } from './GlobalSearchOverlay'
 import { Menu, Search, LayoutDashboard } from 'lucide-react'
 import { useWorkspaceTier } from '@/hooks/use-workspace-tier'
 import { DowngradeBanner, UpgradePromptModal } from './billing'
 import { PromoBanner } from './billing/PromoBanner'
+import { PersonaOnboardingModal } from './onboarding/PersonaOnboardingModal'
 
 type DashboardShellProps = {
   workspaces: Workspace[]
@@ -98,6 +99,7 @@ export function DashboardShell({
       </div>
 
       <CreateWorkspaceModal open={createWsOpen} onClose={() => setCreateWsOpen(false)} />
+      <PersonaOnboardingModal organizationId={activeWorkspace?.id} />
       <UpgradePromptModal
         isOpen={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}

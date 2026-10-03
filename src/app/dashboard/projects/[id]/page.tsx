@@ -2,29 +2,34 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import dynamic from 'next/dynamic'
 import { ArrowLeft, Briefcase, Workflow, CalendarRange, Clock, Lock } from 'lucide-react'
-import { WbsPlanningWorkspace } from '@/components/dashboard/wbs/WbsPlanningWorkspace'
-import GanttWorkspace from '@/components/dashboard/gantt/GanttWorkspace'
-import { ReleasesWorkspace } from '@/components/dashboard/releases/ReleasesWorkspace'
-import CostWorkspace from '@/components/dashboard/cost/CostWorkspace'
-import StakeholderWorkspace from '@/components/dashboard/stakeholders/StakeholderWorkspace'
-import RiskRegisterWorkspace from '@/components/dashboard/risks/RiskRegisterWorkspace'
-import DocumentsWorkspace from '@/components/dashboard/documents/DocumentsWorkspace'
-import TeamPermissionsWorkspace from '@/components/dashboard/team/TeamPermissionsWorkspace'
-import { ActionItemsTracker } from '@/components/dashboard/action-items/ActionItemsTracker'
-import { ProjectTeamRoster } from '@/components/dashboard/ProjectTeamRoster'
 import { ProjectWizardModal } from '@/components/dashboard/ProjectWizardModal'
 import { ProjectIntegrationsMenu } from '@/components/dashboard/projects/ProjectIntegrationsMenu'
+import { FeatureAppLauncher } from '@/components/dashboard/projects/FeatureAppLauncher'
 import { LivePresenceWrapper } from '@/components/dashboard/presence/LivePresenceWrapper'
-import ProjectDashboardWorkspace from '@/components/dashboard/projects/ProjectDashboardWorkspace'
 import ProjectNavigationTabs from '@/components/dashboard/projects/ProjectNavigationTabs'
 import { LifecycleStatusBadge } from '@/components/dashboard/projects/lifecycle/components/LifecycleStatusBadge'
-import RaidWorkspace from '@/components/dashboard/risks/raid/RaidWorkspace'
-import AdrWorkspace from '@/components/dashboard/projects/adr/AdrWorkspace'
-import SkillsMatrixTable from '@/components/dashboard/team/capacity/SkillsMatrixTable'
+
+// Lazy load heavy workspace components
+const WbsPlanningWorkspace = dynamic(() => import('@/components/dashboard/wbs/WbsPlanningWorkspace').then(mod => mod.WbsPlanningWorkspace))
+const GanttWorkspace = dynamic(() => import('@/components/dashboard/gantt/GanttWorkspace'))
+const ReleasesWorkspace = dynamic(() => import('@/components/dashboard/releases/ReleasesWorkspace').then(mod => mod.ReleasesWorkspace))
+const CostWorkspace = dynamic(() => import('@/components/dashboard/cost/CostWorkspace'))
+const StakeholderWorkspace = dynamic(() => import('@/components/dashboard/stakeholders/StakeholderWorkspace'))
+const RiskRegisterWorkspace = dynamic(() => import('@/components/dashboard/risks/RiskRegisterWorkspace'))
+const DocumentsWorkspace = dynamic(() => import('@/components/dashboard/documents/DocumentsWorkspace'))
+const TeamPermissionsWorkspace = dynamic(() => import('@/components/dashboard/team/TeamPermissionsWorkspace'))
+const ActionItemsTracker = dynamic(() => import('@/components/dashboard/action-items/ActionItemsTracker').then(mod => mod.ActionItemsTracker))
+const ProjectDashboardWorkspace = dynamic(() => import('@/components/dashboard/projects/ProjectDashboardWorkspace'))
+const AgileExecutionWorkspace = dynamic(() => import('@/components/dashboard/agile/AgileExecutionWorkspace'))
+const RoadmapWorkspace = dynamic(() => import('@/components/dashboard/projects/RoadmapWorkspace'))
+const RaidWorkspace = dynamic(() => import('@/components/dashboard/risks/raid/RaidWorkspace'))
+const AdrWorkspace = dynamic(() => import('@/components/dashboard/projects/adr/AdrWorkspace'))
+const SkillsMatrixTable = dynamic(() => import('@/components/dashboard/team/capacity/SkillsMatrixTable'))
 import { FeatureGateScreen } from '@/components/dashboard/billing'
 import { getOrganizationSubscription } from '@/lib/organizations/tier-logic'
-import { getOrganizationFeatures } from '@/lib/organizations/tier-access'
+import { getOrganizationFeatures, getOrganizationAiEnabled } from '@/lib/organizations/tier-access'
 
 // Planning components type definition
 type ProjectPageProps = {
@@ -193,6 +198,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
   // inside getOrganizationFeatures is a cache hit — but we pass the result
   // explicitly to be safe and avoid any future cache invalidation issues.
   const subscription = await getOrganizationSubscription(project.organization_id)
+  const aiEnabled = await getOrganizationAiEnabled(project.organization_id)
   const [orgFeatures] = await Promise.all([
     getOrganizationFeatures(project.organization_id, subscription),
   ])
@@ -271,7 +277,8 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         const callerMember = workspaceMembers.find(m => m.userId === user.id)
         const callerUserName = callerMember?.name || callerMember?.email || 'Unknown User'
         return (
-          <div className="absolute top-0 right-0 z-50 flex items-center gap-3">
+          <div className="absolute top-0 right-0 z-50 flex items-center gap-2">
+            <FeatureAppLauncher projectId={project.id} currentTier={tier} />
             <ProjectIntegrationsMenu projectId={project.id} />
             <LivePresenceWrapper
               projectId={project.id}
@@ -284,11 +291,22 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       })()}
 
       {/* Tabs list */}
-      <ProjectNavigationTabs projectId={project.id} activeTab={activeTab} canViewCost={canViewCost} canViewTeamAccess={canAssignMembers} tier={tier} />
+      <ProjectNavigationTabs projectId={project.id} activeTab={activeTab} canViewCost={canViewCost} canViewTeamAccess={canAssignMembers} tier={tier} methodology={project.methodology} />
 
       {/* Conditional tab workspaces */}
       {activeTab === 'dashboard' && (
         <ProjectDashboardWorkspace projectId={project.id} />
+      )}
+
+      {activeTab === 'agile' && project.methodology === 'Agile' && (
+        <AgileExecutionWorkspace projectId={project.id} />
+      )}
+
+      {activeTab === 'roadmap' && project.methodology === 'Agile' && (
+        <RoadmapWorkspace 
+          projectId={project.id} 
+          organizationId={project.organization_id || 'default_org'}
+        />
       )}
 
       {activeTab === 'wbs' && (
@@ -302,6 +320,9 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           allowTeamScheduleEdits={project.allow_team_schedule_edits}
           currency={project.currency}
           methodology={project.methodology}
+          organizationId={project.organization_id || 'default_org'}
+          tier={tier}
+          aiEnabled={aiEnabled}
         />
       )}
 
@@ -315,25 +336,26 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       )}
 
-      {activeTab === 'releases' && (!orgFeatures['releases.management'] ? (
-        <FeatureGateScreen featureName="Releases & Iterations" description="Plan and track software iterations, release gates, and version milestones. Available on the Premium plan." canUpgrade={canUpgrade} />
-      ) : (
+      {activeTab === 'releases' && (
         <ReleasesWorkspace
           projectId={project.id}
+          organizationId={project.organization_id || 'default_org'}
           hasEditAccess={hasScheduleEditAccess}
           methodology={project.methodology}
+          tier={tier}
+          canUpgrade={canUpgrade}
         />
-      ))}
+      )}
 
-      {activeTab === 'cost' && canViewCost && (!orgFeatures['cost.actuals_tracking'] ? (
-        <FeatureGateScreen featureName="Budget & Cost" description="Earned Value Management, resource rate configuration, and actual cost tracking. Available on the Premium plan." canUpgrade={canUpgrade} />
-      ) : (
+      {activeTab === 'cost' && canViewCost && (
         <CostWorkspace
           projectId={project.id}
           hasEditAccess={hasCostEditAccess}
           methodology={project.methodology}
+          canUpgrade={canUpgrade}
+          isPremium={orgFeatures['cost.actuals_tracking']}
         />
-      ))}
+      )}
 
       {activeTab === 'stakeholders' && (!orgFeatures['accountability.raci'] ? (
         <FeatureGateScreen featureName="Stakeholders" description="Map stakeholders, their influence, interest and communication plans. Available on the Premium plan." canUpgrade={canUpgrade} />
@@ -355,16 +377,14 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
         />
       ))}
 
-      {activeTab === 'documents' && (!orgFeatures['documentation.engine'] ? (
-        <FeatureGateScreen featureName="Documents" description="Live document engine, project charters, status reports, and custom templates. Available on the Premium plan." canUpgrade={canUpgrade} />
-      ) : (
+      {activeTab === 'documents' && (
         <DocumentsWorkspace
           projectId={project.id}
           projectContext={project}
           hasEditAccess={hasDocumentsEditAccess}
           isManager={isManager}
         />
-      ))}
+      )}
 
       {activeTab === 'action_items' && (!orgFeatures['accountability.raci'] ? (
         <FeatureGateScreen featureName="Action Items" description="Track cross-cutting action items, owners and due dates across your project team. Available on the Premium plan." canUpgrade={canUpgrade} />
@@ -401,21 +421,23 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       ) : (
         <AdrWorkspace
           projectId={project.id}
-          organizationId={project.organization_id || 'default_org'}
-          methodology={project.methodology}
+          organizationId={project.organization_id}
+          methodology={project.methodology as any}
+          tier={tier}
+          aiEnabled={aiEnabled}
         />
       ))}
 
-      {activeTab === 'capacity' && (!orgFeatures['pm.adr_skills_raid'] ? (
-        <FeatureGateScreen featureName="Skills & Capacity Matrix" description="Visualise your team's skills and available capacity across the project lifecycle. Available on the Premium plan." canUpgrade={canUpgrade} />
-      ) : (
+      {activeTab === 'capacity' && (
         <SkillsMatrixTable
           projectId={project.id}
           organizationId={project.organization_id || 'default_org'}
           methodology={project.methodology}
           workspaceMembers={workspaceMembers}
+          isPremium={orgFeatures['pm.adr_skills_raid']}
+          canUpgrade={canUpgrade}
         />
-      ))}
+      )}
     </div>
   )
 }

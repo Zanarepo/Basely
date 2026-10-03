@@ -9,6 +9,9 @@ import {
   Check,
   X,
   FileCheck,
+  Target,
+  AlertCircle,
+  UserX,
 } from 'lucide-react'
 import type { WbsNodeRowProps } from './types'
 import { getStatusColor, getProgressColor } from './utils'
@@ -45,6 +48,17 @@ export function WbsNodeRow({
   const { element, children } = node
   const isExpanded = expandedNodeIds.has(element.id)
   const hasChildren = children.length > 0
+
+  const isTopLevel = !element.parentId
+  const siblingTitle = depth === 0 
+    ? `Add ${terms.planTier}` 
+    : depth === 1 
+      ? `Add ${terms.workPackage}`
+      : `Add ${terms.task}`
+
+  const childTitle = depth === 0 
+    ? `Add ${terms.workPackage}` 
+    : `Add ${terms.task}`
 
   const {
     isEditing,
@@ -205,6 +219,17 @@ export function WbsNodeRow({
                     {terms.workPackage}
                   </span>
                 ) : null}
+                
+                {element.priority && (
+                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${
+                    element.priority === 'Critical' ? 'bg-red-500/10 text-red-600 border-red-500/20' :
+                    element.priority === 'High' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
+                    element.priority === 'Medium' ? 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20' :
+                    'bg-slate-500/10 text-slate-600 border-slate-500/20'
+                  }`}>
+                    {element.priority}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -214,7 +239,9 @@ export function WbsNodeRow({
         <div className="flex items-center gap-3 shrink-0 ml-4">
           <div className="flex items-center gap-1.5">
             {isMissingRaci && (
-              <span title="Missing Responsible or Accountable assignment" className="text-amber-500 text-xs cursor-help">⚠️</span>
+              <span title="Missing Responsible or Accountable assignment" className="cursor-help">
+                <UserX className="w-4 h-4 text-amber-500" />
+              </span>
             )}
             {initials && (
               <span
@@ -224,7 +251,20 @@ export function WbsNodeRow({
                 {initials}
               </span>
             )}
+            
+            <div className="w-px h-4 bg-app-border/60 mx-1" />
+
+            {element.okrTitle ? (
+              <span title={`Strategic OKR: ${element.okrTitle}`} className="cursor-help text-indigo-500 hover:text-indigo-600 transition-colors">
+                <Target className="w-3.5 h-3.5" />
+              </span>
+            ) : (
+              <span title="Unaligned Work: No Strategic OKR" className="cursor-help text-rose-400 hover:text-rose-500 transition-colors">
+                <AlertCircle className="w-3.5 h-3.5" />
+              </span>
+            )}
           </div>
+
 
           {/* Status badge */}
           <span
@@ -276,7 +316,7 @@ export function WbsNodeRow({
               </button>
               <button
                 type="button"
-                title="Add sibling element"
+                title={siblingTitle}
                 onClick={(e) => {
                   e.stopPropagation()
                   onAddSibling(element)
@@ -287,7 +327,7 @@ export function WbsNodeRow({
               </button>
               <button
                 type="button"
-                title="Add child element"
+                title={childTitle}
                 onClick={(e) => {
                   e.stopPropagation()
                   onAddChild(element)

@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { Settings2, MoreHorizontal, Check } from 'lucide-react'
+import { useUserPersona } from '@/hooks/use-user-persona'
+import { getTerminology } from '@/utils/terminology'
 
-type TabKey = 'dashboard' | 'wbs' | 'gantt' | 'raid' | 'adr' | 'capacity' | 'releases' | 'cost' | 'stakeholders' | 'risks' | 'documents' | 'action_items' | 'team'
+type TabKey = 'dashboard' | 'agile' | 'wbs' | 'gantt' | 'roadmap' | 'raid' | 'adr' | 'capacity' | 'releases' | 'cost' | 'stakeholders' | 'risks' | 'documents' | 'action_items' | 'team'
 
 interface TabInfo {
   id: TabKey
@@ -13,24 +15,9 @@ interface TabInfo {
   isNew?: boolean
 }
 
-const ALL_TABS: TabInfo[] = [
-  { id: 'dashboard', label: 'Dashboard', shortLabel: 'Dashboard' },
-  { id: 'wbs', label: 'Work Breakdown Structure (WBS)', shortLabel: 'WBS' },
-  { id: 'gantt', label: 'Gantt & Scheduling', shortLabel: 'Gantt' },
-  { id: 'raid', label: 'RAID Command Center', shortLabel: 'RAID Log', isNew: true },
-  { id: 'adr', label: 'Architecture Decisions (ADR)', shortLabel: 'ADRs', isNew: true },
-  { id: 'capacity', label: 'Skills & Capacity Matrix', shortLabel: 'Capacity', isNew: true },
-  { id: 'releases', label: 'Releases & Iterations', shortLabel: 'Releases' },
-  { id: 'cost', label: 'Budget & Cost', shortLabel: 'Cost' },
-  { id: 'stakeholders', label: 'Stakeholders', shortLabel: 'People' },
-  { id: 'risks', label: 'Risks & Issues', shortLabel: 'Risks' },
-  { id: 'documents', label: 'Documents', shortLabel: 'Docs' },
-  { id: 'action_items', label: 'Action Items', shortLabel: 'Actions' },
-  { id: 'team', label: 'Team & Access', shortLabel: 'Team' },
-]
-
-const DEFAULT_VISIBLE: TabKey[] = ['dashboard', 'wbs', 'gantt', 'releases', 'team']
-const FREE_TABS: TabKey[] = ['dashboard', 'wbs', 'gantt', 'team']
+const PRODUCT_DEFAULT_VISIBLE: TabKey[] = ['agile', 'wbs', 'releases', 'documents', 'adr', 'team', 'roadmap']
+const PROJECT_DEFAULT_VISIBLE: TabKey[] = ['dashboard', 'wbs', 'gantt', 'raid', 'team']
+const FREE_TABS: TabKey[] = ['dashboard', 'agile', 'wbs', 'gantt', 'roadmap', 'team', 'releases', 'documents', 'adr']
 
 interface Props {
   projectId: string
@@ -38,23 +25,57 @@ interface Props {
   canViewCost: boolean
   canViewTeamAccess?: boolean
   tier?: string
+  methodology?: string | null
 }
 
-export default function ProjectNavigationTabs({ projectId, activeTab, canViewCost, canViewTeamAccess = false, tier }: Props) {
+export default function ProjectNavigationTabs({ projectId, activeTab, canViewCost, canViewTeamAccess = false, tier, methodology }: Props) {
+  const { isProductMode, showBudgetControls } = useUserPersona()
   const [mounted, setMounted] = useState(false)
-  const [visibleTabs, setVisibleTabs] = useState<TabKey[]>(DEFAULT_VISIBLE)
+
+  const defaultVisibleTabs = isProductMode ? PRODUCT_DEFAULT_VISIBLE : PROJECT_DEFAULT_VISIBLE
+  const [visibleTabs, setVisibleTabs] = useState<TabKey[]>(defaultVisibleTabs)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isCustomizeMode, setIsCustomizeMode] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Filter tabs based on permissions
+  const allTabs: TabInfo[] = useMemo(() => {
+    const terms = getTerminology(methodology)
+    const tabs: TabInfo[] = [
+      { id: 'dashboard', label: 'Dashboard', shortLabel: 'Dashboard' }
+    ]
+
+    if (methodology === 'Agile') {
+      tabs.push({ id: 'agile', label: 'Active Sprint & Metrics', shortLabel: 'Sprint', isNew: true })
+      tabs.push({ id: 'wbs', label: terms.wbsTab, shortLabel: terms.wbsShortTab })
+      tabs.push({ id: 'roadmap', label: 'Now/Next/Later Roadmap', shortLabel: 'Roadmap', isNew: true })
+    } else {
+      tabs.push({ id: 'wbs', label: terms.wbsTab, shortLabel: terms.wbsShortTab })
+      tabs.push({ id: 'gantt', label: 'Gantt & Scheduling', shortLabel: 'Gantt' })
+    }
+
+    tabs.push(
+      { id: 'raid', label: 'RAID Command Center', shortLabel: 'RAID Log', isNew: true },
+      { id: 'adr', label: 'Architecture Decisions (ADR)', shortLabel: 'ADRs', isNew: true },
+      { id: 'capacity', label: 'Skills & Capacity Matrix', shortLabel: 'Capacity', isNew: true },
+      { id: 'releases', label: `${terms.releases} & ${terms.iterations}`, shortLabel: terms.releases },
+      { id: 'cost', label: 'Budget & Cost', shortLabel: 'Cost' },
+    { id: 'stakeholders', label: 'Stakeholders', shortLabel: 'People' },
+    { id: 'risks', label: 'Risks & Issues', shortLabel: 'Risks' },
+    { id: 'documents', label: 'Intelligence Hub', shortLabel: 'Hub' },
+      { id: 'action_items', label: 'Action Items', shortLabel: 'Actions' },
+      { id: 'team', label: 'Team & Access', shortLabel: 'Team' }
+    )
+    return tabs
+  }, [isProductMode, methodology])
+
+  // Filter tabs based on permissions & persona mode
   const availableTabs = useMemo(() => 
-    ALL_TABS.filter(t => {
-      if (t.id === 'cost' && !canViewCost) return false
+    allTabs.filter(t => {
+      if (t.id === 'cost' && (!canViewCost || !showBudgetControls)) return false
       if (t.id === 'team' && !canViewTeamAccess) return false
       return true
     }), 
-  [canViewCost, canViewTeamAccess])
+  [canViewCost, canViewTeamAccess, showBudgetControls, allTabs])
 
   // Load preferences from local storage on mount
   useEffect(() => {

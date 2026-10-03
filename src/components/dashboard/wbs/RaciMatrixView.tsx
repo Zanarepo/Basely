@@ -1,98 +1,33 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { Search, Loader2, AlertCircle, ChevronRight, ChevronDown, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { ChevronRight, ChevronDown, PanelLeftClose, Search, Loader2, AlertCircle } from 'lucide-react'
 import type { WbsElement } from '@/lib/wbs/constants'
-import { getProjectRaciStakeholders } from '@/lib/wbs/actions'
-
-type Stakeholder = {
-  id: string
-  name: string
-  organization_type: 'internal' | 'external'
-  profiles?: { full_name: string | null; email: string | null } | any
-}
+import { useRaciMatrixView } from './hooks/useRaciMatrixView'
+import { AiBulkAutoAssignButton } from './AiBulkAutoAssignButton'
 
 type RaciMatrixViewProps = {
   projectId: string
   elements: WbsElement[]
   expandedNodeIds?: Set<string>
   onToggleExpand?: (id: string, e: React.MouseEvent) => void
+  organizationId: string
+  tier: string
+  aiEnabled: boolean
+  onShowToast: (type: 'success' | 'error' | 'info', msg: string) => void
+  onAssignmentsCompleted: () => void
 }
 
-export function RaciMatrixView({ projectId, elements, expandedNodeIds = new Set(), onToggleExpand }: RaciMatrixViewProps) {
-  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchStakeholder, setSearchStakeholder] = useState('')
-  const [showWbsColumn, setShowWbsColumn] = useState(true)
-
-  const supabase = createClient()
-
-  useEffect(() => {
-    async function loadStakeholders() {
-      try {
-        const data = await getProjectRaciStakeholders(projectId)
-        if (data) setStakeholders(data)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadStakeholders()
-  }, [projectId])
-
-  const filteredElements = useMemo(() => {
-    
-    // Filter out milestones (duration === 0) — they only appear on Gantt and Status Report
-    const nonMilestoneElements = elements.filter((el) => {
-      if (!el.isWorkPackage) return true // summary elements always show
-      return el.duration !== 0
-    })
-
-    const visible: WbsElement[] = []
-    const parentVisible = new Map<string, boolean>()
-
-    nonMilestoneElements.forEach((el) => {
-      let isVisible = true
-
-      if (el.parentId) {
-        const pVisible = parentVisible.get(el.parentId) ?? true
-        const pExpanded = expandedNodeIds.has(el.parentId)
-        isVisible = pVisible && pExpanded
-      }
-
-      parentVisible.set(el.id, isVisible)
-
-      if (isVisible) {
-        visible.push(el)
-      }
-    })
-
-    return visible
-  }, [elements, expandedNodeIds])
-
-  const elementLevels = useMemo(() => {
-    const levels = new Map<string, number>()
-    elements.forEach((el) => {
-      let lvl = 0
-      if (el.parentId) {
-        lvl = (levels.get(el.parentId) || 0) + 1
-      }
-      levels.set(el.id, lvl)
-    })
-    return levels
-  }, [elements])
-
-  const filteredStakeholders = useMemo(() => {
-    if (!searchStakeholder) return stakeholders
-    const query = searchStakeholder.toLowerCase()
-    return stakeholders.filter(s => 
-      s.name.toLowerCase().includes(query) || 
-      (s.profiles?.full_name?.toLowerCase().includes(query)) ||
-      (s.profiles?.email?.toLowerCase().includes(query))
-    )
-  }, [stakeholders, searchStakeholder])
+export function RaciMatrixView({ projectId, elements, expandedNodeIds = new Set(), onToggleExpand, organizationId, tier, aiEnabled, onShowToast, onAssignmentsCompleted }: RaciMatrixViewProps) {
+  const {
+    loading,
+    searchStakeholder,
+    setSearchStakeholder,
+    showWbsColumn,
+    setShowWbsColumn,
+    filteredElements,
+    elementLevels,
+    filteredStakeholders
+  } = useRaciMatrixView({ projectId, elements, expandedNodeIds })
 
   if (loading) {
     return (
@@ -126,6 +61,17 @@ export function RaciMatrixView({ projectId, elements, expandedNodeIds = new Set(
             value={searchStakeholder}
             onChange={(e) => setSearchStakeholder(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-app-surface border border-app-border rounded-xl text-sm focus:outline-none focus:border-violet-500 transition-colors"
+          />
+        </div>
+        <div className="ml-auto flex items-center">
+          <AiBulkAutoAssignButton
+            organizationId={organizationId}
+            projectId={projectId}
+            wbsElementIds={elements.filter(el => el.isWorkPackage && (!el.raciAssignments?.some(a => a.roleType === 'Responsible') || !el.raciAssignments?.some(a => a.roleType === 'Accountable'))).map(el => el.id)}
+            tier={tier}
+            aiEnabled={aiEnabled}
+            onShowToast={onShowToast}
+            onAssignmentsCompleted={onAssignmentsCompleted}
           />
         </div>
       </div>

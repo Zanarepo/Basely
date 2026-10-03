@@ -144,7 +144,7 @@ export default function EnterpriseSelect({
             left: `${dropdownCoords.left}px`,
             minWidth: `${dropdownCoords.minWidth}px`
           }}
-          className="z-[9999] max-h-[260px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl rounded-xl py-1.5 overflow-y-auto custom-scrollbar animate-fade-in-up"
+          className="z-[9999] max-h-[260px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl rounded-xl py-1.5 overflow-y-auto custom-scrollbar animate-fade-in-up enterprise-select-portal"
         >
           {normalizedOptions.map((opt, idx) => {
             const isSelected = String(opt.value) === String(value)

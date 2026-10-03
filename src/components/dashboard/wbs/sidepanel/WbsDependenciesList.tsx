@@ -1,11 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Link2, ShieldAlert, GitBranch, Loader2, Folder, ExternalLink, AlertTriangle, ChevronDown, ChevronRight, History } from 'lucide-react'
-import { getWbsElements } from '@/lib/wbs/actions'
-import { getRaidEntries, type RaidLogEntry } from '@/lib/raid/actions'
-import type { WbsElement } from '@/lib/wbs/constants'
+import { Link2, ShieldAlert, GitBranch, Loader2, Folder, ExternalLink, AlertTriangle, ChevronDown, ChevronRight, History, Sparkles } from 'lucide-react'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
+import { useWbsDependenciesList } from '../hooks/useWbsDependenciesList'
 
 type PredecessorInput = {
   predecessorId: string
@@ -25,6 +22,8 @@ type WbsDependenciesListProps = {
   handleUpdatePredLag: (predId: string, lag: number) => void
   projectId?: string
   wbsElementId?: string
+  onDependenciesChanged?: () => void
+  methodology?: string | null
 }
 
 export function WbsDependenciesList({
@@ -38,83 +37,23 @@ export function WbsDependenciesList({
   handleUpdatePredType,
   handleUpdatePredLag,
   projectId,
-  wbsElementId
+  wbsElementId,
+  onDependenciesChanged,
+  methodology
 }: WbsDependenciesListProps) {
-  const [loadingRaid, setLoadingRaid] = useState(false)
-  const [directRaidItems, setDirectRaidItems] = useState<{ item: RaidLogEntry }[]>([])
-  const [inheritedRaidItems, setInheritedRaidItems] = useState<{ item: RaidLogEntry; parentCode: string; parentName: string }[]>([])
-  const [showClosedRaid, setShowClosedRaid] = useState(false)
-
-  useEffect(() => {
-    if (!projectId || !wbsElementId) return
-    let isMounted = true
-
-    const fetchGovernanceBridge = async () => {
-      setLoadingRaid(true)
-      try {
-        const [wbsRes, raidRes] = await Promise.all([
-          getWbsElements(projectId),
-          getRaidEntries(projectId, 'all')
-        ])
-
-        if (!isMounted) return
-
-        if (wbsRes.ok && wbsRes.data && raidRes.ok && raidRes.data) {
-          const allWbs = wbsRes.data
-          const allRaid = raidRes.data
-
-          // 1. Build set of ancestor IDs for hierarchical inheritance
-          const ancestorIds = new Set<string>()
-          const ancestorMap = new Map<string, WbsElement>()
-          let currentId: string | undefined = wbsElementId
-          while (currentId) {
-            const el = allWbs.find((w: WbsElement) => w.id === currentId)
-            if (!el || !el.parentId) break
-            ancestorIds.add(el.parentId)
-            const parent = allWbs.find((w: WbsElement) => w.id === el.parentId)
-            if (parent) ancestorMap.set(parent.id, parent)
-            currentId = el.parentId
-          }
-
-          // 2. Classify RAID items as direct or inherited
-          const direct: { item: RaidLogEntry }[] = []
-          const inherited: { item: RaidLogEntry; parentCode: string; parentName: string }[] = []
-
-          allRaid.forEach((item: RaidLogEntry) => {
-            if (!item.linked_wbs_element_id) return
-            const linkedIds = item.linked_wbs_element_id.split(',').map((s: string) => s.trim()).filter(Boolean)
-
-            if (linkedIds.includes(wbsElementId)) {
-              direct.push({ item })
-            } else {
-              // Check if any of our ancestors are linked to this RAID item
-              for (const id of linkedIds) {
-                if (ancestorIds.has(id)) {
-                  const p = ancestorMap.get(id) || allWbs.find((w: WbsElement) => w.id === id)
-                  inherited.push({
-                    item,
-                    parentCode: p?.code || 'Parent',
-                    parentName: p?.name || 'Folder'
-                  })
-                  break // avoid duplicates
-                }
-              }
-            }
-          })
-
-          setDirectRaidItems(direct)
-          setInheritedRaidItems(inherited)
-        }
-      } catch (err) {
-        console.error('Error calculating hierarchical RAID governance bridge:', err)
-      } finally {
-        if (isMounted) setLoadingRaid(false)
-      }
-    }
-
-    fetchGovernanceBridge()
-    return () => { isMounted = false }
-  }, [projectId, wbsElementId])
+  const {
+    loadingRaid,
+    directRaidItems,
+    inheritedRaidItems,
+    showClosedRaid,
+    setShowClosedRaid,
+    isAutoLinking,
+    handleAutoLinkDependencies
+  } = useWbsDependenciesList({
+    projectId,
+    wbsElementId,
+    onDependenciesChanged
+  })
 
   if (loadingSchedule) return null
 
@@ -123,16 +62,41 @@ export function WbsDependenciesList({
       {/* 1. Mathematical Schedule Predecessors (Only applicable to atomic Work Packages) */}
       {isWorkPackage && (
         <div className="space-y-2">
-          <label className="text-[11px] font-bold text-app-subtle flex items-center gap-1" title="Mathematical schedule logic for Gantt chart & Critical Path">
-            <Link2 className="w-3.5 h-3.5" />
-            Schedule Predecessors (Intra-Project Gantt Logic)
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-bold text-app-subtle flex items-center gap-1 mb-0" title={methodology === 'Agile' ? 'Task Dependencies' : 'Mathematical schedule logic for Gantt chart & Critical Path'}>
+              <Link2 className="w-3.5 h-3.5" />
+              {methodology === 'Agile' ? 'Task Dependencies' : 'Schedule Predecessors (Intra-Project Gantt Logic)'}
+            </label>
+            {hasEditAccess && projectId && projectActivities.length > 0 && (
+              <button
+                type="button"
+                disabled={isAutoLinking || saving}
+                onClick={handleAutoLinkDependencies}
+                className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-linear-to-r from-violet-500/10 to-indigo-500/10 text-violet-600 dark:text-violet-400 hover:from-violet-500/20 hover:to-indigo-500/20 border border-violet-500/30 transition-all cursor-pointer disabled:opacity-50"
+                title="Auto-connect logical task dependencies with Praz-AI"
+              >
+                {isAutoLinking ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Auto-Linking...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3 h-3 text-violet-500" />
+                    <span>Auto-Link Praz-AI</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
           
           {projectActivities.length === 0 ? (
             <p className="text-[10px] text-app-subtle italic">No other tasks available to link.</p>
           ) : (
             <div className="max-h-36 overflow-y-auto border border-app-border rounded-xl p-2.5 bg-app-input space-y-2">
-              {projectActivities.map((act) => {
+              {projectActivities
+                .filter(act => act.duration !== 0 && act.type !== 'Milestone' && !act.name?.toLowerCase().includes('milestone'))
+                .map((act) => {
                 const isLinked = predecessors.some((p) => p.predecessorId === act.id)
                 const currentPred = predecessors.find((p) => p.predecessorId === act.id)
 
@@ -157,7 +121,12 @@ export function WbsDependenciesList({
                             disabled={!hasEditAccess || saving}
                             onChange={(val) => handleUpdatePredType(act.id, val as any)}
                             size="sm"
-                            options={[
+                            options={methodology === 'Agile' ? [
+                              { value: 'FS', label: 'Depends On' },
+                              { value: 'SS', label: 'Related To' },
+                              { value: 'FF', label: 'Required For' },
+                              { value: 'SF', label: 'Blocks' }
+                            ] : [
                               { value: 'FS', label: 'Finish-to-Start (FS)' },
                               { value: 'SS', label: 'Start-to-Start (SS)' },
                               { value: 'FF', label: 'Finish-to-Finish (FF)' },
@@ -166,17 +135,19 @@ export function WbsDependenciesList({
                             placeholder="Dependency type..."
                           />
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-app-subtle">Lag:</span>
-                          <input
-                            type="number"
-                            min="0"
-                            value={currentPred.lagDays}
-                            disabled={!hasEditAccess || saving}
-                            onChange={(e) => handleUpdatePredLag(act.id, parseInt(e.target.value) || 0)}
-                            className="w-10 px-1 py-0.5 bg-app-surface-solid border border-app-border rounded-lg text-center text-[10px] text-app-fg"
-                          />
-                        </div>
+                        {methodology !== 'Agile' && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-app-subtle">Lag:</span>
+                            <input
+                              type="number"
+                              min="0"
+                              value={currentPred.lagDays}
+                              disabled={!hasEditAccess || saving}
+                              onChange={(e) => handleUpdatePredLag(act.id, parseInt(e.target.value) || 0)}
+                              className="w-10 px-1 py-0.5 bg-app-surface-solid border border-app-border rounded-lg text-center text-[10px] text-app-fg"
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

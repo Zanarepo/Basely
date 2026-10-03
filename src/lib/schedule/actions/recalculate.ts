@@ -13,27 +13,39 @@ import type { ActionResponse } from './types'
 export async function recalculateSchedule(projectId: string): Promise<ActionResponse> {
   const supabase = createAdminClient()
 
-  // 1. Fetch project details for start date & calendar config
-  const { data: project, error: projErr } = await supabase
-    .from('projects')
-    .select('start_date, calendar_config')
-    .eq('id', projectId)
-    .single()
+  // Fetch project, calendar, activities, wbs elements, and dependencies in parallel
+  const [
+    { data: project, error: projErr },
+    { data: cal },
+    { data: dbActs, error: actsErr },
+    { data: wbsPkgs, error: wbsErr },
+    { data: dbDeps, error: depsErr }
+  ] = await Promise.all([
+    supabase.from('projects').select('start_date, calendar_config').eq('id', projectId).single(),
+    supabase.from('project_calendars').select('working_days, holidays').eq('project_id', projectId).eq('is_default', true).maybeSingle(),
+    supabase.from('activities').select('*').eq('project_id', projectId),
+    supabase.from('wbs_elements').select('id, name').eq('project_id', projectId).eq('is_work_package', true),
+    supabase.from('dependencies').select('*').eq('project_id', projectId)
+  ])
 
   if (projErr || !project) {
     return { ok: false, error: projErr?.message ?? 'Project not found' }
   }
 
+  if (actsErr) {
+    return { ok: false, error: actsErr.message }
+  }
+
+  if (wbsErr) {
+    return { ok: false, error: wbsErr.message }
+  }
+
+  if (depsErr) {
+    return { ok: false, error: depsErr.message }
+  }
+
   const projectStartDate = project.start_date ?? new Date().toISOString().split('T')[0]!
   
-  // 2. Fetch the project calendar (fallback to default project config)
-  const { data: cal } = await supabase
-    .from('project_calendars')
-    .select('working_days, holidays')
-    .eq('project_id', projectId)
-    .eq('is_default', true)
-    .maybeSingle()
-
   const workingDays = cal?.working_days ?? (project.calendar_config as any)?.working_days ?? [1, 2, 3, 4, 5]
   const holidays = cal?.holidays ?? []
 
@@ -42,28 +54,10 @@ export async function recalculateSchedule(projectId: string): Promise<ActionResp
     holidays: holidays.map((h: any) => typeof h === 'string' ? h : new Date(h).toISOString().split('T')[0]!)
   }
 
-  // 3. Fetch activities and dependencies
-  const { data: dbActs, error: actsErr } = await supabase
-    .from('activities')
-    .select('*')
-    .eq('project_id', projectId)
-
-  if (actsErr) {
-    return { ok: false, error: actsErr.message }
-  }
+  const activeActs = dbActs || []
 
   // Auto-heal: Ensure all WBS work packages have activities
-  const { data: wbsPkgs, error: wbsErr } = await supabase
-    .from('wbs_elements')
-    .select('id, name')
-    .eq('project_id', projectId)
-    .eq('is_work_package', true)
-
-  if (wbsErr) {
-    return { ok: false, error: wbsErr.message }
-  }
-
-  const existingWbsIds = new Set((dbActs || []).map((a) => a.wbs_element_id))
+  const existingWbsIds = new Set(activeActs.map((a) => a.wbs_element_id))
   const missingPkgs = (wbsPkgs ?? []).filter((p) => !existingWbsIds.has(p.id))
 
   if (missingPkgs.length > 0) {
@@ -91,24 +85,15 @@ export async function recalculateSchedule(projectId: string): Promise<ActionResp
       return { ok: false, error: reErr.message }
     }
     
-    dbActs.splice(0, dbActs.length, ...(reActs ?? []))
+    activeActs.splice(0, activeActs.length, ...(reActs ?? []))
   }
 
-  const { data: dbDeps, error: depsErr } = await supabase
-    .from('dependencies')
-    .select('*')
-    .eq('project_id', projectId)
-
-  if (depsErr) {
-    return { ok: false, error: depsErr.message }
-  }
-
-  if (!dbActs || dbActs.length === 0) {
+  if (!activeActs || activeActs.length === 0) {
     return { ok: true } // Nothing to calculate
   }
 
   // Map database structures to CPM model
-  const activities: Activity[] = dbActs.map((a: any) => ({
+  const activities: Activity[] = activeActs.map((a: any) => ({
     id: a.id,
     projectId: a.project_id,
     wbsElementId: a.wbs_element_id,
@@ -172,6 +157,5 @@ export async function recalculateSchedule(projectId: string): Promise<ActionResp
     return { ok: false, error: upsertErr.message }
   }
 
-  revalidatePath(`/dashboard/projects/${projectId}`)
   return { ok: true }
 }

@@ -4,7 +4,7 @@ import { useState, useTransition, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Building2, ChevronDown, Check, Plus } from 'lucide-react'
-import { useWorkspace, type Workspace } from './WorkspaceContext'
+import { useWorkspace, type Workspace } from '@/components/dashboard/WorkspaceContext'
 import { setActiveWorkspace } from '@/lib/workspace/actions'
 
 type WorkspaceSwitcherProps = {

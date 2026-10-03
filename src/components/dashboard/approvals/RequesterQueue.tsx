@@ -58,6 +58,11 @@ export function RequesterQueue({ requests }: { requests: ApprovalRequest[] }) {
                   <XCircle className="w-3 h-3" /> Rejected
                 </span>
               )}
+              {r.project_name && (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-violet-500/10 text-violet-600 truncate max-w-[200px]">
+                  {r.project_name}
+                </span>
+              )}
             </div>
 
             <div className="mt-3 text-xs text-app-muted flex flex-col gap-1.5">
@@ -90,7 +95,7 @@ export function RequesterQueue({ requests }: { requests: ApprovalRequest[] }) {
                 onClick={() => handleDelete(r.id)}
                 disabled={processingId === r.id}
                 title="Dismiss"
-                className="p-2 text-app-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
+                className="p-2 text-app-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {processingId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
               </button>

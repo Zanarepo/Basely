@@ -2,20 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import {
-  fetchProjectReleasesData,
-  createIteration as serverCreateIteration,
-  updateIteration as serverUpdateIteration,
-  deleteIteration as serverDeleteIteration,
-  createRelease as serverCreateRelease,
-  updateRelease as serverUpdateRelease,
-  deleteRelease as serverDeleteRelease,
-  toggleExitCriterion as serverToggleCriterion,
-  addExitCriterion as serverAddCriterion,
-  deleteExitCriterion as serverDeleteCriterion,
-  addManualScopeOverride as serverAddScope,
-  deleteManualScopeOverride as serverDeleteScope,
-} from '@/lib/releases/actions'
+import { createIteration as serverCreateIteration, updateIteration as serverUpdateIteration, deleteIteration as serverDeleteIteration } from '@/lib/releases/iteration-actions'
+import { fetchProjectReleasesData, createRelease as serverCreateRelease, updateRelease as serverUpdateRelease, deleteRelease as serverDeleteRelease } from '@/lib/releases/release-actions'
+import { toggleExitCriterion as serverToggleCriterion, addExitCriterion as serverAddCriterion, deleteExitCriterion as serverDeleteCriterion, addManualScopeOverride as serverAddScope, deleteManualScopeOverride as serverDeleteScope } from '@/lib/releases/criteria-actions'
 import { addReadinessItem, toggleReadinessItem, deleteReadinessItem, loadDefaultReadinessItems } from '@/lib/releases/readiness-actions'
 import { addDeploymentStep, toggleDeploymentStep, deleteDeploymentStep, addRollbackStep, toggleRollbackStep, deleteRollbackStep } from '@/lib/releases/deployment-actions'
 import type { Iteration, Release, ReleaseStatus, ReleaseScopeItem } from '@/lib/releases/types'
@@ -73,17 +62,17 @@ export function useReleases(projectId: string) {
   }, [projectId, loadData])
 
   // Iteration handlers
-  const createIteration = async (name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null) => {
+  const createIteration = async (name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null, selectedWbsIds?: string[]) => {
     setIsSubmitting(true)
-    const res = await serverCreateIteration(projectId, name, sequenceNumber, startDate, endDate, labelOverride)
+    const res = await serverCreateIteration(projectId, name, sequenceNumber, startDate, endDate, labelOverride, selectedWbsIds)
     if (res.ok) await loadData()
     setIsSubmitting(false)
     return res
   }
 
-  const updateIteration = async (id: string, name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null) => {
+  const updateIteration = async (id: string, name: string, sequenceNumber: number, startDate: string, endDate: string, labelOverride?: 'sprint' | 'phase' | null, selectedWbsIds?: string[]) => {
     setIsSubmitting(true)
-    const res = await serverUpdateIteration(id, projectId, name, sequenceNumber, startDate, endDate, labelOverride)
+    const res = await serverUpdateIteration(id, projectId, name, sequenceNumber, startDate, endDate, labelOverride, selectedWbsIds)
     if (res.ok) await loadData()
     setIsSubmitting(false)
     return res

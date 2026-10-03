@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { X, Save } from 'lucide-react'
 import type { Issue, Risk } from './useRiskData'
-import { createIssue, updateIssue } from '@/lib/risks/actions'
+import { createIssue, updateIssue, updateRisk } from '@/lib/risks/actions'
 import { CommentThread } from '@/components/dashboard/collaboration/CommentThread'
 import { createClient } from '@/utils/supabase/client'
 import EnterpriseSelect from '@/components/common/EnterpriseSelect'
@@ -18,6 +18,7 @@ interface IssueFormProps {
   onSuccess: () => void
   onShowToast?: (type: 'success' | 'error' | 'info', msg: string) => void
   scrollToComments?: boolean
+  prefillData?: Partial<Issue>
 }
 
 export default function IssueForm({
@@ -29,13 +30,14 @@ export default function IssueForm({
   onClose,
   onSuccess,
   onShowToast,
-  scrollToComments = false
+  scrollToComments = false,
+  prefillData
 }: IssueFormProps) {
-  const [title, setTitle] = useState(existingIssue?.title || '')
-  const [description, setDescription] = useState(existingIssue?.description || '')
-  const [status, setStatus] = useState<string>(existingIssue?.status || 'Open')
-  const [ownerId, setOwnerId] = useState<string>(existingIssue?.owner_stakeholder_id || '')
-  const [linkedRiskId, setLinkedRiskId] = useState<string>(existingIssue?.linked_risk_id || '')
+  const [title, setTitle] = useState(existingIssue?.title || prefillData?.title || '')
+  const [description, setDescription] = useState(existingIssue?.description || prefillData?.description || '')
+  const [status, setStatus] = useState<string>(existingIssue?.status || prefillData?.status || 'Open')
+  const [ownerId, setOwnerId] = useState<string>(existingIssue?.owner_stakeholder_id || prefillData?.owner_stakeholder_id || '')
+  const [linkedRiskId, setLinkedRiskId] = useState<string>(existingIssue?.linked_risk_id || prefillData?.linked_risk_id || '')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -76,6 +78,11 @@ export default function IssueForm({
     const result = existingIssue
       ? await updateIssue(existingIssue.id, projectId, data)
       : await createIssue(projectId, data)
+
+    // Auto-update linked risk status if this is an escalation
+    if (!existingIssue && prefillData?.linked_risk_id && result.ok) {
+      await updateRisk(prefillData.linked_risk_id, projectId, { status: 'Occurred' })
+    }
 
     setIsSubmitting(false)
 

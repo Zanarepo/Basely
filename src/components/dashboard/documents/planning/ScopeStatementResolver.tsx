@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react'
 import { getScopeStatement, ScopeStatement } from '@/lib/planning/actions'
-import { Loader2 } from 'lucide-react'
-import { getWbsElements } from '@/lib/wbs/actions'
+import { AlertCircle, FileText, CheckCircle2, Layout, Loader2 } from 'lucide-react'
+import { DocumentLoader } from '@/components/dashboard/documents/DocumentLoader'
+import { getWbsElements } from '@/lib/wbs/core-actions'
 import { WbsElement } from '@/lib/wbs/constants'
 
 interface ScopeStatementResolverProps {
@@ -37,7 +38,7 @@ export function ScopeStatementResolver({ projectId, sectionKey }: ScopeStatement
   }, [projectId])
 
   if (isLoading) {
-    return <div className="p-4 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-app-muted" /></div>
+    return <DocumentLoader message="Loading Scope Statement..." />
   }
 
   if (!data) {

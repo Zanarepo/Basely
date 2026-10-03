@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { Loader2, AlertCircle } from 'lucide-react'
 
 import { GanttTimelineCanvas } from './GanttTimelineCanvas'
@@ -11,6 +11,16 @@ import { ScheduleSheetModal } from './ScheduleSheetModal'
 import { useGanttData } from '@/lib/schedule/useGanttData'
 import { useGanttPresence } from './useGanttPresence'
 import { LiveCursorsOverlay } from '../wbs/workspace/LiveCursorsOverlay'
+import { WbsElementSidePanel } from '../wbs/WbsElementSidePanel'
+import { updateWbsElement } from '@/lib/wbs/core-actions'
+import { getTerminology } from '@/utils/terminology'
+import type { WbsElement } from '@/lib/wbs/constants'
+import type { Iteration } from '@/lib/releases/types'
+import { createClient } from '@/utils/supabase/client'
+import { PendingCRsBanner } from './components/PendingCRsBanner'
+import { GanttContextMenu } from './components/GanttContextMenu'
+import { GanttInitiateCRModal } from './components/GanttInitiateCRModal'
+import { usePendingChangeRequests } from './hooks/usePendingChangeRequests'
 
 type GanttWorkspaceProps = {
   projectId: string
@@ -18,6 +28,7 @@ type GanttWorkspaceProps = {
   workspaceMembers: any[]
   currentUserId: string
   currentUserName: string
+  methodology?: string | null
 }
 
 const ROW_HEIGHT = 48
@@ -28,6 +39,7 @@ export default function GanttWorkspace({
   workspaceMembers,
   currentUserId,
   currentUserName,
+  methodology = 'Agile',
 }: GanttWorkspaceProps) {
   const {
     loading,
@@ -54,7 +66,12 @@ export default function GanttWorkspace({
     handleCreateBaseline,
     handleDeleteBaseline,
     handleRenameBaseline,
+    refetchData,
   } = useGanttData(projectId)
+
+  const terms = getTerminology(methodology)
+  const [activeElementId, setActiveElementId] = useState<string | null>(null)
+  const activeElement = elements.find((el) => el.id === activeElementId) || null
 
   // Navigation & Control States
   const [zoom, setZoom] = useState<'day' | 'week' | 'month' | 'quarter'>('week')
@@ -62,6 +79,142 @@ export default function GanttWorkspace({
   const [isCpmModalOpen, setIsCpmModalOpen] = useState(false)
   const [isScheduleSheetOpen, setIsScheduleSheetOpen] = useState(false)
   const [showSidebar, setShowSidebar] = useState(true)
+  const [scopeFilter, setScopeFilter] = useState<string>('all')
+  const [iterations, setIterations] = useState<Iteration[]>([])
+
+  // CR Integration state
+  const [showAllDependencies, setShowAllDependencies] = useState(false)
+  const [dependencyStyle, setDependencyStyle] = useState<'curved' | 'orthogonal'>('curved')
+  const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null)
+  const { pendingCRs, approvedCRs } = usePendingChangeRequests(projectId)
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; taskName: string; elementId: string } | null>(null)
+  const [isCRModalOpen, setIsCRModalOpen] = useState(false)
+  const [crTaskName, setCrTaskName] = useState('')
+  const [crToast, setCrToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+
+  const approvedCRDescriptions = useMemo(() => approvedCRs.map((cr) => cr.description), [approvedCRs])
+
+  useEffect(() => {
+    const fetchIterations = async () => {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('iterations')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('sequence_number', { ascending: true })
+
+      if (data) {
+        setIterations(
+          data.map((i: any) => ({
+            id: i.id,
+            projectId: i.project_id,
+            name: i.name,
+            sequenceNumber: i.sequence_number,
+            startDate: i.start_date,
+            endDate: i.end_date,
+            labelOverride: i.label_override || null,
+            createdAt: i.created_at,
+            updatedAt: i.updated_at,
+          }))
+        )
+      }
+    }
+    fetchIterations()
+  }, [projectId])
+
+  const activeIteration = useMemo(() => {
+    if (!iterations || iterations.length === 0) return null
+    const now = new Date()
+    const current = iterations.find((i) => new Date(i.startDate) <= now && new Date(i.endDate) >= now)
+    return current || iterations[0]
+  }, [iterations])
+
+  const [hideCompleted, setHideCompleted] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`gantt_hide_completed_${projectId}`)
+      return saved ? JSON.parse(saved) : false
+    }
+    return false
+  })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`gantt_hide_completed_${projectId}`, JSON.stringify(hideCompleted))
+    }
+  }, [projectId, hideCompleted])
+
+  const isCompletedStatus = (status?: string | null) => {
+    if (!status) return false
+    const s = status.toLowerCase()
+    return s === 'complete' || s === 'completed' || s === 'done'
+  }
+
+  const completedCount = useMemo(() => {
+    return elements.filter((e) => isCompletedStatus(e.status)).length
+  }, [elements])
+
+  // Filter visibleElements based on scopeFilter & hideCompleted
+  const scopedVisibleElements = useMemo(() => {
+    let baseList = visibleElements
+
+    if (scopeFilter !== 'all') {
+      const matchSet = new Set<string>()
+
+      if (scopeFilter === 'active') {
+        if (activeIteration) {
+          elements.forEach((e) => {
+            if (e.iterationId === activeIteration.id || e.iteration_id === activeIteration.id) {
+              matchSet.add(e.id)
+            }
+          })
+        }
+      } else if (scopeFilter === 'backlog') {
+        elements.forEach((e) => {
+          if (!e.iterationId && !e.iteration_id) matchSet.add(e.id)
+        })
+      } else if (scopeFilter === 'lookahead') {
+        const now = new Date()
+        const cutoff = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000)
+        elements.forEach((e) => {
+          if (!e.createdAt || new Date(e.createdAt) <= cutoff) matchSet.add(e.id)
+        })
+      } else {
+        elements.forEach((e) => {
+          if (e.iterationId === scopeFilter || e.iteration_id === scopeFilter) matchSet.add(e.id)
+        })
+      }
+
+      // Include ancestors of matching nodes to preserve tree structure
+      const includedIds = new Set<string>()
+      matchSet.forEach((id) => {
+        let curr: string | null = id
+        while (curr) {
+          includedIds.add(curr)
+          const node = elements.find((el) => el.id === curr)
+          curr = node?.parentId || null
+        }
+      })
+
+      baseList = visibleElements.filter((el) => includedIds.has(el.id))
+    }
+
+    if (hideCompleted) {
+      baseList = baseList.filter((el) => !isCompletedStatus(el.status))
+    }
+
+    return baseList
+  }, [visibleElements, elements, scopeFilter, activeIteration, hideCompleted])
+
+  // Filter elements and activities passed to canvas to match scopedVisibleElements
+  const scopedElements = useMemo(() => {
+    const visibleIds = new Set(scopedVisibleElements.map(e => e.id))
+    return elements.filter(e => visibleIds.has(e.id))
+  }, [elements, scopedVisibleElements])
+
+  const scopedActivities = useMemo(() => {
+    const visibleIds = new Set(scopedVisibleElements.map(e => e.id))
+    return activities.filter(a => visibleIds.has(a.wbsElementId) || visibleIds.has(a.id))
+  }, [activities, scopedVisibleElements])
 
   // Scroll Sync Refs
   const leftScrollRef = useRef<HTMLDivElement>(null)
@@ -75,7 +228,6 @@ export default function GanttWorkspace({
   }
 
   const handleExportSnap = () => {
-    // We keep this simple logic in the workspace component
     window.print()
   }
 
@@ -119,8 +271,22 @@ export default function GanttWorkspace({
         </div>
       )}
 
+      {/* CR Toast overlay */}
+      {crToast && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[300] shadow-lg flex items-center gap-3 px-4 py-3 rounded-2xl animate-fade-in border ${
+          crToast.type === 'success'
+            ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+            : 'bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+        }`}>
+          <span className="text-xs font-bold">{crToast.msg}</span>
+        </div>
+      )}
+
       {/* Live Cursors Overlay */}
       <LiveCursorsOverlay activeUsers={activeUsers} showCursors={showCursors} />
+
+      {/* Pending CRs Banner */}
+      <PendingCRsBanner count={pendingCRs.length} projectId={projectId} />
 
       {/* Gantt Header Toolbar */}
       <GanttToolbar
@@ -141,6 +307,19 @@ export default function GanttWorkspace({
         onExportChart={handleExportSnap}
         showSidebar={showSidebar}
         setShowSidebar={setShowSidebar}
+        iterations={iterations}
+        scopeFilter={scopeFilter}
+        setScopeFilter={setScopeFilter}
+        methodology={methodology}
+        filteredCount={scopedVisibleElements.filter((e) => e.isWorkPackage).length}
+        workPackagesTerm={terms.workPackages}
+        hideCompleted={hideCompleted}
+        onToggleHideCompleted={() => setHideCompleted((prev) => !prev)}
+        completedCount={completedCount}
+        showAllDependencies={showAllDependencies}
+        setShowAllDependencies={setShowAllDependencies}
+        dependencyStyle={dependencyStyle}
+        setDependencyStyle={setDependencyStyle}
       />
 
       {/* Unified Gantt Board Panel (Split view) */}
@@ -148,14 +327,16 @@ export default function GanttWorkspace({
         {/* Left Side: WBS Tree list columns */}
         {showSidebar && (
           <GanttSidebar
-            visibleElements={visibleElements}
+            visibleElements={scopedVisibleElements}
             wbsCodes={wbsCodes}
             elementLevels={elementLevels}
             expandedNodeIds={expandedNodeIds}
             workspaceMembers={workspaceMembers}
             onToggleExpand={handleToggleExpand}
+            onSelectElement={setActiveElementId}
             scrollRef={leftScrollRef}
             rowHeight={ROW_HEIGHT}
+            approvedCRDescriptions={approvedCRDescriptions}
           />
         )}
 
@@ -166,8 +347,8 @@ export default function GanttWorkspace({
           className="flex-1 overflow-x-auto overflow-y-auto"
         >
           <GanttTimelineCanvas
-            elements={elements}
-            activities={activities}
+            elements={scopedElements}
+            activities={scopedActivities}
             dependencies={dependencies}
             timelineStart={timelineDates.start}
             timelineEnd={timelineDates.end}
@@ -183,6 +364,15 @@ export default function GanttWorkspace({
             lockedActivities={lockedActivities}
             acquireLock={acquireLock}
             releaseLock={releaseLock}
+            onSelectElement={setActiveElementId}
+            onContextMenu={(e, row) => {
+              const taskName = row?.element?.name || row?.activity?.name || 'Task'
+              setContextMenu({ x: e.clientX, y: e.clientY, taskName, elementId: row?.element?.id || '' })
+            }}
+            showAllDependencies={showAllDependencies}
+            dependencyStyle={dependencyStyle}
+            hoveredTaskId={hoveredTaskId}
+            setHoveredTaskId={setHoveredTaskId}
           />
         </div>
       </div>
@@ -203,6 +393,64 @@ export default function GanttWorkspace({
         dependencies={dependencies}
         wbsCodes={wbsCodes}
         elementLevels={elementLevels}
+      />
+
+      {/* Right-click context menu on Gantt bars */}
+      {contextMenu && (
+        <GanttContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          taskName={contextMenu.taskName}
+          onInitiateCR={() => {
+            setCrTaskName(contextMenu.taskName)
+            setIsCRModalOpen(true)
+          }}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {/* CR Modal initiated from Gantt right-click */}
+      <GanttInitiateCRModal
+        isOpen={isCRModalOpen}
+        onClose={() => setIsCRModalOpen(false)}
+        projectId={projectId}
+        taskName={crTaskName}
+        onShowToast={(type, msg) => {
+          setCrToast({ type, msg })
+          setTimeout(() => setCrToast(null), 3500)
+        }}
+      />
+
+      <WbsElementSidePanel
+        element={activeElement}
+        workspaceMembers={workspaceMembers}
+        onClose={() => setActiveElementId(null)}
+        onSave={async (id: string, updates: Partial<WbsElement>) => {
+          try {
+            const res = await updateWbsElement(id, projectId, updates)
+            if (res.ok) {
+              await refetchData(true)
+              return true
+            }
+            return false
+          } catch (err) {
+            console.error('Failed to update element:', err)
+            return false
+          }
+        }}
+        onAssignmentChanged={() => refetchData(true)}
+        hasEditAccess={hasEditAccess}
+        canAssignMembers={hasEditAccess}
+        customStatuses={['Not Started', 'In Progress', 'Complete', 'On Hold']}
+        onAddCustomStatus={() => {}}
+        onShowToast={() => {}}
+        callerRole="PM"
+        callerUserId={currentUserId}
+        currency="USD"
+        terms={getTerminology(null)}
+        organizationId="default_org"
+        tier="premium"
+        aiEnabled={true}
       />
     </div>
   )

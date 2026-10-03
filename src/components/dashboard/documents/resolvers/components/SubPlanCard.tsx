@@ -14,13 +14,21 @@ export function SubPlanCard({ plan, onNavigateToTab }: SubPlanCardProps) {
 
   const handleCopyLink = (e: React.MouseEvent) => {
     e.stopPropagation()
-    const url = window.location.href.split('#')[0] + `#${plan.tabTarget}`
-    navigator.clipboard.writeText(url)
+    const urlObj = new URL(window.location.href)
+    urlObj.searchParams.set('doc', plan.tabTarget)
+    // Remove the hash if present to avoid confusion
+    urlObj.hash = ''
+    navigator.clipboard.writeText(urlObj.toString())
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleActionClick = () => {
+  const handleActionClick = (e?: React.MouseEvent) => {
+    if (e && e.stopPropagation) {
+      e.stopPropagation()
+      e.preventDefault()
+    }
+    
     if (onNavigateToTab) {
       onNavigateToTab(plan.tabTarget)
     } else {
@@ -86,7 +94,7 @@ export function SubPlanCard({ plan, onNavigateToTab }: SubPlanCardProps) {
         </span>
 
         {/* Interactive Action Buttons - Appear cleanly on hover with pointer cursor */}
-        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
           <button
             type="button"
             onClick={handleCopyLink}
