@@ -79,7 +79,7 @@ export default function RoadmapWorkspace({ projectId, organizationId }: RoadmapW
         </div>
         <button
           onClick={() => setEditingItem('new')}
-          className="flex items-center gap-2 bg-brand-primary hover:bg-brand-secondary text-brand-fg px-4 py-2 rounded-lg font-medium transition-colors"
+          className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm shadow-lg shadow-violet-600/25 transition-all flex items-center gap-2 cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
           Add Initiative
